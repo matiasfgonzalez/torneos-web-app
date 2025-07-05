@@ -45,3 +45,9 @@ npx prisma migrate dev --name init
 ```
 
 Esto crea una migración y sincroniza tu base de datos con los modelos del schema.
+
+Install @clerk/nextjs Run the following command to install the SDK:
+
+```
+npm install @clerk/nextjs
+```

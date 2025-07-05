@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Trophy, Menu, X } from "lucide-react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 interface ResponsiveHeaderProps {
     currentPage?: string;
@@ -74,6 +75,23 @@ export default function ResponsiveHeader({
                                     </Link>
                                 )
                         )}
+
+                        {/* Clerk user */}
+                        <SignedOut>
+                            <SignInButton>
+                                <button
+                                    className="w-full sm:w-auto bg-gradient-to-r from-[oklch(0.75_0.25_250)] via-[oklch(0.6_0.2_250)] to-[oklch(0.3_0.1_250)] 
+             hover:from-[oklch(0.8_0.3_250)] hover:via-[oklch(0.65_0.25_250)] hover:to-[oklch(0.4_0.15_250)] 
+             text-white sm:px-4 sm:py-2 px-3 py-1 text-sm sm:text-md rounded-md font-medium cursor-pointer"
+                                >
+                                    Sign In
+                                </button>
+                            </SignInButton>
+                        </SignedOut>
+
+                        <SignedIn>
+                            <UserButton />
+                        </SignedIn>
                     </div>
 
                     {/* Mobile Menu Button */}
