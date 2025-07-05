@@ -1,22 +1,28 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { Trophy, Menu, X } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { checkUser } from "@/lib/checkUser"; // Import checkUser if needed
+import { currentUser } from "@clerk/nextjs/server";
 
 interface ResponsiveHeaderProps {
     currentPage?: string;
 }
 
-export default function ResponsiveHeader({
+export default async function ResponsiveHeader({
     currentPage = ""
 }: ResponsiveHeaderProps) {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const user = await checkUser();
+    console.log("User in header:", user);
 
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
+    const userLogued = await currentUser();
+
+    let role: string | null = null;
+    if (!userLogued) {
+        role = null;
+    } else {
+        // Obtené el rol desde publicMetadata
+        role = userLogued.publicMetadata?.role as string | null;
+    }
 
     const navigationItems = [
         { href: "/", label: "Inicio", key: "inicio", disabled: false },
@@ -39,6 +45,12 @@ export default function ResponsiveHeader({
             label: "Estadísticas",
             key: "estadisticas",
             disabled: true
+        },
+        {
+            href: "/admin",
+            label: "Administración",
+            key: "admin",
+            disabled: role !== "admin"
         }
     ];
 
@@ -57,6 +69,13 @@ export default function ResponsiveHeader({
                         </span>
                     </Link>
 
+                    {/* Checkbox hidden */}
+                    <input
+                        type="checkbox"
+                        id="menu-toggle"
+                        className="peer hidden"
+                    />
+
                     {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center space-x-8">
                         {navigationItems.map(
@@ -67,16 +86,14 @@ export default function ResponsiveHeader({
                                         href={item.href}
                                         className={
                                             currentPage === item.key
-                                                ? `nav-neon-link-active text-foreground hover:text-primary`
-                                                : `nav-neon-link text-foreground hover:text-primary`
+                                                ? "nav-neon-link-active text-foreground hover:text-primary"
+                                                : "nav-neon-link text-foreground hover:text-primary"
                                         }
                                     >
                                         {item.label}
                                     </Link>
                                 )
                         )}
-
-                        {/* Clerk user */}
                         <SignedOut>
                             <SignInButton>
                                 <button
@@ -84,39 +101,28 @@ export default function ResponsiveHeader({
              hover:from-[oklch(0.8_0.3_250)] hover:via-[oklch(0.65_0.25_250)] hover:to-[oklch(0.4_0.15_250)] 
              text-white sm:px-4 sm:py-2 px-3 py-1 text-sm sm:text-md rounded-md font-medium cursor-pointer"
                                 >
-                                    Sign In
+                                    Login
                                 </button>
                             </SignInButton>
                         </SignedOut>
-
                         <SignedIn>
                             <UserButton />
                         </SignedIn>
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button
-                        onClick={toggleMobileMenu}
-                        className="lg:hidden p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:shadow-neon-sm transition-all duration-300 group"
+                    <label
+                        htmlFor="menu-toggle"
+                        className="lg:hidden p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:shadow-neon-sm transition-all duration-300 group cursor-pointer"
                         aria-label="Toggle mobile menu"
-                        aria-expanded={isMobileMenuOpen}
                     >
-                        {isMobileMenuOpen ? (
-                            <X className="h-6 w-6 text-primary group-hover:rotate-90 transition-transform duration-300" />
-                        ) : (
-                            <Menu className="h-6 w-6 text-primary group-hover:scale-110 transition-transform duration-300" />
-                        )}
-                    </button>
+                        <Menu className="h-6 w-6 text-primary group-hover:scale-110 transition-transform duration-300 peer-checked:hidden block" />
+                        <X className="h-6 w-6 text-primary group-hover:rotate-90 transition-transform duration-300 hidden peer-checked:block" />
+                    </label>
                 </nav>
 
                 {/* Mobile Navigation */}
-                <div
-                    className={`lg:hidden transition-all duration-500 ease-in-out ${
-                        isMobileMenuOpen
-                            ? "max-h-96 opacity-100 mt-4 translate-y-0"
-                            : "max-h-0 opacity-0 -translate-y-4 overflow-hidden"
-                    }`}
-                >
+                <div className="lg:hidden max-h-0 peer-checked:max-h-96 peer-checked:opacity-100 peer-checked:mt-4 peer-checked:translate-y-0 opacity-0 -translate-y-4 overflow-hidden transition-all duration-500 ease-in-out">
                     <div className="bg-card/95 backdrop-blur-md rounded-lg border border-primary/20 shadow-neon-md overflow-hidden">
                         <div className="py-2">
                             {navigationItems.map(
@@ -133,9 +139,6 @@ export default function ResponsiveHeader({
                             : "text-foreground hover:text-primary hover:bg-primary/5 hover:shadow-neon-sm"
                     }
                   `}
-                                            onClick={() =>
-                                                setIsMobileMenuOpen(false)
-                                            }
                                             style={{
                                                 animationDelay: `${
                                                     index * 50
@@ -154,15 +157,6 @@ export default function ResponsiveHeader({
                         </div>
                     </div>
                 </div>
-
-                {/* Mobile Menu Overlay */}
-                {isMobileMenuOpen && (
-                    <div
-                        className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        aria-hidden="true"
-                    />
-                )}
             </div>
         </header>
     );
