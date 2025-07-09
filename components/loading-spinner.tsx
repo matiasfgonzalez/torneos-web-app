@@ -11,7 +11,7 @@ export function LoadingSpinner({
     size = "md",
     text = "Cargando...",
     className
-}: LoadingSpinnerProps) {
+}: Readonly<LoadingSpinnerProps>) {
     const sizeClasses = {
         sm: "h-4 w-4",
         md: "h-6 w-6",
