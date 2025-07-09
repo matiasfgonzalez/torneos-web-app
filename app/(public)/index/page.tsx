@@ -10,38 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Trophy, Users, TrendingUp } from "lucide-react";
 import { getNoticias } from "@/app/actions/noticias/getNoticias";
-import { formatDate } from "@/lib/formatDate";
-
-// Mock data - en producción vendría de una base de datos
-const featuredNews = [
-    {
-        id: 1,
-        title: "Final del Torneo Apertura 2024: Un partido épico",
-        excerpt:
-            "El Club Deportivo Águilas se coronó campeón tras vencer 2-1 a Los Leones en una final llena de emociones.",
-        image: "/placeholder.svg?height=200&width=300",
-        date: "2024-01-15",
-        category: "Resultados"
-    },
-    {
-        id: 2,
-        title: "Nuevo récord de goles en una sola jornada",
-        excerpt:
-            "La jornada 8 del Torneo Clausura registró 47 goles en 16 partidos, estableciendo un nuevo récord histórico.",
-        image: "/placeholder.svg?height=200&width=300",
-        date: "2024-01-12",
-        category: "Estadísticas"
-    },
-    {
-        id: 3,
-        title: "Inscripciones abiertas para el Torneo de Verano",
-        excerpt:
-            "Ya están disponibles las inscripciones para el próximo Torneo de Verano que comenzará en febrero.",
-        image: "/placeholder.svg?height=200&width=300",
-        date: "2024-01-10",
-        category: "Anuncios"
-    }
-];
+import ListNoticias from "@/components/noticias/ListNoticias";
 
 const activeTournaments = [
     {
@@ -102,7 +71,7 @@ export interface IUser {
 
 export default async function HomePage() {
     const noticias = await getNoticias();
-    console.log("Noticias:", noticias);
+
     return (
         <div className="min-h-screen bg-background">
             {/* Hero Section */}
@@ -172,56 +141,7 @@ export default async function HomePage() {
             </section>
 
             {/* Featured News */}
-            <section className="py-16">
-                <div className="container mx-auto px-4">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-3xl font-bold">
-                            Noticias Destacadas
-                        </h2>
-                        <Button variant="outline" asChild>
-                            <Link href="/noticias">Ver todas las noticias</Link>
-                        </Button>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {noticias.map((news) => (
-                            <Card
-                                key={news.id}
-                                className="overflow-hidden hover:shadow-lg transition-shadow"
-                            >
-                                <div className="aspect-video bg-muted">
-                                    <img
-                                        src={
-                                            news.coverImageUrl ||
-                                            "/placeholder.svg"
-                                        }
-                                        alt={news.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <CardHeader>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Badge variant="secondary">
-                                            Por {news.user.name || "Anónimo"}
-                                        </Badge>
-                                        <span className="text-sm text-muted-foreground">
-                                            {news.date
-                                                ? formatDate(news.date)
-                                                : "Sin fecha"}
-                                        </span>
-                                    </div>
-                                    <CardTitle className="">
-                                        {news.title}
-                                    </CardTitle>
-                                    <CardDescription className="line-clamp-3">
-                                        {news.summary ||
-                                            "No hay resumen disponible."}
-                                    </CardDescription>
-                                </CardHeader>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <ListNoticias noticias={noticias} />
 
             {/* Active Tournaments */}
             <section className="py-16 bg-muted/50">
@@ -309,7 +229,7 @@ export default async function HomePage() {
                             <div className="flex items-center space-x-2 mb-4">
                                 <Trophy className="h-6 w-6 text-primary" />
                                 <span className="text-xl font-bold">
-                                    FutbolManager
+                                    VIVA LA MAÑANA
                                 </span>
                             </div>
                             <p className="text-muted-foreground">
@@ -386,15 +306,16 @@ export default async function HomePage() {
                         <div>
                             <h3 className="font-semibold mb-4">Contacto</h3>
                             <ul className="space-y-2 text-muted-foreground">
-                                <li>Email: info@futbolmanager.com</li>
-                                <li>Teléfono: +1 234 567 890</li>
-                                <li>Dirección: Calle Principal 123</li>
+                                <li>Email: matiasgonzalez.652@gmail.com</li>
+                                <li>Teléfono: +54 9 3454 432164</li>
+                                <li>Dirección: Los Jilgueros 130</li>
+                                <li>Oro Verde - Entre Ríos - Argentina</li>
                             </ul>
                         </div>
                     </div>
                     <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
                         <p>
-                            &copy; 2024 FutbolManager. Todos los derechos
+                            &copy; 2024 VIVA LA MAÑANA. Todos los derechos
                             reservados.
                         </p>
                     </div>
