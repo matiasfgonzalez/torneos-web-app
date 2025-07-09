@@ -9,7 +9,10 @@ export async function getNoticias() {
             include: {
                 user: true // Opcional: incluye los datos del usuario creador
             },
-            orderBy: { createdAt: "desc" } // Opcional: ordena por fecha
+            orderBy: {
+                createdAt: "desc"
+            },
+            take: 3 // 👈 Limita a las 3 noticias más recientes
         });
         return noticias;
     } catch (error) {
