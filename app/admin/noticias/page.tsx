@@ -295,7 +295,8 @@ export default function AdminNoticias() {
                         </div>
                         <div className="flex justify-end space-x-2">
                             <Button
-                                variant="outline"
+                                variant="destructive"
+                                className="bg-red-500 hover:bg-red-800 text-white"
                                 onClick={() => setIsCreateDialogOpen(false)}
                             >
                                 Cancelar
@@ -435,7 +436,7 @@ export default function AdminNoticias() {
                                         <TableCell className="text-right">
                                             <div className="flex justify-end space-x-2">
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="default"
                                                     size="sm"
                                                     asChild
                                                 >
@@ -446,9 +447,10 @@ export default function AdminNoticias() {
                                                     </Link>
                                                 </Button>
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="secondary"
                                                     size="sm"
                                                     asChild
+                                                    className="bg-green-700 hover:bg-green-900 text-white"
                                                 >
                                                     <Link
                                                         href={`/admin/noticias/${article.id}/edit`}
@@ -459,8 +461,9 @@ export default function AdminNoticias() {
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button
-                                                            variant="ghost"
+                                                            variant="destructive"
                                                             size="sm"
+                                                            className="bg-red-700 hover:bg-red-900 text-white"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
