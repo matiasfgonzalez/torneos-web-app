@@ -54,19 +54,8 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { LoadingPage } from "@/components/loading-spinner";
-
-export interface INoticia {
-    id: string;
-    title: string;
-    summary: string;
-    content: string;
-    coverImageUrl: string;
-    published: boolean;
-    date: string;
-    userId: string;
-    createdAt: string;
-    updatedAt: string;
-}
+import { INoticia } from "@/components/noticias/types";
+import { toast } from "sonner";
 
 export default function AdminNoticias() {
     const [noticias, setNoticias] = useState<INoticia[]>([]);
@@ -144,18 +133,17 @@ export default function AdminNoticias() {
     };
 
     const handleDeleteArticle = async (id: string) => {
-        if (!confirm("¿Estás seguro de eliminar esta noticia?")) return;
-
         try {
             const res = await fetch(`/api/noticias/${id}`, {
                 method: "DELETE"
             });
 
-            if (!res.ok) throw new Error("Error al eliminar");
+            if (!res.ok) throw new Error("Error al eliminar la noticia");
 
             setNoticias((prev) => prev.filter((n) => n.id !== id));
-        } catch (err) {
-            console.error(err);
+            toast.success("Noticia eliminada correctamente");
+        } catch (error) {
+            toast.error("Error al eliminar la noticia");
         }
     };
 
@@ -494,6 +482,7 @@ export default function AdminNoticias() {
                                                                         article.id
                                                                     )
                                                                 }
+                                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                                             >
                                                                 Eliminar
                                                             </AlertDialogAction>

@@ -1,7 +1,16 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
+} from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import { INoticia } from "./types";
+import { Calendar, User } from "lucide-react";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 interface NoticiaProps {
     news: INoticia;
@@ -24,9 +33,11 @@ const Noticia = (props: NoticiaProps) => {
             <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                     <Badge variant="secondary">
-                        Por {news.user.name ?? "Anónimo"}
+                        <User className="h-4 w-4" />
+                        {news.user.name ?? "Anónimo"}
                     </Badge>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
                         {news.date ? formatDate(news.date) : "Sin fecha"}
                     </span>
                 </div>
@@ -35,6 +46,14 @@ const Noticia = (props: NoticiaProps) => {
                     {news.summary ?? "No hay resumen disponible."}
                 </CardDescription>
             </CardHeader>
+            <CardContent>
+                <Button
+                    variant="outline"
+                    className="w-full bg-blue-700 hover:bg-blue-500 text-white hover:text-white cursor-pointer"
+                >
+                    <Link href={`/noticias/${news.id}`}>Leer más</Link>
+                </Button>
+            </CardContent>
         </Card>
     );
 };

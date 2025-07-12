@@ -39,30 +39,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { LoadingPage } from "@/components/loading-spinner";
-
-export interface INoticia {
-    id: string;
-    title: string;
-    summary: string;
-    content: string;
-    coverImageUrl: string;
-    published: boolean;
-    date: string;
-    userId: string;
-    createdAt: string;
-    updatedAt: string;
-    user: IUser;
-}
-
-export interface IUser {
-    id: string;
-    clerkUserId: string;
-    email: string;
-    name: string;
-    imageUrl: string;
-    createdAt: string;
-    updatedAt: string;
-}
+import { INoticia } from "@/components/noticias/types";
 
 export default function AdminNoticiaDetail({
     params
@@ -111,6 +88,8 @@ export default function AdminNoticiaDetail({
     if (loading) return <LoadingPage message="Procesando..." />;
     if (error) return <p>Error al cargar la noticia.</p>;
 
+    const proximamente = true;
+
     if (!article) {
         return (
             <div className="space-y-6">
@@ -136,10 +115,31 @@ export default function AdminNoticiaDetail({
         );
     }
 
-    const handleSave = () => {
-        // Aquí iría la lógica para guardar los cambios
-        console.log("Guardar cambios:", editedArticle);
-        setIsEditing(false);
+    const handleSave = async () => {
+        if (!article) return;
+
+        try {
+            const res = await fetch(`/api/noticias/${article.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(editedArticle)
+            });
+
+            if (!res.ok) {
+                throw new Error("Error al actualizar la noticia");
+            }
+
+            const updated = await res.json();
+            console.log("Noticia actualizada:", updated);
+
+            setArticle(updated); // opcional, actualiza el estado local
+            setIsEditing(false);
+        } catch (error) {
+            console.error(error);
+            // Podés mostrar un toast o un mensaje de error
+        }
     };
 
     const handleDelete = () => {
@@ -491,90 +491,117 @@ export default function AdminNoticiaDetail({
                 </TabsContent>
 
                 {/* Stats Tab */}
-                <TabsContent value="stats" className="space-y-6">
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Total Vistas
-                                </CardTitle>
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {"article.views.toLocaleString()"}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    +12% desde ayer
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Tiempo de Lectura
-                                </CardTitle>
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">8 min</div>
-                                <p className="text-xs text-muted-foreground">
-                                    Promedio estimado
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Compartidas
-                                </CardTitle>
-                                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">23</div>
-                                <p className="text-xs text-muted-foreground">
-                                    En redes sociales
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Rendimiento</CardTitle>
-                            <CardDescription>
-                                Estadísticas detalladas de la noticia
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium">
-                                        Vistas hoy
-                                    </span>
-                                    <span className="text-sm">156</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium">
-                                        Vistas esta semana
-                                    </span>
-                                    <span className="text-sm">892</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium">
-                                        Vistas este mes
-                                    </span>
-                                    <span className="text-sm">2,847</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium">
-                                        Tiempo promedio en página
-                                    </span>
-                                    <span className="text-sm">4:32 min</span>
-                                </div>
+                <TabsContent value="stats" className="space-y-6">
+                    {proximamente ? (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Próximamente</CardTitle>
+                                <CardDescription>
+                                    Estadísticas y métricas de la noticia
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="text-center py-8">
+                                <p className="text-lg text-muted-foreground">
+                                    Esta sección estará disponible pronto.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <>
+                            <div className="grid gap-4 md:grid-cols-3">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">
+                                            Total Vistas
+                                        </CardTitle>
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">
+                                            {"article.views.toLocaleString()"}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            +12% desde ayer
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">
+                                            Tiempo de Lectura
+                                        </CardTitle>
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">
+                                            8 min
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            Promedio estimado
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">
+                                            Compartidas
+                                        </CardTitle>
+                                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">
+                                            23
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            En redes sociales
+                                        </p>
+                                    </CardContent>
+                                </Card>
                             </div>
-                        </CardContent>
-                    </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Rendimiento</CardTitle>
+                                    <CardDescription>
+                                        Estadísticas detalladas de la noticia
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium">
+                                                Vistas hoy
+                                            </span>
+                                            <span className="text-sm">156</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium">
+                                                Vistas esta semana
+                                            </span>
+                                            <span className="text-sm">892</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium">
+                                                Vistas este mes
+                                            </span>
+                                            <span className="text-sm">
+                                                2,847
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium">
+                                                Tiempo promedio en página
+                                            </span>
+                                            <span className="text-sm">
+                                                4:32 min
+                                            </span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </>
+                    )}
                 </TabsContent>
             </Tabs>
         </div>

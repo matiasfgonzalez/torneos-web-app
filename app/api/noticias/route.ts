@@ -3,10 +3,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        const { searchParams } = new URL(req.url);
+        const publishedParam = searchParams.get("published");
+
+        // Solo incluir el filtro si viene el parámetro
+        const where: any = {};
+        if (publishedParam !== null) {
+            // Convertir string a booleano
+            where.published = publishedParam === "true";
+        }
+
         const noticias = await db.news.findMany({
-            orderBy: { createdAt: "desc" }
+            where,
+            include: {
+                user: true // Opcional: incluye los datos del usuario creador
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
         });
         return NextResponse.json(noticias);
     } catch (error) {

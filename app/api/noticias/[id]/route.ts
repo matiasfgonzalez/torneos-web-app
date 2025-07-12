@@ -7,7 +7,8 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = params;
+        // Await params before accessing its properties
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json(
@@ -35,6 +36,80 @@ export async function GET(
         console.error("Error al obtener noticia por ID:", error);
         return NextResponse.json(
             { error: "Error interno del servidor" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PUT(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        // Await params before accessing its properties
+        const { id } = await params;
+        const body = await req.json();
+
+        const { title, summary, content, coverImageUrl, published } = body;
+
+        if (!id) {
+            return NextResponse.json(
+                { error: "ID no proporcionado" },
+                { status: 400 }
+            );
+        }
+
+        const updatedNoticia = await db.news.update({
+            where: { id },
+            data: {
+                title,
+                summary,
+                content,
+                coverImageUrl,
+                published,
+                updatedAt: new Date()
+            },
+            include: { user: true }
+        });
+
+        return NextResponse.json(updatedNoticia, { status: 200 });
+    } catch (error) {
+        console.error("Error al actualizar la noticia:", error);
+        return NextResponse.json(
+            { error: "Error al actualizar la noticia" },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE: Eliminar una noticia por ID
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        // Await params before accessing its properties
+        const { id } = await params;
+
+        if (!id) {
+            return NextResponse.json(
+                { error: "ID no proporcionado" },
+                { status: 400 }
+            );
+        }
+
+        const deletedNoticia = await db.news.delete({
+            where: { id }
+        });
+
+        return NextResponse.json(
+            { message: "Noticia eliminada correctamente", deletedNoticia },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Error al eliminar la noticia:", error);
+        return NextResponse.json(
+            { error: "Error al eliminar la noticia" },
             { status: 500 }
         );
     }

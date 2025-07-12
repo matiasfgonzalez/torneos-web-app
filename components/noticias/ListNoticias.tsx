@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import Noticia from "./Noticia";
-import { INoticia } from "./types";
+import { getNoticias } from "@/app/actions/noticias/getNoticias";
 
-interface NoticiasProps {
-    noticias: INoticia[];
-}
-
-const ListNoticias = (props: NoticiasProps) => {
-    const { noticias } = props;
+const ListNoticias = async () => {
+    const noticias = await getNoticias();
     return (
         <section className="py-16">
             <div className="container mx-auto px-4">
@@ -19,9 +15,18 @@ const ListNoticias = (props: NoticiasProps) => {
                     </Button>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {noticias.map((news) => (
-                        <Noticia news={news} key={news.id} />
-                    ))}
+                    {noticias.length === 0 ? (
+                        <div className="col-span-3 text-center">
+                            <p className="text-muted-foreground">
+                                No hay noticias disponibles en este momento.
+                            </p>
+                        </div>
+                    ) : (
+                        noticias.map((news) => (
+                            <Noticia news={news} key={news.id} />
+                        ))
+                    )}
+                    {}
                 </div>
             </div>
         </section>

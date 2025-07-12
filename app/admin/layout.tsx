@@ -1,4 +1,5 @@
 import type React from "react";
+import { Toaster } from "sonner";
 import { AdminSidebar } from "@/components/admin/sidebar";
 
 export default function AdminLayout({
@@ -19,7 +20,10 @@ export default function AdminLayout({
                         </h1>
                     </div>
                 </div>
-                <main className="p-4 md:p-6 md:pl-76">{children}</main>
+                <main className="p-4 md:p-6 md:pl-76">
+                    {children}
+                    <Toaster position="top-right" richColors />
+                </main>
             </div>
         </div>
     );

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -15,13 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -35,63 +29,149 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Save, Eye, Trash2, Upload, Calendar } from "lucide-react";
 import { toast } from "sonner";
+import { INoticia } from "@/components/noticias/types";
+import { formatDate } from "@/lib/formatDate";
+import { se } from "date-fns/locale";
 
-// Mock data - en producción vendría de una base de datos
-const getArticleById = (id: string) => {
-    const article = {
-        id: 1,
-        title: "Final del Torneo Apertura 2024: Un partido épico",
-        summary:
-            "El Club Deportivo Águilas se coronó campeón tras vencer 2-1 a Los Leones en una final llena de emociones que se definió en los últimos minutos del encuentro.",
-        content: `En una noche que quedará grabada para siempre en la memoria de los aficionados al fútbol local, el Club Deportivo Águilas se coronó campeón del Torneo Apertura 2024 tras vencer 2-1 a Los Leones FC en una final épica disputada en el Estadio Central ante más de 12,000 espectadores.
-
-El encuentro comenzó con un ritmo vertiginoso. Los Leones FC sorprendieron a los 15 minutos con un gol de Miguel Santos, quien aprovechó un error defensivo para abrir el marcador. El Estadio Central se sumió en un silencio sepulcral, pero las Águilas no tardaron en reaccionar.
-
-La respuesta llegó apenas 8 minutos después, cuando Carlos Rodríguez, el máximo goleador del torneo, empató el partido con un cabezazo perfecto tras un centro milimétrico de Gabriel Vega desde la banda derecha.
-
-El segundo tiempo fue un intercambio constante de ataques. Ambos equipos tuvieron oportunidades claras, pero los porteros Antonio López (Águilas) y Fernando García (Leones) estuvieron inspirados.
-
-Cuando parecía que el partido se definiría en los penales, llegó el momento mágico. A los 87 minutos, en una jugada que comenzó en campo propio, las Águilas construyeron una jugada colectiva perfecta que terminó con Andrés Castro definiendo con clase ante la salida desesperada del portero rival.`,
-        coverImageUrl: "/placeholder.svg?height=400&width=800",
-        published: true,
-        date: "2024-01-15",
-        author: "Carlos Mendoza",
-        views: 2847,
-        category: "Resultados",
-        createdAt: "2024-01-15T20:30:00Z",
-        updatedAt: "2024-01-15T21:15:00Z"
-    };
-
-    return article;
-};
-
-const categories = [
-    "Resultados",
-    "Estadísticas",
-    "Anuncios",
-    "Entrevistas",
-    "Reglamento",
-    "Fichajes",
-    "Lesiones",
-    "Eventos"
-];
-
-export default function EditNoticia({ params }: { params: { id: string } }) {
+export default function EditNoticia() {
     const router = useRouter();
-    const article = getArticleById(params.id);
+    const params = useParams();
+    const id = params?.id as string;
+    const [article, setArticle] = useState<INoticia | null>(null);
+    const [loadingArticle, setLoadingArticle] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [hasChanges, setHasChanges] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
-        title: article?.title || "",
-        summary: article?.summary || "",
-        content: article?.content || "",
-        coverImageUrl: article?.coverImageUrl || "",
-        published: article?.published || false,
-        category: article?.category || "Resultados",
-        date: article?.date || new Date().toISOString().split("T")[0]
+        title: "",
+        summary: "",
+        content: "",
+        coverImageUrl: "",
+        published: false,
+        date: new Date().toISOString().split("T")[0]
     });
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
+    useEffect(() => {
+        async function loadArticle() {
+            setLoadingArticle(true);
+            try {
+                const res = await fetch(`/api/noticias/${id}`);
+
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        setError("Noticia no encontrada");
+                        return;
+                    }
+                }
+
+                const data = await res.json();
+                setArticle(data);
+                setFormData({
+                    title: data.title || "",
+                    summary: data.summary || "",
+                    content: data.content || "",
+                    coverImageUrl: data.coverImageUrl || "",
+                    published: data.published || false,
+                    date:
+                        data.date?.split("T")[0] ||
+                        new Date().toISOString().split("T")[0]
+                });
+            } catch (error) {
+                setError("Error al cargar la noticia");
+                toast.error("Error al cargar la noticia");
+            } finally {
+                setLoadingArticle(false);
+            }
+        }
+
+        loadArticle();
+    }, [id]);
+
+    const handleInputChange = (field: string, value: string | boolean) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        setHasChanges(true);
+    };
+
+    const handleSave = async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch(`/api/noticias/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!res.ok) {
+                throw new Error("Error al actualizar la noticia");
+            }
+
+            toast.success("Noticia actualizada correctamente");
+            setHasChanges(false);
+        } catch (error) {
+            toast.error("Error al guardar los cambios");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            const res = await fetch(`/api/noticias/${id}`, {
+                method: "DELETE"
+            });
+
+            if (!res.ok) {
+                throw new Error("Error al eliminar la noticia");
+            }
+
+            toast.success("Noticia eliminada correctamente");
+            router.push("/admin/noticias");
+        } catch (error) {
+            toast.error("Error al eliminar la noticia");
+        }
+    };
+
+    const handleCancel = () => {
+        if (hasChanges) {
+            if (
+                confirm("¿Estás seguro? Los cambios no guardados se perderán.")
+            ) {
+                router.push(`/admin/noticias/${id}`);
+            }
+        } else {
+            router.push(`/admin/noticias/${id}`);
+        }
+    };
+
+    if (loadingArticle) {
+        return <p className="text-center">Cargando noticia...</p>;
+    }
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                    <Button variant="ghost" asChild>
+                        <Link href="/admin/noticias">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Volver a noticias
+                        </Link>
+                    </Button>
+                </div>
+                <Card>
+                    <CardContent className="p-8 text-center">
+                        <h3 className="text-lg font-semibold mb-2">
+                            Error al cargar la noticia
+                        </h3>
+                        <p className="text-muted-foreground">{error}</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     if (!article) {
         return (
@@ -118,51 +198,6 @@ export default function EditNoticia({ params }: { params: { id: string } }) {
             </div>
         );
     }
-
-    const handleInputChange = (field: string, value: string | boolean) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        setHasChanges(true);
-    };
-
-    const handleSave = async () => {
-        setIsLoading(true);
-        try {
-            // Aquí iría la lógica para guardar en la base de datos
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simular API call
-
-            console.log("Guardando cambios:", formData);
-            toast.success("Noticia actualizada correctamente");
-            setHasChanges(false);
-            router.push(`/admin/noticias/${params.id}`);
-        } catch (error) {
-            toast.error("Error al guardar los cambios");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleDelete = async () => {
-        try {
-            // Aquí iría la lógica para eliminar de la base de datos
-            console.log("Eliminando artículo:", article.id);
-            toast.success("Noticia eliminada correctamente");
-            router.push("/admin/noticias");
-        } catch (error) {
-            toast.error("Error al eliminar la noticia");
-        }
-    };
-
-    const handleCancel = () => {
-        if (hasChanges) {
-            if (
-                confirm("¿Estás seguro? Los cambios no guardados se perderán.")
-            ) {
-                router.push(`/admin/noticias/${params.id}`);
-            }
-        } else {
-            router.push(`/admin/noticias/${params.id}`);
-        }
-    };
 
     return (
         <div className="space-y-6">
@@ -302,30 +337,6 @@ export default function EditNoticia({ params }: { params: { id: string } }) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="category">Categoría</Label>
-                                <Select
-                                    value={formData.category}
-                                    onValueChange={(value) =>
-                                        handleInputChange("category", value)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona una categoría" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categories.map((category) => (
-                                            <SelectItem
-                                                key={category}
-                                                value={category}
-                                            >
-                                                {category}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
                                 <Label htmlFor="date">
                                     Fecha de Publicación
                                 </Label>
@@ -411,31 +422,22 @@ export default function EditNoticia({ params }: { params: { id: string } }) {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Autor</Label>
-                                <div className="text-sm">{article.author}</div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Vistas Actuales</Label>
-                                <div className="text-sm font-medium">
-                                    {article.views.toLocaleString()}
+                                <div className="text-sm">
+                                    {article.user.name}
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <Label>Creado</Label>
                                 <div className="text-sm text-muted-foreground">
-                                    {new Date(
-                                        article.createdAt
-                                    ).toLocaleString()}
+                                    {formatDate(article.createdAt)}
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <Label>Última Modificación</Label>
                                 <div className="text-sm text-muted-foreground">
-                                    {new Date(
-                                        article.updatedAt
-                                    ).toLocaleString()}
+                                    {formatDate(article.updatedAt)}
                                 </div>
                             </div>
                         </CardContent>
