@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import ListNoticias from "@/components/noticias/ListNoticias";
+import { HomeAds } from "@/components/home-ads";
 
 export default async function HomePage() {
     return (
@@ -73,6 +74,9 @@ export default async function HomePage() {
 
             {/* Featured News */}
             <ListNoticias />
+
+            {/* Sponsors/Ads Section */}
+            <HomeAds variant="carousel" />
 
             {/* Active Tournaments 
             <ListTorneos />
