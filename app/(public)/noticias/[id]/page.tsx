@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, ArrowLeft, Share2, Eye, Clock } from "lucide-react";
 import { INoticia } from "@/components/noticias/types"; // Asegurate de ajustar el path
 import { formatDate } from "@/lib/formatDate";
+import SkeletonNoticia from "@/components/noticias/SkeletonNoticia";
 
 export default function NewsDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -45,7 +46,9 @@ export default function NewsDetailPage() {
         }
     };
 
-    if (loading) return <div className="p-8">Cargando noticia...</div>;
+    // Muesta un loading state mientras se carga la noticia
+    if (loading) return <SkeletonNoticia />;
+
     if (!noticia) return <div className="p-8">Noticia no encontrada</div>;
 
     return (
@@ -115,7 +118,9 @@ export default function NewsDetailPage() {
 
                     <div
                         className="prose prose-lg max-w-none mb-8"
-                        dangerouslySetInnerHTML={{ __html: noticia.content }}
+                        dangerouslySetInnerHTML={{
+                            __html: noticia.content.replace(/\n/g, "<br />")
+                        }}
                     />
 
                     <Button variant="outline" onClick={handleShare}>
