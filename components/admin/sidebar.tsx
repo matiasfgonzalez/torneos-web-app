@@ -29,42 +29,50 @@ const menuItems = [
     {
         title: "Dashboard",
         href: "/admin/dashboard",
-        icon: Home
+        icon: Home,
+        enabled: false
     },
     {
         title: "Noticias",
         href: "/admin/noticias",
-        icon: Newspaper
+        icon: Newspaper,
+        enabled: true
     },
     {
         title: "Torneos",
         href: "/admin/torneos",
-        icon: Trophy
+        icon: Trophy,
+        enabled: false
     },
     {
         title: "Equipos",
         href: "/admin/equipos",
-        icon: Users
+        icon: Users,
+        enabled: false
     },
     {
         title: "Jugadores",
         href: "/admin/jugadores",
-        icon: UserCheck
+        icon: UserCheck,
+        enabled: false
     },
     {
         title: "Partidos",
         href: "/admin/partidos",
-        icon: Calendar
+        icon: Calendar,
+        enabled: false
     },
     {
         title: "Estadísticas",
         href: "/admin/estadisticas",
-        icon: BarChart3
+        icon: BarChart3,
+        enabled: false
     },
     {
         title: "Configuración",
         href: "/admin/configuracion",
-        icon: Settings
+        icon: Settings,
+        enabled: false
     }
 ];
 
@@ -86,7 +94,7 @@ export function AdminSidebar() {
             <nav className="flex-1 space-y-2 p-4">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
-                    return (
+                    const html = item.enabled ? (
                         <Link
                             key={item.href}
                             href={item.href}
@@ -100,7 +108,9 @@ export function AdminSidebar() {
                             <item.icon className="h-4 w-4" />
                             <span>{item.title}</span>
                         </Link>
-                    );
+                    ) : null;
+
+                    return html;
                 })}
             </nav>
 
