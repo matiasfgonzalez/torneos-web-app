@@ -10,6 +10,7 @@ import { Calendar, ArrowLeft, Share2, Eye, Clock } from "lucide-react";
 import { INoticia } from "@/components/noticias/types"; // Asegurate de ajustar el path
 import { formatDate } from "@/lib/formatDate";
 import SkeletonNoticia from "@/components/noticias/SkeletonNoticia";
+import { HomeAds } from "@/components/home-ads";
 
 export default function NewsDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -128,6 +129,8 @@ export default function NewsDetailPage() {
                         Compartir
                     </Button>
                 </div>
+
+                <HomeAds variant="grid" />
             </div>
         </div>
     );

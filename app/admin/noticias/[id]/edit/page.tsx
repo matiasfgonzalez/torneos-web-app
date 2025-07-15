@@ -139,10 +139,10 @@ export default function EditNoticia() {
             if (
                 confirm("¿Estás seguro? Los cambios no guardados se perderán.")
             ) {
-                router.push(`/admin/noticias/${id}`);
+                router.push(`/admin/noticias`);
             }
         } else {
-            router.push(`/admin/noticias/${id}`);
+            router.push(`/admin/noticias`);
         }
     };
 

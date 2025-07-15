@@ -47,7 +47,7 @@ export default async function ResponsiveHeader({
             disabled: true
         },
         {
-            href: "/admin/dashboard",
+            href: "/admin/noticias",
             label: "Administración",
             key: "dashboard",
             disabled: role !== "admin"
