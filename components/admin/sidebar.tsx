@@ -22,7 +22,8 @@ import {
     Home,
     LogOut,
     Shield,
-    Newspaper
+    Newspaper,
+    ArrowBigLeft
 } from "lucide-react";
 
 const menuItems = [
@@ -117,12 +118,12 @@ export function AdminSidebar() {
             {/* Footer */}
             <div className="border-t p-4">
                 <Button
-                    variant="ghost"
+                    variant="secondary"
                     className="w-full justify-start"
                     asChild
                 >
                     <Link href="/">
-                        <LogOut className="mr-2 h-4 w-4" />
+                        <ArrowBigLeft className="mr-2 h-4 w-4" />
                         Volver al sitio
                     </Link>
                 </Button>
