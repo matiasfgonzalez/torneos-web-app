@@ -47,10 +47,7 @@ const Noticia = (props: NoticiaProps) => {
                 </CardDescription>*/}
             </CardHeader>
             <CardContent>
-                <Button
-                    variant="outline"
-                    className="w-full bg-blue-700 hover:bg-blue-500 text-white hover:text-white cursor-pointer"
-                >
+                <Button variant="secondary" className="w-full cursor-pointer">
                     <Link href={`/noticias/${news.id}`}>Leer más</Link>
                 </Button>
             </CardContent>
