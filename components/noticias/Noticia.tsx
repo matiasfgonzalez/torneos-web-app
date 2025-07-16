@@ -21,7 +21,7 @@ const Noticia = (props: NoticiaProps) => {
     return (
         <Card
             key={news.id}
-            className="overflow-hidden hover:shadow-lg transition-shadow"
+            className="overflow-hidden hover:shadow-lg transform transition-transform duration-300 hover:scale-[1.02]"
         >
             <div className="aspect-video bg-muted">
                 <img
@@ -42,9 +42,9 @@ const Noticia = (props: NoticiaProps) => {
                     </span>
                 </div>
                 <CardTitle className="">{news.title}</CardTitle>
-                <CardDescription className="line-clamp-3">
+                {/*<CardDescription className="line-clamp-3">
                     {news.summary ?? "No hay resumen disponible."}
-                </CardDescription>
+                </CardDescription>*/}
             </CardHeader>
             <CardContent>
                 <Button
