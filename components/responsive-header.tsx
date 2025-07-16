@@ -3,6 +3,7 @@ import { Trophy, Menu, X, LogIn } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { checkUser } from "@/lib/checkUser"; // Import checkUser if needed
 import { currentUser } from "@clerk/nextjs/server";
+import ThemeToggle from "./ThemeToggle";
 
 interface ResponsiveHeaderProps {
     currentPage?: string;
@@ -94,6 +95,7 @@ export default async function ResponsiveHeader({
                                     </Link>
                                 )
                         )}
+                        <ThemeToggle />
                         <SignedOut>
                             <SignInButton>
                                 <button
