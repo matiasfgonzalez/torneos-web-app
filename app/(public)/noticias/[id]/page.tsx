@@ -55,7 +55,7 @@ export default function NewsDetailPage() {
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
-                <Button variant="ghost" className="mb-6" asChild>
+                <Button variant="secondary" className="mb-6" asChild>
                     <Link href="/noticias">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Volver a noticias

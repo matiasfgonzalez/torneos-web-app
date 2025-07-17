@@ -66,7 +66,7 @@ export default async function ResponsiveHeader({
                     >
                         <Trophy className="h-8 w-8 text-primary animate-neon-pulse group-hover:scale-110 transition-transform duration-300" />
                         <span className="text-2xl font-display font-bold text-neon-glow">
-                            VIVA LA MAÑANA
+                            MATUTE DEPORTES
                         </span>
                     </Link>
 
