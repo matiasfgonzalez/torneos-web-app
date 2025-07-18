@@ -1,6 +1,7 @@
-// app/redirect-page/page.tsx
-import { redirect } from "next/navigation";
+import RedirectPage from "@/components/RedirectPage";
 
-export default function Page() {
-    redirect("/index");
-}
+const page = () => {
+    return <RedirectPage />;
+};
+
+export default page;
