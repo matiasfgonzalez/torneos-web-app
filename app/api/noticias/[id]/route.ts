@@ -2,12 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-export async function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+type tParams = Promise<{ id: string }>;
+
+export async function GET(req: NextRequest, { params }: { params: tParams }) {
     try {
-        // Await params before accessing its properties
         const { id } = await params;
 
         if (!id) {
@@ -41,10 +39,7 @@ export async function GET(
     }
 }
 
-export async function PUT(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: { params: tParams }) {
     try {
         // Await params before accessing its properties
         const { id } = await params;
@@ -85,7 +80,7 @@ export async function PUT(
 // DELETE: Eliminar una noticia por ID
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: tParams }
 ) {
     try {
         // Await params before accessing its properties
