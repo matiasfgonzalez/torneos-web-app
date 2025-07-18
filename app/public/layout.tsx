@@ -33,7 +33,7 @@ export default function AdminLayout({
                             <ul className="space-y-2 text-muted-foreground">
                                 <li>
                                     <Link
-                                        href="/"
+                                        href="/public/index"
                                         className="hover:text-primary"
                                     >
                                         Inicio
@@ -49,7 +49,7 @@ export default function AdminLayout({
                                 </li>
                                 <li>
                                     <Link
-                                        href="/noticias"
+                                        href="/public/noticias"
                                         className="hover:text-primary"
                                     >
                                         Noticias

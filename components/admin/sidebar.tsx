@@ -121,7 +121,7 @@ export function AdminSidebar() {
                     className="w-full justify-start"
                     asChild
                 >
-                    <Link href="/">
+                    <Link href="/public/index">
                         <ArrowBigLeft className="mr-2 h-4 w-4" />
                         Volver al sitio
                     </Link>

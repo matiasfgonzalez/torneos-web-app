@@ -26,7 +26,12 @@ export default async function ResponsiveHeader({
     }
 
     const navigationItems = [
-        { href: "/", label: "Inicio", key: "inicio", disabled: false },
+        {
+            href: "/public/index",
+            label: "Inicio",
+            key: "inicio",
+            disabled: false
+        },
         { href: "/torneos", label: "Torneos", key: "torneos", disabled: true },
         { href: "/equipos", label: "Equipos", key: "equipos", disabled: true },
         {
@@ -36,7 +41,7 @@ export default async function ResponsiveHeader({
             disabled: true
         },
         {
-            href: "/noticias",
+            href: "/public/noticias",
             label: "Noticias",
             key: "noticias",
             disabled: false
@@ -61,7 +66,7 @@ export default async function ResponsiveHeader({
                 <nav className="flex items-center justify-between">
                     {/* Logo */}
                     <Link
-                        href="/"
+                        href="/public/index"
                         className="flex items-center space-x-2 group"
                     >
                         <Trophy className="h-8 w-8 text-primary animate-neon-pulse group-hover:scale-110 transition-transform duration-300" />

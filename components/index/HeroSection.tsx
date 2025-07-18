@@ -45,7 +45,7 @@ const HeroSection = () => {
                     transition={{ delay: 0.5 }}
                 >
                     <Button size="lg" variant="secondary" asChild>
-                        <Link href="/torneos">Ver Torneos Activos</Link>
+                        <Link href="#">Ver Torneos Activos</Link>
                     </Button>
                     <Button
                         size="lg"
@@ -53,7 +53,7 @@ const HeroSection = () => {
                         className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary bg-transparent"
                         asChild
                     >
-                        <Link href="/noticias">Últimas Noticias</Link>
+                        <Link href="/public/noticias">Últimas Noticias</Link>
                     </Button>
                 </motion.div>
             </div>

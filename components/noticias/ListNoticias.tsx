@@ -11,7 +11,9 @@ const ListNoticias = async () => {
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-3xl font-bold">Noticias Destacadas</h2>
                     <Button variant="outline" asChild>
-                        <Link href="/noticias">Ver todas las noticias</Link>
+                        <Link href="/public/noticias">
+                            Ver todas las noticias
+                        </Link>
                     </Button>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

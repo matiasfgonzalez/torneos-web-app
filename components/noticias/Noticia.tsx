@@ -42,7 +42,7 @@ const Noticia = (props: NoticiaProps) => {
             </CardHeader>
             <CardContent>
                 <Button variant="secondary" className="w-full cursor-pointer">
-                    <Link href={`/noticias/${news.id}`}>Leer más</Link>
+                    <Link href={`/public/noticias/${news.id}`}>Leer más</Link>
                 </Button>
             </CardContent>
         </Card>
