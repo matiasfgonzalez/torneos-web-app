@@ -40,7 +40,7 @@ export default function RedirectPage() {
                             className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                         >
                             <Link
-                                href="/index"
+                                href="/public/index"
                                 className="flex items-center justify-center gap-3"
                             >
                                 <span>INGRESAR</span>
