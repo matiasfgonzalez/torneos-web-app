@@ -210,7 +210,8 @@ export default function AdminNoticiaDetail({
                                         <AlertDialogDescription>
                                             Esta acción no se puede deshacer.
                                             Esto eliminará permanentemente la
-                                            noticia "{article.title}".
+                                            noticia{" "}
+                                            <strong>{article.title}</strong>.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

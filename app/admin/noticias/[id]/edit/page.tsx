@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -31,7 +31,6 @@ import { ArrowLeft, Save, Eye, Trash2, Upload, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { INoticia } from "@/components/noticias/types";
 import { formatDate } from "@/lib/formatDate";
-import { se } from "date-fns/locale";
 
 export default function EditNoticia() {
     const router = useRouter();
@@ -78,8 +77,8 @@ export default function EditNoticia() {
                         new Date().toISOString().split("T")[0]
                 });
             } catch (error) {
-                setError("Error al cargar la noticia");
-                toast.error("Error al cargar la noticia");
+                setError(`Error al cargar la noticia: ${error}`);
+                toast.error(`Error al cargar la noticia: ${error}`);
             } finally {
                 setLoadingArticle(false);
             }
@@ -111,7 +110,7 @@ export default function EditNoticia() {
             toast.success("Noticia actualizada correctamente");
             setHasChanges(false);
         } catch (error) {
-            toast.error("Error al guardar los cambios");
+            toast.error(`Error al guardar los cambios: ${error}`);
         } finally {
             setIsLoading(false);
         }
@@ -130,7 +129,7 @@ export default function EditNoticia() {
             toast.success("Noticia eliminada correctamente");
             router.push("/admin/noticias");
         } catch (error) {
-            toast.error("Error al eliminar la noticia");
+            toast.error(`Error al eliminar la noticia: ${error}`);
         }
     };
 
@@ -473,8 +472,8 @@ export default function EditNoticia() {
                                         <AlertDialogDescription>
                                             Esta acción no se puede deshacer.
                                             Esto eliminará permanentemente la
-                                            noticia "
-                                            <strong>{article.title}</strong>" y
+                                            noticia{" "}
+                                            <strong>{article.title}</strong> y
                                             todos sus datos asociados.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>

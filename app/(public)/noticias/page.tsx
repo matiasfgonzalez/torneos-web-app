@@ -1,32 +1,14 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
-import { Trophy, Search, Filter, Calendar, User } from "lucide-react";
+import { Search } from "lucide-react";
 import Noticia from "@/components/noticias/Noticia";
 import { INoticia } from "@/components/noticias/types";
 
 export default function NoticiasPage() {
     const [news, setNews] = useState<INoticia[]>([]); // Asegúrate de que INoticia esté importado correctamente
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("Todas");
 
     useEffect(() => {
         const fetchNews = async () => {

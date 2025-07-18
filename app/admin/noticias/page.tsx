@@ -143,7 +143,7 @@ export default function AdminNoticias() {
             setNoticias((prev) => prev.filter((n) => n.id !== id));
             toast.success("Noticia eliminada correctamente");
         } catch (error) {
-            toast.error("Error al eliminar la noticia");
+            toast.error(`Error al eliminar la noticia: ${error}`);
         }
     };
 
@@ -467,9 +467,8 @@ export default function AdminNoticias() {
                                                                 deshacer. Esto
                                                                 eliminará
                                                                 permanentemente
-                                                                la noticia "
-                                                                {article.title}
-                                                                ".
+                                                                la noticia -
+                                                                {article.title}.
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>

@@ -58,9 +58,7 @@ interface VideoAdsProps {
 
 export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
     const [currentVideo, setCurrentVideo] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [showVideo, setShowVideo] = useState(false);
-    const [isMuted, setIsMuted] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const videoRef = useRef<HTMLIFrameElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -69,12 +67,10 @@ export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
 
     const handlePlayVideo = () => {
         setShowVideo(true);
-        setIsPlaying(true);
     };
 
     const handleCloseVideo = () => {
         setShowVideo(false);
-        setIsPlaying(false);
     };
 
     const toggleFullscreen = () => {

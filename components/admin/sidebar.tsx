@@ -20,7 +20,6 @@ import {
     Settings,
     Menu,
     Home,
-    LogOut,
     Shield,
     Newspaper,
     ArrowBigLeft

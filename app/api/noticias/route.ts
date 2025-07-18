@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
         const publishedParam = searchParams.get("published");
 
         // Solo incluir el filtro si viene el parámetro
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const where: any = {};
         if (publishedParam !== null) {
             // Convertir string a booleano
