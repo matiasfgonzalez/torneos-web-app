@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
 
         // Check for user
         if (!userId) {
-            return { error: "User not found" };
+            return NextResponse.json(
+                { error: "Usuario no encontrado" },
+                { status: 400 }
+            );
         }
 
         // Get user from database
