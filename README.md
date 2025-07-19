@@ -51,3 +51,31 @@ Install @clerk/nextjs Run the following command to install the SDK:
 ```
 npm install @clerk/nextjs
 ```
+
+## Tamaño de las imagenes para mantener la relacion aspecto
+
+16:9 -> w:1312 px h:736 px
+
+Para una imagen con w de 960 px
+
+Relaciones de aspecto recomendadas:
+
+1. 16:9 (estándar moderno, ideal para noticias, videos, tarjetas amplias)
+   📏 Alto = 960 × 9 / 16 = 540 px
+
+✅ Resultado: 960 × 540
+
+2. 4:3 (más cuadrada, buena para contenido editorial)
+   📏 Alto = 960 × 3 / 4 = 720 px
+
+✅ Resultado: 960 × 720
+
+3. 3:2 (más fotográfica, estilo portada de nota o blog)
+   📏 Alto = 960 × 2 / 3 ≈ 640 px
+
+✅ Resultado: 960 × 640
+
+4. 1:1 (cuadrada, estilo redes sociales o miniaturas)
+   📏 Alto = 960
+
+✅ Resultado: 960 × 960
