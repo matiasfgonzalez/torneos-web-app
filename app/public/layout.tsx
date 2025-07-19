@@ -1,5 +1,5 @@
 import ResponsiveHeader from "@/components/responsive-header";
-import { Trophy } from "lucide-react";
+import { Mic } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 
@@ -18,7 +18,7 @@ export default function AdminLayout({
                     <div className="grid md:grid-cols-4 gap-8">
                         <div>
                             <div className="flex items-center space-x-2 mb-4">
-                                <Trophy className="h-6 w-6 text-primary" />
+                                <Mic className="h-6 w-6 text-primary" />
                                 <span className="text-xl font-bold">
                                     VIVA LA MAÑANA
                                 </span>
