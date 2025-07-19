@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Trophy, Menu, X, LogIn } from "lucide-react";
+import { Menu, X, LogIn, Mic } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { checkUser } from "@/lib/checkUser"; // Import checkUser if needed
 import { currentUser } from "@clerk/nextjs/server";
@@ -69,9 +69,9 @@ export default async function ResponsiveHeader({
                         href="/public/index"
                         className="flex items-center space-x-2 group"
                     >
-                        <Trophy className="h-8 w-8 text-primary animate-neon-pulse group-hover:scale-110 transition-transform duration-300" />
-                        <span className="text-2xl font-display font-bold text-neon-glow">
-                            MATUTE DEPORTES
+                        <Mic className="h-8 w-8 text-primary animate-neon-pulse group-hover:scale-110 transition-transform duration-300" />
+                        <span className="text-2xl font-display font-bold text-neon-glow tracking-widest">
+                            VIVA LA MAÑANA
                         </span>
                     </Link>
 

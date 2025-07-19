@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const HeroSection = () => {
     return (
@@ -28,6 +29,14 @@ const HeroSection = () => {
                     transition={{ duration: 0.6 }}
                 >
                     La Casa del Fútbol Local
+                    <div className="flex justify-center">
+                        <Image
+                            src="/logo_transparente.png"
+                            alt="Logo Viva la Mañana"
+                            width={250}
+                            height={170}
+                        />
+                    </div>
                 </motion.h1>
                 <motion.p
                     className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto"
