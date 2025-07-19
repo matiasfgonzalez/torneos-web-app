@@ -22,8 +22,8 @@ export default function RedirectPage() {
                             <h1 className="text-3xl font-bold text-foreground">
                                 ¡Bienvenido!
                             </h1>
-                            <p className="text-lg text-primary font-semibold">
-                                Matute Deportes
+                            <p className="text-lg text-primary font-semibold tracking-widest">
+                                VIVA LA MAÑANA
                             </p>
                             <p className="text-muted-foreground">
                                 Tu plataforma de gestión deportiva te está
