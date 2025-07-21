@@ -54,6 +54,8 @@ npm install @clerk/nextjs
 
 ## Tamaño de las imagenes para mantener la relacion aspecto
 
+https://www.iloveimg.com/es/recortar-imagen
+
 16:9 -> w:1312 px h:736 px
 
 Para una imagen con w de 960 px
