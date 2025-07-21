@@ -23,31 +23,32 @@ interface VideoAd {
 const videoAds: VideoAd[] = [
     {
         id: "1",
-        title: "Entrena como un Profesional",
+        title: "JINETE RECONOCIDO A NIVEL PAIS E INTERNACIONAL",
         description:
-            "Descubre los secretos del entrenamiento de élite con nuestros programas especializados.",
+            "CAMPEÓN DE LA VIDA, JINETE RECONOCIDO A NIVEL PAIS E INTERNACIONAL: DAVID BENITEZ.",
         thumbnailUrl:
             "https://i.ytimg.com/vi/bkX0NkCfjfU/hqdefault.jpg?sqp=-oaymwFBCNACELwBSFryq4qpAzMIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB8AEB-AH-CYAC0AWKAgwIABABGGUgXChXMA8=&rs=AOn4CLBdAVpwyc6PquFZydxiL-bl_z0-jA",
         videoUrl:
             "https://www.youtube.com/embed/bkX0NkCfjfU?si=7WkbSCEP9Ln2YglH",
-        sponsor: "FutbolPro Academy",
-        category: "Formación",
-        duration: "2:30",
+        sponsor: "Emanuel Montenegro",
+        category: "Entrevista",
+        duration: "37:20",
         provider: "youtube",
         link: "https://www.youtube.com/@VIVALAMA%C3%91ANA/videos"
     },
     {
         id: "2",
-        title: "Equipamiento de Última Generación",
+        title: "PROFESOR APASIONADO DEL FÚTBOL",
         description:
-            "Conoce la nueva línea de productos deportivos que están revolucionando el fútbol.",
-        thumbnailUrl: "/placeholder.svg?height=400&width=700",
-        videoUrl: "https://player.vimeo.com/video/123456789",
-        sponsor: "SportMax",
-        category: "Equipamiento",
-        duration: "1:45",
-        provider: "vimeo",
-        link: "https://sportmax.com"
+            "El prof. Damian Mendoza, un loco por el fútbol. Nos cuenta sus proyectos con su equipo 'El Zonal', sus proyectos que se vienen y los chicos que lo acompañan en esta rica entrevista. Imperdible.",
+        thumbnailUrl:
+            "https://i.ytimg.com/vi/cMiWKzM1oZI/hqdefault.jpg?sqp=-oaymwEnCNACELwBSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLANjlxQeHMA74udOAVv8EGBZLY_bQ",
+        videoUrl: "https://www.youtube.com/watch?v=cMiWKzM1oZI",
+        sponsor: "Emanuel Montenegro",
+        category: "Entrevista",
+        duration: "25:59",
+        provider: "youtube",
+        link: "https://www.youtube.com/@VIVALAMA%C3%91ANA/videos"
     }
 ];
 
@@ -173,7 +174,7 @@ export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
                                                 <h3 className="text-2xl font-bold mb-2">
                                                     {currentAd.title}
                                                 </h3>
-                                                <p className="text-white/90 mb-4 max-w-2xl">
+                                                <p className="hidden md:block text-white/90 mb-4 max-w-2xl">
                                                     {currentAd.description}
                                                 </p>
                                                 <div className="flex items-center justify-between">
@@ -392,7 +393,7 @@ export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
                                             <h4 className="font-semibold mb-2 line-clamp-1">
                                                 {ad.title}
                                             </h4>
-                                            <p className="text-sm text-muted-foreground line-clamp-2">
+                                            <p className="hidden md:block text-sm text-muted-foreground line-clamp-2">
                                                 {ad.description}
                                             </p>
                                         </div>
