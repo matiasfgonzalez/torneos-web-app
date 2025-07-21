@@ -168,11 +168,15 @@ export default async function ResponsiveHeader({
                                     <SignedOut>
                                         <SignInButton>
                                             <button
-                                                className="flex items-center w-full sm:w-auto bg-gradient-to-r from-[oklch(0.809_0.105_251.813)] via-[oklch(0.623_0.214_259.815)] to-[oklch(0.424_0.199_265.638)] 
-                                        hover:from-[oklch(0.424_0.199_265.638)] hover:via-[oklch(0.623_0.214_259.815)] hover:to-[oklch(0.809_0.105_251.813)] 
-                                        text-white sm:px-4 sm:py-2 px-3 py-1 text-sm sm:text-md rounded-md font-medium cursor-pointer"
+                                                className="flex items-center gap-2 w-full sm:w-auto px-5 py-2 sm:px-6 sm:py-2.5
+        text-sm sm:text-md font-semibold text-white bg-gradient-to-r
+        from-indigo-400 via-indigo-500 to-indigo-600
+        hover:from-indigo-500 hover:via-indigo-600 hover:to-indigo-700
+        rounded-full shadow-md transition-all duration-300 ease-in-out
+        hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                                             >
-                                                <LogIn /> Login
+                                                <LogIn className="w-5 h-5" />
+                                                Iniciar sesión
                                             </button>
                                         </SignInButton>
                                     </SignedOut>
