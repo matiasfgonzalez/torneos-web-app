@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ExternalLink, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface HomeAd {
     id: string;
@@ -158,26 +159,33 @@ export function HomeAds({ variant = "mixed", className }: HomeAdsProps) {
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                                                 <div className="max-w-2xl">
-                                                    <Badge className="mb-3 bg-primary/80">
+                                                    <Badge className="hidden md:block mb-3 bg-primary/80">
                                                         {ad.category}
                                                     </Badge>
                                                     <h3 className="text-2xl md:text-3xl font-bold mb-2">
                                                         {ad.title}
                                                     </h3>
-                                                    <p className="text-white/90 mb-4 text-sm md:text-base">
+                                                    <p className="hidden md:block text-white/90 mb-4 text-sm md:text-base">
                                                         {ad.description}
                                                     </p>
+
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-white/80 text-sm">
+                                                        <span className="hidden md:block text-white/80 text-sm">
                                                             Por {ad.sponsor}
                                                         </span>
-                                                        <Button
-                                                            size="sm"
-                                                            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                                                        <Link
+                                                            href={ad.link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                         >
-                                                            Ver más{" "}
-                                                            <ExternalLink className="w-4 h-4 ml-1" />
-                                                        </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                                                            >
+                                                                Ver más{" "}
+                                                                <ExternalLink className="w-4 h-4 ml-1" />
+                                                            </Button>
+                                                        </Link>
                                                     </div>
                                                 </div>
                                             </div>
