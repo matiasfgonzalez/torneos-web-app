@@ -21,26 +21,26 @@ interface HomeAd {
 const homeAds: HomeAd[] = [
     {
         id: "1",
-        title: "Equipamiento Deportivo Premium",
+        title: "El Reservado",
         imageUrl:
-            "https://ideogram.ai/assets/progressive-image/balanced/response/YQZ-mES4T3-Wx_y0WfuSUA",
+            "https://ideogram.ai/assets/image/lossless/response/bdswzgccTAKokSIYVZWZgg",
         description:
-            "Las mejores marcas para tu equipo favorito. Descuentos especiales para clubes.",
-        link: "#",
-        sponsor: "SportMax",
-        category: "Equipamiento",
+            "Ubicado en Federal, Entre Ríos, 'El Reservado' es mucho más que un espacio: es un punto de encuentro para los amantes de la tradición, los buenos momentos y el espíritu criollo. Seguinos en Instagram @el_reservado0 o comunicate por WhatsApp al 3454-488925 / 3454-488622.",
+        link: "https://www.instagram.com/el_reservado0",
+        sponsor: "El Reservado",
+        category: "Restaurantes",
         featured: true
     },
     {
         id: "2",
-        title: "Academia de Fútbol Profesional",
+        title: "Ohana Eventos",
         imageUrl:
-            "https://ideogram.ai/assets/progressive-image/balanced/response/oOCXcp86TZqcSlGnIfUicg",
+            "https://ideogram.ai/assets/image/lossless/response/eZVCl41mQG-SeEsYx6ypVw",
         description:
-            "Entrena como los profesionales con nuestros programas especializados.",
-        link: "#",
-        sponsor: "FutbolPro Academy",
-        category: "Formación",
+            "'Ohana Eventos' es una propuesta cálida y profesional dedicada a la organización de eventos únicos e inolvidables. Desde celebraciones íntimas hasta grandes encuentros, cada detalle se prepara con amor y estilo. Consultanos para hacer realidad tu evento soñado.",
+        link: "https://www.instagram.com", // Reemplazá con el link real si tienen
+        sponsor: "Ohana Eventos",
+        category: "Eventos",
         featured: true
     },
     {
