@@ -26,8 +26,7 @@ const videoAds: VideoAd[] = [
         title: "JINETE RECONOCIDO A NIVEL PAIS E INTERNACIONAL",
         description:
             "CAMPEÓN DE LA VIDA, JINETE RECONOCIDO A NIVEL PAIS E INTERNACIONAL: DAVID BENITEZ.",
-        thumbnailUrl:
-            "https://i.ytimg.com/vi/bkX0NkCfjfU/hqdefault.jpg?sqp=-oaymwFBCNACELwBSFryq4qpAzMIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB8AEB-AH-CYAC0AWKAgwIABABGGUgXChXMA8=&rs=AOn4CLBdAVpwyc6PquFZydxiL-bl_z0-jA",
+        thumbnailUrl: "/miniaturas/video01.png",
         videoUrl:
             "https://www.youtube.com/embed/bkX0NkCfjfU?si=7WkbSCEP9Ln2YglH",
         sponsor: "Emanuel Montenegro",
@@ -41,9 +40,8 @@ const videoAds: VideoAd[] = [
         title: "PROFESOR APASIONADO DEL FÚTBOL",
         description:
             "El prof. Damian Mendoza, un loco por el fútbol. Nos cuenta sus proyectos con su equipo 'El Zonal', sus proyectos que se vienen y los chicos que lo acompañan en esta rica entrevista. Imperdible.",
-        thumbnailUrl:
-            "https://i.ytimg.com/vi/cMiWKzM1oZI/hqdefault.jpg?sqp=-oaymwEnCNACELwBSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLANjlxQeHMA74udOAVv8EGBZLY_bQ",
-        videoUrl: "https://www.youtube.com/watch?v=cMiWKzM1oZI",
+        thumbnailUrl: "/miniaturas/video02.png",
+        videoUrl: "https://youtu.be/cMiWKzM1oZI?si=u3Eyt96Mdrjd-UVo",
         sponsor: "Emanuel Montenegro",
         category: "Entrevista",
         duration: "25:59",
@@ -120,7 +118,7 @@ export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
                         </Badge>
                     </div>
 
-                    <div className="max-w-full mx-auto">
+                    <div className="max-w-4xl mx-auto">
                         <Card className="overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-card to-card/80">
                             <CardContent className="p-0">
                                 <div className="relative" ref={containerRef}>
@@ -308,11 +306,11 @@ export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
                                             />
                                         </div>
                                         <div className="text-left">
-                                            <p className="font-medium text-sm line-clamp-1">
+                                            <p className="hidden sm:block font-medium text-sm line-clamp-1">
                                                 {ad.title}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {ad.sponsor}
+                                                Por {ad.sponsor}
                                             </p>
                                         </div>
                                     </button>
