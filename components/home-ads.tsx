@@ -46,14 +46,13 @@ const homeAds: HomeAd[] = [
     },
     {
         id: "3",
-        title: "Transmisiones en Vivo",
-        imageUrl:
-            "https://ideogram.ai/assets/image/lossless/response/5uVHScBQQ0eUCuCb_Pr9Sw",
+        title: "Distribuidora ELLDID HNOS.",
+        imageUrl: "/publicidad_elldid.jpeg",
         description:
-            "No te pierdas ningún partido con nuestra plataforma de streaming.",
-        link: "#",
-        sponsor: "FutbolTV",
-        category: "Streaming",
+            "'Distribuidora ELLDID HNOS.' es sinónimo de compromiso, calidad y eficiencia. Con un enfoque moderno y profesional, brindamos soluciones de distribución confiables para tu negocio. Descubrí cómo podemos potenciar tu cadena de suministro.",
+        link: "https://www.instagram.com", // Reemplazar con el link real de la distribuidora
+        sponsor: "Distribuidora ELLDID HNOS.",
+        category: "Distribución",
         featured: true
     },
     {
