@@ -35,8 +35,7 @@ const homeAds: HomeAd[] = [
     {
         id: "2",
         title: "Ohana Eventos",
-        imageUrl:
-            "https://ideogram.ai/assets/image/lossless/response/eZVCl41mQG-SeEsYx6ypVw",
+        imageUrl: "/publicidad/ohana.jpeg",
         description:
             "'Ohana Eventos' es una propuesta cálida y profesional dedicada a la organización de eventos únicos e inolvidables. Desde celebraciones íntimas hasta grandes encuentros, cada detalle se prepara con amor y estilo. Consultanos para hacer realidad tu evento soñado.",
         link: "https://www.instagram.com", // Reemplazá con el link real si tienen
@@ -47,7 +46,7 @@ const homeAds: HomeAd[] = [
     {
         id: "3",
         title: "Distribuidora ELLDID HNOS.",
-        imageUrl: "/publicidad_elldid.jpeg",
+        imageUrl: "/publicidad/publicidad_elldid.jpeg",
         description:
             "'Distribuidora ELLDID HNOS.' es sinónimo de compromiso, calidad y eficiencia. Con un enfoque moderno y profesional, brindamos soluciones de distribución confiables para tu negocio. Descubrí cómo podemos potenciar tu cadena de suministro.",
         link: "https://www.instagram.com", // Reemplazar con el link real de la distribuidora
@@ -57,32 +56,54 @@ const homeAds: HomeAd[] = [
     },
     {
         id: "4",
-        title: "Nutrición Deportiva",
-        imageUrl: "/placeholder.svg?height=200&width=300",
+        title: "Remises Dario",
+        imageUrl: "/publicidad/remises.jpeg",
         description:
-            "Suplementos y nutrición para atletas de alto rendimiento.",
-        link: "#",
-        sponsor: "NutriSport",
-        category: "Salud"
+            "Remises Dario ofrece un servicio de transporte confiable y seguro. Con años de experiencia, garantizamos un viaje cómodo y puntual a tu destino. Reservá tu remis con nosotros y disfrutá de un servicio de calidad.",
+        link: "https://www.instagram.com/remisesdario",
+        sponsor: "Remises Dario",
+        category: "Logistica",
+        featured: true
     },
     {
         id: "5",
-        title: "Seguros Deportivos",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        description: "Protege a tu equipo con nuestros seguros especializados.",
+        title: "P I C A",
+        imageUrl: "/publicidad/publicidad_pica.jpeg",
+        description: "Fotos, videos y más para tu equipo.",
         link: "#",
-        sponsor: "SecureSport",
-        category: "Seguros"
+        sponsor: "P I C A",
+        category: "Fotografía",
+        featured: true
     },
     {
         id: "6",
-        title: "Viajes para Equipos",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        description:
-            "Organiza los viajes de tu equipo con tarifas preferenciales.",
+        title: "MAII FOTOGRAFIA",
+        imageUrl: "/publicidad/publicidad_mai.jpeg",
+        description: "Fotos, videos y más para tu equipo.",
         link: "#",
-        sponsor: "TravelTeam",
-        category: "Viajes"
+        sponsor: "MAII FOTOGRAFIA",
+        category: "Fotografía",
+        featured: true
+    },
+    {
+        id: "7",
+        title: "Desde el Alma",
+        imageUrl: "/publicidad/desde_el_alma.jpeg",
+        description: "Desde el alma escuela de danzas.",
+        link: "#",
+        sponsor: "Desde el Alma",
+        category: "Danzas",
+        featured: true
+    },
+    {
+        id: "8",
+        title: "FRF Distribuciones S.R.L.",
+        imageUrl: "/publicidad/frf.jpeg",
+        description: "Distribuidora de productos y más.",
+        link: "#",
+        sponsor: "FRF Distribuciones S.R.L.",
+        category: "Distribución",
+        featured: true
     }
 ];
 
@@ -153,7 +174,7 @@ export function HomeAds({ variant = "mixed", className }: HomeAdsProps) {
                                                     "/placeholder.svg"
                                                 }
                                                 alt={ad.title}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-contain"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
