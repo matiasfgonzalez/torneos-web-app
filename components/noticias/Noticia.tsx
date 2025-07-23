@@ -17,11 +17,11 @@ const Noticia = (props: NoticiaProps) => {
             key={news.id}
             className="overflow-hidden hover:shadow-lg transform transition-transform duration-300 hover:scale-[1.02]"
         >
-            <div className="aspect-video bg-muted">
+            <div className="aspect-video bg-muted overflow-hidden rounded-lg">
                 <img
                     src={news.coverImageUrl ?? "/placeholder.svg"}
                     alt={news.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                 />
             </div>
             <CardHeader>
