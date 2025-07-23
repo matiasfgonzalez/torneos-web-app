@@ -30,19 +30,22 @@ const menuItems = [
         title: "Dashboard",
         href: "/admin/dashboard",
         icon: Home,
-        enabled: false
+        enabled: true,
+        roles: ["admin", "editor", "viewer"]
     },
     {
         title: "Noticias",
         href: "/admin/noticias",
         icon: Newspaper,
-        enabled: true
+        enabled: true,
+        roles: ["admin", "editor"]
     },
     {
         title: "Torneos",
         href: "/admin/torneos",
         icon: Trophy,
-        enabled: false
+        enabled: true,
+        roles: ["admin", "editor"]
     },
     {
         title: "Equipos",
@@ -76,7 +79,12 @@ const menuItems = [
     }
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+    role: string | null;
+}
+
+export function AdminSidebar(props: AdminSidebarProps) {
+    const { role } = props;
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
 
@@ -94,6 +102,12 @@ export function AdminSidebar() {
             <nav className="flex-1 space-y-2 p-4">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
+                    const isDisabled =
+                        item.roles && !item.roles.includes(role ?? "viewer");
+
+                    if (isDisabled) {
+                        return null; // Skip rendering disabled items
+                    }
                     const html = item.enabled ? (
                         <Link
                             key={item.href}

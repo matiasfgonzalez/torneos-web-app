@@ -17,9 +17,9 @@ export default async function ResponsiveHeader({
 
     const userLogued = await currentUser();
 
-    let role: string | null = null;
+    let isLogued: boolean = false;
     if (userLogued) {
-        role = userLogued.publicMetadata?.role as string | null;
+        isLogued = true;
     }
 
     const navigationItems = [
@@ -50,10 +50,10 @@ export default async function ResponsiveHeader({
             disabled: true
         },
         {
-            href: "/admin/noticias",
+            href: "/admin/dashboard",
             label: "Administración",
             key: "dashboard",
-            disabled: role !== "admin"
+            disabled: !isLogued
         }
     ];
 
