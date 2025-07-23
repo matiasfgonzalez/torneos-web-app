@@ -188,7 +188,7 @@ export default function AdminNoticiaDetail({
                             </Button>
                             <Button variant="outline" asChild>
                                 <Link
-                                    href={`/noticias/${article.id}`}
+                                    href={`/public/noticias/${article.id}`}
                                     target="_blank"
                                 >
                                     <Eye className="h-4 w-4 mr-2" />
