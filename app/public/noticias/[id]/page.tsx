@@ -82,7 +82,7 @@ export default function NewsDetailPage() {
                         {noticia.title}
                     </h1>
 
-                    <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                    <p className="text-xl text-muted-foreground mb-6 leading-relaxed text-justify">
                         {noticia.summary}
                     </p>
 
@@ -118,7 +118,7 @@ export default function NewsDetailPage() {
                     )}
 
                     <div
-                        className="prose prose-lg max-w-none mb-8"
+                        className="prose prose-lg max-w-none mb-8 text-justify"
                         dangerouslySetInnerHTML={{
                             __html: noticia.content.replace(/\n/g, "<br />")
                         }}
@@ -130,7 +130,9 @@ export default function NewsDetailPage() {
                     </Button>
                 </div>
 
-                <HomeAds variant="grid" />
+                <div className="mt-16">
+                    <HomeAds variant="carousel" />
+                </div>
             </div>
         </div>
     );
