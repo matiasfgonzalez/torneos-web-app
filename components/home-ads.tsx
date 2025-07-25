@@ -104,6 +104,17 @@ const homeAds: HomeAd[] = [
         sponsor: "FRF Distribuciones S.R.L.",
         category: "Distribución",
         featured: true
+    },
+    {
+        id: "9",
+        title: "Buscando rivales",
+        imageUrl: "/publicidad/buscando-rivales.png",
+        description:
+            "La mejor app para encontrar rivales y compañeros de futbol.",
+        link: "https://www.instagram.com/buscandorivalesapp",
+        sponsor: "Buscando rivales",
+        category: "Aplicación",
+        featured: false
     }
 ];
 
