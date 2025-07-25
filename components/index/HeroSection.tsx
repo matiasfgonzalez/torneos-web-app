@@ -54,7 +54,7 @@ const HeroSection = () => {
                     transition={{ delay: 0.5 }}
                 >
                     <Button size="lg" variant="secondary" asChild>
-                        <Link href="#">Ver Torneos Activos</Link>
+                        <Link href="/public/torneos">Ver Torneos Activos</Link>
                     </Button>
                     <Button
                         size="lg"
