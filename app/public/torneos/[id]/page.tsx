@@ -27,6 +27,8 @@ import {
     Target,
     Shield
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
 
 // Mock data - en producción vendría de una base de datos
 const tournamentData = {
@@ -104,8 +106,7 @@ const standings = [
         position: 5,
         team: "Club Social y Deportivo Nueva Vizcaya",
 
-        teamLogo:
-            "https://img.icons8.com/?size=100&id=21734&format=png&color=000000",
+        teamLogo: "/escudos/nueva_vizcaya.png",
         played: 12,
         won: 5,
         drawn: 4,
@@ -147,8 +148,7 @@ const standings = [
         position: 8,
         team: "Club Atletico Itati",
 
-        teamLogo:
-            "https://img.icons8.com/?size=100&id=21734&format=png&color=000000",
+        teamLogo: "/escudos/itati.png",
         played: 12,
         won: 3,
         drawn: 6,
@@ -190,8 +190,7 @@ const standings = [
         position: 11,
         team: "Escuela de Fútbol Dieguito",
 
-        teamLogo:
-            "https://img.icons8.com/?size=100&id=21734&format=png&color=000000",
+        teamLogo: "/escudos/dieguito.png",
         played: 12,
         won: 3,
         drawn: 6,
@@ -324,11 +323,8 @@ const cleanSheets = [
     }
 ];
 
-export default function TournamentDetailPage({
-    params
-}: {
-    params: { id: string };
-}) {
+export default function TournamentDetailPage() {
+    const { id } = useParams<{ id: string }>();
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
@@ -373,6 +369,19 @@ export default function TournamentDetailPage({
                     <p className="text-muted-foreground text-lg mb-6">
                         {tournamentData.description}
                     </p>
+                    <div className="flex items-center justify-center p-4">
+                        <div className="bg-white shadow-xl rounded-2xl border border-gray-200 p-4 max-w-xs w-full transition-transform duration-300 hover:scale-105">
+                            <div className="aspect-[4/5] relative">
+                                <Image
+                                    src="/escudos/liga_federalense_2.png"
+                                    alt="Escudo Liga Federalense de Fútbol"
+                                    fill
+                                    className="object-contain"
+                                    priority
+                                />
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Tournament Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
