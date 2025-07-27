@@ -90,7 +90,9 @@ export default function AdminNoticias() {
     );
 
     const sortedNews = [...filteredNews].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) =>
+            new Date(b.publishedAt).getTime() -
+            new Date(a.publishedAt).getTime()
     );
 
     const getStatusBadge = (published: boolean) => {
@@ -402,8 +404,10 @@ export default function AdminNoticias() {
                                         <TableCell>
                                             <div className="flex items-center">
                                                 <Calendar className="mr-1 h-4 w-4" />
-                                                {article.date
-                                                    ? formatDate(article.date)
+                                                {article.publishedAt
+                                                    ? formatDate(
+                                                          article.publishedAt
+                                                      )
                                                     : "Sin fecha"}
                                             </div>
                                         </TableCell>

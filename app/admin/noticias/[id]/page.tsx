@@ -463,8 +463,11 @@ export default function AdminNoticiaDetail({
                                     <Label>Fecha de Publicación</Label>
                                     <div className="flex items-center">
                                         <Calendar className="mr-2 h-4 w-4" />
-                                        {article.date
-                                            ? formatDate(article.date)
+                                        {article.publishedAt
+                                            ? formatDate(
+                                                  article.publishedAt,
+                                                  "dd 'de' MMMM yyyy"
+                                              )
                                             : "Sin fecha"}
                                     </div>
                                 </div>

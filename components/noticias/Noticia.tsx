@@ -32,7 +32,9 @@ const Noticia = (props: NoticiaProps) => {
                     </Badge>
                     <span className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        {news.date ? formatDate(news.date) : "Sin fecha"}
+                        {news.publishedAt
+                            ? formatDate(news.publishedAt)
+                            : "Sin fecha"}
                     </span>
                 </div>
                 <CardTitle className="">{news.title}</CardTitle>
