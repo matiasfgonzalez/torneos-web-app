@@ -22,6 +22,7 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   news          News[]
+  tournaments   Tournament[] // Relación con torneos creados por el usuario
 }
 
 model News {
@@ -31,7 +32,7 @@ model News {
   content       String
   coverImageUrl String?   // Imagen destacada (opcional)
   published     Boolean   @default(false) // Para controlar si ya está visible o en borrador
-  date          DateTime  @default(now())
+  publishedAt   DateTime  @default(now()) // Fecha de publicación  
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
@@ -39,3 +40,151 @@ model News {
 
   @@index([userId])
 }
+
+// Nuevos modelos para empezar a implementar torneos y partidos 27/07/2025
+
+enum TournamentStatus {
+  PENDIENTE   // Aún no empieza
+  ACTIVO    // En curso
+  FINALIZADO  // Ya terminó
+}
+
+enum TournamentCategory {
+  LIBRE
+  SENIOR
+  SUB_17
+  RESERVA
+  PRIMERA
+  VETERANO
+  PREVETERANO
+  FEMENINO
+  INFANTIL
+}
+
+model Tournament {
+  id          String           @id @default(uuid())
+  name        String
+  description String?
+  category    TournamentCategory
+  locality    String
+  logoUrl     String?    // URL del escudo/logo
+  liga         String?    // Nombre de la liga o asociación organizadora
+  status      TournamentStatus @default(PENDIENTE)
+  nextMatch   DateTime?
+
+  startDate   DateTime
+  endDate     DateTime?
+
+  
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  teams       Team[]  // Relación con equipos
+  matches     Match[] // Relación con partidos
+}
+
+model Team {
+  id          String     @id @default(uuid())
+  name        String
+  shortName   String?    // Nombre corto para mostrar en tablas
+  description String?
+  history     String?    // Breve historia del equipo  
+  coach       String?    // Nombre del entrenador
+  homeCity    String?    // Ciudad base del equipo
+  yearFounded Int?       // Año de fundación
+  homeColor   String?    // Color principal del equipo
+  awayColor   String?    // Color secundario del equipo
+  logoUrl     String?    // URL del escudo/logo
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tournament  Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String
+
+  players     Player[]   // Más adelante, podés usar esto
+  matchesAsHome Match[] @relation("HomeTeam")   // Relación con partidos como local
+  matchesAsAway Match[] @relation("AwayTeam")   // Relación con partidos como visitante
+}
+
+enum Foot {
+  IZQUIERDA
+  DERECHA
+  AMBOS
+}
+
+model Player {
+  id           String   @id @default(uuid())
+  name         String
+  birthDate    DateTime?  // Fecha de nacimiento
+  birthPlace   String?    // Lugar de nacimiento
+  height       Int?       // cm
+  weight       Int?       // kg
+  dominantFoot Foot?      // Pie dominante
+  position     String?
+  number       Int?
+  imageUrl     String?
+  description  String?
+  bio          String?
+
+  teamId       String
+  team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  goals       Goal[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum MatchStatus {
+  PROGRAMADO // Programado
+  EN_JUEGO // En juego
+  TERMINADO // Terminado
+  CANCELADO // Cancelado o suspendido
+}
+
+model Match {
+  id            String       @id @default(uuid())
+  dateTime      DateTime
+  stadium       String?
+  city          String?
+  description   String?
+  status        MatchStatus  @default(PROGRAMADO)
+
+  homeScore     Int?
+  awayScore     Int?
+
+  tournament    Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId  String
+
+  homeTeam      Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeTeamId    String      // ID del equipo local
+
+  awayTeam      Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayTeamId    String      // ID del equipo visitante
+
+  goals         Goal[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Goal {
+  id        String   @id @default(uuid())
+  minute    Int?     // minuto en que se hizo el gol
+  isOwnGoal Boolean  @default(false)  // Si es un autogol
+  isPenalty Boolean  @default(false)  // Si es un penal
+
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
