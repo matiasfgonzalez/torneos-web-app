@@ -32,6 +32,8 @@ Generar cliente Prisma
 
 ```
 npx prisma generate
+npx prisma migrate dev --name add-goal-relations
+
 ```
 
 Esto genera el cliente que permite hacer consultas desde tu código TypeScript.
