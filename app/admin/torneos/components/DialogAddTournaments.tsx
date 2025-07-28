@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TOURNAMENT_CATEGORIES } from "@/lib/constants";
+import { TOURNAMENT_CATEGORIES, TOURNAMENT_FORMATS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ import { Plus } from "lucide-react";
 // Esquema Zod mejorado
 const tournamentSchema = z
     .object({
-        name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+        name: z.string().min(3, "El nombre es obligatorio"),
         description: z.string().optional(),
         category: z.string({
             error: "La categoría es obligatoria"
@@ -52,6 +52,19 @@ const tournamentSchema = z
         endDate: z
             .date({
                 error: "Fecha de fin inválida"
+            })
+            .optional(),
+        logoUrl: z.string().optional(),
+        liga: z.string().optional(),
+        format: z.string({
+            error: "El formato es obligatoria"
+        }),
+        homeAndAway: z.boolean({
+            error: "Debes indicar si es ida y vuelta"
+        }),
+        nextMatch: z
+            .date({
+                error: "Fecha del próximo partido inválida"
             })
             .optional()
     })
@@ -85,7 +98,12 @@ const DialogAddTournaments = () => {
             category: undefined, // undefined o el primer valor si la categoría es siempre obligatoria
             locality: "",
             startDate: undefined,
-            endDate: undefined
+            endDate: undefined,
+            logoUrl: "",
+            liga: "",
+            format: "LIGA", // Valor por defecto
+            homeAndAway: false,
+            nextMatch: undefined
         }
     });
 
@@ -99,7 +117,10 @@ const DialogAddTournaments = () => {
                     : undefined, // Formato YYYY-MM-DD
                 endDate: data.endDate
                     ? data.endDate.toISOString().split("T")[0]
-                    : undefined // Formato YYYY-MM-DD
+                    : undefined, // Formato YYYY-MM-DD
+                nextMatch: data.nextMatch
+                    ? data.nextMatch.toISOString()
+                    : undefined // Formato ISO completo
             };
 
             const res = await fetch("/api/tournaments", {
@@ -292,6 +313,132 @@ const DialogAddTournaments = () => {
                                         <Textarea
                                             placeholder="Descripción del torneo..."
                                             {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Campo: Formato del Torneo (Select) */}
+                        <FormField
+                            control={form.control}
+                            name="format"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Formato</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecciona un formato" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {TOURNAMENT_FORMATS.map(
+                                                (format) => (
+                                                    <SelectItem
+                                                        key={format.value}
+                                                        value={format.value}
+                                                    >
+                                                        {format.label}
+                                                    </SelectItem>
+                                                )
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Campo: ida y vuelta */}
+                        <FormField
+                            control={form.control}
+                            name="homeAndAway"
+                            render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2">
+                                    <FormLabel className="mb-0">
+                                        ¿Ida y vuelta?
+                                    </FormLabel>
+                                    <FormControl>
+                                        <input
+                                            type="checkbox"
+                                            className="scale-125"
+                                            checked={field.value}
+                                            onChange={(e) =>
+                                                field.onChange(e.target.checked)
+                                            }
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Campo: Liga o Asociación */}
+                        <FormField
+                            control={form.control}
+                            name="liga"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Liga o Asociación</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Ej: AFA, Liga Cordobesa..."
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Campo: URL del Logo */}
+                        <FormField
+                            control={form.control}
+                            name="logoUrl"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>URL del Logo</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="url"
+                                            placeholder="https://logo.com/escudo.png"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Campo: Próximo partido (opcional) */}
+                        <FormField
+                            control={form.control}
+                            name="nextMatch"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Próximo partido (opcional)
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="datetime-local"
+                                            value={
+                                                field.value
+                                                    ? new Date(field.value)
+                                                          .toISOString()
+                                                          .slice(0, 16)
+                                                    : ""
+                                            }
+                                            onChange={(e) =>
+                                                field.onChange(
+                                                    new Date(e.target.value)
+                                                )
+                                            }
                                         />
                                     </FormControl>
                                     <FormMessage />
