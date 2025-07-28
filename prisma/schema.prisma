@@ -64,6 +64,9 @@ enum TournamentCategory {
 enum TournamentFormat {
   LIGA
   COPA
+  ELIMINACION_DIRECTA
+  GRUPOS
+  IDA_Y_VUELTA
 }
 
 
