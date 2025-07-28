@@ -1,5 +1,5 @@
 // app/api/tournaments/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
@@ -7,10 +7,8 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        // Get logged in user
         const { userId } = await auth();
 
-        // Check for user
         if (!userId) {
             return NextResponse.json(
                 { error: "Usuario no encontrado" },
@@ -18,7 +16,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // Get user from database
         const user = await db.user.findUnique({
             where: { clerkUserId: userId }
         });
@@ -34,13 +31,18 @@ export async function POST(req: Request) {
         const newTournament = await db.tournament.create({
             data: {
                 name: body.name,
-                description: body.description,
+                description: body.description || null,
                 category: body.category,
                 locality: body.locality,
                 startDate: new Date(body.startDate),
-                endDate: body.endDate ? new Date(body.endDate) : undefined,
-                status: "PENDIENTE", // Estado inicial
-                userId: user.id // Asociar torneo al usuario
+                endDate: body.endDate ? new Date(body.endDate) : null,
+                format: body.format,
+                homeAndAway: body.homeAndAway ?? false,
+                logoUrl: body.logoUrl || null,
+                liga: body.liga || null,
+                nextMatch: body.nextMatch ? new Date(body.nextMatch) : null,
+                status: "PENDIENTE",
+                userId: user.id
             }
         });
 
