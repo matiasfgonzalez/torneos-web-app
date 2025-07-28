@@ -61,6 +61,12 @@ enum TournamentCategory {
   INFANTIL
 }
 
+enum TournamentFormat {
+  LIGA
+  COPA
+}
+
+
 model Tournament {
   id          String           @id @default(uuid())
   name        String
@@ -68,9 +74,12 @@ model Tournament {
   category    TournamentCategory
   locality    String
   logoUrl     String?    // URL del escudo/logo
-  liga         String?    // Nombre de la liga o asociación organizadora
+  liga        String?    // Nombre de la liga o asociación organizadora
   status      TournamentStatus @default(PENDIENTE)
+  format      TournamentFormat @default(LIGA)
   nextMatch   DateTime?
+  homeAndAway Boolean @default(false) // Si el torneo es de ida y vuelta o solo un partido
+
 
   startDate   DateTime
   endDate     DateTime?
@@ -83,7 +92,9 @@ model Tournament {
   updatedAt   DateTime         @updatedAt
 
   teams       Team[]  // Relación con equipos
-  matches     Match[] // Relación con partidos
+  matches     Match[] // Relación con partidos  
+  standing    Standing[]  // Tabla de posiciones del torneo
+  phase     Phase[] // Fases del torneo (ej: octavos, cuartos, semifinales, final)
 }
 
 model Team {
@@ -105,7 +116,9 @@ model Team {
   tournament  Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId String
 
-  players     Player[]   // Más adelante, podés usar esto
+  players     Player[]   // Más adelante, podés usar esto  
+  standing      Standing[] // Tabla de posiciones del torneo
+
   matchesAsHome Match[] @relation("HomeTeam")   // Relación con partidos como local
   matchesAsAway Match[] @relation("AwayTeam")   // Relación con partidos como visitante
 }
@@ -168,6 +181,15 @@ model Match {
 
   goals         Goal[]
 
+  // Si el partido termino por penales
+  penaltyWinnerTeamId String?   // Team que ganó por penales
+  penaltyScoreHome    Int?
+  penaltyScoreAway    Int?
+
+  
+  phaseId String?
+  phase   Phase? @relation(fields: [phaseId], references: [id])
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -188,3 +210,42 @@ model Goal {
   updatedAt DateTime @updatedAt
 }
 
+model Standing {
+  id           String   @id @default(uuid())
+  tournamentId String
+  teamId       String
+
+  matchesPlayed Int     @default(0)
+  wins          Int     @default(0)
+  draws         Int     @default(0)
+  losses        Int     @default(0)
+  goalsFor      Int     @default(0)
+  goalsAgainst  Int     @default(0)
+  goalDifference Int    @default(0)
+  points        Int     @default(0)
+
+  team       Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, teamId])
+}
+
+enum PhaseName {
+  DIECISAVOS_DE_FINAL
+  OCTAVOS_DE_FINAL
+  CUARTOS_DE_FINAL
+  SEMIFINAL
+  FINAL
+}
+
+model Phase {
+  id           String   @id @default(uuid())
+  name         PhaseName  @default(DIECISAVOS_DE_FINAL)
+  order        Int      // para ordenarlas fácilmente
+  tournamentId String
+
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches      Match[]
+
+  @@unique([tournamentId, name])
+}
