@@ -1,4 +1,3 @@
-"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,25 +26,11 @@ import {
     Target,
     Shield
 } from "lucide-react";
-import { useParams } from "next/navigation";
-import Image from "next/image";
 
-// Mock data - en producción vendría de una base de datos
-const tournamentData = {
-    id: 1,
-    name: "Torneo Clausura 2025",
-    category: "Primera División",
-    teams: 11,
-    matchesPlayed: 45,
-    totalMatches: 60,
-    status: "En curso",
-    startDate: "2024-01-01",
-    endDate: "2024-03-15",
-    description:
-        "El torneo más importante de la región, con los mejores equipos compitiendo por el título.",
-    format: "Liga de todos contra todos",
-    prize: "$50,000"
-};
+import Image from "next/image";
+import { getTorneoById } from "@/app/actions/torneos/getTorneoById";
+import { notFound } from "next/navigation";
+import { formatDate } from "@/lib/formatDate";
 
 const standings = [
     {
@@ -323,8 +308,19 @@ const cleanSheets = [
     }
 ];
 
-export default function TournamentDetailPage() {
-    const { id } = useParams<{ id: string }>();
+interface TorneoPageProps {
+    params: {
+        id: string;
+    };
+}
+
+export default async function TournamentDetailPage({
+    params
+}: Readonly<TorneoPageProps>) {
+    const tournamentData = await getTorneoById(params.id);
+
+    if (!tournamentData) return notFound();
+
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
@@ -349,8 +345,8 @@ export default function TournamentDetailPage() {
                                 <span>{tournamentData.format}</span>
                                 <span>•</span>
                                 <span>
-                                    {tournamentData.startDate} -{" "}
-                                    {tournamentData.endDate}
+                                    {formatDate(tournamentData.startDate)} -{" "}
+                                    {formatDate(tournamentData.endDate)}
                                 </span>
                             </div>
                         </div>
@@ -389,7 +385,7 @@ export default function TournamentDetailPage() {
                             <CardContent className="p-4 text-center">
                                 <Users className="h-8 w-8 text-primary mx-auto mb-2" />
                                 <div className="text-2xl font-bold">
-                                    {tournamentData.teams}
+                                    {"tournamentData.teams"}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
                                     Equipos
@@ -400,8 +396,8 @@ export default function TournamentDetailPage() {
                             <CardContent className="p-4 text-center">
                                 <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
                                 <div className="text-2xl font-bold">
-                                    {tournamentData.matchesPlayed}/
-                                    {tournamentData.totalMatches}
+                                    {"tournamentData.matchesPlayed"}/
+                                    {"tournamentData.totalMatches"}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
                                     Partidos
@@ -412,7 +408,7 @@ export default function TournamentDetailPage() {
                             <CardContent className="p-4 text-center">
                                 <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
                                 <div className="text-2xl font-bold">
-                                    {tournamentData.prize}
+                                    {"tournamentData.prize"}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
                                     Premio

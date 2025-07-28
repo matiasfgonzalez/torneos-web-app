@@ -26,7 +26,8 @@ import {
     TrendingUp,
     Search,
     Filter,
-    MapPin
+    MapPin,
+    Shield
 } from "lucide-react";
 import { ITorneo } from "./types";
 import {
@@ -139,12 +140,11 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                                 </CardTitle>
                                 <Badge
                                     variant={
-                                        tournament.status === "En curso"
+                                        tournament.status === "EN_CURSO"
                                             ? "default"
-                                            : tournament.status === "Finalizado"
+                                            : tournament.status === "FINALIZADO"
                                             ? "secondary"
-                                            : tournament.status ===
-                                              "Próximamente"
+                                            : tournament.status === "PENDIENTE"
                                             ? "outline"
                                             : "secondary"
                                     }
@@ -152,54 +152,79 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                                     {tournament.status}
                                 </Badge>
                             </div>
-                            <CardDescription>
-                                {tournament.category}
-                                <span className="text-sm text-muted-foreground">
+                            <CardDescription className="mt-1">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span className="font-medium">
+                                        {tournament.category}
+                                    </span>
+                                    <span>•</span>
                                     <div className="flex items-center gap-1">
                                         <MapPin className="h-4 w-4" />
                                         {tournament.locality}
                                     </div>
-                                </span>
+                                </div>
                             </CardDescription>
                         </CardHeader>
+
                         <CardContent>
                             <div className="space-y-4">
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                    {tournament.description}
-                                </p>
+                                {tournament.description && (
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                        {tournament.description}
+                                    </p>
+                                )}
 
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <Users className="h-4 w-4" />
-                                            <span>
-                                                {"tournament.teams"} equipos
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <TrendingUp className="h-4 w-4" />
-                                            <span>
-                                                {"tournament.matchesPlayed"}/
-                                                {"tournament.totalMatches"}{" "}
-                                                partidos
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
                                         <Calendar className="h-4 w-4" />
                                         <span>
-                                            {formatDate(tournament.startDate)} -{" "}
-                                            {formatDate(tournament.endDate)}
+                                            {formatDate(
+                                                tournament.startDate,
+                                                "dd 'de' MMMM yyyy"
+                                            )}{" "}
+                                            -{" "}
+                                            {tournament.endDate
+                                                ? formatDate(
+                                                      tournament.endDate,
+                                                      "dd 'de' MMMM yyyy"
+                                                  )
+                                                : "Sin fecha de fin"}
                                         </span>
                                     </div>
 
                                     {tournament.nextMatch && (
-                                        <div className="flex items-center gap-2 text-sm text-primary">
+                                        <div className="flex items-center gap-2 text-primary">
                                             <Calendar className="h-4 w-4" />
                                             <span>
-                                                Próximo: {tournament.nextMatch}
+                                                Próximo:{" "}
+                                                {formatDate(
+                                                    tournament.nextMatch
+                                                )}
                                             </span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Users className="h-4 w-4" />
+                                        <span>
+                                            Formato: {tournament.format}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <TrendingUp className="h-4 w-4" />
+                                        <span>
+                                            Modalidad:{" "}
+                                            {tournament.homeAndAway
+                                                ? "Ida y vuelta"
+                                                : "Partido único"}
+                                        </span>
+                                    </div>
+
+                                    {tournament.liga && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Shield className="h-4 w-4" />
+                                            <span>Liga: {tournament.liga}</span>
                                         </div>
                                     )}
                                 </div>
