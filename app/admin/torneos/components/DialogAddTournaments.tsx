@@ -157,7 +157,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
 
             const method = isEditMode ? "PATCH" : "POST";
             const url = isEditMode
-                ? `/api/tournaments/${(tournament as any).id}`
+                ? `/api/tournaments/${tournament?.id}`
                 : `/api/tournaments`;
 
             const res = await fetch(url, {
