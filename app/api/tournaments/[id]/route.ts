@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+
+type tParams = Promise<{ id: string }>;
+
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: tParams }
+) {
+    try {
+        console.log("Eliminando torneo con params:", params);
+        const { id } = await params;
+
+        if (!id) {
+            return NextResponse.json(
+                { error: "ID no proporcionado" },
+                { status: 400 }
+            );
+        }
+
+        // Validar que el user sea admin
+        const userLogued = await currentUser();
+        if (!userLogued) {
+            return NextResponse.json(
+                { error: "Usuario no autenticado" },
+                { status: 401 }
+            );
+        }
+        const role = userLogued.publicMetadata?.role as string | null;
+        if (role !== "admin") {
+            return NextResponse.json(
+                { error: "No tienes permisos para eliminar un torneo" },
+                { status: 403 }
+            );
+        }
+
+        const deletedTournament = await db.tournament.delete({
+            where: { id }
+        });
+
+        return NextResponse.json(
+            { message: "Torneo eliminada correctamente", deletedTournament },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Error al eliminar el torneo:", error);
+        return NextResponse.json(
+            { error: "Error al eliminar el torneo" },
+            { status: 500 }
+        );
+    }
+}
