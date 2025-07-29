@@ -8,7 +8,8 @@ interface PropsStatsCards {
 const StatsCards = (props: PropsStatsCards) => {
     const { tournaments } = props;
     const bgCard =
-        "bg-gradient-to-r from-green-500 to-blue-500 text-black hover:from-green-400 hover:to-blue-400 hover:scale-105 transition-all duration-300";
+        "bg-gradient-to-r from-sky-400 to-violet-500 text-white hover:from-sky-300 hover:to-violet-400 hover:scale-105 transition-all duration-300";
+
     return (
         <div className="grid gap-4 md:grid-cols-4">
             <Card className={`h-full ${bgCard}`}>
