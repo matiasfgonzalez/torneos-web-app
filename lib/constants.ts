@@ -24,6 +24,7 @@ export const TOURNAMENT_CATEGORIES_DESC = [
 
 export const TOURNAMENT_FORMATS = [
     { label: "Liga", value: "LIGA" },
+    { label: "Copa", value: "COPA" },
     { label: "Eliminación directa", value: "ELIMINACION_DIRECTA" },
     { label: "Grupos", value: "GRUPOS" },
     { label: "Ida y vuelta", value: "IDA_Y_VUELTA" }
@@ -31,6 +32,7 @@ export const TOURNAMENT_FORMATS = [
 
 export const TOURNAMENT_FORMATS_DESC = [
     "LIGA",
+    "COPA",
     "ELIMINACION_DIRECTA",
     "GRUPOS",
     "IDA_Y_VUELTA"
