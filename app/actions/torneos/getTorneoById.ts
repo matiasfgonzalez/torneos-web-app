@@ -8,7 +8,9 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
         const torneo = await db.tournament.findUnique({
             where: { id },
             include: {
-                user: true // Incluye datos del usuario creador, si es necesario
+                user: true, // Incluye datos del usuario creador, si es necesario
+                teams: true, // Incluye los equipos del torneo
+                matches: true // Incluye los partidos del torneo
             }
         });
 

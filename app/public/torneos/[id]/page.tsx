@@ -7,7 +7,6 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Table,
@@ -17,20 +16,11 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
-import {
-    Trophy,
-    Calendar,
-    Users,
-    TrendingUp,
-    ArrowLeft,
-    Target,
-    Shield
-} from "lucide-react";
+import { ArrowLeft, Target, Shield } from "lucide-react";
 
-import Image from "next/image";
 import { getTorneoById } from "@/app/actions/torneos/getTorneoById";
 import { notFound } from "next/navigation";
-import { formatDate } from "@/lib/formatDate";
+import HeaderTorneo from "@/components/torneos/HeaderTorneo";
 
 const standings = [
     {
@@ -333,99 +323,7 @@ export default async function TournamentDetailPage({
                 </Button>
 
                 {/* Tournament Header */}
-                <div className="mb-8">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                        <div>
-                            <h1 className="text-4xl font-bold mb-2">
-                                {tournamentData.name}
-                            </h1>
-                            <div className="flex items-center gap-4 text-muted-foreground">
-                                <span>{tournamentData.category}</span>
-                                <span>•</span>
-                                <span>{tournamentData.format}</span>
-                                <span>•</span>
-                                <span>
-                                    {formatDate(tournamentData.startDate)} -{" "}
-                                    {formatDate(tournamentData.endDate)}
-                                </span>
-                            </div>
-                        </div>
-                        <Badge
-                            variant={
-                                tournamentData.status === "En curso"
-                                    ? "default"
-                                    : "secondary"
-                            }
-                            className="text-lg px-4 py-2"
-                        >
-                            {tournamentData.status}
-                        </Badge>
-                    </div>
-
-                    <p className="text-muted-foreground text-lg mb-6">
-                        {tournamentData.description}
-                    </p>
-                    <div className="flex items-center justify-center p-4">
-                        <div className="bg-white shadow-xl rounded-2xl border border-gray-200 p-4 max-w-xs w-full transition-transform duration-300 hover:scale-105">
-                            <div className="aspect-[4/5] relative">
-                                <Image
-                                    src="/escudos/liga_federalense_2.png"
-                                    alt="Escudo Liga Federalense de Fútbol"
-                                    fill
-                                    className="object-contain"
-                                    priority
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Tournament Stats */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-                                <div className="text-2xl font-bold">
-                                    {"tournamentData.teams"}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    Equipos
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
-                                <div className="text-2xl font-bold">
-                                    {"tournamentData.matchesPlayed"}/
-                                    {"tournamentData.totalMatches"}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    Partidos
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
-                                <div className="text-2xl font-bold">
-                                    {"tournamentData.prize"}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    Premio
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <Calendar className="h-8 w-8 text-primary mx-auto mb-2" />
-                                <div className="text-2xl font-bold">75</div>
-                                <div className="text-sm text-muted-foreground">
-                                    Días restantes
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
+                <HeaderTorneo tournamentData={tournamentData} />
 
                 {/* Tournament Content Tabs */}
                 <Tabs defaultValue="standings" className="space-y-6">

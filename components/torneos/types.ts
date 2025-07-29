@@ -18,4 +18,6 @@ export interface ITorneo {
     format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
     homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
     liga: string; // Liga a la que pertenece el torneo
+    teams: any[]; // Equipos que participan en el torneo
+    matches: any[]; // Partidos del torneo
 }
