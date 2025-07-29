@@ -18,11 +18,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Edit, Trash2, Eye } from "lucide-react";
+import { Search, Edit, Eye } from "lucide-react";
 import { useState } from "react";
 import { ITorneo } from "@/components/torneos/types";
 import { formatDate } from "@/lib/formatDate";
 import Link from "next/link";
+import { DeleteTournamentButton } from "./DeleteTournamentButton";
 interface PropsListTournaments {
     tournaments: ITorneo[];
 }
@@ -135,12 +136,9 @@ const ListTournaments = (props: PropsListTournaments) => {
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <DeleteTournamentButton
+                                                tournament={tournament}
+                                            />
                                         </div>
                                     </TableCell>
                                 </TableRow>
