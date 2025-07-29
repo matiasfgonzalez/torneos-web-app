@@ -298,16 +298,13 @@ const cleanSheets = [
     }
 ];
 
-interface TorneoPageProps {
-    params: {
-        id: string;
-    };
-}
-
 export default async function TournamentDetailPage({
     params
-}: Readonly<TorneoPageProps>) {
-    const tournamentData = await getTorneoById(params.id);
+}: Readonly<{
+    params: Promise<{ id: string }>;
+}>) {
+    const { id } = await params;
+    const tournamentData = await getTorneoById(id);
 
     if (!tournamentData) return notFound();
 

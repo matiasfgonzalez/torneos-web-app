@@ -9,7 +9,6 @@ import {
     Layers3,
     MapPin
 } from "lucide-react";
-import { format } from "date-fns";
 import { ITorneo } from "./types";
 import { formatDate } from "@/lib/formatDate";
 

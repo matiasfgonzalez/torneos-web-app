@@ -7,7 +7,7 @@ export interface ITorneo {
     category: string;
     locality: string;
     status: string;
-    nextMatch: any;
+    nextMatch: string | Date;
     startDate: string | Date;
     endDate: string | Date;
     userId: string;
@@ -18,6 +18,8 @@ export interface ITorneo {
     format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
     homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
     liga: string; // Liga a la que pertenece el torneo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     teams: any[]; // Equipos que participan en el torneo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matches: any[]; // Partidos del torneo
 }

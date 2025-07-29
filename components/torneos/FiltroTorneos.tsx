@@ -44,13 +44,8 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("Todas");
     const [selectedStatus, setSelectedStatus] = useState("Todos");
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { tournaments } = props;
-
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
 
     const filteredTournaments = tournaments.filter((tournament) => {
         const matchesSearch =
