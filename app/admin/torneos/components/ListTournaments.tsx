@@ -18,12 +18,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Edit, Eye } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import { useState } from "react";
 import { ITorneo } from "@/components/torneos/types";
 import { formatDate } from "@/lib/formatDate";
 import Link from "next/link";
 import { DeleteTournamentButton } from "./DeleteTournamentButton";
+import DialogAddTournaments from "./DialogAddTournaments";
 interface PropsListTournaments {
     tournaments: ITorneo[];
 }
@@ -80,6 +81,7 @@ const ListTournaments = (props: PropsListTournaments) => {
                                 <TableHead>Estado</TableHead>
                                 <TableHead>Fechas Inicio</TableHead>
                                 <TableHead>Fechas Fin</TableHead>
+                                <TableHead>Próximo Partido</TableHead>
                                 <TableHead className="text-right">
                                     Acciones
                                 </TableHead>
@@ -111,6 +113,11 @@ const ListTournaments = (props: PropsListTournaments) => {
                                             )}
                                         </div>
                                     </TableCell>
+                                    <TableCell>
+                                        <div className="text-sm">
+                                            {formatDate(tournament.nextMatch)}
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end space-x-2">
                                             <Button
@@ -119,23 +126,14 @@ const ListTournaments = (props: PropsListTournaments) => {
                                                 asChild
                                             >
                                                 <Link
-                                                    href={`/admin/torneos/${tournament.id}`}
+                                                    href={`/public/torneos/${tournament.id}`}
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Link>
                                             </Button>
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                asChild
-                                                className="bg-green-700 hover:bg-green-900 text-white"
-                                            >
-                                                <Link
-                                                    href={`/admin/torneos/${tournament.id}/edit`}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
+                                            <DialogAddTournaments
+                                                tournament={tournament}
+                                            />
                                             <DeleteTournamentButton
                                                 tournament={tournament}
                                             />

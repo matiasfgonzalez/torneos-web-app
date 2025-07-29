@@ -35,7 +35,10 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
+import { ITorneo } from "@/components/torneos/types";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // Esquema Zod mejorado
 const tournamentSchema = z
@@ -86,24 +89,53 @@ const tournamentSchema = z
 
 type TournamentFormValues = z.infer<typeof tournamentSchema>;
 
-const DialogAddTournaments = () => {
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+interface PropsDialogAddTournaments {
+    tournament?: ITorneo;
+}
+
+const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
+    const { tournament } = props;
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const router = useRouter();
+
+    const isEditMode = !!tournament;
+    console.log("isEditMode:", isEditMode);
 
     // Inicializar useForm con zodResolver y defaultValues
     const form = useForm<TournamentFormValues>({
         resolver: zodResolver(tournamentSchema),
         defaultValues: {
-            name: "",
-            description: "",
-            category: undefined, // undefined o el primer valor si la categoría es siempre obligatoria
-            locality: "",
-            startDate: undefined,
-            endDate: undefined,
-            logoUrl: "",
-            liga: "",
-            format: "LIGA", // Valor por defecto
-            homeAndAway: false,
-            nextMatch: undefined
+            name: isEditMode ? tournament?.name || "" : "",
+            description: isEditMode ? tournament?.description || "" : "",
+            category: isEditMode
+                ? tournament?.category || TOURNAMENT_CATEGORIES[0].value
+                : TOURNAMENT_CATEGORIES[0].value, // Valor por defecto
+            locality: isEditMode ? tournament?.locality || "" : "",
+            startDate: isEditMode
+                ? tournament?.startDate
+                    ? new Date(tournament.startDate)
+                    : undefined
+                : undefined,
+            endDate: isEditMode
+                ? tournament?.endDate
+                    ? new Date(tournament.endDate)
+                    : undefined // Si no hay fecha, dejarlo como undefined
+                : undefined,
+            logoUrl: isEditMode ? tournament?.logoUrl || "" : "", // Si no hay logo, dejarlo vacío
+            liga: isEditMode ? tournament?.liga || "" : "", // Si no hay liga, dejarlo vacío
+            // Valores por defecto para los campos nuevos
+            format: isEditMode
+                ? tournament?.format || TOURNAMENT_FORMATS[0].value
+                : TOURNAMENT_FORMATS[0].value, // Valor por defecto
+            homeAndAway: isEditMode
+                ? tournament?.homeAndAway || false // Si no hay valor, por defecto es false
+                : false, // Por defecto es false
+            nextMatch: isEditMode
+                ? tournament?.nextMatch
+                    ? new Date(tournament.nextMatch)
+                    : undefined // Si no hay próximo partido, dejarlo como undefined
+                : undefined // Por defecto es undefined
         }
     });
 
@@ -123,42 +155,74 @@ const DialogAddTournaments = () => {
                     : undefined // Formato ISO completo
             };
 
-            const res = await fetch("/api/tournaments", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+            const method = isEditMode ? "PATCH" : "POST";
+            const url = isEditMode
+                ? `/api/tournaments/${(tournament as any).id}`
+                : `/api/tournaments`;
+
+            const res = await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
 
             if (res.ok) {
-                setIsCreateDialogOpen(false);
+                setIsDialogOpen(false);
                 form.reset(); // Limpia el formulario después de un envío exitoso
+                toast.success(
+                    isEditMode
+                        ? "Torneo editado correctamente"
+                        : "Torneo creado correctamente"
+                );
+                router.refresh();
             } else {
                 const errorData = await res.json();
+                toast.error(
+                    isEditMode
+                        ? "Error al editar el torneo"
+                        : "Error al crear el torneo"
+                );
                 console.error("Error al crear torneo:", errorData);
-                // Aquí podrías mostrar un toast o mensaje de error al usuario
             }
         } catch (err) {
+            toast.error(
+                isEditMode
+                    ? "Error al editar el torneo: " + err
+                    : "Error al crear el torneo: " + err
+            );
             console.error("Error en la petición:", err);
-            // Aquí podrías manejar errores de red o del cliente
         }
     };
     return (
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-                <Button
-                    className="bg-gradient-to-r from-primary to-blue-600 rounded-3xl p-6 text-white
+                {isEditMode ? (
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        asChild
+                        className="bg-green-700 hover:bg-green-900 text-white cursor-pointer"
+                    >
+                        <div>
+                            <Edit className="h-4 w-4" />
+                        </div>
+                    </Button>
+                ) : (
+                    <Button
+                        className="bg-gradient-to-r from-primary to-blue-600 rounded-3xl p-6 text-white
         hover:from-primary/80 hover:to-blue-700 hover:scale-105 transition-all duration-300
          cursor-pointer"
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Crear Torneo
-                </Button>
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Crear Torneo
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Crear Nuevo Torneo</DialogTitle>
+                    <DialogTitle>
+                        {isEditMode ? "Editar Torneo" : "Crear Nuevo Torneo"}
+                    </DialogTitle>
                     <DialogDescription>
                         Completa la información básica del torneo
                     </DialogDescription>
@@ -454,20 +518,31 @@ const DialogAddTournaments = () => {
                                 variant="default"
                                 className="bg-red-500 hover:bg-red-600 hover:scale-105 transition-all duration-300 cursor-pointer"
                                 onClick={() => {
-                                    setIsCreateDialogOpen(false);
+                                    setIsDialogOpen(false);
                                     form.reset(); // Resetear el formulario al cancelar
                                 }}
                             >
                                 Cancelar
                             </Button>
-                            <Button
-                                type="submit"
-                                className="bg-gradient-to-r from-primary to-blue-600 text-white
+                            {isEditMode ? (
+                                <Button
+                                    type="submit"
+                                    className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-white
+                  hover:from-yellow-500 hover:to-yellow-600 hover:scale-105 transition-all duration-300
+                  active:scale-95 cursor-pointer"
+                                >
+                                    Editar Torneo
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="submit"
+                                    className="bg-gradient-to-r from-primary to-blue-600 text-white
                   hover:from-primary/80 hover:to-blue-700 hover:scale-105 transition-all duration-300
                   active:scale-95 cursor-pointer"
-                            >
-                                Crear Torneo
-                            </Button>
+                                >
+                                    Crear Torneo
+                                </Button>
+                            )}
                         </div>
                     </form>
                 </Form>
