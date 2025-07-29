@@ -51,3 +51,75 @@ export async function DELETE(
         );
     }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
+    try {
+        const { id } = await params;
+
+        if (!id) {
+            return NextResponse.json(
+                { error: "ID no proporcionado" },
+                { status: 400 }
+            );
+        }
+
+        const body = await req.json();
+
+        const userLogued = await currentUser();
+        if (!userLogued) {
+            return NextResponse.json(
+                { error: "Usuario no autenticado" },
+                { status: 401 }
+            );
+        }
+
+        const role = userLogued.publicMetadata?.role as string | null;
+        if (role !== "admin") {
+            return NextResponse.json(
+                { error: "No tienes permisos para editar un torneo" },
+                { status: 403 }
+            );
+        }
+
+        const startDate = new Date(body.startDate + "T00:00:00");
+        const endDate = body.endDate
+            ? new Date(body.endDate + "T00:00:00")
+            : null;
+        const nextMatch = body.nextMatch ? new Date(body.nextMatch) : null;
+
+        if (startDate && isNaN(startDate.getTime())) {
+            return NextResponse.json(
+                { error: "Fecha de inicio inválida" },
+                { status: 400 }
+            );
+        }
+
+        const updatedTournament = await db.tournament.update({
+            where: { id },
+            data: {
+                startDate,
+                endDate,
+                nextMatch,
+                name: body.name,
+                description: body.description,
+                category: body.category,
+                locality: body.locality,
+                logoUrl: body.logoUrl,
+                liga: body.liga,
+                format: body.format,
+                homeAndAway: body.homeAndAway
+            }
+        });
+
+        return NextResponse.json(
+            { message: "Torneo actualizado correctamente", updatedTournament },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Error al actualizar el torneo:", error);
+        return NextResponse.json(
+            { error: "Error al actualizar el torneo" },
+            { status: 500 }
+        );
+    }
+}
