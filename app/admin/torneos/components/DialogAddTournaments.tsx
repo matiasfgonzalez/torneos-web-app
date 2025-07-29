@@ -384,7 +384,9 @@ const DialogAddTournaments = () => {
                             name="liga"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Liga o Asociación</FormLabel>
+                                    <FormLabel>
+                                        Liga o Asociación (Organizador)
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="Ej: AFA, Liga Cordobesa..."
