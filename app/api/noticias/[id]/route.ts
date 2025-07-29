@@ -1,5 +1,6 @@
 // app/api/noticias/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 type tParams = Promise<{ id: string }>;
@@ -54,6 +55,22 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
             );
         }
 
+        // Validar que el user sea admin
+        const userLogued = await currentUser();
+        if (!userLogued) {
+            return NextResponse.json(
+                { error: "Usuario no autenticado" },
+                { status: 401 }
+            );
+        }
+        const role = userLogued.publicMetadata?.role as string | null;
+        if (role !== "admin") {
+            return NextResponse.json(
+                { error: "No tienes permisos para actualizar una noticia" },
+                { status: 403 }
+            );
+        }
+
         const updatedNoticia = await db.news.update({
             where: { id },
             data: {
@@ -90,6 +107,22 @@ export async function DELETE(
             return NextResponse.json(
                 { error: "ID no proporcionado" },
                 { status: 400 }
+            );
+        }
+
+        // Validar que el user sea admin
+        const userLogued = await currentUser();
+        if (!userLogued) {
+            return NextResponse.json(
+                { error: "Usuario no autenticado" },
+                { status: 401 }
+            );
+        }
+        const role = userLogued.publicMetadata?.role as string | null;
+        if (role !== "admin") {
+            return NextResponse.json(
+                { error: "No tienes permisos para eliminar una noticia" },
+                { status: 403 }
             );
         }
 

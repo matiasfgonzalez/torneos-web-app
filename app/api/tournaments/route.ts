@@ -1,6 +1,6 @@
 // app/api/tournaments/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
@@ -25,6 +25,22 @@ export async function POST(req: Request) {
             return NextResponse.json(
                 { error: "Usuario no encontrado" },
                 { status: 404 }
+            );
+        }
+
+        // Validar que el user sea admin
+        const userLogued = await currentUser();
+        if (!userLogued) {
+            return NextResponse.json(
+                { error: "Usuario no autenticado" },
+                { status: 401 }
+            );
+        }
+        const role = userLogued.publicMetadata?.role as string | null;
+        if (role !== "admin") {
+            return NextResponse.json(
+                { error: "No tienes permisos para crear un torneo" },
+                { status: 403 }
             );
         }
 
