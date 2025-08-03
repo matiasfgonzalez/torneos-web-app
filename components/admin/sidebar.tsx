@@ -51,7 +51,7 @@ const menuItems = [
         title: "Equipos",
         href: "/admin/equipos",
         icon: Users,
-        enabled: false
+        enabled: true
     },
     {
         title: "Jugadores",
