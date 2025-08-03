@@ -97,8 +97,8 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
             {/* Logo */}
             {tournamentData.logoUrl && (
                 <div className="flex items-center justify-center p-4">
-                    <div className="bg-white shadow-xl rounded-2xl border border-gray-200 p-4 max-w-xs w-full transition-transform duration-300 hover:scale-105">
-                        <div className="aspect-[4/5] relative">
+                    <div className="shadow-xl rounded-2xl p-4 max-w-xs w-full transition-transform duration-300 hover:scale-105">
+                        <div className="aspect-[4/5] relative flex">
                             <img
                                 src={tournamentData.logoUrl}
                                 alt={`Logo de ${tournamentData.name}`}
