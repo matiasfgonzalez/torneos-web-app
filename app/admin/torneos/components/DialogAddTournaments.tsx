@@ -531,7 +531,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   hover:from-yellow-500 hover:to-yellow-600 hover:scale-105 transition-all duration-300
                   active:scale-95 cursor-pointer"
                                 >
-                                    Editar Torneo
+                                    Guardar Cambios
                                 </Button>
                             ) : (
                                 <Button
@@ -540,7 +540,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   hover:from-primary/80 hover:to-blue-700 hover:scale-105 transition-all duration-300
                   active:scale-95 cursor-pointer"
                                 >
-                                    Crear Torneo
+                                    Registrar Torneo
                                 </Button>
                             )}
                         </div>
