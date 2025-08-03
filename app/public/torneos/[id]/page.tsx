@@ -21,6 +21,7 @@ import { ArrowLeft, Target, Shield } from "lucide-react";
 import { getTorneoById } from "@/app/actions/torneos/getTorneoById";
 import { notFound } from "next/navigation";
 import HeaderTorneo from "@/components/torneos/HeaderTorneo";
+import TeamsCarousel from "@/components/equipos/TeamsCarousel";
 
 const standings = [
     {
@@ -321,6 +322,9 @@ export default async function TournamentDetailPage({
 
                 {/* Tournament Header */}
                 <HeaderTorneo tournamentData={tournamentData} />
+
+                {/* Teams Carousel */}
+                <TeamsCarousel tournamentTeams={tournamentData.teams} />
 
                 {/* Tournament Content Tabs */}
                 <Tabs defaultValue="standings" className="space-y-6">
