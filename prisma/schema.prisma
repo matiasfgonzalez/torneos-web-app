@@ -134,27 +134,40 @@ enum Foot {
   AMBOS
 }
 
+enum PlayerStatus {
+  ACTIVO
+  LESIONADO
+  SUSPENDIDO
+  NO_DISPONIBLE
+}
+
 model Player {
   id           String   @id @default(uuid())
   name         String
   birthDate    DateTime?  // Fecha de nacimiento
-  birthPlace   String?    // Lugar de nacimiento
-  height       Int?       // cm
-  weight       Int?       // kg
-  dominantFoot Foot?      // Pie dominante
+  birthPlace   String? // Lugar de nacimiento
+  nationality  String?
+  height       Float?       // cm
+  weight       Float?       // kg
+  dominantFoot Foot?         // Pie dominante
   position     String?
   number       Int?
   imageUrl     String?
   description  String?
   bio          String?
+  status       PlayerStatus @default(ACTIVO)
+  joinedAt     DateTime?
+
+  instagramUrl String?
+  twitterUrl   String?
 
   teamId       String
   team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
-  goals       Goal[]
+  goals        Goal[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 enum MatchStatus {

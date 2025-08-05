@@ -1,25 +1,25 @@
+import { ITeam } from "../equipos/types";
 import { IUser } from "../noticias/types";
 
 export interface ITorneo {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    locality: string;
-    status: string;
-    nextMatch: string | Date;
-    startDate: string | Date;
-    endDate: string | Date;
-    userId: string;
-    createdAt: string | Date;
-    updatedAt: string | Date;
-    user: IUser;
-    logoUrl?: string; // URL del logo del torneo
-    format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
-    homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
-    liga: string; // Liga a la que pertenece el torneo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    teams: any[]; // Equipos que participan en el torneo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    matches: any[]; // Partidos del torneo
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  locality: string;
+  status: string;
+  nextMatch: string | Date;
+  startDate: string | Date;
+  endDate: string | Date;
+  userId: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  user: IUser;
+  logoUrl?: string; // URL del logo del torneo
+  format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
+  homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
+  liga: string; // Liga a la que pertenece el torneo
+  teams?: ITeam[]; // Equipos que participan en el torneo
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  matches?: any[]; // Partidos del torneo
 }
