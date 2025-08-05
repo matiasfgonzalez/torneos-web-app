@@ -1,5 +1,9 @@
 "use client";
 
+import { ITeam } from "@/components/equipos/types";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import {
     Dialog,
@@ -10,19 +14,13 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { ITorneo } from "@/components/torneos/types";
 
-interface DeleteTournamentButtonProps {
-    tournament: ITorneo;
+interface PropsDeleteTeamButton {
+    team: ITeam;
 }
 
-export function DeleteTournamentButton(
-    props: Readonly<DeleteTournamentButtonProps>
-) {
-    const { tournament } = props;
+const DeleteTeamButton = (props: Readonly<PropsDeleteTeamButton>) => {
+    const { team } = props;
 
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,19 +30,19 @@ export function DeleteTournamentButton(
         try {
             setIsLoading(true);
 
-            const res = await fetch(`/api/tournaments/${id}`, {
+            const res = await fetch(`/api/team/${id}`, {
                 method: "DELETE"
             });
 
             if (!res.ok) throw new Error("Error al eliminar el torneo");
 
-            toast.success("Torneo eliminado correctamente");
+            toast.success("Equipo eliminado correctamente");
 
             // Sólo cerrar el modal si la eliminación fue exitosa
             setOpen(false);
             router.refresh(); // o router.push("/admin/torneos")
         } catch (error) {
-            toast.error("No se pudo eliminar el torneo");
+            toast.error("No se pudo eliminar el equipo");
             console.error(error);
         } finally {
             setIsLoading(false); // Siempre asegurarse de resetear el estado
@@ -65,12 +63,12 @@ export function DeleteTournamentButton(
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>¿Eliminar torneo?</DialogTitle>
+                    <DialogTitle>¿Eliminar equipo?</DialogTitle>
                 </DialogHeader>
 
                 <p className="text-sm text-muted-foreground">
-                    Esta acción no se puede deshacer. Se eliminará el torneo{" "}
-                    <strong>{tournament.name}</strong> y todos sus datos.
+                    Esta acción no se puede deshacer. Se eliminará el equipo{" "}
+                    <strong>{team.name}</strong> y todos sus datos.
                 </p>
 
                 <DialogFooter>
@@ -78,13 +76,15 @@ export function DeleteTournamentButton(
                         variant="ghost"
                         onClick={() => setOpen(false)}
                         disabled={isLoading}
+                        className="cursor-pointer"
                     >
                         Cancelar
                     </Button>
                     <Button
                         variant="destructive"
-                        onClick={() => handleDelete(tournament.id)}
+                        onClick={() => handleDelete(team.id)}
                         disabled={isLoading}
+                        className="cursor-pointer"
                     >
                         {isLoading ? "Eliminando..." : "Confirmar eliminación"}
                     </Button>
@@ -92,4 +92,6 @@ export function DeleteTournamentButton(
             </DialogContent>
         </Dialog>
     );
-}
+};
+
+export default DeleteTeamButton;
