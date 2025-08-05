@@ -82,6 +82,7 @@ model Tournament {
   format      TournamentFormat @default(LIGA)
   nextMatch   DateTime?
   homeAndAway Boolean @default(false) // Si el torneo es de ida y vuelta o solo un partido
+  enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
 
 
   startDate   DateTime
@@ -108,10 +109,11 @@ model Team {
   history     String?    // Breve historia del equipo  
   coach       String?    // Nombre del entrenador
   homeCity    String?    // Ciudad base del equipo
-  yearFounded Int?       // Año de fundación
+  yearFounded String?       // Año de fundación
   homeColor   String?    // Color principal del equipo
   awayColor   String?    // Color secundario del equipo
   logoUrl     String?    // URL del escudo/logo
+  enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
