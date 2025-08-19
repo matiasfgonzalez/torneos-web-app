@@ -465,6 +465,21 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 </FormItem>
               )}
             />
+            {form.getValues("logoUrl") && (
+              <div className="mt-2">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Vista previa:
+                </p>
+                <img
+                  src={form.getValues("logoUrl") || "/placeholder.svg"}
+                  alt="Vista previa del logo"
+                  className="w-20 h-20 object-cover rounded-lg border"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              </div>
+            )}
 
             {/* Campo: Próximo partido (opcional) */}
             <FormField
