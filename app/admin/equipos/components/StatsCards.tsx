@@ -53,7 +53,10 @@ const StatsCards = (props: PropsStatsCards) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {teams.reduce((sum, team) => sum + team.players.length, 0)}
+            {teams.reduce(
+              (sum, team) => sum + (team.teamPlayer || []).length,
+              0
+            )}
           </div>
           <p className="text-xs text-muted-foreground">Jugadores registrados</p>
         </CardContent>

@@ -59,7 +59,6 @@ const teamSchema = z.object({
   homeColor: z.string().optional(),
   awayColor: z.string().optional(),
   logoUrl: z.string().optional(),
-  tournamentId: z.string().optional(),
 });
 
 type TeamFormValues = z.infer<typeof teamSchema>;
@@ -68,16 +67,6 @@ interface TeamFormProps {
   isEditMode: boolean;
   team?: ITeam;
 }
-
-const tournaments = [
-  {
-    id: "eb2f01c7-a03b-423f-8e0d-544df5b5fc6e",
-    name: "Liga Profesional 2024",
-  },
-  { id: "2", name: "Copa Nacional" },
-  { id: "3", name: "Torneo Clausura" },
-  { id: "4", name: "Liga Juvenil" },
-];
 
 const predefinedColors = [
   { name: "Rojo", value: "#DC2626", bg: "bg-red-600" },
@@ -159,7 +148,6 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
       homeColor: isEditMode ? team?.homeColor || "#FFFFFF" : "#FFFFFF",
       awayColor: isEditMode ? team?.awayColor || "#000000" : "#000000",
       logoUrl: isEditMode ? team?.logoUrl || "" : "",
-      tournamentId: isEditMode ? team?.tournamentId || "" : "",
     },
   });
 
@@ -341,25 +329,6 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                 </div>
 
                 <div className="space-y-2">
-                  {/* Campo: nombre del entrenador */}
-                  <FormField
-                    control={form.control}
-                    name="homeCity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ciudad Base</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Ciudad donde juega de local"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-2">
                   {/* Campo: Año de fundación */}
                   <FormField
                     control={form.control}
@@ -375,33 +344,21 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                     )}
                   />
                 </div>
-                {/**/}
+
                 <div className="space-y-2">
-                  {/* Campo: Formato del Torneo (Select) */}
+                  {/* Campo: nombre del entrenador */}
                   <FormField
                     control={form.control}
-                    name="tournamentId"
+                    name="homeCity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Torneo</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un formato" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {tournaments.map((format) => (
-                              <SelectItem key={format.id} value={format.id}>
-                                {format.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+                        <FormLabel>Ciudad Base</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ciudad donde juega de local"
+                            {...field}
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />

@@ -1,4 +1,4 @@
-// app/api/tournaments/route.ts
+// /app/api/tournament-teams/route.ts
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -44,44 +44,55 @@ export async function POST(req: Request) {
       );
     }
 
-    // --- Validación de 'yearFounded' ---
-    const yearFounded = Number(body.yearFounded);
-    const currentYear = new Date().getFullYear();
+    const {
+      tournamentId,
+      teamId,
+      group,
+      isEliminated,
+      notes,
+      matchesPlayed,
+      wins,
+      draws,
+      losses,
+      goalsFor,
+      goalsAgainst,
+      goalDifference,
+      points,
+    } = body;
 
-    if (isNaN(yearFounded)) {
+    // Validaciones mínimas
+    if (!tournamentId || !teamId) {
       return NextResponse.json(
-        { error: "El año de fundación debe ser un número válido." },
+        { error: "tournamentId y teamId son requeridos" },
         { status: 400 }
       );
     }
 
-    if (yearFounded < 1900 || yearFounded > currentYear) {
-      return NextResponse.json(
-        { error: `El año debe estar entre 1900 y ${currentYear}.` },
-        { status: 400 }
-      );
-    }
-
-    // --- Fin de la validación ---
-
-    const newTournament = await db.team.create({
+    // Crear la relación equipo-torneo
+    const tournamentTeam = await db.tournamentTeam.create({
       data: {
-        name: body.name,
-        shortName: body.shortName,
-        description: body.description,
-        history: body.history,
-        coach: body.coach,
-        homeCity: body.homeCity,
-        yearFounded: body.yearFounded,
-        homeColor: body.homeColor,
-        awayColor: body.awayColor,
-        logoUrl: body.logoUrl,
+        tournamentId,
+        teamId,
+        group,
+        isEliminated,
+        notes,
+        matchesPlayed: matchesPlayed ?? 0,
+        wins: wins ?? 0,
+        draws: draws ?? 0,
+        losses: losses ?? 0,
+        goalsFor: goalsFor ?? 0,
+        goalsAgainst: goalsAgainst ?? 0,
+        goalDifference: goalDifference ?? 0,
+        points: points ?? 0,
       },
     });
 
-    return NextResponse.json(newTournament, { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return new NextResponse("Error al crear el torneo", { status: 500 });
+    return NextResponse.json(tournamentTeam, { status: 201 });
+  } catch (error: any) {
+    console.error("Error al crear la relación equipo-torneo:", error);
+    return NextResponse.json(
+      { error: "Error al crear la relación equipo-torneo" },
+      { status: 500 }
+    );
   }
 }

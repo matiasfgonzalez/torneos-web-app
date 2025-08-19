@@ -13,7 +13,6 @@ export interface ITeam {
   logoUrl: string;
   createdAt: string | Date;
   updatedAt: string | Date;
-  tournamentId: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  players: any[];
+  teamPlayer: any[];
 }

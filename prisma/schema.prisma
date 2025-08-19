@@ -87,7 +87,6 @@ model Tournament {
 
   startDate   DateTime
   endDate     DateTime?
-
   
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -95,9 +94,8 @@ model Tournament {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  teams       Team[]  // Relación con equipos
   matches     Match[] // Relación con partidos  
-  standing    Standing[]  // Tabla de posiciones del torneo
+  tournamentTeams TournamentTeam[] // 🔁 Relación M:N con torneos
   phase     Phase[] // Fases del torneo (ej: octavos, cuartos, semifinales, final)
 }
 
@@ -118,11 +116,8 @@ model Team {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  tournament  Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  tournamentId String
-
-  players     Player[]   // Más adelante, podés usar esto  
-  standing      Standing[] // Tabla de posiciones del torneo
+  teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
+  tournamentTeams TournamentTeam[] // 🔁 Relación M:N con equipos
 
   matchesAsHome Match[] @relation("HomeTeam")   // Relación con partidos como local
   matchesAsAway Match[] @relation("AwayTeam")   // Relación con partidos como visitante
@@ -161,10 +156,9 @@ model Player {
   instagramUrl String?
   twitterUrl   String?
 
-  teamId       String
-  team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
   goals        Goal[]
+
+  teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -228,25 +222,57 @@ model Goal {
   updatedAt DateTime @updatedAt
 }
 
-model Standing {
-  id           String   @id @default(uuid())
-  tournamentId String
-  teamId       String
+model TournamentTeam {
+  id           String   @id @default(uuid()) // ID único del registro
 
-  matchesPlayed Int     @default(0)
-  wins          Int     @default(0)
-  draws         Int     @default(0)
-  losses        Int     @default(0)
-  goalsFor      Int     @default(0)
-  goalsAgainst  Int     @default(0)
-  goalDifference Int    @default(0)
-  points        Int     @default(0)
+  tournamentId String                         // FK al torneo
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade) // Relación al torneo (si se elimina el torneo, se elimina esta relación)
 
-  team       Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  teamId       String                         // FK al equipo
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)       // Relación al equipo (si se elimina el equipo, se elimina esta relación)
 
-  @@unique([tournamentId, teamId])
+  group        String?   // Grupo al que pertenece el equipo en el torneo (ej: "A", "B", etc.)
+  isEliminated Boolean?  // Indica si el equipo fue eliminado del torneo
+  notes        String?   // Notas adicionales (observaciones, comentarios)
+
+  matchesPlayed Int     @default(0) // Partidos jugados
+  wins          Int     @default(0) // Partidos ganados
+  draws         Int     @default(0) // Partidos empatados
+  losses        Int     @default(0) // Partidos perdidos
+  goalsFor      Int     @default(0) // Goles a favor
+  goalsAgainst  Int     @default(0) // Goles en contra
+  goalDifference Int    @default(0) // Diferencia de gol (goles a favor - goles en contra)
+  points        Int     @default(0) // Puntos obtenidos
+
+  createdAt    DateTime @default(now()) // Fecha de creación del registro
+  updatedAt    DateTime @updatedAt      // Fecha de última actualización
+
+  @@unique([tournamentId, teamId]) // Un equipo no puede repetirse en el mismo torneo
 }
+
+
+model TeamPlayer {
+  id        String   @id @default(uuid()) // ID único del registro
+
+  teamId    String                          // FK al equipo
+  team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade) // Relación al equipo
+
+  playerId  String                          // FK al jugador
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade) // Relación al jugador
+
+  joinedAt  DateTime @default(now()) // Fecha en la que el jugador se unió al equipo
+  leftAt    DateTime?               // Fecha en la que dejó el equipo (si aplica)
+
+  position     String?              // Posición que ocupa en el equipo (ej: "delantero", "defensor", etc.)
+  number       Int?                 // Número de camiseta
+  status       PlayerStatus @default(ACTIVO) // Estado del jugador (activo, lesionado, suspendido, etc.)
+
+  createdAt DateTime @default(now()) // Fecha de creación del registro
+  updatedAt DateTime @updatedAt      // Fecha de última actualización
+
+  @@unique([playerId, teamId]) // Evita que un jugador esté duplicado en el mismo equipo
+}
+
 
 enum PhaseName {
   DIECISAVOS_DE_FINAL
