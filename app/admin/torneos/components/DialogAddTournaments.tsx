@@ -96,16 +96,17 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
   const { tournament } = props;
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
   const isEditMode = !!tournament;
-  console.log("isEditMode:", isEditMode);
 
   // Inicializar useForm con zodResolver y defaultValues
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentSchema),
     defaultValues: {
-      name: isEditMode ? tournament?.name || "" : "",
+      name: isEditMode && tournament?.name ? tournament.name : "",
       description: isEditMode ? tournament?.description || "" : "",
       category: isEditMode
         ? tournament?.category || TOURNAMENT_CATEGORIES[0].value
@@ -140,6 +141,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
 
   const onSubmit = async (data: TournamentFormValues) => {
     try {
+      setIsLoading(true);
       // Si startDate o endDate son objetos Date, quizás debas formatearlos a ISO string para la API
       const payload = {
         ...data,
@@ -186,6 +188,8 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
           : "Error al crear el torneo: " + err
       );
       console.error("Error en la petición:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -237,7 +241,11 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 <FormItem>
                   <FormLabel>Nombre del Torneo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Copa de Verano 2024" {...field} />
+                    <Input
+                      placeholder="Ej: Copa de Verano 2024"
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -252,7 +260,11 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 <FormItem>
                   <FormLabel>Localidad</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Buenos Aires" {...field} />
+                    <Input
+                      placeholder="Ej: Buenos Aires"
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -269,6 +281,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={isLoading}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -309,6 +322,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                         onChange={(e) =>
                           field.onChange(new Date(e.target.value))
                         }
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -334,6 +348,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                         onChange={(e) =>
                           field.onChange(new Date(e.target.value))
                         }
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -353,6 +368,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     <Textarea
                       placeholder="Descripción del torneo..."
                       {...field}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -370,6 +386,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={isLoading}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -402,6 +419,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       className="scale-125"
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -420,6 +438,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     <Input
                       placeholder="Ej: AFA, Liga Cordobesa..."
                       {...field}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -439,6 +458,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       type="url"
                       placeholder="https://logo.com/escudo.png"
                       {...field}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -462,6 +482,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           : ""
                       }
                       onChange={(e) => field.onChange(new Date(e.target.value))}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -478,6 +499,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   setIsDialogOpen(false);
                   form.reset(); // Resetear el formulario al cancelar
                 }}
+                disabled={isLoading}
               >
                 Cancelar
               </Button>
@@ -487,6 +509,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-white
                   hover:from-yellow-500 hover:to-yellow-600 hover:scale-105 transition-all duration-300
                   active:scale-95 cursor-pointer"
+                  disabled={isLoading}
                 >
                   Guardar Cambios
                 </Button>
@@ -496,6 +519,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   className="bg-gradient-to-r from-primary to-blue-600 text-white
                   hover:from-primary/80 hover:to-blue-700 hover:scale-105 transition-all duration-300
                   active:scale-95 cursor-pointer"
+                  disabled={isLoading}
                 >
                   Registrar Torneo
                 </Button>
