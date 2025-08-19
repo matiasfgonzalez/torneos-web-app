@@ -23,161 +23,6 @@ import { notFound } from "next/navigation";
 import HeaderTorneo from "@/components/torneos/HeaderTorneo";
 import TeamsCarousel from "@/components/equipos/TeamsCarousel";
 
-const standings = [
-  {
-    position: 1,
-    team: "Club Social y Deportivo Talleres",
-    teamLogo: "/escudos/talleres.png",
-    played: 12,
-    won: 9,
-    drawn: 2,
-    lost: 1,
-    goalsFor: 28,
-    goalsAgainst: 8,
-    goalDifference: 20,
-    points: 29,
-  },
-  {
-    position: 2,
-    team: "Club Social y Deportivo Ateneo",
-    teamLogo: "/escudos/ateneo.png",
-    played: 12,
-    won: 8,
-    drawn: 3,
-    lost: 1,
-    goalsFor: 24,
-    goalsAgainst: 10,
-    goalDifference: 14,
-    points: 27,
-  },
-  {
-    position: 3,
-    team: "Club Social y Deportivo Las Malvinas",
-
-    teamLogo: "/escudos/malvinas.png",
-    played: 12,
-    won: 7,
-    drawn: 4,
-    lost: 1,
-    goalsFor: 22,
-    goalsAgainst: 12,
-    goalDifference: 10,
-    points: 25,
-  },
-  {
-    position: 4,
-    team: "Club Social y Deportivo 4 Hachazos",
-
-    teamLogo: "/escudos/4_hachazos.png",
-    played: 12,
-    won: 6,
-    drawn: 3,
-    lost: 3,
-    goalsFor: 19,
-    goalsAgainst: 15,
-    goalDifference: 4,
-    points: 21,
-  },
-  {
-    position: 5,
-    team: "Club Social y Deportivo Nueva Vizcaya",
-
-    teamLogo: "/escudos/nueva_vizcaya.png",
-    played: 12,
-    won: 5,
-    drawn: 4,
-    lost: 3,
-    goalsFor: 17,
-    goalsAgainst: 16,
-    goalDifference: 1,
-    points: 19,
-  },
-  {
-    position: 6,
-    team: "Club Social y Deportivo Las Flores",
-
-    teamLogo: "/escudos/las-flores.png",
-    played: 12,
-    won: 4,
-    drawn: 5,
-    lost: 3,
-    goalsFor: 15,
-    goalsAgainst: 14,
-    goalDifference: 1,
-    points: 17,
-  },
-  {
-    position: 7,
-    team: "Las Delicias",
-
-    teamLogo: "/escudos/las_delicias.png",
-    played: 12,
-    won: 4,
-    drawn: 4,
-    lost: 4,
-    goalsFor: 16,
-    goalsAgainst: 17,
-    goalDifference: -1,
-    points: 16,
-  },
-  {
-    position: 8,
-    team: "Club Atletico Itati",
-
-    teamLogo: "/escudos/itati.png",
-    played: 12,
-    won: 3,
-    drawn: 6,
-    lost: 3,
-    goalsFor: 14,
-    goalsAgainst: 16,
-    goalDifference: -2,
-    points: 15,
-  },
-  {
-    position: 9,
-    team: "Club Atletico El Silbido",
-
-    teamLogo: "/escudos/el-silvido.png",
-    played: 12,
-    won: 3,
-    drawn: 6,
-    lost: 3,
-    goalsFor: 14,
-    goalsAgainst: 16,
-    goalDifference: -2,
-    points: 15,
-  },
-  {
-    position: 10,
-    team: "Club Social y Deportivo Defensores del Sur",
-
-    teamLogo: "/escudos/defensores.png",
-    played: 12,
-    won: 3,
-    drawn: 6,
-    lost: 3,
-    goalsFor: 14,
-    goalsAgainst: 16,
-    goalDifference: -2,
-    points: 15,
-  },
-  {
-    position: 11,
-    team: "Escuela de Fútbol Dieguito",
-
-    teamLogo: "/escudos/dieguito.png",
-    played: 12,
-    won: 3,
-    drawn: 6,
-    lost: 3,
-    goalsFor: 14,
-    goalsAgainst: 16,
-    goalDifference: -2,
-    points: 15,
-  },
-];
-
 const upcomingMatches = [
   {
     id: 1,
@@ -309,6 +154,16 @@ export default async function TournamentDetailPage({
 
   if (!tournamentData) return notFound();
 
+  console.log(tournamentData);
+
+  const teamsOrder = tournamentData.tournamentTeams?.sort((a, b) => {
+    if (a.points !== b.points) return b.points - a.points; // Ordenar por puntos
+    if (a.wins !== b.wins) return b.wins - a.wins; // Luego por victorias
+    if (a.goalDifference !== b.goalDifference)
+      return b.goalDifference - a.goalDifference;
+    return 0; // Si todo es igual, mantener el orden
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -324,8 +179,8 @@ export default async function TournamentDetailPage({
         <HeaderTorneo tournamentData={tournamentData} />
 
         {/* Teams Carousel */}
-        {tournamentData.teams?.length && (
-          <TeamsCarousel tournamentTeams={tournamentData.teams} />
+        {tournamentData.tournamentTeams?.length && (
+          <TeamsCarousel tournamentTeams={tournamentData.tournamentTeams} />
         )}
 
         {/* Tournament Content Tabs */}
@@ -372,67 +227,69 @@ export default async function TournamentDetailPage({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {standings.map((team) => (
-                        <TableRow key={team.position}>
+                      {teamsOrder?.map((tteam, index) => (
+                        <TableRow key={tteam.id}>
                           <TableCell className="font-medium text-center">
                             <div
                               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                team.position <= 4
+                                index <= 4
                                   ? "bg-green-100 text-green-800"
-                                  : team.position <= 6
+                                  : index <= 6
                                   ? "bg-blue-100 text-blue-800"
                                   : "bg-gray-100 text-gray-800"
                               }`}
                             >
-                              {team.position}
+                              {index + 1}
                             </div>
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">
                               <div className="relative w-11 h-11 flex-shrink-0">
                                 <img
-                                  src={team.teamLogo || "/placeholder.svg"}
-                                  alt={`Escudo de ${team.team}`}
+                                  src={tteam.team.logoUrl || "/placeholder.svg"}
+                                  alt={`Escudo de ${tteam.team.name}`}
                                   width={64}
                                   height={64}
                                   className=" object-cover border border-border"
                                 />
                               </div>
-                              <span className="truncate">{team.team}</span>
+                              <span className="truncate">
+                                {tteam.team.name}
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            {team.played}
+                            {tteam.wins + tteam.draws + tteam.losses}
                           </TableCell>
                           <TableCell className="text-center">
-                            {team.won}
+                            {tteam.wins}
                           </TableCell>
                           <TableCell className="text-center">
-                            {team.drawn}
+                            {tteam.draws}
                           </TableCell>
                           <TableCell className="text-center">
-                            {team.lost}
+                            {tteam.losses}
                           </TableCell>
                           <TableCell className="text-center">
-                            {team.goalsFor}
+                            {tteam.goalsFor}
                           </TableCell>
                           <TableCell className="text-center">
-                            {team.goalsAgainst}
+                            {tteam.goalsAgainst}
                           </TableCell>
                           <TableCell className="text-center">
                             <span
                               className={
-                                team.goalDifference >= 0
+                                tteam.goalDifference >= 0
                                   ? "text-green-600"
                                   : "text-red-600"
                               }
                             >
-                              {team.goalDifference > 0 ? "+" : ""}
-                              {team.goalDifference}
+                              {tteam.goalDifference > 0 ? "+" : ""}
+                              {tteam.goalDifference}
                             </span>
                           </TableCell>
                           <TableCell className="text-center font-bold">
-                            {team.points}
+                            {tteam.points}
                           </TableCell>
                         </TableRow>
                       ))}

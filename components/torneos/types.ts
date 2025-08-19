@@ -1,5 +1,6 @@
 import { ITeam } from "../equipos/types";
 import { IUser } from "../noticias/types";
+import { ITournamentTeam } from "../tournament-teams/types";
 
 export interface ITorneo {
   id: string;
@@ -19,7 +20,7 @@ export interface ITorneo {
   format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
   homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
   liga: string; // Liga a la que pertenece el torneo
-  teams?: ITeam[]; // Equipos que participan en el torneo
+  tournamentTeams?: ITournamentTeam[]; // Equipos que participan en el torneo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matches?: any[]; // Partidos del torneo
 }

@@ -12,10 +12,10 @@ import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ITeam } from "./types";
+import { ITournamentTeam } from "../tournament-teams/types";
 
 interface PropsTeamsCarousel {
-  tournamentTeams: ITeam[];
+  tournamentTeams: ITournamentTeam[];
 }
 
 const TeamsCarousel = (props: PropsTeamsCarousel) => {
@@ -87,8 +87,8 @@ const TeamsCarousel = (props: PropsTeamsCarousel) => {
                   <div className="relative mb-3">
                     <div className="w-16 h-16 mx-auto mb-2 relative">
                       <img
-                        src={team.logoUrl || "/placeholder.svg"}
-                        alt={`Escudo de ${team.name}`}
+                        src={team.team.logoUrl || "/placeholder.svg"}
+                        alt={`Escudo de ${team.team.name}`}
                         width={64}
                         height={64}
                         className="object-cover border-border group-hover:border-primary/50 transition-colors"
@@ -99,24 +99,24 @@ const TeamsCarousel = (props: PropsTeamsCarousel) => {
                       <div
                         className="w-3 h-3 rounded-full border border-border"
                         style={{
-                          backgroundColor: team.homeColor,
+                          backgroundColor: team.team.homeColor,
                         }}
                         title="Color local"
                       />
                       <div
                         className="w-3 h-3 rounded-full border border-border"
                         style={{
-                          backgroundColor: team.awayColor,
+                          backgroundColor: team.team.awayColor,
                         }}
                         title="Color visitante"
                       />
                     </div>
                   </div>
                   <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-1">
-                    {team.name}
+                    {team.team.name}
                   </h3>
                   <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                    {team.homeCity}
+                    {team.team.homeCity}
                   </p>
                 </CardContent>
               </Card>

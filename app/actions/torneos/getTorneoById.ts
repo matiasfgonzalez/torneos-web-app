@@ -9,7 +9,12 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
       where: { id },
       include: {
         user: true, // Incluye datos del usuario creador, si es necesario
-        tournamentTeams: true, // Incluye los equipos del torneo
+        tournamentTeams: {
+          include: {
+            team: true, // 👈 trae los datos del equipo
+            tournament: true, // 👈 trae los datos del torneo (opcional, ya lo estás trayendo arriba)
+          },
+        },
         matches: true, // Incluye los partidos del torneo
       },
     });
