@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { ITeam } from "@/components/equipos/types";
 import { ITournamentTeam } from "@/components/tournament-teams/types";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface PropsTournamentTeamForm {
   mode: "create" | "edit";
@@ -31,7 +32,6 @@ interface PropsTournamentTeamForm {
   usedTeamIds?: string[];
   initialValues?: Partial<ITournamentTeam>;
   onCancel: () => void;
-  onSubmit: (values: ITournamentTeam) => void;
 }
 
 export function TournamentTeamForm({
@@ -42,11 +42,13 @@ export function TournamentTeamForm({
   usedTeamIds = [],
   initialValues,
   onCancel,
-  onSubmit,
 }: Readonly<PropsTournamentTeamForm>) {
   console.log(tournamentTeam);
   const isEdit = mode === "edit";
 
+  const router = useRouter();
+
+  const [isLoading, setIsLoading] = useState(false);
   const [values, setValues] = useState<any>({
     teamId: isEdit ? tournamentTeam?.teamId : "",
     group: isEdit ? tournamentTeam?.group : "",
@@ -111,6 +113,7 @@ export function TournamentTeamForm({
     method: "POST" | "PATCH" = "POST"
   ) => {
     try {
+      setIsLoading(true);
       const url =
         method === "POST"
           ? "/api/tournament-teams"
@@ -124,22 +127,31 @@ export function TournamentTeamForm({
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) {
+      if (res.ok) {
+        setIsLoading(false);
+        toast.success(
+          method === "POST"
+            ? "Equipo asociado correctamente"
+            : "Equipo actualizado correctamente"
+        );
+        router.refresh();
+      } else {
         const errorData = await res.json();
         console.error("Error del servidor:", errorData);
-        throw new Error(errorData.error || "Error en la asociación de equipo");
+        toast.error(
+          method === "POST" ? "Error al asociar" : "Error al actualizar"
+        );
       }
-
-      const data = await res.json();
-      console.log(
-        method === "POST" ? "Asociación creada:" : "Asociación actualizada:",
-        data
-      );
-
-      return data;
     } catch (error) {
-      console.error(`Error al asociar equipo: ${error}`);
-      toast.error(`Error al asociar equipo: ${error}`);
+      console.error(
+        `${method} === "POST" ? "Error al asociar" : "Error al actualizar": ${error}`
+      );
+      toast.error(
+        `${method} === "POST" ? "Error al asociar" : "Error al actualizar": ${error}`
+      );
+    } finally {
+      setIsLoading(false);
+      onCancel();
     }
   };
 
@@ -186,6 +198,7 @@ export function TournamentTeamForm({
               <Select
                 value={values.teamId}
                 onValueChange={(v) => update("teamId", v)}
+                disabled={isLoading}
               >
                 <SelectTrigger id="teamId">
                   <SelectValue placeholder="Selecciona un equipo" />
@@ -248,6 +261,7 @@ export function TournamentTeamForm({
               maxLength={2}
               value={values.group ?? ""}
               onChange={(e) => update("group", e.target.value.toUpperCase())}
+              disabled={isLoading}
             />
             <p className="text-xs text-muted-foreground mt-1">
               Deja vacío si el torneo no tiene grupos.
@@ -259,6 +273,7 @@ export function TournamentTeamForm({
               id="isEliminated"
               checked={!!values.isEliminated}
               onCheckedChange={(checked) => update("isEliminated", checked)}
+              disabled={isLoading}
             />
             <Label htmlFor="isEliminated">Equipo eliminado</Label>
           </div>
@@ -284,6 +299,7 @@ export function TournamentTeamForm({
               onChange={(e) =>
                 handleNumberChange("matchesPlayed", e.target.value)
               }
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -294,6 +310,7 @@ export function TournamentTeamForm({
               min={0}
               value={values.wins}
               onChange={(e) => handleNumberChange("wins", e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -304,6 +321,7 @@ export function TournamentTeamForm({
               min={0}
               value={values.draws}
               onChange={(e) => handleNumberChange("draws", e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -314,6 +332,7 @@ export function TournamentTeamForm({
               min={0}
               value={values.losses}
               onChange={(e) => handleNumberChange("losses", e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -324,6 +343,7 @@ export function TournamentTeamForm({
               min={0}
               value={values.goalsFor}
               onChange={(e) => handleNumberChange("goalsFor", e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -336,6 +356,7 @@ export function TournamentTeamForm({
               onChange={(e) =>
                 handleNumberChange("goalsAgainst", e.target.value)
               }
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -383,16 +404,26 @@ export function TournamentTeamForm({
             value={values.notes ?? ""}
             onChange={(e) => update("notes", e.target.value)}
             rows={3}
+            disabled={isLoading}
           />
         </CardContent>
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
           Cancelar
         </Button>
-        <Button type="submit">
-          {mode === "edit" ? "Guardar cambios" : "Asociar equipo"}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading
+            ? "Cargando..."
+            : mode === "edit"
+            ? "Guardar cambios"
+            : "Asociar equipo"}
         </Button>
       </div>
     </form>
