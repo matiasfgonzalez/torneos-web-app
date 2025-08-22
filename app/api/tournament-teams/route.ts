@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(tournamentTeam, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error al crear la relación equipo-torneo:", error);
     return NextResponse.json(
       { error: "Error al crear la relación equipo-torneo" },

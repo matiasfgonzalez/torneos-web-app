@@ -1,6 +1,4 @@
 import { PlayerCard } from "@/components/jugadores/player-card";
-import Aurora from "@/components/reactbits/aurora/Aurora";
-import LightRays from "@/components/reactbits/lightRays/LightRays";
 import Particles from "@/components/reactbits/particles/Particles";
 
 const players = [
@@ -29,12 +27,6 @@ const page = () => {
     <div className="relative w-full min-h-screen">
       {/* Contenedor del Aurora */}
       <div className="absolute inset-0 -z-10">
-        {/*<Aurora
-          colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
-          blend={0.5}
-          amplitude={1.0}
-          speed={0.5}
-        />*/}
         <Particles
           particleColors={["#ffffff", "#ffffff"]}
           particleCount={200}
@@ -57,13 +49,7 @@ const page = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center">
           {players.map((player) => (
-            <PlayerCard
-              key={player.name}
-              name={player.name}
-              team={player.team}
-              imageFront={player.imageFront}
-              imageBack={player.imageBack}
-            />
+            <PlayerCard key={player.name} />
           ))}
         </div>
       </main>

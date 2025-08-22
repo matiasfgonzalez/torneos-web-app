@@ -1,4 +1,3 @@
-import { ITeam } from "../equipos/types";
 import { IUser } from "../noticias/types";
 import { ITournamentTeam } from "../tournament-teams/types";
 

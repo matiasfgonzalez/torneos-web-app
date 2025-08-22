@@ -47,10 +47,11 @@ import {
 import { ITeam } from "@/components/equipos/types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { IPlayer } from "@/components/jugadores/types";
 
 interface PlayerFormProps {
   isEditMode: boolean;
-  player?: any; // Para edición
+  player?: IPlayer; // Para edición
   teams?: ITeam[];
 }
 
@@ -254,7 +255,11 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       <Input
                         id="birthDate"
                         type="date"
-                        value={formData.birthDate}
+                        value={
+                          formData.birthDate instanceof Date
+                            ? formData.birthDate.toISOString().split("T")[0] // "YYYY-MM-DD"
+                            : formData.birthDate ?? ""
+                        }
                         onChange={(e) =>
                           handleInputChange("birthDate", e.target.value)
                         }
@@ -271,7 +276,11 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       </Label>
                       <Input
                         id="birthPlace"
-                        value={formData.birthPlace}
+                        value={
+                          formData.birthPlace instanceof Date
+                            ? formData.birthPlace.toISOString().split("T")[0]
+                            : formData.birthPlace ?? ""
+                        }
                         onChange={(e) =>
                           handleInputChange("birthPlace", e.target.value)
                         }
@@ -527,7 +536,11 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                     <Input
                       id="joinedAt"
                       type="date"
-                      value={formData.joinedAt}
+                      value={
+                        formData.joinedAt instanceof Date
+                          ? formData.joinedAt.toISOString().split("T")[0] // "YYYY-MM-DD"
+                          : formData.joinedAt ?? ""
+                      }
                       onChange={(e) =>
                         handleInputChange("joinedAt", e.target.value)
                       }

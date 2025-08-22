@@ -24,6 +24,22 @@ import { ITournamentTeam } from "@/components/tournament-teams/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+export interface TournamentTeamForm {
+  teamId: string | undefined;
+  group: string | undefined;
+  isEliminated: boolean | undefined;
+  notes: string | undefined;
+  matchesPlayed: number | undefined;
+  wins: number | undefined;
+  draws: number | undefined;
+  losses: number | undefined;
+  goalsFor: number | undefined;
+  goalsAgainst: number | undefined;
+  goalDifference: number | undefined;
+  points: number | undefined;
+  tournamentId: string | undefined;
+}
+
 interface PropsTournamentTeamForm {
   mode: "create" | "edit";
   tournamentId: string;
@@ -34,13 +50,28 @@ interface PropsTournamentTeamForm {
   onCancel: () => void;
 }
 
+export interface TournamentTeamData {
+  matchesPlayed: number;
+  goalDifference: number;
+  points: number;
+  tournamentId: string;
+  teamId?: string;
+  group?: string;
+  isEliminated?: boolean;
+  notes?: string;
+  wins?: number;
+  draws?: number;
+  losses?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+}
+
 export function TournamentTeamForm({
   mode,
   tournamentId,
   teams,
   tournamentTeam,
   usedTeamIds = [],
-  initialValues,
   onCancel,
 }: Readonly<PropsTournamentTeamForm>) {
   console.log(tournamentTeam);
@@ -49,7 +80,7 @@ export function TournamentTeamForm({
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [values, setValues] = useState<any>({
+  const [values, setValues] = useState<TournamentTeamForm>({
     teamId: isEdit ? tournamentTeam?.teamId : "",
     group: isEdit ? tournamentTeam?.group : "",
     isEliminated: isEdit ? tournamentTeam?.isEliminated : false,
@@ -74,7 +105,7 @@ export function TournamentTeamForm({
   }, [values.goalsFor, values.goalsAgainst, values.wins, values.draws]);
 
   useEffect(() => {
-    setValues((prev: any) => ({
+    setValues((prev: TournamentTeamForm) => ({
       ...prev,
       tournamentId,
       goalDifference: computed.goalDifference,
@@ -96,8 +127,8 @@ export function TournamentTeamForm({
     [teams, values.teamId]
   );
 
-  const update = (field: string, newValue: any) => {
-    setValues((prev: any) => ({ ...prev, [field]: newValue }));
+  const update = (field: string, newValue: number | string | boolean) => {
+    setValues((prev: TournamentTeamForm) => ({ ...prev, [field]: newValue }));
   };
 
   const clampNonNegative = (n: number) =>
@@ -109,7 +140,7 @@ export function TournamentTeamForm({
   };
 
   const asociarEquipo = async (
-    formData: any,
+    formData: TournamentTeamData,
     method: "POST" | "PATCH" = "POST"
   ) => {
     try {
@@ -161,10 +192,10 @@ export function TournamentTeamForm({
       toast.error("Debe de seleccionar un equipo.");
     }
     // Optional: basic sanity for MP = W+D+L
-    const mp = values.matchesPlayed;
+    const mp = values.matchesPlayed || 0;
     const sum = (values.wins || 0) + (values.draws || 0) + (values.losses || 0);
     const fixed = sum > mp ? sum : mp;
-    const data = {
+    const data: TournamentTeamData = {
       ...values,
       matchesPlayed: fixed,
       goalDifference: computed.goalDifference,
@@ -172,9 +203,8 @@ export function TournamentTeamForm({
       tournamentId,
     };
 
-    mode === "create"
-      ? await asociarEquipo(data, "POST")
-      : await asociarEquipo(data, "PATCH");
+    const method = mode === "create" ? "POST" : "PATCH";
+    await asociarEquipo(data, method);
   };
 
   return (

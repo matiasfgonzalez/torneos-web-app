@@ -279,7 +279,7 @@ const TabsTournament = (propos: PropsTabsTournament) => {
                         <AlertDialogDescription>
                           Esta acción no se puede deshacer. Se eliminará
                           permanentemente el torneo
-                          <strong> "{tournamentData.name}"</strong> y todos sus
+                          <strong>{tournamentData.name}</strong> y todos sus
                           datos asociados.
                         </AlertDialogDescription>
                       </AlertDialogHeader>

@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import StatsCards from "./components/StatsCards";
 import PlayersTable from "./components/PlayersTable";
 import PlayerForm from "./components/player-form";

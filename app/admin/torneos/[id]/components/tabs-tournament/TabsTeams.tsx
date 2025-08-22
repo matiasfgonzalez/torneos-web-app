@@ -8,14 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,19 +37,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import {
-  Edit,
-  Trash2,
-  Trophy,
-  Plus,
-  Eye,
-  UserPlus,
-  Search,
-  Filter,
-} from "lucide-react";
+import { Trash2, Trophy, Eye, UserPlus, Search, Filter } from "lucide-react";
 import { useMemo, useState } from "react";
-import TournamentTeamForm from "../tournament-team-form";
-import { toast } from "sonner";
 import { ITeam } from "@/components/equipos/types";
 import { cn } from "@/lib/utils";
 import { ITournamentTeam } from "@/components/tournament-teams/types";
@@ -76,9 +57,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
 
   const [searchTeam, setSearchTeam] = useState("");
   const [filterGroup, setFilterGroup] = useState<string | "ALL">("ALL");
-  const [createAssocOpen, setCreateAssocOpen] = useState(false);
-  const [editAssoc, setEditAssoc] = useState<any | null>(null);
-  const [deleteAssoc, setDeleteAssoc] = useState<any | null>(null);
+  const [deleteAssoc, setDeleteAssoc] = useState<ITournamentTeam | null>(null);
 
   const groupsList = useMemo(() => {
     const set = new Set<string>();
@@ -111,31 +90,6 @@ const TabsTeams = (props: TabsTeamsProps) => {
     });
   }, [associations, teamMap, filterGroup, searchTeam]);
 
-  const asociarEquipo = async (formData: any) => {
-    try {
-      const res = await fetch("/api/tournament-teams", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Error del servidor:", errorData);
-        throw new Error(errorData.error || "Error al asociar equipo");
-      }
-
-      const data = await res.json();
-      console.log("Asociación creada:", data);
-      return data;
-    } catch (error) {
-      console.error(`Error al cargar la noticia: ${error}`);
-      toast.error(`Error al cargar la noticia: ${error}`);
-    }
-  };
-
   return (
     <TabsContent value="teams" className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -159,7 +113,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select
               value={filterGroup}
-              onValueChange={(v) => setFilterGroup(v as any)}
+              onValueChange={(v) => setFilterGroup(v)}
             >
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Grupo" />
@@ -316,7 +270,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
                               </AlertDialogTitle>
                               <AlertDialogDescription>
                                 Esta acción eliminará la relación del equipo{" "}
-                                <strong> "{row.team?.name}"</strong> con este
+                                <strong> {row.team?.name}</strong> con este
                                 torneo. Las estadísticas asociadas a esta
                                 relación se perderán.
                               </AlertDialogDescription>

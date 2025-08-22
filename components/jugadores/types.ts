@@ -22,5 +22,6 @@ export interface IPlayer {
   createdAt: string | Date;
   updatedAt: string | Date;
   team: ITeam;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   goals: any[];
 }

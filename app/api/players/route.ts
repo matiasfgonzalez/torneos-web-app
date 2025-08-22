@@ -24,7 +24,6 @@ export async function POST(req: Request) {
       joinedAt,
       instagramUrl,
       twitterUrl,
-      teamId,
     } = body;
 
     const { userId } = await auth();
@@ -81,7 +80,6 @@ export async function POST(req: Request) {
         joinedAt: joinedAt ? new Date(joinedAt) : null,
         instagramUrl,
         twitterUrl,
-        teamId,
       },
     });
 

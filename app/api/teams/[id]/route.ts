@@ -83,7 +83,6 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         homeColor: body.homeColor,
         awayColor: body.awayColor,
         logoUrl: body.logoUrl,
-        tournamentId: body.tournamentId,
         updatedAt: new Date(),
       },
     });

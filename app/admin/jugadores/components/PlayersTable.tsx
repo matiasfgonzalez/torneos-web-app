@@ -29,20 +29,21 @@ import {
 import { Search, Edit, Trash2, Eye, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { ITeam } from "@/components/equipos/types";
 import { Button } from "@/components/ui/button";
 import { IPlayer } from "@/components/jugadores/types";
 
 interface PropsPlayersTable {
-  teams: any[];
+  teams: {
+    id: string;
+    name: string;
+    logoUrl: string;
+  }[];
   players: IPlayer[];
 }
 
 const PlayersTable = (props: PropsPlayersTable) => {
   const { players, teams } = props;
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingPlayer, setEditingPlayer] = useState<any>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const filteredPlayers = players.filter(
     (player) =>
       player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -145,9 +146,8 @@ const PlayersTable = (props: PropsPlayersTable) => {
     }
   };
 
-  const handleEdit = (player: any) => {
-    setEditingPlayer(player);
-    setIsCreateDialogOpen(true);
+  const handleEdit = (player: IPlayer) => {
+    console.log("Edit player:", player);
   };
   return (
     <Card>

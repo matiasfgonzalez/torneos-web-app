@@ -46,7 +46,7 @@ export interface Tournament {
   liga: string;
   status: string;
   format: string;
-  nextMatch: any;
+  nextMatch: string | Date;
   homeAndAway: boolean;
   enabled: boolean;
   startDate: string | Date;
