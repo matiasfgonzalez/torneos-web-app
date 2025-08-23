@@ -217,11 +217,21 @@ export default async function TournamentDetailPage({
                         <TableHead className="w-12">Pos</TableHead>
                         <TableHead>Equipo</TableHead>
                         <TableHead className="text-center">PJ</TableHead>
-                        <TableHead className="text-center">G</TableHead>
-                        <TableHead className="text-center">E</TableHead>
-                        <TableHead className="text-center">P</TableHead>
-                        <TableHead className="text-center">GF</TableHead>
-                        <TableHead className="text-center">GC</TableHead>
+                        <TableHead className="text-center hidden md:table-cell">
+                          G
+                        </TableHead>
+                        <TableHead className="text-center hidden md:table-cell">
+                          E
+                        </TableHead>
+                        <TableHead className="text-center hidden md:table-cell">
+                          P
+                        </TableHead>
+                        <TableHead className="text-center hidden md:table-cell">
+                          GF
+                        </TableHead>
+                        <TableHead className="text-center hidden md:table-cell">
+                          GC
+                        </TableHead>
                         <TableHead className="text-center">DG</TableHead>
                         <TableHead className="text-center">Pts</TableHead>
                       </TableRow>
@@ -253,7 +263,7 @@ export default async function TournamentDetailPage({
                                   className=" object-cover border border-border"
                                 />
                               </div>
-                              <span className="truncate">
+                              <span className="truncate hidden md:block">
                                 {tteam.team.name}
                               </span>
                             </div>
@@ -261,19 +271,19 @@ export default async function TournamentDetailPage({
                           <TableCell className="text-center">
                             {tteam.wins + tteam.draws + tteam.losses}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center hidden md:table-cell">
                             {tteam.wins}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center hidden md:table-cell">
                             {tteam.draws}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center hidden md:table-cell">
                             {tteam.losses}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center hidden md:table-cell">
                             {tteam.goalsFor}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center hidden md:table-cell">
                             {tteam.goalsAgainst}
                           </TableCell>
                           <TableCell className="text-center">
