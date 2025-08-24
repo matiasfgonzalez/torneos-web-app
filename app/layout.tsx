@@ -6,36 +6,42 @@ import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"]
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"]
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-    title: "Viva la mañana",
-    description: "Pagina de viva la mañana"
+  title: "GOLAZO",
+  description:
+    "La Casa del Fútbol Local - Noticias, Resultados y Estadísticas en Tiempo Real",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
-    children
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <ClerkProvider>
-            <html lang="en">
-                <body
-                    className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-                >
-                    <NextTopLoader height={5} speed={800} />
-                    {children}
-                    <Analytics />
-                </body>
-            </html>
-        </ClerkProvider>
-    );
+  return (
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <NextTopLoader height={5} speed={800} />
+          {children}
+          <Analytics />
+        </body>
+      </html>
+    </ClerkProvider>
+  );
 }

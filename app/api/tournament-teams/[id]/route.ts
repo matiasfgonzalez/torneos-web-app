@@ -92,3 +92,21 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     );
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: tParams }) {
+  try {
+    const { id } = await params;
+
+    const deleted = await db.tournamentTeam.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ message: "Asociación eliminada", deleted });
+  } catch (error) {
+    console.error("Error eliminando asociación:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
+  }
+}
