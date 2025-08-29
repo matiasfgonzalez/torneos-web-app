@@ -119,8 +119,6 @@ model Team {
   teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
   tournamentTeams TournamentTeam[] // 🔁 Relación M:N con equipos
 
-  matchesAsHome Match[] @relation("HomeTeam")   // Relación con partidos como local
-  matchesAsAway Match[] @relation("AwayTeam")   // Relación con partidos como visitante
 }
 
 enum Foot {
@@ -148,6 +146,7 @@ model Player {
   position     String?
   number       Int?
   imageUrl     String?
+  imageUrlFace     String?
   description  String?
   bio          String?
   status       PlayerStatus @default(ACTIVO)
@@ -185,18 +184,22 @@ model Match {
   tournament    Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId  String
 
-  homeTeam      Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  homeTeamId    String      // ID del equipo local
+  homeTeamId   String
+  homeTeam     TournamentTeam  @relation("HomeMatches", fields: [homeTeamId], references: [id])
 
-  awayTeam      Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  awayTeamId    String      // ID del equipo visitante
+  awayTeamId   String
+  awayTeam     TournamentTeam  @relation("AwayMatches", fields: [awayTeamId], references: [id])
 
   goals         Goal[]
 
   // Si el partido termino por penales
-  penaltyWinnerTeamId String?   // Team que ganó por penales
+  penaltyWinnerTeamId String?
+  penaltyWinnerTeam   TournamentTeam? @relation("PenaltyWinner", fields: [penaltyWinnerTeamId], references: [id])
+
   penaltyScoreHome    Int?
   penaltyScoreAway    Int?
+
+  roundNumber Int?   // útil para fases tipo ligas o grupos
 
   
   phaseId String?
@@ -247,6 +250,12 @@ model TournamentTeam {
   createdAt    DateTime @default(now()) // Fecha de creación del registro
   updatedAt    DateTime @updatedAt      // Fecha de última actualización
 
+  // 🔹 Relaciones inversas
+  homeMatches Match[] @relation("HomeMatches")
+  awayMatches Match[] @relation("AwayMatches")
+
+  penaltyWins Match[] @relation("PenaltyWinner")
+
   @@unique([tournamentId, teamId]) // Un equipo no puede repetirse en el mismo torneo
 }
 
@@ -275,6 +284,9 @@ model TeamPlayer {
 
 
 enum PhaseName {
+  FECHA
+  CRUCES
+  FASES_DE_GRUPOS
   DIECISAVOS_DE_FINAL
   OCTAVOS_DE_FINAL
   CUARTOS_DE_FINAL
@@ -286,10 +298,9 @@ model Phase {
   id           String   @id @default(uuid())
   name         PhaseName  @default(DIECISAVOS_DE_FINAL)
   order        Int      // para ordenarlas fácilmente
-  tournamentId String
 
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournaments  Tournament[]
   matches      Match[]
 
-  @@unique([tournamentId, name])
+  @@unique([name])
 }
