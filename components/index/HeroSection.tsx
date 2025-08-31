@@ -30,12 +30,9 @@ const HeroSection = () => {
         >
           La Casa del Fútbol Local
           <div className="flex justify-center">
-            <Image
-              src="/logo_transparente.png"
-              alt="Logo Viva la Mañana"
-              width={250}
-              height={170}
-            />
+            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              GOLAZO
+            </span>
           </div>
         </motion.h1>
         <motion.p

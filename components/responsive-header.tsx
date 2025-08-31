@@ -72,8 +72,8 @@ export default async function ResponsiveHeader({
               className="flex items-center space-x-2 group"
             >
               <Mic className="h-8 w-8 text-primary animate-neon-pulse group-hover:scale-110 transition-transform duration-300" />
-              <span className="text-2xl font-display font-bold text-neon-glow tracking-widest">
-                G O L A Z O
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                GOLAZO
               </span>
             </Link>
 

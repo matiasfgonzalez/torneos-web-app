@@ -30,7 +30,9 @@ const TeamLineup = () => {
       age: 31,
       rating: 8.2,
       saves: 4,
-      photo: "👤",
+      photo: "",
+      imageUrl:
+        "https://fotos.perfil.com//2022/12/11/900/0/asi-lucia-dibu-martinez-antes-de-integrar-la-seleccion-argentina-1470328.jpg",
     },
     defenders: [
       {
@@ -78,7 +80,9 @@ const TeamLineup = () => {
         position: "CM",
         age: 27,
         rating: 8.0,
-        photo: "👤",
+        photo: "",
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjCjgVv-4Cl9Z-XQT3uCV_KKtjPzSNG-q2XA&s",
       },
       {
         name: "Berge",
@@ -87,7 +91,9 @@ const TeamLineup = () => {
         position: "CM",
         age: 25,
         rating: 7.6,
-        photo: "👤",
+        photo: "",
+        imageUrl:
+          "https://fifpro.org/media/fhmfhvkx/messi-world-cup.jpg?rxy=0.48356841796117644,0.31512414378031967&width=1600&height=1024&rnd=133210253587130000",
       },
     ],
     forwards: [
@@ -201,6 +207,13 @@ const TeamLineup = () => {
           className={`${cardSize} bg-gradient-to-b ${getPositionColor(
             player.position
           )} rounded-xl shadow-2xl border-2 border-white/30 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-sm`}
+          style={
+            player.imageUrl && {
+              backgroundImage: `url(${player.imageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          }
         >
           {/* Glow effect */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -247,7 +260,13 @@ const TeamLineup = () => {
 
         {/* Hover stats tooltip */}
         {activePlayer?.name === player.name && (
-          <div className="absolute top-full mt-2 bg-black/90 backdrop-blur-xl text-white p-3 rounded-xl shadow-2xl border border-white/20 min-w-48 z-50 animate-in slide-in-from-bottom-5 duration-200">
+          <div
+            className={
+              player.position === "GK"
+                ? `absolute bottom-full mb-2 bg-black/90 backdrop-blur-xl text-white p-3 rounded-xl shadow-2xl border border-white/20 min-w-48 z-50 animate-in slide-in-from-top-5 duration-200`
+                : `absolute top-full mt-2 bg-black/90 backdrop-blur-xl text-white p-3 rounded-xl shadow-2xl border border-white/20 min-w-48 z-50 animate-in slide-in-from-bottom-5 duration-200`
+            }
+          >
             <div className="text-sm font-bold mb-2">{player.name}</div>
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
@@ -325,16 +344,6 @@ const TeamLineup = () => {
 
               {/* ESPN5 VIVO */}
               <div className="flex items-center gap-2">
-                <div className="bg-black/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 shadow-xl">
-                  <span className="text-white font-bold text-lg">ESPN</span>
-                  <span className="bg-red-600 text-white px-2 py-1 ml-1 text-sm font-bold rounded">
-                    5
-                  </span>
-                  <span className="bg-red-600 text-white px-2 py-1 ml-1 text-sm font-bold rounded">
-                    VIVO
-                  </span>
-                </div>
-
                 <button
                   onClick={() => setShowStats(!showStats)}
                   className="p-2 bg-white/10 backdrop-blur-md rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/20"

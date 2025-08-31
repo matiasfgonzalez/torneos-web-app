@@ -18,6 +18,7 @@ export async function POST(req: Request) {
       position,
       number,
       imageUrl,
+      imageUrlFace,
       description,
       bio,
       status = "ACTIVO",
@@ -74,6 +75,7 @@ export async function POST(req: Request) {
         position,
         number: number ? parseInt(number) : null,
         imageUrl,
+        imageUrlFace,
         description,
         bio,
         status,
@@ -87,5 +89,15 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error(error);
     return new NextResponse("Error al crear el jugador", { status: 500 });
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const players = await db.player.findMany();
+    return NextResponse.json(players);
+  } catch (error) {
+    console.error(error);
+    return new NextResponse("Error obteniendo jugadores", { status: 500 });
   }
 }

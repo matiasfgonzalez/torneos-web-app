@@ -30,7 +30,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { CalendarPlus, Settings2 } from "lucide-react";
 import { ITorneo } from "@/components/torneos/types";
 import { formatDate } from "@/lib/formatDate";
 import { useMemo } from "react";
@@ -39,6 +38,7 @@ import { ITeam } from "@/components/equipos/types";
 import { ITournamentTeam } from "@/components/tournament-teams/types";
 import TabsOverview from "./tabs-tournament/TabsOverview";
 import TabsTeams from "./tabs-tournament/TabsTeams";
+import TabsMatches from "./tabs-tournament/TabsMatches";
 
 interface PropsTabsTournament {
   tournamentData: ITorneo;
@@ -70,11 +70,21 @@ const TabsTournament = (propos: PropsTabsTournament) => {
   return (
     <Tabs defaultValue="overview" className="space-y-4">
       <TabsList className="grid w-full grid-cols-5">
-        <TabsTrigger value="overview">Resumen</TabsTrigger>
-        <TabsTrigger value="teams">Equipos</TabsTrigger>
-        <TabsTrigger value="matches">Partidos</TabsTrigger>
-        <TabsTrigger value="stats">Estadísticas</TabsTrigger>
-        <TabsTrigger value="settings">Configuración</TabsTrigger>
+        <TabsTrigger value="overview" className="cursor-pointer">
+          Resumen
+        </TabsTrigger>
+        <TabsTrigger value="teams" className="cursor-pointer">
+          Equipos
+        </TabsTrigger>
+        <TabsTrigger value="matches" className="cursor-pointer">
+          Partidos
+        </TabsTrigger>
+        <TabsTrigger value="stats" className="cursor-pointer">
+          Estadísticas
+        </TabsTrigger>
+        <TabsTrigger value="settings" className="cursor-pointer">
+          Configuración
+        </TabsTrigger>
       </TabsList>
 
       {/* Overview */}
@@ -89,33 +99,7 @@ const TabsTournament = (propos: PropsTabsTournament) => {
       />
 
       {/* Matches (placeholder management section, unchanged logic) */}
-      <TabsContent value="matches" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-medium">Gestión de Partidos</h3>
-            <p className="text-sm text-muted-foreground">
-              {tournamentData.matches} de {tournamentData.matches?.length}{" "}
-              partidos jugados
-            </p>
-          </div>
-          <Button>
-            <CalendarPlus className="mr-2 h-4 w-4" />
-            Programar Partido
-          </Button>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Settings2 className="h-4 w-4" />
-              Próximamente: programación y resultados
-            </CardTitle>
-            <CardDescription>
-              Integra aquí tu lógica de calendario de partidos.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </TabsContent>
+      <TabsMatches tournamentData={tournamentData} />
 
       {/* Stats: uses current associations to render tabla de posiciones */}
       <TabsContent value="stats" className="space-y-4">

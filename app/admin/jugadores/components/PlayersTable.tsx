@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { IPlayer } from "@/components/jugadores/types";
+import { formatDate } from "@/lib/formatDate";
 
 interface PropsPlayersTable {
   teams: {
@@ -222,15 +223,16 @@ const PlayersTable = (props: PropsPlayersTable) => {
                           teams.find((t) => t.id === player.teamId)?.logoUrl ||
                           "/placeholder.svg"
                         }
-                        alt={player.team.name}
+                        alt={player.team?.name}
                         className="w-6 h-6 rounded"
                       />
                       <div>
                         <div className="font-medium text-sm">
-                          {player.team.name}
+                          {player.team?.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Desde {new Date(player.joinedAt).toLocaleDateString()}
+                          Desde{" "}
+                          {formatDate(player.joinedAt, "dd 'de' MMMM yyyy")}
                         </div>
                       </div>
                     </div>

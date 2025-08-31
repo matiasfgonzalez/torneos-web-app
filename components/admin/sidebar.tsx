@@ -23,6 +23,7 @@ import {
   Shield,
   Newspaper,
   ArrowBigLeft,
+  ArrowLeft,
 } from "lucide-react";
 
 const menuItems = [
@@ -83,7 +84,7 @@ interface AdminSidebarProps {
   role: string | null;
 }
 
-export function AdminSidebar(props: AdminSidebarProps) {
+export function AdminSidebar(props: Readonly<AdminSidebarProps>) {
   const { role } = props;
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -113,10 +114,10 @@ export function AdminSidebar(props: AdminSidebarProps) {
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 text-blue-300"
+                  : "text-slate-400 hover:text-white hover:bg-slate-700/50"
               }`}
             >
               <item.icon className="h-4 w-4" />
@@ -130,9 +131,13 @@ export function AdminSidebar(props: AdminSidebarProps) {
 
       {/* Footer */}
       <div className="border-t p-4">
-        <Button variant="secondary" className="w-full justify-start" asChild>
+        <Button
+          variant="secondary"
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+          asChild
+        >
           <Link href="/public/index">
-            <ArrowBigLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="w-4 h-4" />
             Volver al sitio
           </Link>
         </Button>

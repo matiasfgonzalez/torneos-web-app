@@ -35,7 +35,6 @@ import {
   Hash,
   ImageIcon,
   FileText,
-  Users,
   InstagramIcon,
   TwitterIcon,
   Clock,
@@ -44,7 +43,6 @@ import {
   X,
   Save,
 } from "lucide-react";
-import { ITeam } from "@/components/equipos/types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { IPlayer } from "@/components/jugadores/types";
@@ -52,11 +50,10 @@ import { IPlayer } from "@/components/jugadores/types";
 interface PlayerFormProps {
   isEditMode: boolean;
   player?: IPlayer; // Para edición
-  teams?: ITeam[];
 }
 
 export default function PlayerForm(props: Readonly<PlayerFormProps>) {
-  const { isEditMode, player, teams } = props;
+  const { isEditMode, player } = props;
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
@@ -72,22 +69,29 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
     position: isEditMode ? player?.position || "" : "",
     number: isEditMode ? player?.number || "" : "",
     imageUrl: isEditMode ? player?.imageUrl || "" : "",
+    imageUrlFace: isEditMode ? player?.imageUrlFace || "" : "",
     description: isEditMode ? player?.description || "" : "",
     bio: isEditMode ? player?.bio || "" : "",
     status: isEditMode ? player?.status || "ACTIVO" : "ACTIVO",
     joinedAt: isEditMode ? player?.joinedAt || "" : "",
     instagramUrl: isEditMode ? player?.instagramUrl || "" : "",
     twitterUrl: isEditMode ? player?.twitterUrl || "" : "",
-    teamId: isEditMode ? player?.teamId || "" : "",
   });
 
   const [imagePreview, setImagePreview] = useState(player?.imageUrl || "");
+  const [imageFacePreview, setImageFacePreview] = useState(
+    player?.imageUrlFace || ""
+  );
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (field === "imageUrl") {
       setImagePreview(value);
+    }
+
+    if (field === "imageUrlFace") {
+      setImageFacePreview(value);
     }
   };
 
@@ -408,44 +412,6 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label
-                    htmlFor="teamId"
-                    className="flex items-center gap-2 pb-2"
-                  >
-                    <Users className="h-3 w-3" />
-                    Equipo *
-                  </Label>
-                  <Select
-                    value={formData.teamId}
-                    onValueChange={(value) =>
-                      handleInputChange("teamId", value)
-                    }
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar equipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams &&
-                        teams.map((team) => (
-                          <SelectItem key={team.id} value={team.id}>
-                            <div className="flex items-center gap-2">
-                              {team.logoUrl && (
-                                <img
-                                  src={team.logoUrl || "/placeholder.svg"}
-                                  alt={team.name}
-                                  className="w-4 h-4 rounded"
-                                />
-                              )}
-                              {team.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label
@@ -565,7 +531,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                     className="flex items-center gap-2 pb-2"
                   >
                     <ImageIcon className="h-3 w-3" />
-                    URL de la Foto
+                    URL de la Foto cuerpo entero
                   </Label>
                   <Input
                     id="imageUrl"
@@ -582,6 +548,35 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                         alt="Vista previa"
                         className="w-20 h-20 rounded-full object-cover border-2 border-border"
                         onError={() => setImagePreview("")}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Nueva imagen de rostro */}
+                <div>
+                  <Label
+                    htmlFor="imageUrlFace"
+                    className="flex items-center gap-2 pb-2"
+                  >
+                    <ImageIcon className="h-3 w-3" />
+                    URL de la Foto de rostro
+                  </Label>
+                  <Input
+                    id="imageUrlFace"
+                    value={formData.imageUrlFace}
+                    onChange={(e) =>
+                      handleInputChange("imageUrlFace", e.target.value)
+                    }
+                    placeholder="https://ejemplo.com/foto-jugador.jpg"
+                  />
+                  {imageFacePreview && (
+                    <div className="mt-2">
+                      <img
+                        src={imageFacePreview || "/placeholder.svg"}
+                        alt="Vista previa"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                        onError={() => setImageFacePreview("")}
                       />
                     </div>
                   )}
@@ -701,7 +696,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                   active:scale-95 cursor-pointer"
               >
                 <Save className="mr-2 h-4 w-4" />
-                Registrar Equipo
+                Registrar Jugador
               </Button>
             )}
           </div>

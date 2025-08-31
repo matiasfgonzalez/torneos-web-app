@@ -166,8 +166,9 @@ model Player {
 enum MatchStatus {
   PROGRAMADO // Programado
   EN_JUEGO // En juego
-  TERMINADO // Terminado
-  CANCELADO // Cancelado o suspendido
+  FINALIZADO // Finalizado
+  SUSPENDIDO // Suspendido temporalmente
+  POSTERGADO // Postergado para otra fecha
 }
 
 model Match {

@@ -55,7 +55,7 @@ const QuickStats = (props: PropsQuickStats) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {tournamentData.matches}/{tournamentData.matches?.length}
+            {tournamentData.matches?.length}
           </div>
           <p className="text-xs text-muted-foreground">completados</p>
         </CardContent>

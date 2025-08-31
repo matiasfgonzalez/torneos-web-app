@@ -19,7 +19,9 @@ export default function AdminLayout({
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Mic className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold">VIVA LA MAÑANA</span>
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  GOLAZO
+                </span>
               </div>
               <p className="text-muted-foreground">
                 La plataforma líder para la gestión y seguimiento de torneos de
@@ -91,7 +93,13 @@ export default function AdminLayout({
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 VIVA LA MAÑANA. Todos los derechos reservados.</p>
+            <p>
+              &copy; 2025{" "}
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                GOLAZO
+              </span>
+              . Todos los derechos reservados.
+            </p>
           </div>
         </div>
       </footer>
