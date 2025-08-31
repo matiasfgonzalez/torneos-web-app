@@ -3,67 +3,35 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import Image from "next/image";
 
 const HeroSection = () => {
   return (
-    <motion.section
-      initial={{
-        background: "linear-gradient(to right, #1d4ed8, #3b82f6)",
-      }}
-      animate={{
-        background: [
-          "linear-gradient(to right, #1d4ed8, #3b82f6)",
-          "linear-gradient(to right, #9333ea, #3b82f6)",
-          "linear-gradient(to right, #1d4ed8, #3b82f6)",
-        ],
-      }}
-      transition={{ duration: 10, repeat: Infinity }}
-      className="text-primary-foreground py-20"
-    >
-      <div className="container mx-auto px-4 text-center">
-        <motion.h1
-          className="text-4xl md:text-6xl font-bold mb-6"
-          initial={{ opacity: 0, y: -40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          La Casa del Fútbol Local
-          <div className="flex justify-center">
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              GOLAZO
-            </span>
-          </div>
-        </motion.h1>
-        <motion.p
-          className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
+    <section className="min-h-screen flex flex-col justify-center items-center text-center relative px-4 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+      <div className="relative z-10 max-w-3xl animate-fadeInUp">
+        <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-white via-purple-500 to-indigo-300 bg-clip-text text-transparent animate-gradient">
+          La Casa del Fútbol Local{" "}
+          <span className="block text-purple-500 text-6xl md:text-7xl drop-shadow-lg">
+            GOLAZO
+          </span>
+        </h1>
+        <p className="mt-6 text-lg md:text-xl text-gray-300">
           Sigue todos los torneos, resultados, estadísticas y noticias del
           fútbol de tu región en tiempo real.
-        </motion.p>
-        <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Button size="lg" variant="secondary" asChild>
-            <Link href="/public/torneos">Ver Torneos Activos</Link>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary bg-transparent"
-            asChild
-          >
-            <Link href="/public/noticias">Últimas Noticias</Link>
-          </Button>
-        </motion.div>
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <Link href="/public/torneos">
+            <button className="cursor-pointer px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 font-semibold shadow-lg hover:scale-105 transition">
+              Ver Torneos Activos
+            </button>{" "}
+          </Link>
+          <Link href="/public/noticias">
+            <button className="cursor-pointer px-6 py-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 font-semibold">
+              Últimas Noticias
+            </button>
+          </Link>
+        </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

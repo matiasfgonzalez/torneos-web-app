@@ -5,26 +5,26 @@ import HeroSection from "@/components/index/HeroSection";
 import StatsSection from "@/components/index/StatsSection";
 
 export default async function HomePage() {
-    return (
-        <div className="min-h-screen bg-background">
-            {/* Hero Section */}
-            <HeroSection />
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <HeroSection />
 
-            {/* Stats Section */}
-            <StatsSection />
+      {/* Stats Section */}
+      <StatsSection />
 
-            {/* Featured News */}
-            <ListNoticias />
+      {/* Featured News */}
+      <ListNoticias />
 
-            {/* Video Ads Section */}
-            <VideoAds variant="featured" />
+      {/* Video Ads Section */}
+      <VideoAds variant="featured" />
 
-            {/* Sponsors/Ads Section */}
-            <HomeAds variant="carousel" />
+      {/* Sponsors/Ads Section */}
+      <HomeAds variant="carousel" />
 
-            {/* Active Tournaments 
+      {/* Active Tournaments 
             <ListTorneos />
             */}
-        </div>
-    );
+    </div>
+  );
 }

@@ -69,9 +69,9 @@ export default async function ResponsiveHeader({
             {/* Logo */}
             <Link
               href="/public/index"
-              className="flex items-center space-x-2 group"
+              className="flex items-center text-xl font-bold text-purple-400 hover:scale-105 transition"
             >
-              <Mic className="h-8 w-8 text-primary animate-neon-pulse group-hover:scale-110 transition-transform duration-300" />
+              🏆
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 GOLAZO
               </span>

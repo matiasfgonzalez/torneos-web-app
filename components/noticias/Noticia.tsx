@@ -1,54 +1,39 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import { INoticia } from "./types";
-import { Calendar, User } from "lucide-react";
-import { Button } from "../ui/button";
 import Link from "next/link";
 
 interface NoticiaProps {
-    news: INoticia;
+  news: INoticia;
 }
 
 const Noticia = (props: NoticiaProps) => {
-    const { news } = props;
-    return (
-        <Card
-            key={news.id}
-            className="overflow-hidden hover:shadow-lg transform transition-transform duration-300 hover:scale-[1.02]"
-        >
-            <div className="aspect-video bg-muted overflow-hidden rounded-lg">
-                <img
-                    src={news.coverImageUrl ?? "/placeholder.svg"}
-                    alt={news.title}
-                    className="w-full h-full object-cover object-center"
-                />
-            </div>
-            <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                    <Badge variant="secondary">
-                        <User className="h-4 w-4" />
-                        {news.user.name ?? "Anónimo"}
-                    </Badge>
-                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        {news.publishedAt
-                            ? formatDate(news.publishedAt)
-                            : "Sin fecha"}
-                    </span>
-                </div>
-                <CardTitle className="">{news.title}</CardTitle>
-                {/*<CardDescription className="line-clamp-3">
-                    {news.summary ?? "No hay resumen disponible."}
-                </CardDescription>*/}
-            </CardHeader>
-            <CardContent>
-                <Button variant="secondary" className="w-full cursor-pointer">
-                    <Link href={`/public/noticias/${news.id}`}>Leer más</Link>
-                </Button>
-            </CardContent>
-        </Card>
-    );
+  const { news } = props;
+  return (
+    <div className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 hover:-translate-y-3 hover:border-purple-400/40 transition">
+      <div className="relative w-full h-64">
+        <img
+          src={news.coverImageUrl ?? "/placeholder.svg"}
+          alt={news.title}
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+      </div>
+      <div className="p-6">
+        <span className="bg-purple-500 px-3 py-1 rounded-full text-sm font-semibold">
+          {news.user.name ?? "Anónimo"}
+        </span>
+        <p className="text-gray-400 text-sm mt-2">
+          📅 {news.publishedAt ? formatDate(news.publishedAt) : "Sin fecha"}
+        </p>
+        <h3 className="text-xl font-bold mt-2">{news.title}</h3>
+        <Link href={`/public/noticias/${news.id}`}>
+          <button className="w-full cursor-pointer mt-4 px-6 py-2 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 font-semibold hover:scale-105 transition">
+            Leer más
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
 };
 
 export default Noticia;
