@@ -19,10 +19,10 @@ import {
   Filter,
   Eye,
   Star,
-  ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { Header } from "@/components/layout/header";
 
 // Datos de ejemplo de torneos
 const torneosData = [
@@ -161,35 +161,7 @@ export default function TorneosPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-                GOLAZO
-              </span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600 hover:text-[#ad45ff]"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Volver al Inicio
-                </Button>
-              </Link>
-              <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white">
-                Registrarse
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Header Section */}
       <section className="py-16 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5">

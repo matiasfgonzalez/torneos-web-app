@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Menu, X, LogIn, Mic } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { checkUser } from "@/lib/checkUser";
 import { currentUser } from "@clerk/nextjs/server";
@@ -11,7 +11,7 @@ interface ResponsiveHeaderProps {
 
 export default async function ResponsiveHeader({
   currentPage = "",
-}: ResponsiveHeaderProps) {
+}: Readonly<ResponsiveHeaderProps>) {
   const user = await checkUser();
   console.log("User in header:", user);
 
