@@ -282,13 +282,15 @@ export default function TorneosPage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-end pt-4 border-t">
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Ver Detalles
-                      </Button>
+                      <Link href={`/torneos/${torneo.id}`}>
+                        <Button
+                          size="sm"
+                          className="cursor-pointer bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Ver Detalles
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
