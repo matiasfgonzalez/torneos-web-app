@@ -18,145 +18,119 @@ import {
   Search,
   Filter,
   Eye,
-  Star,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { formatDate } from "@/lib/formatDate";
+import { FullscreenLoading } from "@/components/fullscreen-loading";
 
-// Datos de ejemplo de torneos
-const torneosData = [
-  {
-    id: 1,
-    nombre: "Liga Profesional 2024",
-    descripcion:
-      "Campeonato nacional de fútbol profesional con los mejores equipos del país",
-    categoria: "Fútbol",
-    estado: "En Curso",
-    equipos: 16,
-    fechaInicio: "2024-03-15",
-    fechaFin: "2024-11-30",
-    ubicacion: "Nacional",
-    participantes: 320,
-    premio: "$50,000",
-    imagen: "/football-tournament-stadium.png",
-    popularidad: 5,
-  },
-  {
-    id: 2,
-    nombre: "Copa Regional Norte",
-    descripcion:
-      "Torneo eliminatorio regional con equipos de la zona norte del país",
-    categoria: "Fútbol",
-    estado: "Inscripciones Abiertas",
-    equipos: 8,
-    fechaInicio: "2024-04-01",
-    fechaFin: "2024-05-15",
-    ubicacion: "Región Norte",
-    participantes: 160,
-    premio: "$15,000",
-    imagen: "/regional-football-cup.png",
-    popularidad: 4,
-  },
-  {
-    id: 3,
-    nombre: "Torneo Juvenil Sub-18",
-    descripcion: "Competencia para jóvenes talentos menores de 18 años",
-    categoria: "Fútbol Juvenil",
-    estado: "Finalizado",
-    equipos: 12,
-    fechaInicio: "2024-01-10",
-    fechaFin: "2024-02-28",
-    ubicacion: "Ciudad Capital",
-    participantes: 240,
-    premio: "$8,000",
-    imagen: "/youth-football-tournament.png",
-    popularidad: 4,
-  },
-  {
-    id: 4,
-    nombre: "Liga Empresarial",
-    descripcion: "Torneo corporativo entre equipos de diferentes empresas",
-    categoria: "Fútbol Amateur",
-    estado: "En Curso",
-    equipos: 10,
-    fechaInicio: "2024-02-01",
-    fechaFin: "2024-06-30",
-    ubicacion: "Zona Industrial",
-    participantes: 200,
-    premio: "$5,000",
-    imagen: "/corporate-football-league.png",
-    popularidad: 3,
-  },
-  {
-    id: 5,
-    nombre: "Copa Internacional Amistosa",
-    descripcion: "Torneo amistoso con equipos invitados de países vecinos",
-    categoria: "Fútbol Internacional",
-    estado: "Próximamente",
-    equipos: 6,
-    fechaInicio: "2024-07-15",
-    fechaFin: "2024-07-30",
-    ubicacion: "Estadio Nacional",
-    participantes: 120,
-    premio: "$25,000",
-    imagen: "/international-football-cup.png",
-    popularidad: 5,
-  },
-  {
-    id: 6,
-    nombre: "Torneo Femenino Elite",
-    descripcion:
-      "Campeonato de fútbol femenino con los mejores equipos del país",
-    categoria: "Fútbol Femenino",
-    estado: "En Curso",
-    equipos: 8,
-    fechaInicio: "2024-03-01",
-    fechaFin: "2024-08-15",
-    ubicacion: "Nacional",
-    participantes: 160,
-    premio: "$20,000",
-    imagen: "/women-football-championship.png",
-    popularidad: 4,
-  },
-];
+export interface IPTournament {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  locality: string;
+  logoUrl: string;
+  liga: string;
+  status: string;
+  format: string;
+  nextMatch: string;
+  homeAndAway: boolean;
+  enabled: boolean;
+  startDate: string;
+  endDate: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  tournamentTeams: IPTournamentTeam[];
+}
+
+export interface IPTournamentTeam {
+  id: string;
+  tournamentId: string;
+  teamId: string;
+  group: string;
+  isEliminated: boolean;
+  notes: string;
+  matchesPlayed: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function TorneosPage() {
+  const [torneos, setTorneos] = useState<IPTournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
 
-  const categorias = [
-    "Todos",
-    "Fútbol",
-    "Fútbol Juvenil",
-    "Fútbol Amateur",
-    "Fútbol Internacional",
-    "Fútbol Femenino",
-  ];
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/tournaments", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-  const torneosFiltrados = torneosData.filter((torneo) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch tournaments");
+        }
+
+        const data = await response.json();
+        setTorneos(data);
+      } catch (err: any) {
+        console.error("Error fetching tournaments:", err);
+        setError(err.message || "An unknown error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTournaments();
+  }, []);
+
+  console.log(torneos);
+  const categoriasAll = torneos.map((t: IPTournament) => t.category);
+  const categoriasUnicas = Array.from(new Set(categoriasAll));
+  const categorias = ["Todos", ...categoriasUnicas];
+
+  const torneosFiltrados = torneos.filter((torneo) => {
     const matchesSearch =
-      torneo.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      torneo.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+      torneo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      torneo.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      torneo.locality.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "Todos" || torneo.categoria === selectedCategory;
+      selectedCategory === "Todos" || torneo.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case "En Curso":
+      case "ACTIVO":
         return "bg-green-100 text-green-800";
-      case "Inscripciones Abiertas":
-        return "bg-blue-100 text-blue-800";
-      case "Próximamente":
+      case "PENDIENTE":
         return "bg-yellow-100 text-yellow-800";
-      case "Finalizado":
+      case "FINALIZADO":
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  if (loading) {
+    return <FullscreenLoading isVisible={true} message="Cargando torneos" />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
@@ -252,65 +226,62 @@ export default function TorneosPage() {
                 >
                   <div className="relative">
                     <img
-                      src={torneo.imagen || "/placeholder.svg"}
-                      alt={torneo.nombre}
+                      src={torneo.logoUrl || "/placeholder.svg"}
+                      alt={torneo.name}
                       className="w-full h-48 object-cover"
                     />
                     <div className="absolute top-4 left-4">
-                      <Badge className={getEstadoColor(torneo.estado)}>
-                        {torneo.estado}
+                      <Badge className={getEstadoColor(torneo.status)}>
+                        {torneo.status}
                       </Badge>
                     </div>
                     <div className="absolute top-4 right-4 flex space-x-1">
-                      {[...Array(torneo.popularidad)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                        />
-                      ))}
+                      <Trophy className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     </div>
                   </div>
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-start mb-2">
                       <CardTitle className="text-xl group-hover:text-[#ad45ff] transition-colors">
-                        {torneo.nombre}
+                        {torneo.name}
                       </CardTitle>
                       <Badge variant="outline" className="text-xs">
-                        {torneo.categoria}
+                        {torneo.category}
                       </Badge>
                     </div>
                     <CardDescription className="text-gray-600 line-clamp-2">
-                      {torneo.descripcion}
+                      {torneo.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center space-x-2">
                         <Users className="w-4 h-4 text-[#ad45ff]" />
-                        <span>{torneo.equipos} equipos</span>
+                        <span>{torneo.tournamentTeams.length} equipos</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Trophy className="w-4 h-4 text-[#ad45ff]" />
-                        <span>{torneo.premio}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-[#ad45ff]" />
-                        <span>{torneo.ubicacion}</span>
+                        <span>{torneo.format}</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-[#ad45ff]" />
-                        <span>
-                          {new Date(torneo.fechaInicio).toLocaleDateString()}
+                        <span className="flex wrap-anywhere">
+                          Inicio: {formatDate(torneo.startDate, "dd/MM/yyyy")}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-[#ad45ff]" />
+                        <span className="flex wrap-anywhere">
+                          Fin: {formatDate(torneo.endDate, "dd/MM/yyyy")}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">
-                          {torneo.participantes}
-                        </span>{" "}
-                        participantes
+                    <div className="grid grid-cols-1 gap-4 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="w-4 h-4 text-[#ad45ff]" />
+                        <span>{torneo.locality}</span>
                       </div>
+                    </div>
+                    <div className="flex items-center justify-end pt-4 border-t">
                       <Button
                         size="sm"
                         className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white"

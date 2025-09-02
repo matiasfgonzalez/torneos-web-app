@@ -217,7 +217,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 text-black dark:text-white">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Editar Torneo" : "Crear Nuevo Torneo"}
@@ -245,6 +245,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Ej: Copa de Verano 2024"
                       {...field}
                       disabled={isLoading}
+                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                     />
                   </FormControl>
                   <FormMessage />
@@ -264,6 +265,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Ej: Buenos Aires"
                       {...field}
                       disabled={isLoading}
+                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                     />
                   </FormControl>
                   <FormMessage />
@@ -283,7 +285,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     defaultValue={field.value}
                     disabled={isLoading}
                   >
-                    <FormControl>
+                    <FormControl className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300">
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona una categoría" />
                       </SelectTrigger>
@@ -323,6 +325,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           field.onChange(new Date(e.target.value))
                         }
                         disabled={isLoading}
+                        className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                       />
                     </FormControl>
                     <FormMessage />
@@ -349,6 +352,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           field.onChange(new Date(e.target.value))
                         }
                         disabled={isLoading}
+                        className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                       />
                     </FormControl>
                     <FormMessage />
@@ -369,6 +373,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Descripción del torneo..."
                       {...field}
                       disabled={isLoading}
+                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                     />
                   </FormControl>
                   <FormMessage />
@@ -388,7 +393,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     defaultValue={field.value}
                     disabled={isLoading}
                   >
-                    <FormControl>
+                    <FormControl className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300">
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona un formato" />
                       </SelectTrigger>
@@ -439,6 +444,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Ej: AFA, Liga Cordobesa..."
                       {...field}
                       disabled={isLoading}
+                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                     />
                   </FormControl>
                   <FormMessage />
@@ -459,6 +465,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="https://logo.com/escudo.png"
                       {...field}
                       disabled={isLoading}
+                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                     />
                   </FormControl>
                   <FormMessage />
@@ -498,6 +505,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       }
                       onChange={(e) => field.onChange(new Date(e.target.value))}
                       disabled={isLoading}
+                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
                     />
                   </FormControl>
                   <FormMessage />

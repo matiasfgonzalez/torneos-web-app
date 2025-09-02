@@ -68,3 +68,43 @@ export async function POST(req: Request) {
     return new NextResponse("Error al crear el torneo", { status: 500 });
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    // Obtener los parámetros de búsqueda de la URL
+    const url = new URL(req.url);
+    const category = url.searchParams.get("category");
+    const liga = url.searchParams.get("liga");
+
+    // Construir el objeto de consulta para Prisma
+    const query: any = {};
+    if (category) {
+      query.category = category;
+    }
+    if (liga) {
+      query.liga = liga;
+    }
+
+    // Obtener la lista de torneos de la base de datos
+    // Si se especifican parámetros, la consulta se filtra automáticamente.
+    const tournaments = await db.tournament.findMany({
+      include: {
+        tournamentTeams: true,
+      },
+      where: query,
+    });
+
+    if (!tournaments || tournaments.length === 0) {
+      return NextResponse.json(
+        { message: "No se encontraron torneos." },
+        { status: 200 } // Devuelve un 200 OK incluso si no hay resultados
+      );
+    }
+
+    // Devolver la lista de torneos con un estado 200
+    return NextResponse.json(tournaments, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return new NextResponse("Error al obtener los torneos", { status: 500 });
+  }
+}
