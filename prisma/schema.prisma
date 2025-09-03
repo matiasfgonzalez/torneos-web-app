@@ -44,29 +44,53 @@ model News {
 // Nuevos modelos para empezar a implementar torneos y partidos 27/07/2025
 
 enum TournamentStatus {
-  PENDIENTE   // Aún no empieza
-  ACTIVO    // En curso
-  FINALIZADO  // Ya terminó
+  BORRADOR      // Configurando, no visible al público
+  INSCRIPCION   // Inscripción abierta
+  PENDIENTE     // Aún no empieza
+  ACTIVO        // En curso
+  SUSPENDIDO    // Pausado temporalmente
+  FINALIZADO    // Ya terminó
+  CANCELADO     // No se va a realizar
+  ARCHIVADO     // Guardado como histórico
 }
 
 enum TournamentCategory {
   LIBRE
   SENIOR
   SUB_17
+  SUB_20
   RESERVA
   PRIMERA
+  SEGUNDA         // o categorías por divisiones A, B, C...
   VETERANO
   PREVETERANO
+  SUPERVETERANO   // mayores de 50/55
   FEMENINO
+  MASCULINO
   INFANTIL
+  MINI            // los más pequeños
+  ESCUELITA       // formativo
+  MIXTO           // hombres y mujeres juntos
+  MASTER          // categoría especial para mayores
+  JUVENIL         // genérico, por ej. 13 a 18 años
+  M30
 }
 
 enum TournamentFormat {
-  LIGA
-  COPA
-  ELIMINACION_DIRECTA
-  GRUPOS
-  IDA_Y_VUELTA
+  LIGA                 // Todos contra todos
+  COPA                 // Similar a eliminación pero con rondas
+  ELIMINACION_DIRECTA  // Knockout
+  DOBLE_ELIMINACION    // Pierde dos veces y queda afuera
+  GRUPOS               // Fase de grupos
+  IDA_Y_VUELTA         // Partido de ida y vuelta
+  ROUND_ROBIN          // Todos contra todos, puede repetirse varias vueltas
+  SUIZO                // Emparejamientos según rendimiento
+  MIXTO                // Combina grupos + eliminación
+  PLAYOFFS             // Serie final tipo cuartos, semi, final
+  LIGUILLA             // Mini liga entre clasificados
+  TODOS_CONTRA_TODOS   // Variante explícita de liga
+  PUNTOS_ACUMULADOS    // Por sumatoria de puntos en distintas fechas
+  AMISTOSO              // Partidos sin eliminación ni liga fija
 }
 
 
@@ -83,6 +107,8 @@ model Tournament {
   nextMatch   DateTime?
   homeAndAway Boolean @default(false) // Si el torneo es de ida y vuelta o solo un partido
   enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
+  rules       String?   // Guardar un reglamento, reglas especiales o configuraciones personalizadas del torneo
+  trophy      String?   // descripción del premio
 
 
   startDate   DateTime
@@ -96,7 +122,9 @@ model Tournament {
 
   matches     Match[] // Relación con partidos  
   tournamentTeams TournamentTeam[] // 🔁 Relación M:N con torneos
-  phase     Phase[] // Fases del torneo (ej: octavos, cuartos, semifinales, final)
+  
+  phaseId String?
+  phase   Phase? @relation(fields: [phaseId], references: [id])
 }
 
 model Team {
@@ -116,7 +144,6 @@ model Team {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
   tournamentTeams TournamentTeam[] // 🔁 Relación M:N con equipos
 
 }
@@ -132,6 +159,10 @@ enum PlayerStatus {
   LESIONADO
   SUSPENDIDO
   NO_DISPONIBLE
+  RETIRADO
+  TRANSFERIDO
+  PRUEBA
+  EXPULSADO
 }
 
 model Player {
@@ -155,8 +186,6 @@ model Player {
   instagramUrl String?
   twitterUrl   String?
 
-  goals        Goal[]
-
   teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
 
   createdAt    DateTime  @default(now())
@@ -164,11 +193,14 @@ model Player {
 }
 
 enum MatchStatus {
-  PROGRAMADO // Programado
-  EN_JUEGO // En juego
-  FINALIZADO // Finalizado
-  SUSPENDIDO // Suspendido temporalmente
-  POSTERGADO // Postergado para otra fecha
+  PROGRAMADO      // Programado
+  EN_JUEGO        // En curso
+  ENTRETIEMPO     // Pausa entre tiempos
+  FINALIZADO      // Terminado
+  SUSPENDIDO      // Suspendido temporalmente (clima, incidentes, etc.)
+  POSTERGADO      // Reprogramado para otra fecha
+  CANCELADO       // Anulado, no se jugará
+  WALKOVER        // Ganado por incomparecencia del rival
 }
 
 model Match {
@@ -219,8 +251,8 @@ model Goal {
   matchId   String
   match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
-  playerId  String
-  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  teamPlayerId  String
+  teamPlayer    TeamPlayer   @relation(fields: [teamPlayerId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -257,6 +289,8 @@ model TournamentTeam {
 
   penaltyWins Match[] @relation("PenaltyWinner")
 
+  teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
+
   @@unique([tournamentId, teamId]) // Un equipo no puede repetirse en el mismo torneo
 }
 
@@ -264,8 +298,8 @@ model TournamentTeam {
 model TeamPlayer {
   id        String   @id @default(uuid()) // ID único del registro
 
-  teamId    String                          // FK al equipo
-  team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade) // Relación al equipo
+  tournamentTeamId   String
+  tournamentTeam     TournamentTeam   @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade) // Relación al equipo dentro del torneo
 
   playerId  String                          // FK al jugador
   player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade) // Relación al jugador
@@ -277,10 +311,12 @@ model TeamPlayer {
   number       Int?                 // Número de camiseta
   status       PlayerStatus @default(ACTIVO) // Estado del jugador (activo, lesionado, suspendido, etc.)
 
+  goals       Goal[]
+
   createdAt DateTime @default(now()) // Fecha de creación del registro
   updatedAt DateTime @updatedAt      // Fecha de última actualización
 
-  @@unique([playerId, teamId]) // Evita que un jugador esté duplicado en el mismo equipo
+  @@unique([playerId, tournamentTeamId]) // Evita que un jugador esté duplicado en el mismo equipo
 }
 
 
@@ -296,12 +332,14 @@ enum PhaseName {
 }
 
 model Phase {
-  id           String   @id @default(uuid())
-  name         PhaseName  @default(DIECISAVOS_DE_FINAL)
-  order        Int      // para ordenarlas fácilmente
+  id   String @id @default(uuid())
+  name PhaseName @default(DIECISAVOS_DE_FINAL)
+  order Int
 
-  tournaments  Tournament[]
-  matches      Match[]
+  tournaments   Tournament[]
 
-  @@unique([name])
+  matches Match[]
+
+  // 👇 Añade esta restricción para que no haya fases con el mismo nombre y orden DENTRO del mismo torneo
+  @@unique([name, order])
 }
