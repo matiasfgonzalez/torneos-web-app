@@ -165,16 +165,45 @@ enum PlayerStatus {
   EXPULSADO
 }
 
+enum PlayerPosition {
+  // Arquero
+  ARQUERO
+
+  // Defensas
+  DEFENSOR_CENTRAL
+  LATERAL_DERECHO
+  LATERAL_IZQUIERDO
+  CARRILERO_DERECHO
+  CARRILERO_IZQUIERDO
+
+  // Mediocampistas
+  VOLANTE_DEFENSIVO
+  PIVOTE
+  VOLANTE_CENTRAL
+  VOLANTE_OFENSIVO
+  INTERIOR_DERECHO
+  INTERIOR_IZQUIERDO
+  ENGANCHE
+
+  // Delanteros
+  EXTREMO_DERECHO
+  EXTREMO_IZQUIERDO
+  DELANTERO_CENTRO
+  SEGUNDO_DELANTERO
+  FALSO_9
+}
+
+
 model Player {
   id           String   @id @default(uuid())
   name         String
   birthDate    DateTime?  // Fecha de nacimiento
-  birthPlace   String? // Lugar de nacimiento
+  birthPlace   String?    // Lugar de nacimiento
   nationality  String?
   height       Float?       // cm
   weight       Float?       // kg
   dominantFoot Foot?         // Pie dominante
-  position     String?
+  position     PlayerPosition?
   number       Int?
   imageUrl     String?
   imageUrlFace     String?

@@ -190,6 +190,7 @@ export function TournamentTeamForm({
     e.preventDefault();
     if (!values.teamId) {
       toast.error("Debe de seleccionar un equipo.");
+      return;
     }
     // Optional: basic sanity for MP = W+D+L
     const mp = values.matchesPlayed || 0;
@@ -230,10 +231,13 @@ export function TournamentTeamForm({
                 onValueChange={(v) => update("teamId", v)}
                 disabled={isLoading}
               >
-                <SelectTrigger id="teamId">
+                <SelectTrigger
+                  id="teamId"
+                  className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                >
                   <SelectValue placeholder="Selecciona un equipo" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300">
                   {availableTeams.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       <div className="flex items-center gap-2">
@@ -292,6 +296,7 @@ export function TournamentTeamForm({
               value={values.group ?? ""}
               onChange={(e) => update("group", e.target.value.toUpperCase())}
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
             <p className="text-xs text-muted-foreground mt-1">
               Deja vacío si el torneo no tiene grupos.
@@ -304,6 +309,7 @@ export function TournamentTeamForm({
               checked={!!values.isEliminated}
               onCheckedChange={(checked) => update("isEliminated", checked)}
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
             <Label htmlFor="isEliminated">Equipo eliminado</Label>
           </div>
@@ -330,6 +336,7 @@ export function TournamentTeamForm({
                 handleNumberChange("matchesPlayed", e.target.value)
               }
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
           </div>
           <div>
@@ -341,6 +348,7 @@ export function TournamentTeamForm({
               value={values.wins}
               onChange={(e) => handleNumberChange("wins", e.target.value)}
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
           </div>
           <div>
@@ -352,6 +360,7 @@ export function TournamentTeamForm({
               value={values.draws}
               onChange={(e) => handleNumberChange("draws", e.target.value)}
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
           </div>
           <div>
@@ -363,6 +372,7 @@ export function TournamentTeamForm({
               value={values.losses}
               onChange={(e) => handleNumberChange("losses", e.target.value)}
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
           </div>
           <div>
@@ -374,6 +384,7 @@ export function TournamentTeamForm({
               value={values.goalsFor}
               onChange={(e) => handleNumberChange("goalsFor", e.target.value)}
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
           </div>
           <div>
@@ -387,6 +398,7 @@ export function TournamentTeamForm({
                 handleNumberChange("goalsAgainst", e.target.value)
               }
               disabled={isLoading}
+              className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
             />
           </div>
           <div>
@@ -435,6 +447,7 @@ export function TournamentTeamForm({
             onChange={(e) => update("notes", e.target.value)}
             rows={3}
             disabled={isLoading}
+            className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
           />
         </CardContent>
       </Card>
@@ -442,13 +455,14 @@ export function TournamentTeamForm({
       <div className="flex justify-end gap-3">
         <Button
           type="button"
-          variant="outline"
+          variant="destructive"
           onClick={onCancel}
           disabled={isLoading}
+          className="cursor-pointer"
         >
           Cancelar
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="cursor-pointer">
           {isLoading
             ? "Cargando..."
             : mode === "edit"

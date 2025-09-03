@@ -28,7 +28,6 @@ const teams = [
 
 export default async function AdminJugadores() {
   const players = await getJugadores();
-  console.log(players);
   return (
     <div className="space-y-6">
       {/* Header */}

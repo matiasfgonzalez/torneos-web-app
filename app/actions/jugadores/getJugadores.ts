@@ -7,9 +7,6 @@ import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 export async function getJugadores(): Promise<IPlayer[]> {
   try {
     const jugadores = await db.player.findMany({
-      include: {
-        goals: true,
-      },
       orderBy: {
         createdAt: "desc",
       },

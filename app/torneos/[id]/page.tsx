@@ -27,119 +27,15 @@ import {
   Award,
   Play,
   CheckCircle,
+  MapPinned,
+  Map,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTorneoById } from "@/app/actions/torneos/getTorneoById";
 import { formatDate } from "@/lib/formatDate";
 import TeamsCarousel from "@/components/equipos/TeamsCarousel";
-
-// Datos de ejemplo de torneos (mismo que en la página principal)
-const torneosData = [
-  {
-    id: 1,
-    nombre: "Liga Profesional 2024",
-    descripcion:
-      "Campeonato nacional de fútbol profesional con los mejores equipos del país",
-    categoria: "Fútbol",
-    estado: "En Curso",
-    equipos: 16,
-    fechaInicio: "2024-03-15",
-    fechaFin: "2024-11-30",
-    ubicacion: "Nacional",
-    participantes: 320,
-    premio: "$50,000",
-    imagen: "/football-tournament-stadium.png",
-    popularidad: 5,
-  },
-  // ... otros torneos
-];
-
-// Datos de ejemplo para equipos participantes
-const equiposData = [
-  {
-    id: 1,
-    nombre: "Águilas FC",
-    ciudad: "Capital",
-    jugadores: 20,
-    entrenador: "Carlos Mendez",
-  },
-  {
-    id: 2,
-    nombre: "Leones United",
-    ciudad: "Norte",
-    jugadores: 18,
-    entrenador: "Ana Rodriguez",
-  },
-  {
-    id: 3,
-    nombre: "Tigres Rojos",
-    ciudad: "Sur",
-    jugadores: 22,
-    entrenador: "Miguel Santos",
-  },
-  {
-    id: 4,
-    nombre: "Halcones CF",
-    ciudad: "Este",
-    jugadores: 19,
-    entrenador: "Laura Gomez",
-  },
-  {
-    id: 5,
-    nombre: "Pumas Dorados",
-    ciudad: "Oeste",
-    jugadores: 21,
-    entrenador: "Roberto Silva",
-  },
-  {
-    id: 6,
-    nombre: "Lobos FC",
-    ciudad: "Centro",
-    jugadores: 20,
-    entrenador: "Patricia Ruiz",
-  },
-];
-
-// Partidos jugados
-const partidosJugados = [
-  {
-    id: 1,
-    fecha: "2024-03-20",
-    equipoLocal: "Águilas FC",
-    equipoVisitante: "Lobos FC",
-    resultadoLocal: 3,
-    resultadoVisitante: 1,
-    estado: "Finalizado",
-  },
-  {
-    id: 2,
-    fecha: "2024-03-22",
-    equipoLocal: "Tigres Rojos",
-    equipoVisitante: "Halcones CF",
-    resultadoLocal: 2,
-    resultadoVisitante: 0,
-    estado: "Finalizado",
-  },
-  {
-    id: 3,
-    fecha: "2024-03-25",
-    equipoLocal: "Leones United",
-    equipoVisitante: "Pumas Dorados",
-    resultadoLocal: 1,
-    resultadoVisitante: 1,
-    estado: "Finalizado",
-  },
-  {
-    id: 4,
-    fecha: "2024-03-28",
-    equipoLocal: "Águilas FC",
-    equipoVisitante: "Tigres Rojos",
-    resultadoLocal: 2,
-    resultadoVisitante: 1,
-    estado: "Finalizado",
-  },
-];
+import { getMatches } from "@/app/actions/partidos/match";
 
 // Próximos partidos
 const proximosPartidos = [
@@ -176,12 +72,11 @@ export default async function TorneoIndividualPage({
 }>) {
   const { id } = await params;
   const torneo = await getTorneoById(id);
+  const partidos = await getMatches(id);
 
   if (!torneo) {
     return notFound();
   }
-
-  console.log(torneo.tournamentTeams);
 
   const teamsOrder = torneo.tournamentTeams?.sort((a, b) => {
     if (a.points !== b.points) return b.points - a.points; // Ordenar por puntos
@@ -483,7 +378,9 @@ export default async function TorneoIndividualPage({
                           <Users className="w-4 h-4 text-[#ad45ff]" />
                           <span className="text-sm">Jugadores</span>
                         </div>
-                        <span className="font-semibold">{"cantJug"}</span>
+                        <span className="font-semibold">
+                          {equipo.teamPlayer.length}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
@@ -512,35 +409,54 @@ export default async function TorneoIndividualPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {partidosJugados.map((partido) => (
+                    {partidos.map((partido) => (
                       <div
                         key={partido.id}
                         className="border rounded-lg p-4 hover:bg-gray-50"
                       >
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-sm text-gray-600">
-                            {new Date(partido.fecha).toLocaleDateString()}
+                            {formatDate(partido.dateTime)}
                           </span>
                           <Badge className="bg-green-100 text-green-800">
-                            {partido.estado}
+                            {partido.status}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="text-center flex-1">
-                            <p className="font-semibold">
-                              {partido.equipoLocal}
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                partido.homeTeam.team.logoUrl ||
+                                "/placeholder.svg"
+                              }
+                              alt={`Escudo de ${partido.homeTeam.team.name}`}
+                              width={48}
+                              height={48}
+                              className="m-1 object-cover"
+                            />
+                            <p className="font-semibold hidden md:block">
+                              {partido.homeTeam.team.name}
                             </p>
                           </div>
                           <div className="mx-4 text-center">
                             <p className="text-2xl font-bold text-[#ad45ff]">
-                              {partido.resultadoLocal} -{" "}
-                              {partido.resultadoVisitante}
+                              {partido.homeScore} - {partido.awayScore}
                             </p>
                           </div>
-                          <div className="text-center flex-1">
-                            <p className="font-semibold">
-                              {partido.equipoVisitante}
+                          <div className="flex items-center">
+                            <p className="font-semibold hidden md:block">
+                              {partido.awayTeam.team.name}
                             </p>
+                            <img
+                              src={
+                                partido.awayTeam.team.logoUrl ||
+                                "/placeholder.svg"
+                              }
+                              alt={`Escudo de ${partido.awayTeam.team.name}`}
+                              width={48}
+                              height={48}
+                              className="m-1 object-cover"
+                            />
                           </div>
                         </div>
                       </div>
@@ -557,24 +473,33 @@ export default async function TorneoIndividualPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {proximosPartidos.map((partido) => (
+                    {partidos.map((partido) => (
                       <div
                         key={partido.id}
                         className="border rounded-lg p-4 hover:bg-gray-50"
                       >
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-sm text-gray-600">
-                            {new Date(partido.fecha).toLocaleDateString()} -{" "}
-                            {partido.hora}
+                            {formatDate(partido.dateTime)}
                           </span>
                           <Badge className="bg-blue-100 text-blue-800">
-                            Programado
+                            {partido.status}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between mb-2">
-                          <div className="text-center flex-1">
-                            <p className="font-semibold">
-                              {partido.equipoLocal}
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                partido.homeTeam.team.logoUrl ||
+                                "/placeholder.svg"
+                              }
+                              alt={`Escudo de ${partido.homeTeam.team.name}`}
+                              width={48}
+                              height={48}
+                              className="m-1 object-cover"
+                            />
+                            <p className="font-semibold hidden md:block">
+                              {partido.homeTeam.team.name}
                             </p>
                           </div>
                           <div className="mx-4 text-center">
@@ -582,15 +507,26 @@ export default async function TorneoIndividualPage({
                               VS
                             </p>
                           </div>
-                          <div className="text-center flex-1">
-                            <p className="font-semibold">
-                              {partido.equipoVisitante}
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                partido.awayTeam.team.logoUrl ||
+                                "/placeholder.svg"
+                              }
+                              alt={`Escudo de ${partido.awayTeam.team.name}`}
+                              width={48}
+                              height={48}
+                              className="m-1 object-cover"
+                            />
+                            <p className="font-semibold hidden md:block">
+                              {partido.awayTeam.team.name}
                             </p>
                           </div>
                         </div>
-                        <div className="text-center">
+                        <div className="text-center flex justify-center">
+                          <MapPin className="w-5 h-5 text-emerald-950" />
                           <p className="text-sm text-gray-600">
-                            {partido.estadio}
+                            {partido.stadium}
                           </p>
                         </div>
                       </div>

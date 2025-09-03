@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Search, Edit, Trash2, Eye, Award } from "lucide-react";
+import { Search, Edit, Trash2, Eye, Award, Earth } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -147,6 +147,22 @@ const PlayersTable = (props: PropsPlayersTable) => {
     }
   };
 
+  function calcularEdad(fechaNacimiento: string | Date): number {
+    const fecha = new Date(fechaNacimiento);
+    const hoy = new Date();
+
+    let edad = hoy.getFullYear() - fecha.getFullYear();
+    const mes = hoy.getMonth() - fecha.getMonth();
+    const dia = hoy.getDate() - fecha.getDate();
+
+    // Si aún no cumplió años en el año actual, restamos 1
+    if (mes < 0 || (mes === 0 && dia < 0)) {
+      edad--;
+    }
+
+    return edad;
+  }
+
   const handleEdit = (player: IPlayer) => {
     console.log("Edit player:", player);
   };
@@ -177,9 +193,8 @@ const PlayersTable = (props: PropsPlayersTable) => {
               <TableRow>
                 <TableHead>Jugador</TableHead>
                 <TableHead>Posición</TableHead>
-                <TableHead>Equipo</TableHead>
                 <TableHead>Físico</TableHead>
-                <TableHead>Estadísticas</TableHead>
+                <TableHead>Nacionalidad</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
@@ -191,7 +206,7 @@ const PlayersTable = (props: PropsPlayersTable) => {
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         <img
-                          src={player.imageUrl || "/placeholder.svg"}
+                          src={player.imageUrlFace || "/placeholder.svg"}
                           alt={player.name}
                           className="w-10 h-10 rounded-full object-cover border-2 border-border"
                         />
@@ -202,7 +217,8 @@ const PlayersTable = (props: PropsPlayersTable) => {
                       <div>
                         <div className="font-medium">{player.name}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          🌍 {player.nationality} • {"player.age"} años
+                          🌍 {player.nationality} •{" "}
+                          {calcularEdad(player.birthDate)} años
                         </div>
                       </div>
                     </div>
@@ -213,27 +229,6 @@ const PlayersTable = (props: PropsPlayersTable) => {
                       <div className="text-xs text-muted-foreground flex items-center gap-1">
                         {getDominantFootIcon(player.dominantFoot)}{" "}
                         {player.dominantFoot?.toLowerCase()}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={
-                          teams.find((t) => t.id === player.teamId)?.logoUrl ||
-                          "/placeholder.svg"
-                        }
-                        alt={player.team?.name}
-                        className="w-6 h-6 rounded"
-                      />
-                      <div>
-                        <div className="font-medium text-sm">
-                          {player.team?.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Desde{" "}
-                          {formatDate(player.joinedAt, "dd 'de' MMMM yyyy")}
-                        </div>
                       </div>
                     </div>
                   </TableCell>
@@ -250,12 +245,10 @@ const PlayersTable = (props: PropsPlayersTable) => {
                   <TableCell>
                     <div className="text-sm space-y-1">
                       <div className="flex items-center gap-1">
-                        <Award className="h-3 w-3 text-yellow-600" />
-                        <span className="font-medium">{player.goals}</span>{" "}
-                        goles
-                      </div>
-                      <div className="text-muted-foreground">
-                        {"player.matches"} partidos
+                        <Earth className="h-4 w-4 text-green-600" />
+                        <span className="font-medium">
+                          {player.nationality}
+                        </span>
                       </div>
                     </div>
                   </TableCell>

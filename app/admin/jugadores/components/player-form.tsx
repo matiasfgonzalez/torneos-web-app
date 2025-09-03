@@ -42,10 +42,16 @@ import {
   Plus,
   X,
   Save,
+  Clipboard,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { IPlayer } from "@/components/jugadores/types";
+import {
+  IPlayer,
+  PLAYER_FOOT,
+  PLAYER_POSITION,
+  PLAYER_STATUS,
+} from "@/components/jugadores/types";
 
 interface PlayerFormProps {
   isEditMode: boolean;
@@ -137,20 +143,6 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
     }
   };
 
-  const positions = [
-    "Portero",
-    "Defensa Central",
-    "Lateral Derecho",
-    "Lateral Izquierdo",
-    "Mediocampista Defensivo",
-    "Mediocampista Central",
-    "Mediocampista Ofensivo",
-    "Extremo Derecho",
-    "Extremo Izquierdo",
-    "Delantero Centro",
-    "Segundo Delantero",
-  ];
-
   const countries = [
     "Argentina",
     "Brasil",
@@ -219,7 +211,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
             {/* Información Personal */}
-            <Card className="bg-transparent">
+            <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <User className="h-4 w-4" />
@@ -244,6 +236,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       }
                       placeholder="Ej: Lionel Andrés Messi"
                       required
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                     />
                   </div>
 
@@ -267,6 +260,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                         onChange={(e) =>
                           handleInputChange("birthDate", e.target.value)
                         }
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                       />
                     </div>
 
@@ -280,15 +274,12 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       </Label>
                       <Input
                         id="birthPlace"
-                        value={
-                          formData.birthPlace instanceof Date
-                            ? formData.birthPlace.toISOString().split("T")[0]
-                            : formData.birthPlace ?? ""
-                        }
+                        value={formData.birthPlace}
                         onChange={(e) =>
                           handleInputChange("birthPlace", e.target.value)
                         }
                         placeholder="Ej: Rosario, Argentina"
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                       />
                     </div>
                   </div>
@@ -307,7 +298,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                         handleInputChange("nationality", value)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-1/2 mt-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm">
                         <SelectValue placeholder="Seleccionar nacionalidad" />
                       </SelectTrigger>
                       <SelectContent>
@@ -324,7 +315,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
             </Card>
 
             {/* Características Físicas */}
-            <Card className="bg-transparent">
+            <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Ruler className="h-4 w-4" />
@@ -351,6 +342,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       placeholder="175"
                       min="150"
                       max="220"
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                     />
                   </div>
 
@@ -372,6 +364,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       placeholder="70"
                       min="40"
                       max="120"
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                     />
                   </div>
                 </div>
@@ -390,13 +383,15 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       handleInputChange("dominantFoot", value)
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1 w-1/2 rounded-md border border-gray-300 px-3 py-2 shadow-sm">
                       <SelectValue placeholder="Seleccionar pie dominante" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="DERECHA">Derecho</SelectItem>
-                      <SelectItem value="IZQUIERDA">Izquierdo</SelectItem>
-                      <SelectItem value="AMBOS">Ambos</SelectItem>
+                      {PLAYER_FOOT.map((d) => (
+                        <SelectItem key={d.value} value={d.value}>
+                          {d.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -404,7 +399,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
             </Card>
 
             {/* Información Deportiva */}
-            <Card className="bg-transparent">
+            <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Trophy className="h-4 w-4" />
@@ -427,13 +422,13 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                         handleInputChange("position", value)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm">
                         <SelectValue placeholder="Seleccionar posición" />
                       </SelectTrigger>
                       <SelectContent>
-                        {positions.map((position) => (
-                          <SelectItem key={position} value={position}>
-                            {position}
+                        {PLAYER_POSITION.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -458,6 +453,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       placeholder="10"
                       min="1"
                       max="99"
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                     />
                   </div>
                 </div>
@@ -468,7 +464,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       htmlFor="status"
                       className="flex items-center gap-2 pb-2"
                     >
-                      <Trophy className="h-3 w-3" />
+                      <Clipboard className="h-3 w-3" />
                       Estado
                     </Label>
                     <Select
@@ -477,16 +473,15 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                         handleInputChange("status", value)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm">
                         <SelectValue placeholder="Seleccionar estado" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVO">Activo</SelectItem>
-                        <SelectItem value="LESIONADO">Lesionado</SelectItem>
-                        <SelectItem value="SUSPENDIDO">Suspendido</SelectItem>
-                        <SelectItem value="NO_DISPONIBLE">
-                          No Disponible
-                        </SelectItem>
+                        {PLAYER_STATUS.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -510,6 +505,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       onChange={(e) =>
                         handleInputChange("joinedAt", e.target.value)
                       }
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                     />
                   </div>
                 </div>
@@ -517,7 +513,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
             </Card>
 
             {/* Imagen y Redes Sociales */}
-            <Card className="bg-transparent">
+            <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <ImageIcon className="h-4 w-4" />
@@ -540,6 +536,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       handleInputChange("imageUrl", e.target.value)
                     }
                     placeholder="https://ejemplo.com/foto-jugador.jpg"
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                   />
                   {imagePreview && (
                     <div className="mt-2">
@@ -569,6 +566,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       handleInputChange("imageUrlFace", e.target.value)
                     }
                     placeholder="https://ejemplo.com/foto-jugador.jpg"
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                   />
                   {imageFacePreview && (
                     <div className="mt-2">
@@ -597,6 +595,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       handleInputChange("instagramUrl", e.target.value)
                     }
                     placeholder="https://instagram.com/usuario"
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                   />
                 </div>
 
@@ -615,6 +614,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                       handleInputChange("twitterUrl", e.target.value)
                     }
                     placeholder="https://twitter.com/usuario"
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                   />
                 </div>
               </CardContent>
@@ -622,7 +622,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
           </div>
 
           {/* Descripción y Biografía */}
-          <Card className="bg-transparent">
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <FileText className="h-4 w-4" />
@@ -646,6 +646,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                   }
                   placeholder="Descripción corta del jugador, sus características principales..."
                   rows={3}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                 />
               </div>
 
@@ -660,6 +661,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
                   onChange={(e) => handleInputChange("bio", e.target.value)}
                   placeholder="Historia completa del jugador, logros, trayectoria, datos curiosos..."
                   rows={5}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm"
                 />
               </div>
             </CardContent>

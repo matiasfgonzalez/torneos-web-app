@@ -46,7 +46,6 @@ import { ITorneo } from "@/components/torneos/types";
 import DialogAddEditTeamTournament from "../DialogAddEditTeamTournament";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { is } from "date-fns/locale";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 
 interface TabsTeamsProps {

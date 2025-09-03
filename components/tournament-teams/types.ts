@@ -17,6 +17,7 @@ export interface ITournamentTeam {
   updatedAt: string | Date;
   team: Team;
   tournament: Tournament;
+  teamPlayer: any;
 }
 
 export interface Team {

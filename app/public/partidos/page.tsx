@@ -67,7 +67,6 @@ export default function PartidosPage() {
         const response = await fetch(`/api/matches`);
         const data: IPartidos[] = await response.json();
         setMatches(data);
-        console.log(matches);
       } catch (error) {
         console.error("Error fetching matches:", error);
       }

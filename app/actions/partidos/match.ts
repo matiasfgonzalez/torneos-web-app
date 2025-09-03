@@ -2,16 +2,31 @@
 
 import { db } from "@/lib/db";
 
-export async function getMatches() {
+export async function getMatches(id: string) {
   try {
     const matches = await db.match.findMany({
+      where: id
+        ? { tournamentId: id } // 👈 filtra si hay id
+        : undefined, // 👈 sino no aplica filtro
       include: {
         tournament: true,
-        homeTeam: true,
-        awayTeam: true,
+        homeTeam: {
+          include: {
+            team: true,
+          },
+        },
+        awayTeam: {
+          include: {
+            team: true,
+          },
+        },
         goals: {
           include: {
-            player: true,
+            teamPlayer: {
+              include: {
+                player: true,
+              },
+            },
           },
         },
         phase: true,

@@ -17,14 +17,14 @@ export async function POST(req: Request) {
       dominantFoot,
       position,
       number,
+      status,
+      joinedAt,
       imageUrl,
       imageUrlFace,
-      description,
-      bio,
-      status = "ACTIVO",
-      joinedAt,
       instagramUrl,
       twitterUrl,
+      description,
+      bio,
     } = body;
 
     const { userId } = await auth();

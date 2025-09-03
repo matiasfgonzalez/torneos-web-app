@@ -15,15 +15,23 @@ export async function GET(_req: Request, { params }: { params: tParams }) {
       include: {
         tournament: true,
         homeTeam: {
-          include: { team: true },
+          include: {
+            team: true,
+          },
         },
         awayTeam: {
-          include: { team: true },
+          include: {
+            team: true,
+          },
         },
         phase: true,
         goals: {
           include: {
-            player: true,
+            teamPlayer: {
+              include: {
+                player: true,
+              },
+            },
           },
         },
       },
