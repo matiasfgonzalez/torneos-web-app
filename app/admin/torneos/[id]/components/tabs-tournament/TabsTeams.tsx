@@ -37,7 +37,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { Trash2, Trophy, Eye, UserPlus, Search, Filter } from "lucide-react";
+import { Trash2, Trophy, Search, Filter } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ITeam } from "@/components/equipos/types";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,7 @@ import DialogAddEditTeamTournament from "../DialogAddEditTeamTournament";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+import DialogAddEditTeamPlayer from "../DialogAddEditTeamPlayer";
 
 interface TabsTeamsProps {
   tournamentData: ITorneo;
@@ -266,16 +267,11 @@ const TabsTeams = (props: TabsTeamsProps) => {
                       <TableCell className="font-bold">{row.points}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" title="Ver equipo">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            title="Agregar jugador a este equipo"
-                          >
-                            <UserPlus className="h-4 w-4" />
-                          </Button>
+                          <DialogAddEditTeamPlayer
+                            mode="create"
+                            tournamentData={tournamentData}
+                            teamData={row}
+                          />
                           <DialogAddEditTeamTournament
                             mode="edit"
                             tournamentData={tournamentData}

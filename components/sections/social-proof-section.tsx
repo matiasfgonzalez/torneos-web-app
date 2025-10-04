@@ -26,7 +26,7 @@ export function SocialProofSection() {
                     />
                   ))}
                 </div>
-                <p className="text-gray-600 italic">"{testimonial.content}"</p>
+                <p className="text-gray-600 italic">{testimonial.content}</p>
                 <div className="pt-4">
                   <div className="font-semibold">{testimonial.name}</div>
                   <div className="text-sm text-gray-500">

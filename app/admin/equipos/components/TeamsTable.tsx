@@ -140,7 +140,7 @@ const TeamsTable = (props: PropsTeamsTable) => {
                   <TableCell>
                     <div className="flex items-center">
                       <Users className="mr-1 h-4 w-4 text-muted-foreground" />
-                      {(team.teamPlayer || []).length}
+                      {0}
                     </div>
                   </TableCell>
                   <TableCell>

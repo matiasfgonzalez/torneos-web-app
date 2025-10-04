@@ -38,13 +38,17 @@ const TabsOverview = (props: PropsTabsOverview) => {
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Inicio:</span>
-                <span>{formatDate(tournamentData.startDate)}</span>
+                <span>
+                  {formatDate(tournamentData.startDate, "dd 'de' MMMM yyyy")}
+                </span>
               </div>
               {tournamentData.endDate && (
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Fin:</span>
-                  <span>{formatDate(tournamentData.endDate)}</span>
+                  <span>
+                    {formatDate(tournamentData.endDate, "dd 'de' MMMM yyyy")}
+                  </span>
                 </div>
               )}
             </div>

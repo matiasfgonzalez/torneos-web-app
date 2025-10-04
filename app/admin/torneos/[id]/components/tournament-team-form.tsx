@@ -223,7 +223,7 @@ export function TournamentTeamForm({
             <Label htmlFor="teamId">
               Equipo{" "}
               {mode === "create" && <span className="text-red-500">*</span>}
-              {mode === "edit" && tournamentTeam?.team.name}
+              {mode === "edit" && tournamentTeam?.team?.name}
             </Label>
             {mode === "create" && (
               <Select

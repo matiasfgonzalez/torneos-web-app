@@ -1,5 +1,4 @@
 import { SectionBadge } from "@/components/ui-dev/section-badge";
-import { GradientButton } from "@/components/ui-dev/gradient-button";
 import { SPONSORS, featuredSponsor } from "@/lib/constants/sponsors";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -47,9 +46,9 @@ export function SponsorsSection() {
               />
             </div>
             <blockquote className="text-lg italic mb-4">
-              "GOLAZO ha revolucionado la forma en que gestionamos nuestros
+              GOLAZO ha revolucionado la forma en que gestionamos nuestros
               torneos corporativos. La plataforma es intuitiva, completa y nos
-              ha ayudado a crear experiencias deportivas excepcionales."
+              ha ayudado a crear experiencias deportivas excepcionales.
             </blockquote>
             <cite className="font-semibold">
               - María González, Directora de Marketing Deportivo

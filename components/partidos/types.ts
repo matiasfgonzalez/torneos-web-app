@@ -62,15 +62,36 @@ export interface IPhase {
 }
 
 export interface IGoal {
-  // Asumiendo estructura de Goal, si no hay detalles se deja vacío
+  id: string;
+  minute: number; // minuto en que se marcó el gol
+  playerId: string; // jugador que hizo el gol
+  matchId: string; // partido al que pertenece el gol
+  teamId: string; // equipo que marcó el gol
+  ownGoal?: boolean; // si fue un autogol
+  createdAt: string; // fecha de creación
+  updatedAt: string; // fecha de última actualización
 }
 export enum MatchStatus {
   PROGRAMADO = "PROGRAMADO",
   EN_JUEGO = "EN_JUEGO",
+  ENTRETIEMPO = "ENTRETIEMPO",
   FINALIZADO = "FINALIZADO",
   SUSPENDIDO = "SUSPENDIDO",
   POSTERGADO = "POSTERGADO",
+  CANCELADO = "CANCELADO",
+  WALKOVER = "WALKOVER",
 }
+
+export const MATCH_STATUS = [
+  { label: "Programado", value: MatchStatus.PROGRAMADO },
+  { label: "En juego", value: MatchStatus.EN_JUEGO },
+  { label: "Entretiempo", value: MatchStatus.ENTRETIEMPO },
+  { label: "Finalizado", value: MatchStatus.FINALIZADO },
+  { label: "Suspendido", value: MatchStatus.SUSPENDIDO },
+  { label: "Postergado", value: MatchStatus.POSTERGADO },
+  { label: "Cancelado", value: MatchStatus.CANCELADO },
+  { label: "Walkover", value: MatchStatus.WALKOVER },
+] as const;
 
 export interface IPartidos {
   id: string;

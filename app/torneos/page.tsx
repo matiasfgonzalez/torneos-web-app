@@ -68,7 +68,6 @@ export interface IPTournamentTeam {
 export default function TorneosPage() {
   const [torneos, setTorneos] = useState<IPTournament[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
 
@@ -89,9 +88,8 @@ export default function TorneosPage() {
 
         const data = await response.json();
         setTorneos(data);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error fetching tournaments:", err);
-        setError(err.message || "An unknown error occurred");
       } finally {
         setLoading(false);
       }
@@ -201,7 +199,7 @@ export default function TorneosPage() {
               {torneosFiltrados.length !== 1 ? "s" : ""}
             </h2>
             <div className="text-sm text-gray-600">
-              Mostrando resultados para "{searchTerm || "todos los torneos"}"
+              Mostrando resultados para {searchTerm || "todos los torneos"}
             </div>
           </div>
 

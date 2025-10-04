@@ -13,16 +13,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  ORGANIZER
+  USER
+}
+
 model User {
   id            String   @id @default(uuid())
   clerkUserId   String   @unique
   email         String   @unique
   name          String?
   imageUrl      String?
+  role          UserRole? @default(USER)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   news          News[]
   tournaments   Tournament[] // Relación con torneos creados por el usuario
+  teams         Team[]       // Relación con equipos creados por el usuario
+  auditLogs     AuditLog[]  // Relación con los registros de auditoría
 }
 
 model News {
@@ -109,6 +118,7 @@ model Tournament {
   enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
   rules       String?   // Guardar un reglamento, reglas especiales o configuraciones personalizadas del torneo
   trophy      String?   // descripción del premio
+  deletedAt   DateTime?   // Fecha de eliminación lógica (si aplica)
 
 
   startDate   DateTime
@@ -123,8 +133,8 @@ model Tournament {
   matches     Match[] // Relación con partidos  
   tournamentTeams TournamentTeam[] // 🔁 Relación M:N con torneos
   
-  phaseId String?
-  phase   Phase? @relation(fields: [phaseId], references: [id])
+  phaseId     String?
+  phase       Phase?    @relation(fields: [phaseId], references: [id])
 }
 
 model Team {
@@ -140,11 +150,15 @@ model Team {
   awayColor   String?    // Color secundario del equipo
   logoUrl     String?    // URL del escudo/logo
   enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
+  deletedAt   DateTime?   // Fecha de eliminación lógica (si aplica)
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   tournamentTeams TournamentTeam[] // 🔁 Relación M:N con equipos
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id])
 
 }
 
@@ -361,14 +375,23 @@ enum PhaseName {
 }
 
 model Phase {
-  id   String @id @default(uuid())
-  name PhaseName @default(DIECISAVOS_DE_FINAL)
-  order Int
+  id           String    @id @default(uuid())
+  name         PhaseName @default(DIECISAVOS_DE_FINAL)
+  order        Int
 
   tournaments   Tournament[]
+  matches      Match[]
 
-  matches Match[]
-
-  // 👇 Añade esta restricción para que no haya fases con el mismo nombre y orden DENTRO del mismo torneo
   @@unique([name, order])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String
+  payload   Json?
+  createdAt DateTime @default(now())
 }

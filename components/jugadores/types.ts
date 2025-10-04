@@ -1,5 +1,19 @@
 import { ITeam } from "../equipos/types";
 
+export interface IPlayerTeam {
+  id: string;
+  tournamentTeamId: string;
+  playerId: string;
+  joinedAt: string;
+  leftAt: string | null;
+  position: string;
+  number: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  player: IPlayer;
+}
+
 export interface IPlayer {
   id: string;
   name: string;
@@ -58,34 +72,6 @@ export enum PlayerStatus {
   TRANSFERIDO = "TRANSFERIDO",
   PRUEBA = "PRUEBA",
   EXPULSADO = "EXPULSADO",
-}
-
-enum PlayerPosition {
-  // Arquero
-  ARQUERO = "ARQUERO",
-
-  // Defensas
-  DEFENSOR_CENTRAL = "DEFENSOR_CENTRAL",
-  LATERAL_DERECHO = "LATERAL_DERECHO",
-  LATERAL_IZQUIERDO = "LATERAL_IZQUIERDO",
-  CARRILERO_DERECHO = "CARRILERO_DERECHO",
-  CARRILERO_IZQUIERDO = "CARRILERO_IZQUIERDO",
-
-  // Mediocampistas
-  VOLANTE_DEFENSIVO = "VOLANTE_DEFENSIVO",
-  PIVOTE = "PIVOTE",
-  VOLANTE_CENTRAL = "VOLANTE_CENTRAL",
-  VOLANTE_OFENSIVO = "VOLANTE_OFENSIVO",
-  INTERIOR_DERECHO = "INTERIOR_DERECHO",
-  INTERIOR_IZQUIERDO = "INTERIOR_IZQUIERDO",
-  ENGANCHE = "ENGANCHE",
-
-  // Delanteros
-  EXTREMO_DERECHO = "EXTREMO_DERECHO",
-  EXTREMO_IZQUIERDO = "EXTREMO_IZQUIERDO",
-  DELANTERO_CENTRO = "DELANTERO_CENTRO",
-  SEGUNDO_DELANTERO = "SEGUNDO_DELANTERO",
-  FALSO_9 = "FALSO_9",
 }
 
 export const PLAYER_POSITION = [

@@ -63,7 +63,7 @@ export function ContactSection() {
                 Agenda una demostración personalizada y descubre cómo GOLAZO
                 puede transformar la gestión de tus torneos
               </p>
-              <GradientButton size="sm">Agendar Demo</GradientButton>
+              <GradientButton>Agendar Demo</GradientButton>
             </div>
           </div>
 
@@ -146,7 +146,7 @@ export function ContactSection() {
                 />
               </div>
 
-              <GradientButton type="submit" className="w-full" size="lg">
+              <GradientButton type="submit" className="w-full">
                 Enviar Mensaje
               </GradientButton>
             </form>

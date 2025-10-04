@@ -27,8 +27,6 @@ import {
   Award,
   Play,
   CheckCircle,
-  MapPinned,
-  Map,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,34 +34,7 @@ import { getTorneoById } from "@/app/actions/torneos/getTorneoById";
 import { formatDate } from "@/lib/formatDate";
 import TeamsCarousel from "@/components/equipos/TeamsCarousel";
 import { getMatches } from "@/app/actions/partidos/match";
-
-// Próximos partidos
-const proximosPartidos = [
-  {
-    id: 5,
-    fecha: "2024-04-05",
-    hora: "15:00",
-    equipoLocal: "Leones United",
-    equipoVisitante: "Águilas FC",
-    estadio: "Estadio Central",
-  },
-  {
-    id: 6,
-    fecha: "2024-04-07",
-    hora: "17:30",
-    equipoLocal: "Pumas Dorados",
-    equipoVisitante: "Tigres Rojos",
-    estadio: "Arena Deportiva",
-  },
-  {
-    id: 7,
-    fecha: "2024-04-10",
-    hora: "19:00",
-    equipoLocal: "Halcones CF",
-    equipoVisitante: "Lobos FC",
-    estadio: "Campo Municipal",
-  },
-];
+import { MatchStatus } from "@prisma/client";
 
 export default async function TorneoIndividualPage({
   params,
@@ -379,7 +350,7 @@ export default async function TorneoIndividualPage({
                           <span className="text-sm">Jugadores</span>
                         </div>
                         <span className="font-semibold">
-                          {equipo.teamPlayer.length}
+                          {equipo.teamPlayer?.length}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -409,58 +380,61 @@ export default async function TorneoIndividualPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {partidos.map((partido) => (
-                      <div
-                        key={partido.id}
-                        className="border rounded-lg p-4 hover:bg-gray-50"
-                      >
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-gray-600">
-                            {formatDate(partido.dateTime)}
-                          </span>
-                          <Badge className="bg-green-100 text-green-800">
-                            {partido.status}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                partido.homeTeam.team.logoUrl ||
-                                "/placeholder.svg"
-                              }
-                              alt={`Escudo de ${partido.homeTeam.team.name}`}
-                              width={48}
-                              height={48}
-                              className="m-1 object-cover"
-                            />
-                            <p className="font-semibold hidden md:block">
-                              {partido.homeTeam.team.name}
-                            </p>
+                    {partidos.map(
+                      (partido) =>
+                        partido.status === MatchStatus.FINALIZADO && (
+                          <div
+                            key={partido.id}
+                            className="border rounded-lg p-4 hover:bg-gray-50"
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-gray-600">
+                                {formatDate(partido.dateTime)}
+                              </span>
+                              <Badge className="bg-green-100 text-green-800">
+                                {partido.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <img
+                                  src={
+                                    partido.homeTeam.team.logoUrl ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt={`Escudo de ${partido.homeTeam.team.name}`}
+                                  width={48}
+                                  height={48}
+                                  className="m-1 object-cover"
+                                />
+                                <p className="font-semibold hidden md:block">
+                                  {partido.homeTeam.team.name}
+                                </p>
+                              </div>
+                              <div className="mx-4 text-center">
+                                <p className="text-2xl font-bold text-[#ad45ff] whitespace-nowrap">
+                                  {partido.homeScore} - {partido.awayScore}
+                                </p>
+                              </div>
+                              <div className="flex items-center">
+                                <p className="font-semibold hidden md:block">
+                                  {partido.awayTeam.team.name}
+                                </p>
+                                <img
+                                  src={
+                                    partido.awayTeam.team.logoUrl ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt={`Escudo de ${partido.awayTeam.team.name}`}
+                                  width={48}
+                                  height={48}
+                                  className="m-1 object-cover"
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <div className="mx-4 text-center">
-                            <p className="text-2xl font-bold text-[#ad45ff]">
-                              {partido.homeScore} - {partido.awayScore}
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <p className="font-semibold hidden md:block">
-                              {partido.awayTeam.team.name}
-                            </p>
-                            <img
-                              src={
-                                partido.awayTeam.team.logoUrl ||
-                                "/placeholder.svg"
-                              }
-                              alt={`Escudo de ${partido.awayTeam.team.name}`}
-                              width={48}
-                              height={48}
-                              className="m-1 object-cover"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                        )
+                    )}
                   </CardContent>
                 </Card>
 
@@ -473,64 +447,67 @@ export default async function TorneoIndividualPage({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {partidos.map((partido) => (
-                      <div
-                        key={partido.id}
-                        className="border rounded-lg p-4 hover:bg-gray-50"
-                      >
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-gray-600">
-                            {formatDate(partido.dateTime)}
-                          </span>
-                          <Badge className="bg-blue-100 text-blue-800">
-                            {partido.status}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                partido.homeTeam.team.logoUrl ||
-                                "/placeholder.svg"
-                              }
-                              alt={`Escudo de ${partido.homeTeam.team.name}`}
-                              width={48}
-                              height={48}
-                              className="m-1 object-cover"
-                            />
-                            <p className="font-semibold hidden md:block">
-                              {partido.homeTeam.team.name}
-                            </p>
+                    {partidos.map(
+                      (partido) =>
+                        partido.status != MatchStatus.FINALIZADO && (
+                          <div
+                            key={partido.id}
+                            className="border rounded-lg p-4 hover:bg-gray-50"
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-gray-600">
+                                {formatDate(partido.dateTime)}
+                              </span>
+                              <Badge className="bg-blue-100 text-blue-800">
+                                {partido.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center">
+                                <img
+                                  src={
+                                    partido.homeTeam.team.logoUrl ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt={`Escudo de ${partido.homeTeam.team.name}`}
+                                  width={48}
+                                  height={48}
+                                  className="m-1 object-cover"
+                                />
+                                <p className="font-semibold hidden md:block">
+                                  {partido.homeTeam.team.name}
+                                </p>
+                              </div>
+                              <div className="mx-4 text-center">
+                                <p className="text-lg font-bold text-gray-400 whitespace-nowrap">
+                                  VS
+                                </p>
+                              </div>
+                              <div className="flex items-center">
+                                <img
+                                  src={
+                                    partido.awayTeam.team.logoUrl ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt={`Escudo de ${partido.awayTeam.team.name}`}
+                                  width={48}
+                                  height={48}
+                                  className="m-1 object-cover"
+                                />
+                                <p className="font-semibold hidden md:block">
+                                  {partido.awayTeam.team.name}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-center flex justify-center">
+                              <MapPin className="w-5 h-5 text-emerald-950" />
+                              <p className="text-sm text-gray-600">
+                                {partido.stadium}
+                              </p>
+                            </div>
                           </div>
-                          <div className="mx-4 text-center">
-                            <p className="text-lg font-bold text-gray-400">
-                              VS
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                partido.awayTeam.team.logoUrl ||
-                                "/placeholder.svg"
-                              }
-                              alt={`Escudo de ${partido.awayTeam.team.name}`}
-                              width={48}
-                              height={48}
-                              className="m-1 object-cover"
-                            />
-                            <p className="font-semibold hidden md:block">
-                              {partido.awayTeam.team.name}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-center flex justify-center">
-                          <MapPin className="w-5 h-5 text-emerald-950" />
-                          <p className="text-sm text-gray-600">
-                            {partido.stadium}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                        )
+                    )}
                   </CardContent>
                 </Card>
               </div>

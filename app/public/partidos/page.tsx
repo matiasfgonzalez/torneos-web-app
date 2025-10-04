@@ -33,8 +33,7 @@ import {
   Bookmark,
   TrendingUp,
 } from "lucide-react";
-import { format, isToday, isTomorrow, isYesterday } from "date-fns";
-import { es } from "date-fns/locale";
+import { isToday } from "date-fns";
 import { MatchType, type MatchFilters } from "@/types/match";
 import { IPartidos, MatchStatus } from "@/components/partidos/types";
 import { formatDate } from "@/lib/formatDate";
@@ -57,7 +56,6 @@ export default function PartidosPage() {
     search: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -144,19 +142,15 @@ export default function PartidosPage() {
     }
   };
 
-  const getDateLabel = (date: Date) => {
-    if (isToday(date)) return "Hoy";
-    if (isTomorrow(date)) return "Mañana";
-    if (isYesterday(date)) return "Ayer";
-    return format(date, "dd MMM", { locale: es });
-  };
-
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, search: value }));
     setCurrentPage(1);
   };
 
-  const handleFilterChange = (key: keyof MatchFilters, value: any) => {
+  const handleFilterChange = (
+    key: keyof MatchFilters,
+    value: string | number
+  ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
   };

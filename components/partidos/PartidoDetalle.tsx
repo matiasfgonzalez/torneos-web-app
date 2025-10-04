@@ -63,8 +63,15 @@ const PartidoDetalle = (props: PartidoDetalleProps) => {
         icon: Pause,
         label: "Postergado",
       },
+      ENTRETIEMPO: {
+        color: "text-orange-400",
+        bgColor: "bg-orange-500/20",
+        borderColor: "border-orange-500/30",
+        icon: Pause, // o el icono que prefieras
+        label: "Entretiempo",
+      },
     };
-    return configs[status] || configs["PROGRAMADO"];
+    return configs[status as keyof typeof configs] || configs["PROGRAMADO"];
   };
 
   const statusConfig = getStatusConfig(match.status);

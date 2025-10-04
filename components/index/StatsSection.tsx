@@ -9,7 +9,7 @@ export default function Stats() {
   return (
     <section className="bg-[#16213e] py-16 relative">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
-        {stats.map((s, i) => (
+        {stats.map((s) => (
           <div
             key={s.number}
             className="text-center p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md hover:-translate-y-2 hover:border-purple-400/50 transition"

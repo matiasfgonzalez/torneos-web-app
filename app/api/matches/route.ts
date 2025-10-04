@@ -14,11 +14,7 @@ export async function GET() {
           include: { team: true },
         },
         phase: true,
-        goals: {
-          include: {
-            player: true,
-          },
-        },
+        goals: true,
       },
       orderBy: { dateTime: "asc" },
     });
@@ -84,10 +80,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(match, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: error.message || "Error al crear el partido" },
+      { error: "Error al crear el partido" },
       { status: 500 }
     );
   }

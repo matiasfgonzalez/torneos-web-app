@@ -3,8 +3,30 @@
 import React, { useState } from "react";
 import { Users, Info, TrendingUp, Eye } from "lucide-react";
 
+export interface IPlayer {
+  name: string;
+  number: number;
+  nationality: string;
+  position: string;
+  age: number;
+  rating: number;
+  photo?: string;
+  imageUrl?: string;
+  // Campos opcionales para posiciones específicas
+  saves?: number; // solo para goalkeeper
+  goals?: number; // solo para striker
+}
+
+export interface IPlayers {
+  goalkeeper: IPlayer;
+  defenders: IPlayer[];
+  midfielders: IPlayer[];
+  forwards: IPlayer[];
+  striker: IPlayer;
+}
+
 const TeamLineup = () => {
-  const [activePlayer, setActivePlayer] = useState(null);
+  const [activePlayer, setActivePlayer] = useState<string | null>(null);
   const [showStats, setShowStats] = useState(false);
   const [screenSize, setScreenSize] = useState("large");
   const [showHeader, setShowHeader] = useState(true);
@@ -21,7 +43,7 @@ const TeamLineup = () => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const players = {
+  const players: IPlayers = {
     goalkeeper: {
       name: "Leno",
       number: 1,
@@ -156,8 +178,8 @@ const TeamLineup = () => {
     totalValue: "€180M",
   };
 
-  const getFlagEmoji = (country) => {
-    const flags = {
+  const getFlagEmoji = (country: string) => {
+    const flags: { [key: string]: string } = {
       de: "🇩🇪",
       br: "🇧🇷",
       dk: "🇩🇰",
@@ -170,8 +192,8 @@ const TeamLineup = () => {
     return flags[country] || "🏳️";
   };
 
-  const getPositionColor = (position) => {
-    const colors = {
+  const getPositionColor = (position: string) => {
+    const colors: { [key: string]: string } = {
       GK: "from-emerald-500 to-emerald-600",
       CB: "from-blue-500 to-blue-600",
       RB: "from-blue-400 to-blue-500",
@@ -185,7 +207,16 @@ const TeamLineup = () => {
     return colors[position] || "from-gray-500 to-gray-600";
   };
 
-  const PlayerCard = ({ player, isGoalkeeper = false, size = "normal" }) => {
+  const PlayerCard = ({
+    player,
+    isGoalkeeper = false,
+    size = "normal",
+  }: {
+    player: IPlayer;
+    isGoalkeeper?: boolean;
+    size?: "small" | "normal";
+  }) => {
+    console.log(isGoalkeeper, size);
     const cardSize =
       size === "small"
         ? "w-10 h-12 sm:w-12 sm:h-14 xl:w-16 xl:h-20"
@@ -199,20 +230,29 @@ const TeamLineup = () => {
     return (
       <div
         className="relative flex flex-col items-center group cursor-pointer transform transition-all duration-300 hover:scale-110 hover:z-10"
+        role="button"
+        tabIndex={0}
         onClick={() =>
-          setActivePlayer(activePlayer?.name === player.name ? null : player)
+          setActivePlayer(activePlayer === player.name ? null : player.name)
         }
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setActivePlayer(activePlayer === player.name ? null : player.name);
+          }
+        }}
       >
         <div
           className={`${cardSize} bg-gradient-to-b ${getPositionColor(
             player.position
           )} rounded-xl shadow-2xl border-2 border-white/30 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-sm`}
           style={
-            player.imageUrl && {
-              backgroundImage: `url(${player.imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }
+            player.imageUrl
+              ? {
+                  backgroundImage: `url(${player.imageUrl})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : undefined
           }
         >
           {/* Glow effect */}
@@ -259,7 +299,7 @@ const TeamLineup = () => {
         </div>
 
         {/* Hover stats tooltip */}
-        {activePlayer?.name === player.name && (
+        {activePlayer === player.name && (
           <div
             className={
               player.position === "GK"

@@ -2,36 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import {
-  Search,
-  Filter,
-  Users,
-  Star,
-  Calendar,
-  MapPin,
-  Trophy,
-  Eye,
-  ArrowRight,
-  Grid,
-  List,
-} from "lucide-react";
+import { Search, Users, Eye, ArrowRight, Grid, List } from "lucide-react";
 import Link from "next/link";
 import { IPlayer } from "@/components/jugadores/types";
-import { get } from "http";
-
-// Enums (reutilizando del componente anterior)
-export enum Foot {
-  IZQUIERDA = "IZQUIERDA",
-  DERECHA = "DERECHA",
-  AMBOS = "AMBOS",
-}
-
-export enum PlayerStatus {
-  ACTIVO = "ACTIVO",
-  LESIONADO = "LESIONADO",
-  SUSPENDIDO = "SUSPENDIDO",
-  NO_DISPONIBLE = "NO_DISPONIBLE",
-}
 
 const PlayersListInterface = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,13 +31,13 @@ const PlayersListInterface = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case PlayerStatus.ACTIVO:
+      case "ACTIVO":
         return "bg-green-500";
-      case PlayerStatus.LESIONADO:
+      case "LESIONADO":
         return "bg-red-500";
-      case PlayerStatus.SUSPENDIDO:
+      case "SUSPENDIDO":
         return "bg-yellow-500";
-      case PlayerStatus.NO_DISPONIBLE:
+      case "NO_DISPONIBLE":
         return "bg-gray-500";
       default:
         return "bg-gray-500";
@@ -73,13 +46,13 @@ const PlayersListInterface = () => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case PlayerStatus.ACTIVO:
+      case "ACTIVO":
         return "Active";
-      case PlayerStatus.LESIONADO:
+      case "LESIONADO":
         return "Injured";
-      case PlayerStatus.SUSPENDIDO:
+      case "SUSPENDIDO":
         return "Suspended";
-      case PlayerStatus.NO_DISPONIBLE:
+      case "NO_DISPONIBLE":
         return "Unavailable";
       default:
         return "Unknown";
@@ -88,11 +61,11 @@ const PlayersListInterface = () => {
 
   const getDominantFootColor = (foot: string) => {
     switch (foot) {
-      case Foot.IZQUIERDA:
+      case "IZQUIERDA":
         return "text-blue-400";
-      case Foot.DERECHA:
+      case "DERECHA":
         return "text-green-400";
-      case Foot.AMBOS:
+      case "AMBOS":
         return "text-purple-400";
       default:
         return "text-gray-400";
@@ -100,6 +73,7 @@ const PlayersListInterface = () => {
   };
 
   const handlePlayerSelect = (playerId: string) => {
+    console.log(selectedPlayer);
     setSelectedPlayer(playerId);
     // Aquí simularemos la redirección
     console.log(`Redirecting to player details: ${playerId}`);
@@ -119,7 +93,9 @@ const PlayersListInterface = () => {
   });
 
   const positions = [...new Set(players.map((p) => p.position))];
-  const statuses = Object.values(PlayerStatus);
+  const statuses = Object.values(
+    "ACTIVO LESIONADO SUSPENDIDO NO_DISPONIBLE".split(" ")
+  );
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
@@ -148,7 +124,7 @@ const PlayersListInterface = () => {
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
               <div className="text-2xl font-bold text-green-400">
-                {players.filter((p) => p.status === PlayerStatus.ACTIVO).length}
+                {players.filter((p) => p.status === "ACTIVO").length}
               </div>
               <div className="text-sm text-gray-400">Active</div>
             </div>

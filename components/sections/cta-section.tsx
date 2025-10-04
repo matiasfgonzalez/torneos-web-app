@@ -12,10 +12,7 @@ export function CTASection() {
           sus competencias deportivas
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <GradientButton
-            size="lg"
-            className="bg-white text-[#ad45ff] hover:bg-gray-50 border-0"
-          >
+          <GradientButton className="bg-white text-[#ad45ff] hover:bg-gray-50 border-0">
             Registrarse Gratis
           </GradientButton>
           <button className="px-8 py-3 text-white border-2 border-white rounded-lg hover:bg-white hover:text-[#ad45ff] transition-colors font-semibold">

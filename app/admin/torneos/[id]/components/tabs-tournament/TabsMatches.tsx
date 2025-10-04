@@ -8,15 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Calendar,
-  Settings2,
-  Plus,
-  Search,
-  Clock,
-  MapPin,
-  Edit,
-} from "lucide-react";
+import { Calendar, Plus, Search, Clock, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import DialogAddEditMatch from "../DialogAddEditMatch";
 import { IPartidos } from "@/components/partidos/types";
@@ -30,8 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/formatDate";
-import { Button } from "@/components/ui/button";
+import { formatDateOk } from "@/lib/formatDate";
+import { MatchStatus } from "@/types/match";
 
 interface TabsTournamentProps {
   tournamentData: ITorneo;
@@ -53,16 +45,32 @@ const TabsMatches = (props: TabsTournamentProps) => {
       match.tournament.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: MatchStatus) => {
     switch (status) {
-      case "PROGRAMADO":
+      case MatchStatus.PROGRAMADO:
         return <Badge variant="outline">Programado</Badge>;
-      case "EN_JUEGO":
+
+      case MatchStatus.EN_JUEGO:
         return <Badge variant="default">En curso</Badge>;
-      case "FINALIZADO":
+
+      case MatchStatus.ENTRETIEMPO:
+        return <Badge variant="secondary">Entretiempo</Badge>;
+
+      case MatchStatus.FINALIZADO:
         return <Badge variant="secondary">Finalizado</Badge>;
-      case "SUSPENDIDO":
+
+      case MatchStatus.SUSPENDIDO:
         return <Badge variant="destructive">Suspendido</Badge>;
+
+      case MatchStatus.POSTERGADO:
+        return <Badge variant="outline">Postergado</Badge>;
+
+      case MatchStatus.CANCELADO:
+        return <Badge variant="destructive">Cancelado</Badge>;
+
+      case MatchStatus.WALKOVER:
+        return <Badge variant="destructive">Walkover</Badge>;
+
       default:
         return <Badge>{status}</Badge>;
     }
@@ -84,8 +92,6 @@ const TabsMatches = (props: TabsTournamentProps) => {
     };
     fetchMatches();
   }, []);
-
-  console.log("Torneo", tournamentData);
 
   return (
     <TabsContent value="matches" className="space-y-4">
@@ -168,10 +174,10 @@ const TabsMatches = (props: TabsTournamentProps) => {
                         <div className="flex items-center space-x-2 text-sm">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {formatDate(match.dateTime, "dd 'de' MMMM yyyy")}
+                            {formatDateOk(match.dateTime, "dd 'de' MMMM yyyy")}
                           </span>
                           <Clock className="h-4 w-4" />
-                          <span>{formatDate(match.dateTime, "HH:mm")}</span>
+                          <span>{formatDateOk(match.dateTime, "HH:mm")}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -196,9 +202,11 @@ const TabsMatches = (props: TabsTournamentProps) => {
                       <TableCell>{getStatusBadge(match.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <DialogAddEditMatch
+                            mode="edit"
+                            tournamentData={tournamentData}
+                            matchData={match}
+                          />
                         </div>
                       </TableCell>
                     </TableRow>

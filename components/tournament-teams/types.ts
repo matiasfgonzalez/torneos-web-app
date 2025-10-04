@@ -1,10 +1,13 @@
+import { IPlayerTeam } from "../jugadores/types";
+import { IGoal, IPhase } from "../partidos/types";
+
 export interface ITournamentTeam {
   id: string;
   tournamentId: string;
   teamId: string;
-  group: string;
-  isEliminated: boolean;
-  notes: string;
+  group?: string;
+  isEliminated?: boolean;
+  notes?: string;
   matchesPlayed: number;
   wins: number;
   draws: number;
@@ -15,9 +18,16 @@ export interface ITournamentTeam {
   points: number;
   createdAt: string | Date;
   updatedAt: string | Date;
+
+  // Relaciones
   team: Team;
   tournament: Tournament;
-  teamPlayer: any;
+  teamPlayer?: IPlayerTeam[];
+
+  // Relaciones inversas
+  homeMatches?: IMatch[];
+  awayMatches?: IMatch[];
+  penaltyWins?: IMatch[];
 }
 
 export interface Team {
@@ -53,6 +63,54 @@ export interface Tournament {
   startDate: string | Date;
   endDate: string | Date;
   userId: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export enum MatchStatus {
+  PROGRAMADO = "PROGRAMADO", // Programado
+  EN_JUEGO = "EN_JUEGO", // En curso
+  ENTRETIEMPO = "ENTRETIEMPO", // Pausa entre tiempos
+  FINALIZADO = "FINALIZADO", // Terminado
+  SUSPENDIDO = "SUSPENDIDO", // Suspendido temporalmente (clima, incidentes, etc.)
+  POSTERGADO = "POSTERGADO", // Reprogramado para otra fecha
+  CANCELADO = "CANCELADO", // Anulado, no se jugará
+  WALKOVER = "WALKOVER",
+}
+
+export interface IMatch {
+  id: string;
+  dateTime: string | Date;
+  stadium?: string;
+  city?: string;
+  description?: string;
+  status: MatchStatus; // Debe coincidir con tu enum
+
+  homeScore?: number;
+  awayScore?: number;
+
+  tournamentId: string;
+  tournament?: Tournament;
+
+  homeTeamId: string;
+  homeTeam?: ITournamentTeam;
+
+  awayTeamId: string;
+  awayTeam?: ITournamentTeam;
+
+  goals?: IGoal[]; // Asume que tienes una interfaz Goal
+
+  penaltyWinnerTeamId?: string;
+  penaltyWinnerTeam?: ITournamentTeam;
+
+  penaltyScoreHome?: number;
+  penaltyScoreAway?: number;
+
+  roundNumber?: number;
+
+  phaseId?: string;
+  phase?: IPhase;
+
   createdAt: string | Date;
   updatedAt: string | Date;
 }

@@ -69,7 +69,7 @@ const TabsTournament = (propos: PropsTabsTournament) => {
 
   return (
     <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-5 bg-[#a3b3ff]">
         <TabsTrigger value="overview" className="cursor-pointer">
           Resumen
         </TabsTrigger>
@@ -139,7 +139,7 @@ const TabsTournament = (propos: PropsTabsTournament) => {
                               "/placeholder.svg?height=24&width=24&query=team"
                             }
                             alt={`Logo ${row.team?.name || "Equipo"}`}
-                            className="w-6 h-6 rounded-full object-cover border"
+                            className="w-8 h-8 object-cover"
                           />
                           <span className="font-medium">
                             {row.team?.shortName || row.team?.name || "Equipo"}

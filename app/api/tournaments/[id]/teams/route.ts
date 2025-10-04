@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-interface Params {
-  params: { id: string };
-}
+type tParams = Promise<{ id: string }>;
 
-export async function GET(req: Request, { params }: Params) {
+export async function GET(req: Request, { params }: { params: tParams }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const teams = await db.tournamentTeam.findMany({
       where: { tournamentId: id },

@@ -15,66 +15,9 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-
-// Enums
-export enum Foot {
-  IZQUIERDA = "IZQUIERDA",
-  DERECHA = "DERECHA",
-  AMBOS = "AMBOS",
-}
-
-export enum PlayerStatus {
-  ACTIVO = "ACTIVO",
-  LESIONADO = "LESIONADO",
-  SUSPENDIDO = "SUSPENDIDO",
-  NO_DISPONIBLE = "NO_DISPONIBLE",
-}
+import { Player, PlayerStatus } from "@/types/player";
 
 // Interfaces
-export interface TeamPlayer {
-  id: string;
-  teamId: string;
-  playerId: string;
-  joinedAt?: Date;
-  leftAt?: Date;
-  number?: number;
-  position?: string;
-  team: {
-    id: string;
-    name: string;
-    logo?: string;
-    country?: string;
-    league?: string;
-    colors: {
-      primary: string;
-      secondary: string;
-    };
-  };
-}
-
-export interface Player {
-  id: string;
-  name: string;
-  birthDate?: Date;
-  birthPlace?: string;
-  nationality?: string;
-  height?: number;
-  weight?: number;
-  dominantFoot?: Foot;
-  position?: string;
-  number?: number;
-  imageUrl?: string;
-  imageUrlFace?: string;
-  description?: string;
-  bio?: string;
-  status: PlayerStatus;
-  joinedAt?: Date;
-  instagramUrl?: string;
-  twitterUrl?: string;
-  teamPlayer?: TeamPlayer[];
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const PlayerCard = () => {
   const [showAllTeams, setShowAllTeams] = useState(false);
@@ -88,7 +31,7 @@ const PlayerCard = () => {
     nationality: "England",
     height: 188, // cm
     weight: 86, // kg
-    dominantFoot: Foot.DERECHA,
+    dominantFoot: "DERECHA",
     position: "Striker",
     number: 9,
     imageUrl: "https://i.ebayimg.com/images/g/UGYAAOSwOYRmdEpn/s-l400.jpg",

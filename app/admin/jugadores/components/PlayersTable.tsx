@@ -26,24 +26,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Search, Edit, Trash2, Eye, Award, Earth } from "lucide-react";
+import { Search, Trash2, MapPinHouse } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { IPlayer } from "@/components/jugadores/types";
-import { formatDate } from "@/lib/formatDate";
+import PlayerForm from "./player-form";
 
 interface PropsPlayersTable {
-  teams: {
-    id: string;
-    name: string;
-    logoUrl: string;
-  }[];
   players: IPlayer[];
 }
 
 const PlayersTable = (props: PropsPlayersTable) => {
-  const { players, teams } = props;
+  const { players } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const filteredPlayers = players.filter(
     (player) =>
@@ -163,9 +158,6 @@ const PlayersTable = (props: PropsPlayersTable) => {
     return edad;
   }
 
-  const handleEdit = (player: IPlayer) => {
-    console.log("Edit player:", player);
-  };
   return (
     <Card>
       <CardHeader>
@@ -194,7 +186,7 @@ const PlayersTable = (props: PropsPlayersTable) => {
                 <TableHead>Jugador</TableHead>
                 <TableHead>Posición</TableHead>
                 <TableHead>Físico</TableHead>
-                <TableHead>Nacionalidad</TableHead>
+                <TableHead>Lugar de nacimiento</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
@@ -245,27 +237,15 @@ const PlayersTable = (props: PropsPlayersTable) => {
                   <TableCell>
                     <div className="text-sm space-y-1">
                       <div className="flex items-center gap-1">
-                        <Earth className="h-4 w-4 text-green-600" />
-                        <span className="font-medium">
-                          {player.nationality}
-                        </span>
+                        <MapPinHouse className="h-4 w-4 text-green-600" />
+                        <span className="font-medium">{player.birthPlace}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(player.status)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
-                      <Button variant="ghost" size="sm" title="Ver detalles">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(player)}
-                        title="Editar"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <PlayerForm isEditMode={true} player={player} />
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="sm" title="Eliminar">

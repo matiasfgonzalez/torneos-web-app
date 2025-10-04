@@ -1,4 +1,5 @@
 // app/api/tournaments/route.ts
+import { Prisma, TournamentCategory } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -77,9 +78,9 @@ export async function GET(req: Request) {
     const liga = url.searchParams.get("liga");
 
     // Construir el objeto de consulta para Prisma
-    const query: any = {};
+    const query: Prisma.TournamentWhereInput = {};
     if (category) {
-      query.category = category;
+      query.category = category as TournamentCategory;
     }
     if (liga) {
       query.liga = liga;

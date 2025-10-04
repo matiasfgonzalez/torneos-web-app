@@ -256,15 +256,17 @@ export default async function TournamentDetailPage({
                             <div className="flex items-center gap-3">
                               <div className="relative w-11 h-11 flex-shrink-0">
                                 <img
-                                  src={tteam.team.logoUrl || "/placeholder.svg"}
-                                  alt={`Escudo de ${tteam.team.name}`}
+                                  src={
+                                    tteam?.team?.logoUrl || "/placeholder.svg"
+                                  }
+                                  alt={`Escudo de ${tteam?.team?.name}`}
                                   width={64}
                                   height={64}
                                   className=" object-cover border border-border"
                                 />
                               </div>
                               <span className="truncate hidden md:block">
-                                {tteam.team.name}
+                                {tteam?.team?.name}
                               </span>
                             </div>
                           </TableCell>

@@ -22,7 +22,6 @@ import {
   Home,
   Shield,
   Newspaper,
-  ArrowBigLeft,
   ArrowLeft,
 } from "lucide-react";
 

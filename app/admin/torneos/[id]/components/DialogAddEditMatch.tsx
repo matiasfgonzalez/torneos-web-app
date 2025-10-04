@@ -25,17 +25,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-enum PhaseName {
-  FECHA,
-  CRUCES,
-  FASES_DE_GRUPOS,
-  DIECISAVOS_DE_FINAL,
-  OCTAVOS_DE_FINAL,
-  CUARTOS_DE_FINAL,
-  SEMIFINAL,
-  FINAL,
-}
+import { IPartidos, MATCH_STATUS } from "@/components/partidos/types";
+import { formatDateTimeLocal } from "@/lib/formatDate";
+import { PhaseName } from "@prisma/client";
 
 interface Phase {
   id: string;
@@ -44,7 +36,7 @@ interface Phase {
 }
 
 interface MatchFormValues {
-  dateTime: string | Date;
+  dateTime: string;
   stadium: string;
   city: string;
   description: string;
@@ -64,33 +56,37 @@ interface MatchFormValues {
 interface DialogAddEditMatchProps {
   mode: "create" | "edit";
   tournamentData: ITorneo;
-  matchData?: any; // Puedes definir una interfaz para los datos del partido si la tienes
+  matchData?: IPartidos; // Puedes definir una interfaz para los datos del partido si la tienes
 }
 
 const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
   const { mode, tournamentData, matchData } = props;
+
+  const isEdit = mode === "edit";
+
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [values, setValues] = useState<MatchFormValues>({
-    dateTime: "",
-    stadium: "",
-    city: "",
-    description: "",
-    status: "",
+    dateTime: isEdit
+      ? formatDateTimeLocal(new Date(matchData?.dateTime ?? new Date()))
+      : formatDateTimeLocal(new Date()),
+    stadium: isEdit ? matchData?.stadium ?? "" : "",
+    city: isEdit ? matchData?.city ?? "" : "",
+    description: isEdit ? matchData?.description ?? "" : "",
+    status: isEdit ? matchData?.status ?? "" : "",
     tournamentId: tournamentData.id,
-    homeTeamId: "",
-    awayTeamId: "",
-    phaseId: "",
-    homeScore: null,
-    awayScore: null,
-    penaltyWinnerTeamId: null,
-    penaltyScoreHome: null,
-    penaltyScoreAway: null,
-    roundNumber: null,
+    homeTeamId: isEdit ? matchData?.homeTeamId ?? "" : "",
+    awayTeamId: isEdit ? matchData?.awayTeamId ?? "" : "",
+    phaseId: isEdit ? matchData?.phaseId ?? "" : "",
+    homeScore: isEdit ? matchData?.homeScore ?? null : null,
+    awayScore: isEdit ? matchData?.awayScore ?? null : null,
+    penaltyWinnerTeamId: isEdit ? matchData?.penaltyWinnerTeamId ?? "" : "",
+    penaltyScoreHome: isEdit ? matchData?.penaltyScoreHome ?? null : null,
+    penaltyScoreAway: isEdit ? matchData?.penaltyScoreAway ?? null : null,
+    roundNumber: isEdit ? matchData?.roundNumber ?? null : null,
   });
 
   useEffect(() => {
@@ -101,8 +97,8 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
 
         const data: Phase[] = await res.json();
         setPhases(data);
-      } catch (err: any) {
-        setError(err.message || "Error desconocido");
+      } catch (err) {
+        console.log(err || "Error desconocido");
       } finally {
         setIsLoading(false);
       }
@@ -112,7 +108,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
   }, []); // Solo se ejecuta una vez al montar el componente
 
   const update = (field: string, newValue: number | string | boolean) => {
-    setValues((prev: any) => ({ ...prev, [field]: newValue }));
+    setValues((prev: MatchFormValues) => ({ ...prev, [field]: newValue }));
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -225,7 +221,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   type="datetime-local"
                   id="dateTime"
                   name="dateTime"
-                  value={values.dateTime as string}
+                  value={values.dateTime}
                   onChange={(e) => update("dateTime", e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm"
                   required
@@ -253,16 +249,16 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                         <div className="flex items-center gap-2">
                           <img
                             src={
-                              t.team.logoUrl ||
+                              t?.team?.logoUrl ||
                               "/placeholder.svg?height=16&width=16&query=team-logo"
                             }
-                            alt={`Logo ${t.team.name}`}
+                            alt={`Logo ${t?.team?.name}`}
                             className="w-4 h-4 rounded object-cover border"
                           />
-                          <span>{t.team.name}</span>
-                          {t.team.shortName && (
+                          <span>{t?.team?.name}</span>
+                          {t?.team?.shortName && (
                             <Badge variant="outline" className="ml-1">
-                              {t.team.shortName}
+                              {t?.team?.shortName}
                             </Badge>
                           )}
                         </div>
@@ -292,16 +288,16 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                         <div className="flex items-center gap-2">
                           <img
                             src={
-                              t.team.logoUrl ||
+                              t?.team?.logoUrl ||
                               "/placeholder.svg?height=16&width=16&query=team-logo"
                             }
-                            alt={`Logo ${t.team.name}`}
+                            alt={`Logo ${t?.team?.name}`}
                             className="w-4 h-4 rounded object-cover border"
                           />
-                          <span>{t.team.name}</span>
-                          {t.team.shortName && (
+                          <span>{t?.team?.name}</span>
+                          {t?.team?.shortName && (
                             <Badge variant="outline" className="ml-1">
-                              {t.team.shortName}
+                              {t?.team?.shortName}
                             </Badge>
                           )}
                         </div>
@@ -363,10 +359,11 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                     <SelectValue placeholder="Selecciona estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PROGRAMADO">Programado</SelectItem>
-                    <SelectItem value="EN_JUEGO">En Juego</SelectItem>
-                    <SelectItem value="TERMINADO">Terminado</SelectItem>
-                    <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                    {MATCH_STATUS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -459,7 +456,22 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                       <SelectContent>
                         {tournamentData.tournamentTeams?.map((t) => (
                           <SelectItem key={t.id} value={t.id}>
-                            {t.team.name}
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={
+                                  t?.team?.logoUrl ||
+                                  "/placeholder.svg?height=16&width=16&query=team-logo"
+                                }
+                                alt={`Logo ${t?.team?.name}`}
+                                className="w-4 h-4 rounded object-cover border"
+                              />
+                              <span>{t?.team?.name}</span>
+                              {t?.team?.shortName && (
+                                <Badge variant="outline" className="ml-1">
+                                  {t?.team?.shortName}
+                                </Badge>
+                              )}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
