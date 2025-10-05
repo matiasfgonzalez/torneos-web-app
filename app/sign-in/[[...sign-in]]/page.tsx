@@ -1,9 +1,9 @@
-import { SignIn } from "@clerk/nextjs";
+import GoogleSignIn from "./GoogleSignIn";
 
-export default function Page() {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            <SignIn />
-        </div>
-    );
+export default function SignInPage() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <GoogleSignIn />
+    </div>
+  );
 }

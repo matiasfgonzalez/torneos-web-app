@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
   display: "swap",
   variable: "--font-geist-mono",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "GOLAZO - Gestión Profesional de Torneos",
@@ -41,7 +46,6 @@ export const metadata: Metadata = {
     description:
       "Plataforma líder en gestión de torneos deportivos con tablas de posiciones, equipos, jugadores, noticias y contenido multimedia integrado.",
   },
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   icons: {
     icon: "/favicon.ico",
