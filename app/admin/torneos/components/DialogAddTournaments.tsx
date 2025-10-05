@@ -35,54 +35,71 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Plus } from "lucide-react";
+import { Edit, Plus, Loader2 } from "lucide-react";
 import { ITorneo } from "@/components/torneos/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-// Esquema Zod mejorado
+// Esquema Zod mejorado con validaciones robustas
 const tournamentSchema = z
   .object({
-    name: z.string().min(3, "El nombre es obligatorio"),
-    description: z.string().optional(),
-    category: z.string({
-      error: "La categoría es obligatoria",
-    }),
-    locality: z.string().min(3, "La localidad es obligatoria"),
-    startDate: z.date({
-      error: "Fecha de inicio inválida",
-    }),
-    endDate: z
-      .date({
-        error: "Fecha de fin inválida",
-      })
+    name: z
+      .string()
+      .min(3, "El nombre debe tener al menos 3 caracteres")
+      .max(100, "El nombre no puede superar los 100 caracteres"),
+    description: z
+      .string()
+      .max(500, "La descripción no puede superar los 500 caracteres")
       .optional(),
-    logoUrl: z.string().optional(),
-    liga: z.string().optional(),
-    format: z.string({
-      error: "El formato es obligatoria",
-    }),
-    homeAndAway: z.boolean({
-      error: "Debes indicar si es ida y vuelta",
-    }),
-    nextMatch: z
-      .date({
-        error: "Fecha del próximo partido inválida",
-      })
+    category: z.string().min(1, "La categoría es obligatoria"),
+    locality: z
+      .string()
+      .min(3, "La localidad debe tener al menos 3 caracteres")
+      .max(50, "La localidad no puede superar los 50 caracteres"),
+    startDate: z.date(),
+    endDate: z.date().optional(),
+    logoUrl: z
+      .string()
+      .refine((val) => {
+        if (!val || val === "") return true;
+        try {
+          new URL(val);
+          return true;
+        } catch {
+          return false;
+        }
+      }, "Debe ser una URL válida")
       .optional(),
+    liga: z
+      .string()
+      .max(100, "La liga no puede superar los 100 caracteres")
+      .optional(),
+    format: z.string().min(1, "El formato es obligatorio"),
+    homeAndAway: z.boolean(),
+    nextMatch: z.date().optional(),
   })
   .refine(
     (data) => {
       if (data.endDate && data.startDate) {
-        // Asegurarse de que endDate no sea anterior a startDate
-        // Usamos getTime() para comparar objetos Date
         return data.endDate.getTime() >= data.startDate.getTime();
       }
-      return true; // Si endDate es opcional y no está, o startDate no está, no hay error aquí.
+      return true;
     },
     {
       message: "La fecha de fin no puede ser anterior a la fecha de inicio.",
-      path: ["endDate"], // El error se asignará al campo 'endDate'
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.nextMatch && data.startDate) {
+        return data.nextMatch.getTime() >= data.startDate.getTime();
+      }
+      return true;
+    },
+    {
+      message: "El próximo partido debe ser posterior a la fecha de inicio.",
+      path: ["nextMatch"],
     }
   );
 
@@ -92,66 +109,25 @@ interface PropsDialogAddTournaments {
   tournament?: ITorneo;
 }
 
-const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
-  const { tournament } = props;
+// Función helper para formatear fechas
+const formatDateForAPI = (date: Date | undefined): string | undefined => {
+  return date ? date.toISOString().split("T")[0] : undefined;
+};
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+// Hook personalizado para manejar el submit
+const useSubmitTournament = (isEditMode: boolean, tournament?: ITorneo) => {
   const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
 
-  const isEditMode = !!tournament;
-
-  // Inicializar useForm con zodResolver y defaultValues
-  const form = useForm<TournamentFormValues>({
-    resolver: zodResolver(tournamentSchema),
-    defaultValues: {
-      name: isEditMode && tournament?.name ? tournament.name : "",
-      description: isEditMode ? tournament?.description || "" : "",
-      category: isEditMode
-        ? tournament?.category || TOURNAMENT_CATEGORIES[0].value
-        : TOURNAMENT_CATEGORIES[0].value, // Valor por defecto
-      locality: isEditMode ? tournament?.locality || "" : "",
-      startDate: isEditMode
-        ? tournament?.startDate
-          ? new Date(tournament.startDate)
-          : undefined
-        : undefined,
-      endDate: isEditMode
-        ? tournament?.endDate
-          ? new Date(tournament.endDate)
-          : undefined // Si no hay fecha, dejarlo como undefined
-        : undefined,
-      logoUrl: isEditMode ? tournament?.logoUrl || "" : "", // Si no hay logo, dejarlo vacío
-      liga: isEditMode ? tournament?.liga || "" : "", // Si no hay liga, dejarlo vacío
-      // Valores por defecto para los campos nuevos
-      format: isEditMode
-        ? tournament?.format || TOURNAMENT_FORMATS[0].value
-        : TOURNAMENT_FORMATS[0].value, // Valor por defecto
-      homeAndAway: isEditMode
-        ? tournament?.homeAndAway || false // Si no hay valor, por defecto es false
-        : false, // Por defecto es false
-      nextMatch: isEditMode
-        ? tournament?.nextMatch
-          ? new Date(tournament.nextMatch)
-          : undefined // Si no hay próximo partido, dejarlo como undefined
-        : undefined, // Por defecto es undefined
-    },
-  });
-
-  const onSubmit = async (data: TournamentFormValues) => {
+  const submitTournament = async (data: TournamentFormValues) => {
     try {
       setIsLoading(true);
-      // Si startDate o endDate son objetos Date, quizás debas formatearlos a ISO string para la API
+
       const payload = {
         ...data,
-        startDate: data.startDate
-          ? data.startDate.toISOString().split("T")[0]
-          : undefined, // Formato YYYY-MM-DD
-        endDate: data.endDate
-          ? data.endDate.toISOString().split("T")[0]
-          : undefined, // Formato YYYY-MM-DD
-        nextMatch: data.nextMatch ? data.nextMatch.toISOString() : undefined, // Formato ISO completo
+        startDate: formatDateForAPI(data.startDate),
+        endDate: formatDateForAPI(data.endDate),
+        nextMatch: data.nextMatch ? data.nextMatch.toISOString() : undefined,
       };
 
       const method = isEditMode ? "PATCH" : "POST";
@@ -166,31 +142,91 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       });
 
       if (res.ok) {
-        setIsDialogOpen(false);
-        form.reset(); // Limpia el formulario después de un envío exitoso
         toast.success(
           isEditMode
             ? "Torneo editado correctamente"
             : "Torneo creado correctamente"
         );
         router.refresh();
+        return true;
       } else {
         const errorData = await res.json();
         toast.error(
-          isEditMode ? "Error al editar el torneo" : "Error al crear el torneo"
+          errorData.message ||
+            (isEditMode
+              ? "Error al editar el torneo"
+              : "Error al crear el torneo")
         );
-        console.error("Error al crear torneo:", errorData);
+        console.error("Error al procesar torneo:", errorData);
+        return false;
       }
     } catch (err) {
-      toast.error(
-        isEditMode
-          ? "Error al editar el torneo: " + err
-          : "Error al crear el torneo: " + err
-      );
+      const errorMessage = isEditMode
+        ? "Error al editar el torneo"
+        : "Error al crear el torneo";
+      toast.error(`${errorMessage}: ${err}`);
       console.error("Error en la petición:", err);
+      return false;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  return { submitTournament, isLoading };
+};
+
+const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
+  const { tournament } = props;
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const isEditMode = !!tournament;
+
+  const { submitTournament, isLoading } = useSubmitTournament(
+    isEditMode,
+    tournament
+  );
+
+  // Inicializar useForm con zodResolver y defaultValues
+  const form = useForm<TournamentFormValues>({
+    resolver: zodResolver(tournamentSchema),
+    defaultValues: {
+      name: isEditMode && tournament?.name ? tournament.name : "",
+      description: isEditMode ? tournament?.description || "" : "",
+      category: isEditMode
+        ? tournament?.category || TOURNAMENT_CATEGORIES[0].value
+        : TOURNAMENT_CATEGORIES[0].value,
+      locality: isEditMode ? tournament?.locality || "" : "",
+      startDate:
+        isEditMode && tournament?.startDate
+          ? new Date(tournament.startDate)
+          : undefined,
+      endDate:
+        isEditMode && tournament?.endDate
+          ? new Date(tournament.endDate)
+          : undefined,
+      logoUrl: isEditMode ? tournament?.logoUrl || "" : "",
+      liga: isEditMode ? tournament?.liga || "" : "",
+      format: isEditMode
+        ? tournament?.format || TOURNAMENT_FORMATS[0].value
+        : TOURNAMENT_FORMATS[0].value,
+      homeAndAway: isEditMode ? tournament?.homeAndAway || false : false,
+      nextMatch:
+        isEditMode && tournament?.nextMatch
+          ? new Date(tournament.nextMatch)
+          : undefined,
+    },
+  });
+
+  const onSubmit = async (data: TournamentFormValues) => {
+    const success = await submitTournament(data);
+    if (success) {
+      setIsDialogOpen(false);
+      form.reset();
+    }
+  };
+
+  const handleCancel = () => {
+    setIsDialogOpen(false);
+    form.reset();
   };
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -217,12 +253,12 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 text-black dark:text-white">
+      <DialogContent className="sm:max-w-[750px] max-w-[95vw] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 text-black dark:text-white">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {isEditMode ? "Editar Torneo" : "Crear Nuevo Torneo"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm sm:text-base">
             Completa la información básica del torneo
           </DialogDescription>
         </DialogHeader>
@@ -304,7 +340,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
             />
 
             {/* Campos de Fecha (Inicio y Fin) */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="startDate"
@@ -513,15 +549,12 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               )}
             />
 
-            <div className="flex justify-end space-x-2 pt-2">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
               <Button
                 type="button"
                 variant="default"
                 className="bg-red-500 hover:bg-red-600 hover:scale-105 transition-all duration-300 cursor-pointer"
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  form.reset(); // Resetear el formulario al cancelar
-                }}
+                onClick={handleCancel}
                 disabled={isLoading}
               >
                 Cancelar
@@ -534,7 +567,14 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   active:scale-95 cursor-pointer"
                   disabled={isLoading}
                 >
-                  Guardar Cambios
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar Cambios"
+                  )}
                 </Button>
               ) : (
                 <Button
@@ -544,7 +584,14 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   active:scale-95 cursor-pointer"
                   disabled={isLoading}
                 >
-                  Registrar Torneo
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creando...
+                    </>
+                  ) : (
+                    "Registrar Torneo"
+                  )}
                 </Button>
               )}
             </div>
