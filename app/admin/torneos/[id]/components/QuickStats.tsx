@@ -1,89 +1,127 @@
 import { ITorneo } from "@/components/torneos/types";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/formatDate";
-import { Users, Trophy, Target, Clock, Building } from "lucide-react";
+import { Users, Trophy, Target, Clock, Building, Calendar, TrendingUp } from "lucide-react";
 
 interface PropsQuickStats {
   tournamentData: ITorneo;
 }
 
-const getStatusBadge = (status: string, statusLabel: string) => {
-  switch (status) {
-    case "EN_CURSO":
-      return <Badge variant="default">{statusLabel}</Badge>;
-    case "FINALIZADO":
-      return <Badge variant="secondary">{statusLabel}</Badge>;
-    case "PENDIENTE":
-      return <Badge variant="outline">{statusLabel}</Badge>;
-    case "CANCELADO":
-    case "SUSPENDIDO":
-      return <Badge variant="destructive">{statusLabel}</Badge>;
-    default:
-      return <Badge>{statusLabel}</Badge>;
-  }
-};
-
 const QuickStats = (props: PropsQuickStats) => {
   const { tournamentData } = props;
+
+  const stats = [
+    {
+      title: "Equipos Registrados",
+      value: tournamentData.tournamentTeams?.length || 0,
+      icon: Users,
+      color: "from-blue-500 to-cyan-500",
+      bgColor: "from-blue-50 to-cyan-50",
+      description: "equipos participantes",
+    },
+    {
+      title: "Partidos",
+      value: tournamentData.matches?.length || 0,
+      icon: Target,
+      color: "from-green-500 to-emerald-500",
+      bgColor: "from-green-50 to-emerald-50",
+      description: "encuentros registrados",
+    },
+    {
+      title: "Formato",
+      value: tournamentData.format || "Liga",
+      icon: Trophy,
+      color: "from-[#ad45ff] to-[#a3b3ff]",
+      bgColor: "from-[#ad45ff]/10 to-[#a3b3ff]/10",
+      description: "tipo de competencia",
+      isText: true,
+    },
+    {
+      title: "Ida y Vuelta",
+      value: tournamentData.homeAndAway ? "Sí" : "No",
+      icon: Calendar,
+      color: "from-purple-500 to-pink-500",
+      bgColor: "from-purple-50 to-pink-50",
+      description: "modalidad de juego",
+      isText: true,
+    },
+    {
+      title: "Liga/Asociación",
+      value: tournamentData.liga || "No especificado",
+      icon: Building,
+      color: "from-orange-500 to-red-500",
+      bgColor: "from-orange-50 to-red-50",
+      description: "organizador",
+      isText: true,
+    },
+  ];
+
   return (
-    <div className="grid gap-4 md:grid-cols-5">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Estado</CardTitle>
-          <Trophy className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          {getStatusBadge(tournamentData.status, tournamentData.status)}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Equipos</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {tournamentData.tournamentTeams?.length}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Partidos</CardTitle>
-          <Target className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {tournamentData.matches?.length}
-          </div>
-          <p className="text-xs text-muted-foreground">completados</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Próximo Partido</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm font-medium">
-            {tournamentData.nextMatch
-              ? formatDate(tournamentData.nextMatch)
-              : "No programado"}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Liga / Asociación
-          </CardTitle>
-          <Building className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm font-medium">{tournamentData.liga}</div>
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <div className="w-1 h-6 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+        <h2 className="text-xl font-semibold text-gray-900">
+          Estadísticas del Torneo
+        </h2>
+      </div>
+
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {stats.map((stat, index) => {
+          const IconComponent = stat.icon;
+          return (
+            <Card 
+              key={stat.title}
+              className="group relative overflow-hidden border-2 border-gray-100 hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+            >
+              {/* Background gradient sutil */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgColor} opacity-50`} />
+              
+              <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
+                <div className="space-y-1">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`${stat.isText ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 ${stat.isText && stat.value.length > 10 ? 'text-sm' : ''}`}>
+                    {stat.value}
+                  </div>
+                </div>
+                
+                <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  <IconComponent className="w-6 h-6 text-white" />
+                </div>
+              </CardHeader>
+              
+              <CardContent className="relative pt-0">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-3 h-3 text-green-500" />
+                  <p className="text-xs text-gray-500 font-medium">
+                    {stat.description}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Próximo partido destacado */}
+      {tournamentData.nextMatch && (
+        <Card className="border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Próximo Partido</h3>
+                <p className="text-gray-600">
+                  {formatDate(tournamentData.nextMatch, "EEEE dd 'de' MMMM 'a las' HH:mm")}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

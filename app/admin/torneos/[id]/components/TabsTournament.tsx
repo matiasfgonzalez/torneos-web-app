@@ -8,8 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,31 +29,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import { Trophy, User, Target, FileText, Settings } from "lucide-react";
 import { ITorneo } from "@/components/torneos/types";
-import { formatDate } from "@/lib/formatDate";
-import { useMemo } from "react";
-import { cn } from "@/lib/utils";
 import { ITeam } from "@/components/equipos/types";
 import { ITournamentTeam } from "@/components/tournament-teams/types";
+import { useMemo } from "react";
+import { formatDate } from "@/lib/formatDate";
 import TabsOverview from "./tabs-tournament/TabsOverview";
 import TabsTeams from "./tabs-tournament/TabsTeams";
 import TabsMatches from "./tabs-tournament/TabsMatches";
 
-interface PropsTabsTournament {
+interface TabsTournamentProps {
   tournamentData: ITorneo;
   equipos: ITeam[];
   associations: ITournamentTeam[];
 }
 
-const TabsTournament = (propos: PropsTabsTournament) => {
-  const { tournamentData, equipos, associations } = propos;
-
+export default function TabsTournament({
+  tournamentData,
+  equipos,
+  associations,
+}: Readonly<TabsTournamentProps>) {
   const teamMap = useMemo(() => {
     const m = new Map<string, ITeam>();
     equipos.forEach((t) => m.set(t.id, t));
     return m;
-  }, []);
+  }, [equipos]);
 
   // Sort by points desc, then goalDifference desc, then goalsFor desc
   const standings = useMemo(() => {
@@ -63,226 +64,337 @@ const TabsTournament = (propos: PropsTabsTournament) => {
       if (a.wins !== b.wins) return b.wins - a.wins; // Luego por victorias
       if (a.goalDifference !== b.goalDifference)
         return b.goalDifference - a.goalDifference;
-      return 0; // Si todo es igual, mantener el orden
+      return b.goalsFor - a.goalsFor; // Luego por goles a favor
     });
-  }, [associations, teamMap]);
+  }, [associations]);
 
   return (
-    <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-5 bg-[#a3b3ff]">
-        <TabsTrigger value="overview" className="cursor-pointer">
-          Resumen
-        </TabsTrigger>
-        <TabsTrigger value="teams" className="cursor-pointer">
-          Equipos
-        </TabsTrigger>
-        <TabsTrigger value="matches" className="cursor-pointer">
-          Partidos
-        </TabsTrigger>
-        <TabsTrigger value="stats" className="cursor-pointer">
-          Estadísticas
-        </TabsTrigger>
-        <TabsTrigger value="settings" className="cursor-pointer">
-          Configuración
-        </TabsTrigger>
-      </TabsList>
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <div className="w-1 h-6 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+        <h2 className="text-xl font-semibold text-gray-900">
+          Gestión del Torneo
+        </h2>
+      </div>
 
-      {/* Overview */}
-      <TabsOverview tournamentData={tournamentData} />
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 border border-[#ad45ff]/20 shadow-lg">
+          <TabsTrigger
+            value="overview"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            Resumen
+          </TabsTrigger>
+          <TabsTrigger
+            value="teams"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+          >
+            <User className="w-4 h-4 mr-1" />
+            Equipos
+          </TabsTrigger>
+          <TabsTrigger
+            value="matches"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+          >
+            <Target className="w-4 h-4 mr-1" />
+            Partidos
+          </TabsTrigger>
+          <TabsTrigger
+            value="stats"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+          >
+            <Trophy className="w-4 h-4 mr-1" />
+            Estadísticas
+          </TabsTrigger>
+          <TabsTrigger
+            value="settings"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            Configuración
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Teams: Association Management */}
-      <TabsTeams
-        tournamentData={tournamentData}
-        equipos={equipos}
-        associations={associations}
-        teamMap={teamMap}
-      />
+        {/* Overview: uses TabsOverview component */}
+        <TabsOverview tournamentData={tournamentData} />
 
-      {/* Matches (placeholder management section, unchanged logic) */}
-      <TabsMatches tournamentData={tournamentData} />
+        {/* Teams: Association Management - uses TabsTeams component */}
+        <TabsTeams
+          tournamentData={tournamentData}
+          equipos={equipos}
+          associations={associations}
+          teamMap={teamMap}
+        />
 
-      {/* Stats: uses current associations to render tabla de posiciones */}
-      <TabsContent value="stats" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Tabla de Posiciones</CardTitle>
-            <CardDescription>
-              Ordenada por puntos, diferencia de gol y goles a favor
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Pos</TableHead>
-                    <TableHead>Equipo</TableHead>
-                    <TableHead>PJ</TableHead>
-                    <TableHead>G</TableHead>
-                    <TableHead>E</TableHead>
-                    <TableHead>P</TableHead>
-                    <TableHead>GF</TableHead>
-                    <TableHead>GC</TableHead>
-                    <TableHead>DG</TableHead>
-                    <TableHead>Pts</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {standings.map((row, idx) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="font-bold">{idx + 1}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={
-                              row.team?.logoUrl ||
-                              "/placeholder.svg?height=24&width=24&query=team"
-                            }
-                            alt={`Logo ${row.team?.name || "Equipo"}`}
-                            className="w-8 h-8 object-cover"
-                          />
-                          <span className="font-medium">
-                            {row.team?.shortName || row.team?.name || "Equipo"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{row.matchesPlayed}</TableCell>
-                      <TableCell>{row.wins}</TableCell>
-                      <TableCell>{row.draws}</TableCell>
-                      <TableCell>{row.losses}</TableCell>
-                      <TableCell>{row.goalsFor}</TableCell>
-                      <TableCell>{row.goalsAgainst}</TableCell>
-                      <TableCell
-                        className={cn(
-                          "font-medium",
-                          row.goalDifference < 0 && "text-red-600"
-                        )}
-                      >
-                        {row.goalDifference}
-                      </TableCell>
-                      <TableCell className="font-bold">{row.points}</TableCell>
+        {/* Matches: uses TabsMatches component */}
+        <TabsMatches tournamentData={tournamentData} />
+
+        {/* Stats: uses current associations to render tabla de posiciones */}
+        <TabsContent value="stats" className="space-y-4">
+          <Card className="border-2 border-[#ad45ff]/20 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center">
+                  <Trophy className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold text-gray-900">
+                    Tabla de Posiciones
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Ordenada por puntos, diferencia de gol y goles a favor
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-xl border-2 border-gray-100 overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <TableRow className="hover:bg-gray-100/50">
+                      <TableHead className="font-semibold text-gray-900">
+                        Pos
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900">
+                        Equipo
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        PJ
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        G
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        E
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        P
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        GF
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        GC
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        DG
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-center">
+                        Pts
+                      </TableHead>
                     </TableRow>
-                  ))}
-                  {standings.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={10}
-                        className="text-center py-8 text-muted-foreground"
-                      >
-                        No hay equipos asociados aún.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
+                  </TableHeader>
+                  <TableBody>
+                    {standings.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12">
+                          <div className="space-y-3">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                              <Trophy className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <p className="text-gray-500 font-medium">
+                              No hay equipos registrados en este torneo
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Agrega equipos en la pestaña "Equipos" para ver la
+                              tabla de posiciones
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      standings.map((row, idx) => {
+                        const team = teamMap.get(row.teamId);
+                        const positionClass =
+                          idx === 0
+                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400"
+                            : idx <= 2
+                            ? "bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400"
+                            : idx >= standings.length - 3
+                            ? "bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400"
+                            : "hover:bg-gray-50/50";
 
-      {/* Settings */}
-      <TabsContent value="settings" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuración del Torneo</CardTitle>
-            <CardDescription>
-              Ajustes avanzados y configuraciones del torneo
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <h4 className="font-medium mb-2">Información Básica</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>ID del Torneo:</span>
-                    <span className="font-mono">{tournamentData.id}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Formato:</span>
-                    <span>{tournamentData.format}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Ida y Vuelta:</span>
-                    <span>{tournamentData.homeAndAway ? "Sí" : "No"}</span>
-                  </div>
-                </div>
+                        return (
+                          <TableRow
+                            key={row.id}
+                            className={`transition-colors duration-200 ${positionClass}`}
+                          >
+                            <TableCell className="font-bold text-center">
+                              <div className="flex items-center justify-center">
+                                {idx === 0 && (
+                                  <Trophy className="w-4 h-4 text-yellow-500 mr-1" />
+                                )}
+                                {idx + 1}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
+                                  <img
+                                    src={
+                                      team?.logoUrl ||
+                                      "/placeholder.svg?height=32&width=32"
+                                    }
+                                    alt={team?.name || "Equipo"}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <span className="font-medium text-gray-900">
+                                  {team?.name || "Equipo desconocido"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center font-medium">
+                              {row.matchesPlayed}
+                            </TableCell>
+                            <TableCell className="text-center font-medium text-green-600">
+                              {row.wins}
+                            </TableCell>
+                            <TableCell className="text-center font-medium text-gray-600">
+                              {row.draws}
+                            </TableCell>
+                            <TableCell className="text-center font-medium text-red-600">
+                              {row.losses}
+                            </TableCell>
+                            <TableCell className="text-center font-medium">
+                              {row.goalsFor}
+                            </TableCell>
+                            <TableCell className="text-center font-medium">
+                              {row.goalsAgainst}
+                            </TableCell>
+                            <TableCell className="text-center font-medium">
+                              <span
+                                className={
+                                  row.goalDifference >= 0
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }
+                              >
+                                {row.goalDifference > 0 ? "+" : ""}
+                                {row.goalDifference}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span className="font-bold text-lg bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+                                {row.points}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-              <div>
-                <h4 className="font-medium mb-2">Fechas</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Creado:</span>
-                    <span>{formatDate(tournamentData.createdAt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Última actualización:</span>
-                    <span>{formatDate(tournamentData.updatedAt)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <div className="border-t pt-6">
-              <h4 className="font-medium mb-4 text-red-600">Zona de Peligro</h4>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
-                  <div>
-                    <h5 className="font-medium">
-                      Reiniciar Estadísticas de Equipos
-                    </h5>
-                    <p className="text-sm text-muted-foreground">
-                      Establece las estadísticas de todos los equipos del torneo
-                      a 0.
-                    </p>
+        {/* Settings */}
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuración del Torneo</CardTitle>
+              <CardDescription>
+                Ajustes avanzados y configuraciones del torneo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <h4 className="font-medium mb-2">Información Básica</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>ID del Torneo:</span>
+                      <span className="font-mono">{tournamentData.id}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Formato:</span>
+                      <span>{tournamentData.format}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Ida y Vuelta:</span>
+                      <span>{tournamentData.homeAndAway ? "Sí" : "No"}</span>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
-                    onClick={() => {}}
-                  >
-                    Reiniciar
-                  </Button>
                 </div>
-                <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
-                  <div>
-                    <h5 className="font-medium">Eliminar Torneo</h5>
-                    <p className="text-sm text-muted-foreground">
-                      Elimina permanentemente el torneo y todos sus datos.
-                    </p>
+                <div>
+                  <h4 className="font-medium mb-2">Fechas</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Creado:</span>
+                      <span>{formatDate(tournamentData.createdAt)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Última actualización:</span>
+                      <span>{formatDate(tournamentData.updatedAt)}</span>
+                    </div>
                   </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive">Eliminar</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          ¿Estás absolutamente seguro?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Se eliminará
-                          permanentemente el torneo
-                          <strong>{tournamentData.name}</strong> y todos sus
-                          datos asociados.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction className="bg-red-600 hover:bg-red-700">
-                          Sí, eliminar torneo
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+
+              <div className="border-t pt-6">
+                <h4 className="font-medium mb-4 text-red-600">
+                  Zona de Peligro
+                </h4>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                    <div>
+                      <h5 className="font-medium">
+                        Reiniciar Estadísticas de Equipos
+                      </h5>
+                      <p className="text-sm text-muted-foreground">
+                        Establece las estadísticas de todos los equipos del
+                        torneo a 0.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
+                      onClick={() => {}}
+                    >
+                      Reiniciar
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                    <div>
+                      <h5 className="font-medium">Eliminar Torneo</h5>
+                      <p className="text-sm text-muted-foreground">
+                        Elimina permanentemente el torneo y todos sus datos.
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">Eliminar</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            ¿Estás absolutamente seguro?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Se eliminará
+                            permanentemente el torneo{" "}
+                            <strong>{tournamentData.name}</strong> y todos sus
+                            datos asociados.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction className="bg-red-600 hover:bg-red-700">
+                            Sí, eliminar torneo
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
-};
-
-export default TabsTournament;
+}
