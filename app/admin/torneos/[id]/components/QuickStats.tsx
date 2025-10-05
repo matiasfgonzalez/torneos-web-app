@@ -1,7 +1,15 @@
 import { ITorneo } from "@/components/torneos/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/formatDate";
-import { Users, Trophy, Target, Clock, Building, Calendar, TrendingUp } from "lucide-react";
+import {
+  Users,
+  Trophy,
+  Target,
+  Clock,
+  Building,
+  Calendar,
+  TrendingUp,
+} from "lucide-react";
 
 interface PropsQuickStats {
   tournamentData: ITorneo;
@@ -66,31 +74,41 @@ const QuickStats = (props: PropsQuickStats) => {
       </div>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {stats.map((stat, index) => {
+        {stats.map((stat) => {
           const IconComponent = stat.icon;
           return (
-            <Card 
+            <Card
               key={stat.title}
               className="group relative overflow-hidden border-2 border-gray-100 hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
               {/* Background gradient sutil */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgColor} opacity-50`} />
-              
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${stat.bgColor} opacity-50`}
+              />
+
               <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
                 <div className="space-y-1">
                   <CardTitle className="text-sm font-medium text-gray-600">
                     {stat.title}
                   </CardTitle>
-                  <div className={`${stat.isText ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 ${stat.isText && stat.value.length > 10 ? 'text-sm' : ''}`}>
+                  <div
+                    className={`${
+                      stat.isText ? "text-lg" : "text-2xl"
+                    } font-bold text-gray-900 ${
+                      stat.isText && stat.value.length > 10 ? "text-sm" : ""
+                    }`}
+                  >
                     {stat.value}
                   </div>
                 </div>
-                
-                <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+
+                <div
+                  className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                >
                   <IconComponent className="w-6 h-6 text-white" />
                 </div>
               </CardHeader>
-              
+
               <CardContent className="relative pt-0">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-3 h-3 text-green-500" />
@@ -115,7 +133,10 @@ const QuickStats = (props: PropsQuickStats) => {
               <div>
                 <h3 className="font-semibold text-gray-900">Próximo Partido</h3>
                 <p className="text-gray-600">
-                  {formatDate(tournamentData.nextMatch, "EEEE dd 'de' MMMM 'a las' HH:mm")}
+                  {formatDate(
+                    tournamentData.nextMatch,
+                    "EEEE dd 'de' MMMM 'a las' HH:mm"
+                  )}
                 </p>
               </div>
             </div>

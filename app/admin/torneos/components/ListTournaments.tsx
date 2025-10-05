@@ -140,7 +140,7 @@ const ListTournaments = (props: PropsListTournaments) => {
           </div>
           {searchTerm && (
             <div className="text-sm text-[#ad45ff] bg-[#ad45ff]/10 px-3 py-1 rounded-full">
-              Filtrado: "{searchTerm}"
+              Filtrado: {searchTerm}
             </div>
           )}
         </div>

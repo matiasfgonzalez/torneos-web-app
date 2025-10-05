@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -197,7 +196,7 @@ export default function TabsTournament({
                               No hay equipos registrados en este torneo
                             </p>
                             <p className="text-sm text-gray-400">
-                              Agrega equipos en la pestaña "Equipos" para ver la
+                              Agrega equipos en la pestaña Equipos para ver la
                               tabla de posiciones
                             </p>
                           </div>
