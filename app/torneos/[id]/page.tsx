@@ -206,32 +206,71 @@ export default async function TorneoIndividualPage({
       <section className="py-8">
         <div className="max-w-4/5 mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs defaultValue="tabla" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+            {/* Desktop TabsList */}
+            <TabsList className="hidden md:grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
               <TabsTrigger
                 value="tabla"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
               >
+                <Trophy className="w-4 h-4 mr-1" />
                 Tabla de Posiciones
               </TabsTrigger>
               <TabsTrigger
                 value="equipos"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
               >
+                <Users className="w-4 h-4 mr-1" />
                 Equipos
               </TabsTrigger>
               <TabsTrigger
                 value="partidos"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
               >
+                <Calendar className="w-4 h-4 mr-1" />
                 Partidos
               </TabsTrigger>
               <TabsTrigger
                 value="estadisticas"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
               >
+                <Award className="w-4 h-4 mr-1" />
                 Estadísticas
               </TabsTrigger>
             </TabsList>
+
+            {/* Mobile TabsList - Scrollable horizontal */}
+            <div className="md:hidden">
+              <TabsList className="flex w-full overflow-x-auto bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 p-1 gap-1 scrollbar-hide">
+                <TabsTrigger
+                  value="tabla"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+                >
+                  <Trophy className="w-4 h-4" />
+                  <span className="ml-1 hidden sm:inline">Tabla</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="equipos"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="ml-1 hidden sm:inline">Equipos</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="partidos"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span className="ml-1 hidden sm:inline">Partidos</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="estadisticas"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+                >
+                  <Award className="w-4 h-4" />
+                  <span className="ml-1 hidden sm:inline">Stats</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* Tabla de Posiciones */}
             <TabsContent value="tabla" className="space-y-6">

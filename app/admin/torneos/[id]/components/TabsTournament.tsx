@@ -77,7 +77,8 @@ export default function TabsTournament({
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#8b39cc]/20 dark:to-[#829bd9]/20 border border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-lg">
+        {/* Desktop TabsList */}
+        <TabsList className="hidden md:grid w-full grid-cols-5 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#8b39cc]/20 dark:to-[#829bd9]/20 border border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-lg">
           <TabsTrigger
             value="overview"
             className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300"
@@ -114,6 +115,47 @@ export default function TabsTournament({
             Configuración
           </TabsTrigger>
         </TabsList>
+
+        {/* Mobile TabsList - Scrollable horizontal */}
+        <div className="md:hidden">
+          <TabsList className="flex w-full overflow-x-auto bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#8b39cc]/20 dark:to-[#829bd9]/20 border border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-lg p-1 gap-1 scrollbar-hide">
+            <TabsTrigger
+              value="overview"
+              className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Resumen</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="teams"
+              className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+            >
+              <User className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Equipos</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="matches"
+              className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+            >
+              <Target className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Partidos</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="stats"
+              className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+            >
+              <Trophy className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Stats</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300 flex-shrink-0 px-3 py-2 rounded-md"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Config</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Overview: uses TabsOverview component */}
         <TabsOverview tournamentData={tournamentData} />
