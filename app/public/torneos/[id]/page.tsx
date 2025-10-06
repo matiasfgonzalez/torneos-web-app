@@ -165,7 +165,7 @@ export default async function TournamentDetailPage({
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <Button variant="ghost" className="mb-6" asChild>
@@ -265,7 +265,7 @@ export default async function TournamentDetailPage({
                                   className=" object-cover border border-border"
                                 />
                               </div>
-                              <span className="truncate hidden md:block">
+                              <span className="truncate hidden md:block text-gray-900 dark:text-white">
                                 {tteam?.team?.name}
                               </span>
                             </div>
@@ -326,27 +326,35 @@ export default async function TournamentDetailPage({
                   {upcomingMatches.map((match) => (
                     <div
                       key={match.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex items-center justify-between p-4 border rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                     >
                       <div className="flex items-center gap-4">
                         <div className="text-center">
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground dark:text-gray-400">
                             {match.date}
                           </div>
-                          <div className="font-medium">{match.time}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {match.time}
+                          </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <div className="font-medium">{match.homeTeam}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {match.homeTeam}
+                            </div>
                           </div>
-                          <div className="text-muted-foreground">vs</div>
+                          <div className="text-muted-foreground dark:text-gray-400">
+                            vs
+                          </div>
                           <div className="text-left">
-                            <div className="font-medium">{match.awayTeam}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {match.awayTeam}
+                            </div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground dark:text-gray-400">
                           {match.venue}
                         </div>
                       </div>
@@ -369,23 +377,33 @@ export default async function TournamentDetailPage({
                   {recentResults.map((match) => (
                     <div
                       key={match.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex items-center justify-between p-4 border rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground dark:text-gray-400">
                           {match.date}
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <div className="font-medium">{match.homeTeam}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {match.homeTeam}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2 font-bold text-lg">
-                            <span>{match.homeScore}</span>
-                            <span className="text-muted-foreground">-</span>
-                            <span>{match.awayScore}</span>
+                            <span className="text-gray-900 dark:text-white">
+                              {match.homeScore}
+                            </span>
+                            <span className="text-muted-foreground dark:text-gray-400">
+                              -
+                            </span>
+                            <span className="text-gray-900 dark:text-white">
+                              {match.awayScore}
+                            </span>
                           </div>
                           <div className="text-left">
-                            <div className="font-medium">{match.awayTeam}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {match.awayTeam}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -419,13 +437,17 @@ export default async function TournamentDetailPage({
                             {scorer.position}
                           </div>
                           <div>
-                            <div className="font-medium">{scorer.player}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {scorer.player}
+                            </div>
+                            <div className="text-sm text-muted-foreground dark:text-gray-400">
                               {scorer.team}
                             </div>
                           </div>
                         </div>
-                        <div className="font-bold text-lg">{scorer.goals}</div>
+                        <div className="font-bold text-lg text-gray-900 dark:text-white">
+                          {scorer.goals}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -452,13 +474,15 @@ export default async function TournamentDetailPage({
                             {keeper.position}
                           </div>
                           <div>
-                            <div className="font-medium">{keeper.player}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {keeper.player}
+                            </div>
+                            <div className="text-sm text-muted-foreground dark:text-gray-400">
                               {keeper.team}
                             </div>
                           </div>
                         </div>
-                        <div className="font-bold text-lg">
+                        <div className="font-bold text-lg text-gray-900 dark:text-white">
                           {keeper.cleanSheets}
                         </div>
                       </div>

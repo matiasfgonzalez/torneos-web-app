@@ -8,6 +8,7 @@ import { useMobileMenu } from "@/hooks/use-mobile-menu";
 import { navigationLinks } from "@/lib/constants/navigation";
 import Link from "next/link";
 import { User } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Menu = ({ className }: { className?: string }) => (
   <svg
@@ -50,7 +51,7 @@ export function Header(props: Readonly<HeaderProps>) {
   const { isOpen, toggle, close } = useMobileMenu();
 
   return (
-    <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -73,7 +74,7 @@ export function Header(props: Readonly<HeaderProps>) {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-gray-600 hover:text-[#ad45ff] transition-colors"
+                className="text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
               >
                 {link.label}
               </a>
@@ -82,11 +83,13 @@ export function Header(props: Readonly<HeaderProps>) {
             {isLogued && (
               <Link
                 href="/admin/dashboard"
-                className="text-gray-600 hover:text-[#ad45ff] transition-colors"
+                className="text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
               >
                 Administración
               </Link>
             )}
+            {/* Theme Toggle */}
+            <ThemeToggle />
             <SignedOut>
               <SignInButton>
                 <GradientButton className="cursor-pointer">
@@ -101,12 +104,13 @@ export function Header(props: Readonly<HeaderProps>) {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
               onClick={toggle}
-              className="text-gray-600"
+              className="text-gray-600 dark:text-gray-300"
             >
               {isOpen ? (
                 <X className="w-6 h-6" />
@@ -119,13 +123,13 @@ export function Header(props: Readonly<HeaderProps>) {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden border-t bg-white/95 backdrop-blur-sm">
+          <div className="md:hidden border-t bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigationLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="block px-3 py-2 text-gray-600 hover:text-[#ad45ff] transition-colors"
+                  className="block px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
                   onClick={close}
                 >
                   {link.label}
@@ -135,7 +139,8 @@ export function Header(props: Readonly<HeaderProps>) {
               {isLogued && (
                 <Link
                   href="/admin/dashboard"
-                  className="text-gray-600 hover:text-[#ad45ff] transition-colors"
+                  className="block px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
+                  onClick={close}
                 >
                   Administración
                 </Link>

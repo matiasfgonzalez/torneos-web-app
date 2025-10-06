@@ -6,10 +6,10 @@ import { getNoticias } from "@/app/actions/noticias/getNoticias";
 const ListNoticias = async () => {
   const noticias = await getNoticias();
   return (
-    <section className="bg-[#1a1a2e] py-24 px-6">
+    <section className="bg-[#1a1a2e] dark:bg-gray-900 py-24 px-6">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12 flex-col md:flex-row gap-6">
-          <h2 className="text-3xl font-bold">Noticias Destacadas</h2>
+          <h2 className="text-3xl font-bold text-white">Noticias Destacadas</h2>
           <Button
             variant="outline"
             asChild
@@ -22,7 +22,7 @@ const ListNoticias = async () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {noticias.length === 0 ? (
             <div className="col-span-3 text-center">
-              <p className="text-muted-foreground">
+              <p className="text-gray-400">
                 No hay noticias disponibles en este momento.
               </p>
             </div>

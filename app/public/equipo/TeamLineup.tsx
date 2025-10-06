@@ -343,7 +343,7 @@ const TeamLineup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-black dark:to-gray-900 text-white">
       <div className="flex flex-col xl:flex-row min-h-screen">
         {/* Main field area */}
         <div className="flex-1 relative overflow-hidden">

@@ -131,24 +131,24 @@ export default function TorneosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Navigation */}
       <Header />
 
       {/* Header Section */}
-      <section className="py-16 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5">
+      <section className="py-16 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-12">
             <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0">
               Torneos Activos
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 text-balance">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white text-balance">
               Explora Todos los{" "}
               <span className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
                 Torneos
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-pretty">
               Descubre competencias emocionantes, sigue a tus equipos favoritos
               y mantente al día con las últimas estadísticas y resultados.
             </p>
@@ -157,12 +157,12 @@ export default function TorneosPage() {
           {/* Search and Filter Section */}
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
               <Input
                 placeholder="Buscar torneos por nombre o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 text-lg border-2 border-gray-200 focus:border-[#ad45ff]"
+                className="pl-10 h-12 text-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#ad45ff] bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -177,7 +177,7 @@ export default function TorneosPage() {
                   className={
                     selectedCategory === categoria
                       ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white"
-                      : "border-[#ad45ff] text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white"
+                      : "border-[#ad45ff] text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white dark:border-[#ad45ff] dark:text-[#ad45ff]"
                   }
                 >
                   <Filter className="w-4 h-4 mr-2" />
@@ -193,25 +193,25 @@ export default function TorneosPage() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {torneosFiltrados.length} Torneo
               {torneosFiltrados.length !== 1 ? "s" : ""} Encontrado
               {torneosFiltrados.length !== 1 ? "s" : ""}
             </h2>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               Mostrando resultados para {searchTerm || "todos los torneos"}
             </div>
           </div>
 
           {torneosFiltrados.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-12 h-12 text-gray-400" />
+              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 No se encontraron torneos
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Intenta con otros términos de búsqueda o categorías.
               </p>
             </div>
@@ -220,7 +220,7 @@ export default function TorneosPage() {
               {torneosFiltrados.map((torneo) => (
                 <Card
                   key={torneo.id}
-                  className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1 overflow-hidden"
+                  className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1 overflow-hidden bg-white dark:bg-gray-800"
                 >
                   <div className="relative">
                     <img
@@ -246,7 +246,7 @@ export default function TorneosPage() {
                         {torneo.category}
                       </Badge>
                     </div>
-                    <CardDescription className="text-gray-600 line-clamp-2">
+                    <CardDescription className="text-gray-600 dark:text-gray-400 line-clamp-2">
                       {torneo.description}
                     </CardDescription>
                   </CardHeader>
@@ -254,21 +254,25 @@ export default function TorneosPage() {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center space-x-2">
                         <Users className="w-4 h-4 text-[#ad45ff]" />
-                        <span>{torneo.tournamentTeams.length} equipos</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {torneo.tournamentTeams.length} equipos
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Trophy className="w-4 h-4 text-[#ad45ff]" />
-                        <span>{torneo.format}</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {torneo.format}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-[#ad45ff]" />
-                        <span className="flex wrap-anywhere">
+                        <span className="flex wrap-anywhere text-gray-700 dark:text-gray-300">
                           Inicio: {formatDate(torneo.startDate, "dd/MM/yyyy")}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-[#ad45ff]" />
-                        <span className="flex wrap-anywhere">
+                        <span className="flex wrap-anywhere text-gray-700 dark:text-gray-300">
                           Fin: {formatDate(torneo.endDate, "dd/MM/yyyy")}
                         </span>
                       </div>
@@ -276,10 +280,12 @@ export default function TorneosPage() {
                     <div className="grid grid-cols-1 gap-4 text-sm">
                       <div className="flex items-center space-x-2">
                         <MapPin className="w-4 h-4 text-[#ad45ff]" />
-                        <span>{torneo.locality}</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {torneo.locality}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end pt-4 border-t">
+                    <div className="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-600">
                       <Link href={`/torneos/${torneo.id}`}>
                         <Button
                           size="sm"
@@ -331,7 +337,7 @@ export default function TorneosPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
@@ -342,12 +348,12 @@ export default function TorneosPage() {
                 GOLAZO
               </span>
             </div>
-            <p className="text-gray-400 mb-8">
+            <p className="text-gray-400 dark:text-gray-500 mb-8">
               La plataforma líder en gestión de torneos deportivos
               profesionales.
             </p>
-            <div className="border-t border-gray-800 pt-8">
-              <p className="text-gray-400">
+            <div className="border-t border-gray-800 dark:border-gray-700 pt-8">
+              <p className="text-gray-400 dark:text-gray-500">
                 &copy; 2024 GOLAZO. Todos los derechos reservados.
               </p>
             </div>

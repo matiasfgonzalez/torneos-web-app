@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -61,13 +62,20 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <NextTopLoader height={5} speed={800} />
-          <Suspense fallback={null}>{children}</Suspense>
-          <Analytics />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
+            <NextTopLoader height={5} speed={800} />
+            <Suspense fallback={null}>{children}</Suspense>
+            <Analytics />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

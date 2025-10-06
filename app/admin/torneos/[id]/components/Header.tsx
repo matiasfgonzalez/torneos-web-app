@@ -68,14 +68,16 @@ const Header = (props: PropsHeader) => {
             Volver a Torneos
           </Button>
         </Link>
-        <span className="text-gray-400">/</span>
-        <span className="text-gray-600 font-medium">Detalle del Torneo</span>
+        <span className="text-gray-400 dark:text-gray-500">/</span>
+        <span className="text-gray-600 dark:text-gray-300 font-medium">
+          Detalle del Torneo
+        </span>
       </div>
 
       {/* Main header card */}
-      <Card className="border-2 border-[#ad45ff]/20 shadow-xl bg-white/95 backdrop-blur-sm overflow-hidden">
+      <Card className="border-2 border-[#ad45ff]/20 dark:border-[#ad45ff]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm overflow-hidden">
         {/* Background decorativo */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10" />
 
         <CardContent className="relative p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -83,7 +85,7 @@ const Header = (props: PropsHeader) => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
               {/* Logo */}
               <div className="relative">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-white">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl border-4 border-white dark:border-gray-600 shadow-xl overflow-hidden bg-white dark:bg-gray-700">
                   <img
                     src={
                       tournamentData.logoUrl ||
@@ -105,7 +107,7 @@ const Header = (props: PropsHeader) => {
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
                     {tournamentData.name}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-4 mt-2 text-gray-600">
+                  <div className="flex flex-wrap items-center gap-4 mt-2 text-gray-600 dark:text-gray-300">
                     <div className="flex items-center space-x-1">
                       <Trophy className="w-4 h-4 text-[#ad45ff]" />
                       <span className="font-medium">
@@ -130,18 +132,18 @@ const Header = (props: PropsHeader) => {
                 {/* Tournament dates */}
                 <div className="flex flex-wrap gap-3">
                   {tournamentData.startDate && (
-                    <div className="flex items-center space-x-1 bg-blue-50 px-3 py-1 rounded-full">
-                      <Calendar className="w-3 h-3 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-700">
+                    <div className="flex items-center space-x-1 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">
+                      <Calendar className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                         Inicio:{" "}
                         {formatDate(tournamentData.startDate, "dd/MM/yyyy")}
                       </span>
                     </div>
                   )}
                   {tournamentData.endDate && (
-                    <div className="flex items-center space-x-1 bg-purple-50 px-3 py-1 rounded-full">
-                      <Calendar className="w-3 h-3 text-purple-600" />
-                      <span className="text-sm font-medium text-purple-700">
+                    <div className="flex items-center space-x-1 bg-purple-50 dark:bg-purple-900/20 px-3 py-1 rounded-full">
+                      <Calendar className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                      <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
                         Fin: {formatDate(tournamentData.endDate, "dd/MM/yyyy")}
                       </span>
                     </div>
@@ -150,7 +152,7 @@ const Header = (props: PropsHeader) => {
 
                 {/* Description if exists */}
                 {tournamentData.description && (
-                  <p className="text-gray-600 max-w-2xl leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
                     {tournamentData.description}
                   </p>
                 )}

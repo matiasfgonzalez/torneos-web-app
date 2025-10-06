@@ -4,7 +4,7 @@ import { Instagram } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-gray-900 dark:bg-gray-950 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Logo y descripción */}
@@ -13,14 +13,14 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg mr-3"></div>
               <GradientText className="text-2xl font-bold">GOLAZO</GradientText>
             </div>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 dark:text-gray-500 mb-4">
               La plataforma líder para la gestión profesional de torneos
               deportivos.
             </p>
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
               >
                 <span className="sr-only">Facebook</span>
                 <svg
@@ -33,7 +33,7 @@ export function Footer() {
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
               >
                 <span className="sr-only">Twitter</span>
                 <svg
@@ -46,7 +46,7 @@ export function Footer() {
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
               >
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-6 w-6" />
@@ -56,12 +56,14 @@ export function Footer() {
 
           {/* Enlaces rápidos */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Plataforma</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">
+              Plataforma
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/torneos"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Torneos
                 </Link>
@@ -69,7 +71,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/equipos"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Equipos
                 </Link>
@@ -77,7 +79,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/jugadores"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Jugadores
                 </Link>
@@ -85,7 +87,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/noticias"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Noticias
                 </Link>
@@ -95,12 +97,14 @@ export function Footer() {
 
           {/* Empresa */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Empresa</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">
+              Empresa
+            </h3>
             <ul className="space-y-2">
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Acerca de
                 </a>
@@ -108,7 +112,7 @@ export function Footer() {
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Carreras
                 </a>
@@ -116,7 +120,7 @@ export function Footer() {
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Prensa
                 </a>
@@ -124,7 +128,7 @@ export function Footer() {
               <li>
                 <a
                   href="#contacto"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Contacto
                 </a>
@@ -134,12 +138,14 @@ export function Footer() {
 
           {/* Soporte */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Soporte</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">
+              Soporte
+            </h3>
             <ul className="space-y-2">
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Centro de Ayuda
                 </a>
@@ -147,7 +153,7 @@ export function Footer() {
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Documentación
                 </a>
@@ -155,7 +161,7 @@ export function Footer() {
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   API
                 </a>
@@ -163,7 +169,7 @@ export function Footer() {
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
                 >
                   Estado del Sistema
                 </a>
@@ -172,27 +178,27 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-12 pt-8">
+        <div className="border-t border-gray-800 dark:border-gray-700 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               © 2024 GOLAZO. Todos los derechos reservados.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a
                 href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 text-sm transition-colors"
               >
                 Política de Privacidad
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 text-sm transition-colors"
               >
                 Términos de Servicio
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 text-sm transition-colors"
               >
                 Cookies
               </a>

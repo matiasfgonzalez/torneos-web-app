@@ -9,7 +9,7 @@ interface NoticiaProps {
 const Noticia = (props: NoticiaProps) => {
   const { news } = props;
   return (
-    <div className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 hover:-translate-y-3 hover:border-purple-400/40 transition">
+    <div className="bg-white/5 dark:bg-gray-800/70 rounded-2xl overflow-hidden border border-white/10 dark:border-gray-700 hover:-translate-y-3 hover:border-purple-400/40 transition">
       <div className="relative w-full h-64">
         <img
           src={news.coverImageUrl ?? "/placeholder.svg"}
@@ -19,15 +19,17 @@ const Noticia = (props: NoticiaProps) => {
         <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
       </div>
       <div className="p-6">
-        <span className="bg-purple-500 px-3 py-1 rounded-full text-sm font-semibold">
+        <span className="bg-purple-500 px-3 py-1 rounded-full text-sm font-semibold text-white">
           {news.user.name ?? "Anónimo"}
         </span>
-        <p className="text-gray-400 text-sm mt-2">
+        <p className="text-gray-400 dark:text-gray-300 text-sm mt-2">
           📅 {news.publishedAt ? formatDate(news.publishedAt) : "Sin fecha"}
         </p>
-        <h3 className="text-xl font-bold mt-2">{news.title}</h3>
+        <h3 className="text-xl font-bold mt-2 text-white dark:text-white">
+          {news.title}
+        </h3>
         <Link href={`/public/noticias/${news.id}`}>
-          <button className="w-full cursor-pointer mt-4 px-6 py-2 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 font-semibold hover:scale-105 transition">
+          <button className="w-full cursor-pointer mt-4 px-6 py-2 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 font-semibold hover:scale-105 transition text-white">
             Leer más
           </button>
         </Link>

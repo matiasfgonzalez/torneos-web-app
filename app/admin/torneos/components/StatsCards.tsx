@@ -23,7 +23,8 @@ const StatsCards = (props: PropsStatsCards) => {
       value: tournaments.filter((t) => t.status === "En curso").length,
       icon: Clock,
       color: "from-blue-500 to-cyan-500",
-      bgColor: "from-blue-50 to-cyan-50",
+      bgColor:
+        "from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20",
       description: "Competencias activas",
     },
     {
@@ -31,7 +32,8 @@ const StatsCards = (props: PropsStatsCards) => {
       value: tournaments.filter((t) => t.status === "Inscripciones").length,
       icon: UserPlus,
       color: "from-green-500 to-emerald-500",
-      bgColor: "from-green-50 to-emerald-50",
+      bgColor:
+        "from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20",
       description: "Aceptando equipos",
     },
     {
@@ -39,7 +41,8 @@ const StatsCards = (props: PropsStatsCards) => {
       value: tournaments.filter((t) => t.status === "Finalizado").length,
       icon: CheckCircle,
       color: "from-gray-500 to-slate-500",
-      bgColor: "from-gray-50 to-slate-50",
+      bgColor:
+        "from-gray-50 to-slate-50 dark:from-gray-800/20 dark:to-slate-800/20",
       description: "Torneos completados",
     },
   ];
@@ -51,7 +54,7 @@ const StatsCards = (props: PropsStatsCards) => {
         return (
           <Card
             key={stat.title}
-            className="group relative overflow-hidden border-2 border-gray-100 hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+            className="group relative overflow-hidden border-2 border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/30 dark:hover:border-[#ad45ff]/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white dark:bg-gray-800"
           >
             {/* Background gradient sutil */}
             <div
@@ -60,10 +63,10 @@ const StatsCards = (props: PropsStatsCards) => {
 
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
               <div className="space-y-1">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {stat.title}
                 </CardTitle>
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {stat.value}
                 </div>
               </div>
@@ -78,13 +81,13 @@ const StatsCards = (props: PropsStatsCards) => {
             <CardContent className="relative pt-0">
               <div className="flex items-center space-x-2">
                 <TrendingUp className="w-3 h-3 text-green-500" />
-                <p className="text-xs text-gray-500 font-medium">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                   {stat.description}
                 </p>
               </div>
 
               {/* Barra de progreso decorativa */}
-              <div className="mt-3 w-full bg-gray-200 rounded-full h-1">
+              <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
                 <div
                   className={`h-1 bg-gradient-to-r ${stat.color} rounded-full transition-all duration-500`}
                   style={{

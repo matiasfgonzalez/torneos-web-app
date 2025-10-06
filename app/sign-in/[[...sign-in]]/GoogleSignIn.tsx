@@ -28,10 +28,12 @@ export default function GoogleSignIn() {
 
   if (!userLoaded || !signInLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="w-6 h-6 animate-spin text-[#ad45ff] mx-auto" />
-          <p className="text-gray-600 font-medium">Cargando...</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">
+            Cargando...
+          </p>
         </div>
       </div>
     );
@@ -51,7 +53,7 @@ export default function GoogleSignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md space-y-6 sm:space-y-8">
         {/* Header con branding mejorado */}
         <div className="text-center space-y-4">
@@ -63,7 +65,7 @@ export default function GoogleSignIn() {
               <span className="text-xl sm:text-2xl font-bold">
                 <GradientText>GOLAZO</GradientText>
               </span>
-              <div className="text-xs text-gray-500 font-medium">
+              <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                 Gestión Profesional
               </div>
             </div>
@@ -71,18 +73,18 @@ export default function GoogleSignIn() {
         </div>
 
         {/* Tarjeta principal mejorada */}
-        <Card className="border-2 border-gray-100 shadow-xl bg-white/95 backdrop-blur-sm">
+        <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4 pb-4 px-4 sm:px-6">
-            <div className="inline-flex items-center space-x-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium mx-auto">
+            <div className="inline-flex items-center space-x-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium mx-auto">
               <CheckCircle className="w-4 h-4" />
               <span>Acceso Seguro</span>
             </div>
 
-            <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               ¡Bienvenido de vuelta! 👋
             </CardTitle>
 
-            <CardDescription className="text-gray-600 text-sm sm:text-base leading-relaxed">
+            <CardDescription className="text-gray-600 dark:text-gray-300 text-sm sm:text-base leading-relaxed">
               Accede a tu cuenta con Google y continúa gestionando tus torneos
               profesionales
             </CardDescription>
@@ -100,12 +102,12 @@ export default function GoogleSignIn() {
             </Button>
 
             {/* Beneficios rápidos */}
-            <div className="bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 rounded-xl p-4 border border-[#ad45ff]/20">
+            <div className="bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 rounded-xl p-4 border border-[#ad45ff]/20 dark:border-[#ad45ff]/30">
               <div className="text-center space-y-3">
-                <h4 className="font-semibold text-gray-900 text-sm">
+                <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
                   Acceso instantáneo a:
                 </h4>
-                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600 dark:text-gray-300">
                   <div className="flex items-center space-x-2">
                     <Trophy className="w-3 h-3 text-[#ad45ff] flex-shrink-0" />
                     <span>Panel de torneos</span>
@@ -127,8 +129,8 @@ export default function GoogleSignIn() {
             </div>
 
             {/* Footer profesional */}
-            <div className="text-center space-y-3 pt-2 border-t border-gray-100">
-              <p className="text-xs text-gray-500 leading-relaxed">
+            <div className="text-center space-y-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                 Plataforma segura con cifrado SSL. Al continuar, aceptas
                 nuestros{" "}
                 <button
@@ -155,7 +157,7 @@ export default function GoogleSignIn() {
         <div className="text-center">
           <Link
             href="/"
-            className="text-sm text-gray-600 hover:text-[#ad45ff] transition-colors font-medium"
+            className="text-sm text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] transition-colors font-medium"
           >
             ← Volver al inicio
           </Link>

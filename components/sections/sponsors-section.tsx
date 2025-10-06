@@ -5,14 +5,14 @@ import { Button } from "../ui/button";
 
 export function SponsorsSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-50 to-white">
+    <section className="py-20 bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <SectionBadge>Nuestros Patrocinadores</SectionBadge>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Empresas que Confían en GOLAZO
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Únete a las marcas líderes que apoyan el deporte y confían en
             nuestra plataforma
           </p>
@@ -23,7 +23,7 @@ export function SponsorsSection() {
           {SPONSORS.map((sponsor) => (
             <div
               key={sponsor.id}
-              className="flex items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+              className="flex items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700"
             >
               <img
                 src={sponsor.logo || "/placeholder.svg"}
@@ -58,12 +58,12 @@ export function SponsorsSection() {
 
         {/* Become a Sponsor CTA */}
         <div className="mt-16 text-center">
-          <Card className="border-2 border-dashed border-[#ad45ff] bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 p-8">
+          <Card className="border-2 border-dashed border-[#ad45ff] bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 p-8">
             <CardContent className="space-y-4">
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                 ¿Quieres ser nuestro próximo patrocinador?
               </h3>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 Únete a las marcas líderes que confían en GOLAZO para conectar
                 con miles de aficionados deportivos. Ofrecemos paquetes de
                 patrocinio personalizados para maximizar tu alcance.

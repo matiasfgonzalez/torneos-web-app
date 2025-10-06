@@ -32,24 +32,24 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
     <div className="mb-8">
       {/* Encabezado */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <div className="p-6 rounded-2xl shadow-md ">
+        <div className="p-6 rounded-2xl shadow-md bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#ad45ff] dark:to-[#a3b3ff]">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
             {tournamentData.name}
           </h1>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-white/90">
             <div className="flex items-center gap-2">
-              <Tags className="w-4 h-4 text-primary" />
+              <Tags className="w-4 h-4 text-white" />
               <span className="font-medium">{tournamentData.category}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Layers3 className="w-4 h-4 text-primary" />
+              <Layers3 className="w-4 h-4 text-white" />
               <span className="font-medium">{tournamentData.format}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-primary" />
+              <Calendar className="w-4 h-4 text-white" />
               <span>
                 {formatDate(tournamentData.startDate, "dd 'de' MMMM yyyy")} -{" "}
                 {formatDate(tournamentData.endDate, "dd 'de' MMMM yyyy")}
@@ -58,7 +58,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
 
             {tournamentData.locality && (
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
+                <MapPin className="w-4 h-4 text-white" />
                 <span>{tournamentData.locality}</span>
               </div>
             )}
@@ -76,7 +76,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
 
       {/* Descripción */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <p className="text-muted-foreground text-lg mb-6">
+        <p className="text-muted-foreground dark:text-gray-400 text-lg mb-6">
           {tournamentData.description ?? "Sin descripción"}
         </p>
       </div>
@@ -84,7 +84,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
       {/* Logo */}
       {tournamentData.logoUrl && (
         <div className="flex items-center justify-center p-4">
-          <div className="shadow-xl rounded-2xl p-4 max-w-xs w-full transition-transform duration-300 hover:scale-105">
+          <div className="shadow-xl rounded-2xl p-4 max-w-xs w-full transition-transform duration-300 hover:scale-105 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <div className="aspect-[4/5] relative flex">
               <img
                 src={tournamentData.logoUrl}
@@ -101,35 +101,45 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {tournamentData.tournamentTeams?.length || 0}
             </div>
-            <div className="text-sm text-muted-foreground">Equipos</div>
+            <div className="text-sm text-muted-foreground dark:text-gray-400">
+              Equipos
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {tournamentData.matches?.length || 0}
             </div>
-            <div className="text-sm text-muted-foreground">Partidos</div>
+            <div className="text-sm text-muted-foreground dark:text-gray-400">
+              Partidos
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold">-</div>
-            <div className="text-sm text-muted-foreground">Premios</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              -
+            </div>
+            <div className="text-sm text-muted-foreground dark:text-gray-400">
+              Premios
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <Calendar className="h-8 w-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {diasRestantes !== null ? diasRestantes : "—"}
             </div>
-            <div className="text-sm text-muted-foreground">Días restantes</div>
+            <div className="text-sm text-muted-foreground dark:text-gray-400">
+              Días restantes
+            </div>
           </CardContent>
         </Card>
       </div>

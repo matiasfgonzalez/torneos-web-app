@@ -181,65 +181,73 @@ export default function PartidosPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Card className="backdrop-blur-sm border-0 shadow-lg">
+            <Card className="backdrop-blur-sm border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Trophy className="h-5 w-5 text-blue-600" />
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Trophy className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {stats.total}
                     </p>
-                    <p className="text-sm text-slate-600">Total</p>
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
+                      Total
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-0 shadow-lg">
+            <Card className="backdrop-blur-sm border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <Play className="h-5 w-5 text-red-600" />
+                  <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                    <Play className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-red-600">
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                       {stats.live}
                     </p>
-                    <p className="text-sm text-slate-600">En Vivo</p>
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
+                      En Vivo
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-0 shadow-lg">
+            <Card className="backdrop-blur-sm border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <CalendarIcon className="h-5 w-5 text-green-600" />
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <CalendarIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {stats.today}
                     </p>
-                    <p className="text-sm text-slate-600">Hoy</p>
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
+                      Hoy
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-0 shadow-lg">
+            <Card className="backdrop-blur-sm border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <Clock className="h-5 w-5 text-yellow-600" />
+                  <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                    <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-yellow-600">
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                       {stats.upcoming}
                     </p>
-                    <p className="text-sm text-slate-600">Próximos</p>
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
+                      Próximos
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -247,16 +255,16 @@ export default function PartidosPage() {
           </div>
 
           {/* Search and Filters */}
-          <Card className="backdrop-blur-sm border-0 shadow-lg">
+          <Card className="backdrop-blur-sm border-0 shadow-lg bg-white dark:bg-gray-800">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-gray-500" />
                     <Input
                       placeholder="Buscar equipos, torneos, estadios..."
-                      className="pl-10 bg-white border-slate-200"
+                      className="pl-10 bg-white dark:bg-gray-700 border-slate-200 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                       value={filters.search || ""}
                       onChange={(e) => handleSearch(e.target.value)}
                     />
@@ -455,10 +463,10 @@ export default function PartidosPage() {
                         className="w-12 h-12 object-cover"
                       />
                       <div>
-                        <p className="font-semibold text-white hidden md:block">
+                        <p className="font-semibold text-gray-900 dark:text-white hidden md:block">
                           {match.homeTeam.team.name}
                         </p>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-slate-500 dark:text-gray-400">
                           {match.homeTeam.team.shortName}
                         </p>
                       </div>
@@ -469,21 +477,21 @@ export default function PartidosPage() {
                       {match.status === MatchStatus.FINALIZADO ||
                       match.status === MatchStatus.EN_JUEGO ? (
                         <div className="text-center">
-                          <div className="text-3xl font-bold text-slate-800">
+                          <div className="text-3xl font-bold text-slate-800 dark:text-gray-200">
                             {match.homeScore} - {match.awayScore}
                           </div>
                           {match.status === MatchStatus.EN_JUEGO && (
-                            <div className="text-xs text-red-600 font-medium animate-pulse">
+                            <div className="text-xs text-red-600 dark:text-red-400 font-medium animate-pulse">
                               EN VIVO
                             </div>
                           )}
                         </div>
                       ) : (
                         <div className="text-center">
-                          <div className="text-lg font-semibold text-slate-600">
+                          <div className="text-lg font-semibold text-slate-600 dark:text-gray-400">
                             VS
                           </div>
-                          <div className="text-sm text-slate-500">
+                          <div className="text-sm text-slate-500 dark:text-gray-500">
                             {formatDate(match.dateTime)}
                           </div>
                         </div>
@@ -493,10 +501,10 @@ export default function PartidosPage() {
                     {/* Away Team */}
                     <div className="flex items-center gap-3 flex-1 justify-end">
                       <div className="text-right">
-                        <p className="font-semibold text-white hidden md:block">
+                        <p className="font-semibold text-gray-900 dark:text-white hidden md:block">
                           {match.awayTeam.team.name}
                         </p>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-slate-500 dark:text-gray-400">
                           {match.awayTeam.team.shortName}
                         </p>
                       </div>
@@ -512,18 +520,18 @@ export default function PartidosPage() {
 
                   {/* Match Info */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-gray-400">
                       <Trophy className="h-4 w-4" />
                       <span>{match.tournament.name}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-gray-400">
                       <MapPin className="h-4 w-4" />
                       <span>
                         {match.stadium} - {match.city}
                       </span>
                     </div>
                     {match.roundNumber && (
-                      <div className="flex items-center gap-2 text-slate-600">
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-gray-400">
                         <TrendingUp className="h-4 w-4" />
                         <span>
                           {match.phase?.name || "Sin fase"}
@@ -532,7 +540,7 @@ export default function PartidosPage() {
                       </div>
                     )}
                     {match.dateTime && (
-                      <div className="flex items-center gap-2 text-slate-600">
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-gray-400">
                         <Users className="h-4 w-4" />
                         <span>{formatDate(match.dateTime)}</span>
                       </div>

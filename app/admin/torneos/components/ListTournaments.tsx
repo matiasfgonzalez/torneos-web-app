@@ -88,17 +88,17 @@ const ListTournaments = (props: PropsListTournaments) => {
   ];
 
   return (
-    <Card className="border-2 border-gray-100 shadow-xl bg-white/95 backdrop-blur-sm">
+    <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
       <CardHeader className="space-y-4">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center">
             <Trophy className="w-4 h-4 text-white" />
           </div>
           <div>
-            <CardTitle className="text-xl font-bold text-gray-900">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
               Lista de Torneos
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="text-gray-600 dark:text-gray-300">
               Gestiona todos los torneos registrados en la plataforma
             </CardDescription>
           </div>
@@ -107,21 +107,21 @@ const ListTournaments = (props: PropsListTournaments) => {
         {/* Filtros mejorados */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <Input
               placeholder="Buscar por nombre, categoría o localidad..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-2 border-gray-200 focus:border-[#ad45ff] focus:ring-0 transition-all duration-300"
+              className="pl-10 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-0 transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
 
           <div className="relative min-w-48">
-            <Filter className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Filter className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-md focus:border-[#ad45ff] focus:outline-none transition-all duration-300 bg-white"
+              className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-md focus:border-[#ad45ff] focus:outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -134,12 +134,12 @@ const ListTournaments = (props: PropsListTournaments) => {
 
         {/* Estadísticas rápidas */}
         <div className="flex flex-wrap gap-2">
-          <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+          <div className="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
             <span className="font-semibold">{filteredTournaments.length}</span>{" "}
             de {tournaments.length} torneos
           </div>
           {searchTerm && (
-            <div className="text-sm text-[#ad45ff] bg-[#ad45ff]/10 px-3 py-1 rounded-full">
+            <div className="text-sm text-[#ad45ff] bg-[#ad45ff]/10 dark:bg-[#ad45ff]/20 px-3 py-1 rounded-full">
               Filtrado: {searchTerm}
             </div>
           )}
@@ -147,38 +147,38 @@ const ListTournaments = (props: PropsListTournaments) => {
       </CardHeader>
 
       <CardContent>
-        <div className="rounded-xl border-2 border-gray-100 overflow-hidden">
+        <div className="rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden">
           <Table>
-            <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <TableRow className="hover:bg-gray-100/50">
-                <TableHead className="font-semibold text-gray-900">
+            <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+              <TableRow className="hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+                <TableHead className="font-semibold text-gray-900 dark:text-white">
                   <div className="flex items-center space-x-2">
                     <Trophy className="w-4 h-4" />
                     <span>Torneo</span>
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold text-gray-900">
+                <TableHead className="font-semibold text-gray-900 dark:text-white">
                   Categoría
                 </TableHead>
-                <TableHead className="font-semibold text-gray-900">
+                <TableHead className="font-semibold text-gray-900 dark:text-white">
                   Estado
                 </TableHead>
-                <TableHead className="font-semibold text-gray-900">
+                <TableHead className="font-semibold text-gray-900 dark:text-white">
                   <div className="flex items-center space-x-1">
                     <Calendar className="w-4 h-4" />
                     <span>Inicio</span>
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold text-gray-900">
+                <TableHead className="font-semibold text-gray-900 dark:text-white">
                   <div className="flex items-center space-x-1">
                     <Calendar className="w-4 h-4" />
                     <span>Fin</span>
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold text-gray-900">
+                <TableHead className="font-semibold text-gray-900 dark:text-white">
                   Próximo Partido
                 </TableHead>
-                <TableHead className="text-right font-semibold text-gray-900">
+                <TableHead className="text-right font-semibold text-gray-900 dark:text-white">
                   Acciones
                 </TableHead>
               </TableRow>
@@ -188,15 +188,15 @@ const ListTournaments = (props: PropsListTournaments) => {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12">
                     <div className="space-y-3">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-                        <Search className="w-8 h-8 text-gray-400" />
+                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto">
+                        <Search className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                       </div>
-                      <p className="text-gray-500 font-medium">
+                      <p className="text-gray-500 dark:text-gray-400 font-medium">
                         {searchTerm || statusFilter !== "all"
                           ? "No se encontraron torneos con los filtros aplicados"
                           : "No hay torneos registrados"}
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-400 dark:text-gray-500">
                         {searchTerm || statusFilter !== "all"
                           ? "Intenta modificar los filtros de búsqueda"
                           : "Crea tu primer torneo para comenzar"}
@@ -208,15 +208,15 @@ const ListTournaments = (props: PropsListTournaments) => {
                 filteredTournaments.map((tournament) => (
                   <TableRow
                     key={tournament.id}
-                    className="hover:bg-gray-50/50 transition-colors duration-200"
+                    className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors duration-200"
                   >
                     <TableCell className="font-medium">
                       <div className="space-y-1">
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-gray-900 dark:text-white">
                           {tournament.name}
                         </div>
                         {tournament.locality && (
-                          <div className="flex items-center space-x-1 text-sm text-gray-500">
+                          <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
                             <MapPin className="w-3 h-3" />
                             <span>{tournament.locality}</span>
                           </div>
@@ -230,17 +230,17 @@ const ListTournaments = (props: PropsListTournaments) => {
                     </TableCell>
                     <TableCell>{getStatusBadge(tournament.status)}</TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {formatDate(tournament.startDate, "dd 'de' MMMM yyyy")}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {formatDate(tournament.endDate, "dd 'de' MMMM yyyy")}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {formatDate(tournament.nextMatch)}
                       </div>
                     </TableCell>

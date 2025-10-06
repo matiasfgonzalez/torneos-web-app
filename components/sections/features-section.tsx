@@ -10,15 +10,15 @@ import { features } from "@/lib/constants/features";
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-20 bg-white">
+    <section id="features" className="py-20 bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
           <SectionBadge>Características Principales</SectionBadge>
-          <h2 className="text-3xl lg:text-5xl font-bold text-gray-900 text-balance">
+          <h2 className="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white text-balance">
             Todo lo que Necesitas para{" "}
             <GradientText>Gestionar Torneos</GradientText>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-pretty">
             Desde la organización inicial hasta la ceremonia de premiación,
             GOLAZO te acompaña en cada paso del proceso.
           </p>
@@ -29,14 +29,18 @@ export function FeaturesSection() {
             return (
               <Card
                 key={index}
-                className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg hover:-translate-y-1"
+                className="group hover:shadow-xl dark:hover:shadow-gray-800/50 transition-all duration-300 border-0 shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-800"
               >
                 <CardHeader>
                   <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    {feature.description}
+                  </CardDescription>
                 </CardHeader>
               </Card>
             );

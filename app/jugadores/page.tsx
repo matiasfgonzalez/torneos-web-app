@@ -64,9 +64,9 @@ export default function JugadoresPage() {
     return <FullscreenLoading isVisible={true} message="Cargando jugadores" />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2">
@@ -80,7 +80,7 @@ export default function JugadoresPage() {
             <Link href="/">
               <Button
                 variant="ghost"
-                className="text-gray-600 hover:text-[#ad45ff]"
+                className="text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff]"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Volver al Inicio
@@ -91,20 +91,20 @@ export default function JugadoresPage() {
       </nav>
 
       {/* Header */}
-      <section className="py-12 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10">
+      <section className="py-12 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#ad45ff]/20 dark:to-[#a3b3ff]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4">
             <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0">
               <Users className="w-4 h-4 mr-2" />
               Jugadores Registrados
             </Badge>
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 text-balance">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white text-balance">
               Directorio de{" "}
               <span className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
                 Jugadores
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-pretty">
               Explora los perfiles completos de todos los jugadores registrados
               en la plataforma GOLAZO.
             </p>
@@ -113,25 +113,27 @@ export default function JugadoresPage() {
       </section>
 
       {/* Estadísticas Rápidas */}
-      <section className="py-8 bg-white border-b">
+      <section className="py-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-[#ad45ff]">
                 {players.length}
               </div>
-              <div className="text-sm text-gray-600">Jugadores Totales</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Jugadores Totales
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Filtros y Búsqueda */}
-      <section className="py-8 bg-white">
+      <section className="py-8 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
               <Input
                 placeholder="Buscar jugadores o equipos..."
                 value={searchTerm}
@@ -194,7 +196,7 @@ export default function JugadoresPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4 py-4 border-t border-b">
+                  <div className="grid grid-cols-1 gap-4 py-4 border-t border-b border-gray-200 dark:border-gray-700">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-[#ad45ff]">
                         {jugador.name}
@@ -203,7 +205,7 @@ export default function JugadoresPage() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       Lugar de nacimiento:
                     </span>
                     <Badge className="bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 text-[#ad45ff] border-[#ad45ff]/20">
@@ -213,24 +215,36 @@ export default function JugadoresPage() {
 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Edad:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Edad:
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">
                         {calcularEdad(jugador.birthDate)} años
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Altura:</span>
-                      <span className="font-medium">{jugador.height} cm</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Altura:
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {jugador.height} cm
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Peso:</span>
-                      <span className="font-medium text-gray-600">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Peso:
+                      </span>
+                      <span className="font-medium text-gray-600 dark:text-gray-400">
                         {jugador.weight} kg
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Nacionalidad:</span>
-                      <span className="font-medium">{jugador.nationality}</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Nacionalidad:
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {jugador.nationality}
+                      </span>
                     </div>
                   </div>
 
@@ -246,13 +260,13 @@ export default function JugadoresPage() {
 
           {jugadoresFiltrados.length === 0 && (
             <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-12 h-12 text-gray-400" />
+              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-12 h-12 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 No se encontraron jugadores
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Intenta ajustar los filtros de búsqueda para encontrar los
                 jugadores que buscas.
               </p>

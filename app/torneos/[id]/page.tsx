@@ -77,9 +77,9 @@ export default async function TorneoIndividualPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2">
@@ -107,7 +107,7 @@ export default async function TorneoIndividualPage({
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5">
+      <section className="py-16 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -119,10 +119,10 @@ export default async function TorneoIndividualPage({
                   <Trophy className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 </div>
               </div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 text-balance">
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white text-balance">
                 {torneo.name}
               </h1>
-              <p className="text-xl text-gray-600 text-pretty">
+              <p className="text-xl text-gray-600 dark:text-gray-300 text-pretty">
                 {torneo.description}
               </p>
               <div className="grid grid-cols-2 gap-6">
@@ -131,8 +131,10 @@ export default async function TorneoIndividualPage({
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Equipos</p>
-                    <p className="font-semibold">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Equipos
+                    </p>
+                    <p className="font-semibold text-gray-900 dark:text-white">
                       {torneo.tournamentTeams?.length}
                     </p>
                   </div>
@@ -142,8 +144,12 @@ export default async function TorneoIndividualPage({
                     <Trophy className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Formato</p>
-                    <p className="font-semibold">{torneo.format}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Formato
+                    </p>
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {torneo.format}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -151,8 +157,12 @@ export default async function TorneoIndividualPage({
                     <MapPin className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Ubicación</p>
-                    <p className="font-semibold">{torneo.locality}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Ubicación
+                    </p>
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {torneo.locality}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -160,8 +170,10 @@ export default async function TorneoIndividualPage({
                     <Calendar className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Duración</p>
-                    <p className="font-semibold">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Duración
+                    </p>
+                    <p className="font-semibold text-gray-900 dark:text-white">
                       {formatDate(torneo.startDate, "dd/MM/yyyy")} -{" "}
                       {formatDate(torneo.endDate, "dd/MM/yyyy")}
                     </p>
@@ -253,7 +265,10 @@ export default async function TorneoIndividualPage({
                     </TableHeader>
                     <TableBody>
                       {teamsOrder?.map((equipo, index) => (
-                        <TableRow key={equipo.id} className="hover:bg-gray-50">
+                        <TableRow
+                          key={equipo.id}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
                           <TableCell
                             className={`font-bold ${getPosicionColor(
                               index + 1
@@ -274,7 +289,7 @@ export default async function TorneoIndividualPage({
                                   className=" object-cover border border-border"
                                 />
                               </div>
-                              <span className="truncate hidden md:block">
+                              <span className="truncate hidden md:block text-gray-900 dark:text-white">
                                 {equipo.team.name}
                               </span>
                             </div>
@@ -385,13 +400,13 @@ export default async function TorneoIndividualPage({
                         partido.status === MatchStatus.FINALIZADO && (
                           <div
                             key={partido.id}
-                            className="border rounded-lg p-4 hover:bg-gray-50"
+                            className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600"
                           >
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">
                                 {formatDate(partido.dateTime)}
                               </span>
-                              <Badge className="bg-green-100 text-green-800">
+                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                 {partido.status}
                               </Badge>
                             </div>
@@ -407,7 +422,7 @@ export default async function TorneoIndividualPage({
                                   height={48}
                                   className="m-1 object-cover"
                                 />
-                                <p className="font-semibold hidden md:block">
+                                <p className="font-semibold hidden md:block text-gray-900 dark:text-white">
                                   {partido.homeTeam.team.name}
                                 </p>
                               </div>
@@ -417,7 +432,7 @@ export default async function TorneoIndividualPage({
                                 </p>
                               </div>
                               <div className="flex items-center">
-                                <p className="font-semibold hidden md:block">
+                                <p className="font-semibold hidden md:block text-gray-900 dark:text-white">
                                   {partido.awayTeam.team.name}
                                 </p>
                                 <img
@@ -452,13 +467,13 @@ export default async function TorneoIndividualPage({
                         partido.status != MatchStatus.FINALIZADO && (
                           <div
                             key={partido.id}
-                            className="border rounded-lg p-4 hover:bg-gray-50"
+                            className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600"
                           >
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">
                                 {formatDate(partido.dateTime)}
                               </span>
-                              <Badge className="bg-blue-100 text-blue-800">
+                              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                 {partido.status}
                               </Badge>
                             </div>
@@ -474,12 +489,12 @@ export default async function TorneoIndividualPage({
                                   height={48}
                                   className="m-1 object-cover"
                                 />
-                                <p className="font-semibold hidden md:block">
+                                <p className="font-semibold hidden md:block text-gray-900 dark:text-white">
                                   {partido.homeTeam.team.name}
                                 </p>
                               </div>
                               <div className="mx-4 text-center">
-                                <p className="text-lg font-bold text-gray-400 whitespace-nowrap">
+                                <p className="text-lg font-bold text-gray-400 dark:text-gray-500 whitespace-nowrap">
                                   VS
                                 </p>
                               </div>
@@ -494,14 +509,14 @@ export default async function TorneoIndividualPage({
                                   height={48}
                                   className="m-1 object-cover"
                                 />
-                                <p className="font-semibold hidden md:block">
+                                <p className="font-semibold hidden md:block text-gray-900 dark:text-white">
                                   {partido.awayTeam.team.name}
                                 </p>
                               </div>
                             </div>
                             <div className="text-center flex justify-center">
-                              <MapPin className="w-5 h-5 text-emerald-950" />
-                              <p className="text-sm text-gray-600">
+                              <MapPin className="w-5 h-5 text-emerald-950 dark:text-emerald-400" />
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {partido.stadium}
                               </p>
                             </div>
@@ -521,8 +536,12 @@ export default async function TorneoIndividualPage({
                     <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Play className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">32</p>
-                    <p className="text-sm text-gray-600">Partidos Jugados</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      32
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Partidos Jugados
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -530,8 +549,12 @@ export default async function TorneoIndividualPage({
                     <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Target className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">89</p>
-                    <p className="text-sm text-gray-600">Goles Totales</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      89
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Goles Totales
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -539,8 +562,12 @@ export default async function TorneoIndividualPage({
                     <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Award className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">2.8</p>
-                    <p className="text-sm text-gray-600">Goles por Partido</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      2.8
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Goles por Partido
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -548,8 +575,12 @@ export default async function TorneoIndividualPage({
                     <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Users className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">320</p>
-                    <p className="text-sm text-gray-600">Jugadores Activos</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      320
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Jugadores Activos
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -565,39 +596,51 @@ export default async function TorneoIndividualPage({
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span>Asistencia Promedio</span>
+                      <span className="text-gray-900 dark:text-white">
+                        Asistencia Promedio
+                      </span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                        <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] h-2 rounded-full"
                             style={{ width: "85%" }}
                           ></div>
                         </div>
-                        <span className="text-sm font-semibold">85%</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          85%
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>Partidos sin Empate</span>
+                      <span className="text-gray-900 dark:text-white">
+                        Partidos sin Empate
+                      </span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                        <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] h-2 rounded-full"
                             style={{ width: "72%" }}
                           ></div>
                         </div>
-                        <span className="text-sm font-semibold">72%</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          72%
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>Satisfacción de Equipos</span>
+                      <span className="text-gray-900 dark:text-white">
+                        Satisfacción de Equipos
+                      </span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                        <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] h-2 rounded-full"
                             style={{ width: "94%" }}
                           ></div>
                         </div>
-                        <span className="text-sm font-semibold">94%</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          94%
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -609,7 +652,7 @@ export default async function TorneoIndividualPage({
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
@@ -620,12 +663,12 @@ export default async function TorneoIndividualPage({
                 GOLAZO
               </span>
             </div>
-            <p className="text-gray-400 mb-8">
+            <p className="text-gray-400 dark:text-gray-500 mb-8">
               La plataforma líder en gestión de torneos deportivos
               profesionales.
             </p>
-            <div className="border-t border-gray-800 pt-8">
-              <p className="text-gray-400">
+            <div className="border-t border-gray-800 dark:border-gray-700 pt-8">
+              <p className="text-gray-400 dark:text-gray-500">
                 &copy; 2024 GOLAZO. Todos los derechos reservados.
               </p>
             </div>

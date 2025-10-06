@@ -90,21 +90,21 @@ export function AdminSidebar(props: Readonly<AdminSidebarProps>) {
   const [open, setOpen] = useState(false);
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+    <div className="flex h-full flex-col bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
       {/* Header mejorado */}
-      <div className="flex h-20 items-center border-b border-gray-200 px-6 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 flex-shrink-0">
+      <div className="flex h-20 items-center border-b border-gray-200 dark:border-gray-700 px-6 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-10 h-10 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
               <Shield className="h-5 w-5 text-white" />
             </div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full animate-pulse"></div>
           </div>
           <div>
             <span className="text-xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
               GOLAZO
             </span>
-            <p className="text-xs text-gray-500 font-medium">
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
               Panel Administrativo
             </p>
           </div>
@@ -114,7 +114,7 @@ export function AdminSidebar(props: Readonly<AdminSidebarProps>) {
       {/* Navigation mejorada con scroll */}
       <div className="flex-1 overflow-y-auto">
         <nav className="space-y-1 p-6">
-          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+          <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
             Navegación Principal
           </h3>
           {menuItems.map((item) => {
