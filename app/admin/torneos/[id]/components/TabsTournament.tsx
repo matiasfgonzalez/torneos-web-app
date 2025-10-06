@@ -71,44 +71,44 @@ export default function TabsTournament({
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <div className="w-1 h-6 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Gestión del Torneo
         </h2>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 border border-[#ad45ff]/20 shadow-lg">
+        <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#8b39cc]/20 dark:to-[#829bd9]/20 border border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-lg">
           <TabsTrigger
             value="overview"
-            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300"
           >
             <FileText className="w-4 h-4 mr-1" />
             Resumen
           </TabsTrigger>
           <TabsTrigger
             value="teams"
-            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300"
           >
             <User className="w-4 h-4 mr-1" />
             Equipos
           </TabsTrigger>
           <TabsTrigger
             value="matches"
-            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300"
           >
             <Target className="w-4 h-4 mr-1" />
             Partidos
           </TabsTrigger>
           <TabsTrigger
             value="stats"
-            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300"
           >
             <Trophy className="w-4 h-4 mr-1" />
             Estadísticas
           </TabsTrigger>
           <TabsTrigger
             value="settings"
-            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200"
+            className="cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white font-medium transition-all duration-200 text-gray-700 dark:text-gray-300"
           >
             <Settings className="w-4 h-4 mr-1" />
             Configuración
@@ -131,55 +131,55 @@ export default function TabsTournament({
 
         {/* Stats: uses current associations to render tabla de posiciones */}
         <TabsContent value="stats" className="space-y-4">
-          <Card className="border-2 border-[#ad45ff]/20 shadow-xl bg-white/95 backdrop-blur-sm">
+          <Card className="border-2 border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
             <CardHeader className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center">
                   <Trophy className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-gray-900">
+                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                     Tabla de Posiciones
                   </CardTitle>
-                  <CardDescription className="text-gray-600">
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
                     Ordenada por puntos, diferencia de gol y goles a favor
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-xl border-2 border-gray-100 overflow-hidden">
+              <div className="rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden">
                 <Table>
-                  <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <TableRow className="hover:bg-gray-100/50">
-                      <TableHead className="font-semibold text-gray-900">
+                  <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+                    <TableRow className="hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white">
                         Pos
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white">
                         Equipo
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         PJ
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         G
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         E
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         P
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         GF
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         GC
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         DG
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-center">
+                      <TableHead className="font-semibold text-gray-900 dark:text-white text-center">
                         Pts
                       </TableHead>
                     </TableRow>
@@ -189,13 +189,13 @@ export default function TabsTournament({
                       <TableRow>
                         <TableCell colSpan={10} className="text-center py-12">
                           <div className="space-y-3">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-                              <Trophy className="w-8 h-8 text-gray-400" />
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto">
+                              <Trophy className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                             </div>
-                            <p className="text-gray-500 font-medium">
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">
                               No hay equipos registrados en este torneo
                             </p>
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-gray-400 dark:text-gray-500">
                               Agrega equipos en la pestaña Equipos para ver la
                               tabla de posiciones
                             </p>
@@ -207,12 +207,12 @@ export default function TabsTournament({
                         const team = teamMap.get(row.teamId);
                         const positionClass =
                           idx === 0
-                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400"
+                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-l-4 border-yellow-400"
                             : idx <= 2
-                            ? "bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400"
+                            ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-l-4 border-green-400"
                             : idx >= standings.length - 3
-                            ? "bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400"
-                            : "hover:bg-gray-50/50";
+                            ? "bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-l-4 border-red-400"
+                            : "hover:bg-gray-50/50 dark:hover:bg-gray-700/50";
 
                         return (
                           <TableRow
@@ -229,7 +229,7 @@ export default function TabsTournament({
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
                                   <img
                                     src={
                                       team?.logoUrl ||
@@ -239,7 +239,7 @@ export default function TabsTournament({
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
-                                <span className="font-medium text-gray-900">
+                                <span className="font-medium text-gray-900 dark:text-white">
                                   {team?.name || "Equipo desconocido"}
                                 </span>
                               </div>
@@ -292,74 +292,102 @@ export default function TabsTournament({
 
         {/* Settings */}
         <TabsContent value="settings" className="space-y-4">
-          <Card>
+          <Card className="border-2 border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Configuración del Torneo</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-gray-900 dark:text-white">
+                Configuración del Torneo
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-300">
                 Ajustes avanzados y configuraciones del torneo
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <h4 className="font-medium mb-2">Información Básica</h4>
+                  <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
+                    Información Básica
+                  </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>ID del Torneo:</span>
-                      <span className="font-mono">{tournamentData.id}</span>
+                      <span className="text-gray-600 dark:text-gray-300">
+                        ID del Torneo:
+                      </span>
+                      <span className="font-mono text-gray-900 dark:text-white">
+                        {tournamentData.id}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Formato:</span>
-                      <span>{tournamentData.format}</span>
+                      <span className="text-gray-600 dark:text-gray-300">
+                        Formato:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {tournamentData.format}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Ida y Vuelta:</span>
-                      <span>{tournamentData.homeAndAway ? "Sí" : "No"}</span>
+                      <span className="text-gray-600 dark:text-gray-300">
+                        Ida y Vuelta:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {tournamentData.homeAndAway ? "Sí" : "No"}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Fechas</h4>
+                  <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
+                    Fechas
+                  </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>Creado:</span>
-                      <span>{formatDate(tournamentData.createdAt)}</span>
+                      <span className="text-gray-600 dark:text-gray-300">
+                        Creado:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {formatDate(tournamentData.createdAt)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Última actualización:</span>
-                      <span>{formatDate(tournamentData.updatedAt)}</span>
+                      <span className="text-gray-600 dark:text-gray-300">
+                        Última actualización:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {formatDate(tournamentData.updatedAt)}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t pt-6">
-                <h4 className="font-medium mb-4 text-red-600">
+              <div className="border-t dark:border-gray-700 pt-6">
+                <h4 className="font-medium mb-4 text-red-600 dark:text-red-400">
                   Zona de Peligro
                 </h4>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                  <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50/50 dark:bg-red-900/10">
                     <div>
-                      <h5 className="font-medium">
+                      <h5 className="font-medium text-gray-900 dark:text-white">
                         Reiniciar Estadísticas de Equipos
                       </h5>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         Establece las estadísticas de todos los equipos del
                         torneo a 0.
                       </p>
                     </div>
                     <Button
                       variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
+                      className="border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 bg-transparent"
                       onClick={() => {}}
                     >
                       Reiniciar
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                  <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50/50 dark:bg-red-900/10">
                     <div>
-                      <h5 className="font-medium">Eliminar Torneo</h5>
-                      <p className="text-sm text-muted-foreground">
+                      <h5 className="font-medium text-gray-900 dark:text-white">
+                        Eliminar Torneo
+                      </h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         Elimina permanentemente el torneo y todos sus datos.
                       </p>
                     </div>
@@ -367,21 +395,25 @@ export default function TabsTournament({
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive">Eliminar</Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <AlertDialogHeader>
-                          <AlertDialogTitle>
+                          <AlertDialogTitle className="text-gray-900 dark:text-white">
                             ¿Estás absolutamente seguro?
                           </AlertDialogTitle>
-                          <AlertDialogDescription>
+                          <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
                             Esta acción no se puede deshacer. Se eliminará
                             permanentemente el torneo{" "}
-                            <strong>{tournamentData.name}</strong> y todos sus
-                            datos asociados.
+                            <strong className="text-gray-900 dark:text-white">
+                              {tournamentData.name}
+                            </strong>{" "}
+                            y todos sus datos asociados.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-600 hover:bg-red-700">
+                          <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
+                            Cancelar
+                          </AlertDialogCancel>
+                          <AlertDialogAction className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700">
                             Sí, eliminar torneo
                           </AlertDialogAction>
                         </AlertDialogFooter>
