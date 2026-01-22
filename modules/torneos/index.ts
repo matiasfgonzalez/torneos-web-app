@@ -15,3 +15,9 @@ export * from "./actions/getTournamentTeams";
 // Types
 export * from "./types/fases.types";
 export * from "./types/tournament-teams.types";
+
+// Components
+export { StandingsTable } from "./components/StandingsTable";
+export { KnockoutBracket } from "./components/KnockoutBracket";
+export { PublicStandingsSection } from "./components/PublicStandingsSection";
+export { AdminStandingsSection } from "./components/admin/AdminStandingsSection";

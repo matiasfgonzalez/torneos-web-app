@@ -18,7 +18,15 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
                 player: true,
               },
             },
+            phaseStats: {
+              include: {
+                tournamentPhase: true, // 👈 incluye info de la fase para filtrar por tipo
+              },
+            },
           },
+        },
+        tournamentPhases: {
+          orderBy: { order: "asc" },
         },
         matches: {
           include: {
@@ -33,6 +41,7 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
               },
             },
             phase: true,
+            tournamentPhase: true, // 👈 incluye la fase del partido
           },
           orderBy: { dateTime: "asc" },
         },

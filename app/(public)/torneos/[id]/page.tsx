@@ -10,14 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   ArrowLeft,
   Target,
   Shield,
@@ -36,7 +28,12 @@ import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
 import { notFound } from "next/navigation";
 import HeaderTorneo from "@modules/torneos/components/HeaderTorneo";
 import TeamsCarousel from "@modules/equipos/components/TeamsCarousel";
+import PublicStandingsSection from "@modules/torneos/components/PublicStandingsSection";
 import { MatchStatus } from "@prisma/client";
+import {
+  ITournamentTeam,
+  IMatch,
+} from "@modules/torneos/types/tournament-teams.types";
 
 // Función helper para formatear fecha
 const formatMatchDate = (date: Date | string) => {
@@ -170,14 +167,6 @@ export default async function TournamentDetailPage({
 
   if (!tournamentData) return notFound();
 
-  const teamsOrder = tournamentData.tournamentTeams?.sort((a, b) => {
-    if (a.points !== b.points) return b.points - a.points;
-    if (a.wins !== b.wins) return b.wins - a.wins;
-    if (a.goalDifference !== b.goalDifference)
-      return b.goalDifference - a.goalDifference;
-    return 0;
-  });
-
   // Filtrar partidos próximos (no jugados)
   const upcomingMatches =
     tournamentData.matches?.filter((match) =>
@@ -276,147 +265,13 @@ export default async function TournamentDetailPage({
 
           {/* Standings Tab - Premium Golazo Style */}
           <TabsContent value="standings">
-            <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm">
-              {/* Gradient accent bar */}
-              <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
-              <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
-                    <Trophy className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-gray-900 dark:text-white text-xl">
-                      Tabla de Posiciones
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Clasificación actual del torneo
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <TableHead className="w-12 text-center font-semibold text-gray-700 dark:text-gray-300">
-                          Pos
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">
-                          Equipo
-                        </TableHead>
-                        <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300">
-                          PJ
-                        </TableHead>
-                        <TableHead className="text-center hidden md:table-cell font-semibold text-gray-700 dark:text-gray-300">
-                          G
-                        </TableHead>
-                        <TableHead className="text-center hidden md:table-cell font-semibold text-gray-700 dark:text-gray-300">
-                          E
-                        </TableHead>
-                        <TableHead className="text-center hidden md:table-cell font-semibold text-gray-700 dark:text-gray-300">
-                          P
-                        </TableHead>
-                        <TableHead className="text-center hidden md:table-cell font-semibold text-gray-700 dark:text-gray-300">
-                          GF
-                        </TableHead>
-                        <TableHead className="text-center hidden md:table-cell font-semibold text-gray-700 dark:text-gray-300">
-                          GC
-                        </TableHead>
-                        <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300">
-                          DG
-                        </TableHead>
-                        <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300">
-                          Pts
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {teamsOrder?.map((tteam, index) => (
-                        <TableRow
-                          key={tteam.id}
-                          className="group hover:bg-[#ad45ff]/5 dark:hover:bg-[#ad45ff]/10 transition-colors duration-200 border-b border-gray-100 dark:border-gray-800"
-                        >
-                          <TableCell className="font-medium text-center py-4">
-                            <div
-                              className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shadow-md transition-transform group-hover:scale-110 ${
-                                index === 0
-                                  ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-yellow-500/30"
-                                  : index === 1
-                                    ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
-                                    : index === 2
-                                      ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
-                                      : index <= 4
-                                        ? "bg-gradient-to-br from-green-400 to-green-600 text-white shadow-green-500/30"
-                                        : index <= 6
-                                          ? "bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-blue-500/30"
-                                          : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                              }`}
-                            >
-                              {index + 1}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium py-4">
-                            <div className="flex items-center gap-4">
-                              <div className="relative w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-0.5 group-hover:shadow-lg transition-shadow">
-                                <img
-                                  src={
-                                    tteam?.team?.logoUrl || "/placeholder.svg"
-                                  }
-                                  alt={`Escudo de ${tteam?.team?.name}`}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
-                              </div>
-                              <span className="truncate hidden md:block text-gray-900 dark:text-white font-semibold group-hover:text-[#ad45ff] transition-colors">
-                                {tteam?.team?.name}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center text-gray-700 dark:text-gray-300 font-medium">
-                            {tteam.wins + tteam.draws + tteam.losses}
-                          </TableCell>
-                          <TableCell className="text-center hidden md:table-cell text-green-600 dark:text-green-400 font-medium">
-                            {tteam.wins}
-                          </TableCell>
-                          <TableCell className="text-center hidden md:table-cell text-gray-500 dark:text-gray-400 font-medium">
-                            {tteam.draws}
-                          </TableCell>
-                          <TableCell className="text-center hidden md:table-cell text-red-500 dark:text-red-400 font-medium">
-                            {tteam.losses}
-                          </TableCell>
-                          <TableCell className="text-center hidden md:table-cell text-gray-700 dark:text-gray-300 font-medium">
-                            {tteam.goalsFor}
-                          </TableCell>
-                          <TableCell className="text-center hidden md:table-cell text-gray-700 dark:text-gray-300 font-medium">
-                            {tteam.goalsAgainst}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant="secondary"
-                              className={`font-bold ${
-                                tteam.goalDifference > 0
-                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                  : tteam.goalDifference < 0
-                                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                    : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                              }`}
-                            >
-                              {tteam.goalDifference > 0 ? "+" : ""}
-                              {tteam.goalDifference}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center py-4">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#ad45ff] to-[#c77dff] text-white font-bold shadow-lg shadow-[#ad45ff]/25">
-                              {tteam.points}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+            <PublicStandingsSection
+              tournamentTeams={
+                (tournamentData.tournamentTeams as ITournamentTeam[]) || []
+              }
+              matches={(tournamentData.matches || []) as IMatch[]}
+              tournamentFormat={tournamentData.format}
+            />
           </TabsContent>
 
           {/* Fixtures Tab - Premium Golazo Style */}
