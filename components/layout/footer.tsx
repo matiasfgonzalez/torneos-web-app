@@ -1,207 +1,211 @@
 import Link from "next/link";
 import { GradientText } from "@/components/ui-dev/gradient-text";
-import { Instagram } from "lucide-react";
+import { Instagram, Twitter, Facebook, Mail, ArrowUpRight } from "lucide-react";
+
+const footerLinks = {
+  plataforma: [
+    { label: "Torneos", href: "/torneos" },
+    { label: "Equipos", href: "/equipos" },
+    { label: "Jugadores", href: "/jugadores" },
+    { label: "Noticias", href: "/noticias" },
+  ],
+  empresa: [
+    { label: "Acerca de", href: "#" },
+    { label: "Carreras", href: "#" },
+    { label: "Prensa", href: "#" },
+    { label: "Contacto", href: "#contacto" },
+  ],
+  soporte: [
+    { label: "Centro de Ayuda", href: "#" },
+    { label: "Documentación", href: "#" },
+    { label: "API", href: "#" },
+    { label: "Estado del Sistema", href: "#" },
+  ],
+  legal: [
+    { label: "Política de Privacidad", href: "#" },
+    { label: "Términos de Servicio", href: "#" },
+    { label: "Cookies", href: "#" },
+  ],
+};
+
+const socialLinks = [
+  { icon: Facebook, label: "Facebook", href: "#" },
+  { icon: Twitter, label: "Twitter", href: "#" },
+  { icon: Instagram, label: "Instagram", href: "#" },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 dark:bg-gray-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-4 gap-8">
-          {/* Logo y descripción */}
-          <div className="md:col-span-1">
-            <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg mr-3"></div>
-              <GradientText className="text-2xl font-bold">GOLAZO</GradientText>
+    <footer className="relative bg-gray-900 dark:bg-gray-950 text-white overflow-hidden">
+      {/* Elementos decorativos de fondo */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-[#ad45ff]/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#a3b3ff]/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+
+      {/* Línea decorativa superior con gradiente */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#ad45ff]/50 to-transparent" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Sección principal */}
+        <div className="py-16 lg:py-20">
+          <div className="grid lg:grid-cols-6 gap-12 lg:gap-8">
+            {/* Logo y descripción - ocupa 2 columnas */}
+            <div className="lg:col-span-2 space-y-6">
+              <Link href="/" className="inline-flex items-center gap-3 group">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/25 group-hover:shadow-[#ad45ff]/40 transition-shadow">
+                  <span className="text-lg">🏆</span>
+                </div>
+                <GradientText className="text-2xl font-bold">
+                  GOLAZO
+                </GradientText>
+              </Link>
+
+              <p className="text-gray-400 leading-relaxed max-w-sm">
+                La plataforma líder para la gestión profesional de torneos
+                deportivos. Organiza, gestiona y haz crecer tus competencias.
+              </p>
+
+              {/* Redes sociales con diseño premium */}
+              <div className="flex items-center gap-3">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      className="group/social w-10 h-10 bg-gray-800 hover:bg-gradient-to-br hover:from-[#ad45ff] hover:to-[#a3b3ff] rounded-xl flex items-center justify-center transition-all duration-300 hover:shadow-lg hover:shadow-[#ad45ff]/25"
+                      aria-label={social.label}
+                    >
+                      <Icon className="w-5 h-5 text-gray-400 group-hover/social:text-white transition-colors" />
+                    </a>
+                  );
+                })}
+              </div>
+
+              {/* Newsletter mini - responsive */}
+              <div className="pt-4">
+                <p className="text-sm text-gray-500 mb-3">
+                  Suscríbete a nuestro newsletter
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input
+                      type="email"
+                      placeholder="tu@email.com"
+                      className="w-full h-10 pl-10 pr-4 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ad45ff] focus:ring-1 focus:ring-[#ad45ff]/50 transition-all"
+                    />
+                  </div>
+                  <button className="h-10 px-4 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-[#ad45ff]/25 transition-all whitespace-nowrap">
+                    Enviar
+                  </button>
+                </div>
+              </div>
             </div>
-            <p className="text-gray-400 dark:text-gray-500 mb-4">
-              La plataforma líder para la gestión profesional de torneos
-              deportivos.
-            </p>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-              >
-                <span className="sr-only">Facebook</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-              >
-                <span className="sr-only">Twitter</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-              >
-                <span className="sr-only">Instagram</span>
-                <Instagram className="h-6 w-6" />
-              </a>
+
+            {/* Enlaces - 4 columnas */}
+            <div className="lg:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+              {/* Plataforma */}
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                  Plataforma
+                </h3>
+                <ul className="space-y-3">
+                  {footerLinks.plataforma.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
+                      >
+                        {link.label}
+                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Empresa */}
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                  Empresa
+                </h3>
+                <ul className="space-y-3">
+                  {footerLinks.empresa.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
+                      >
+                        {link.label}
+                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Soporte */}
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                  Soporte
+                </h3>
+                <ul className="space-y-3">
+                  {footerLinks.soporte.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
+                      >
+                        {link.label}
+                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Legal */}
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                  Legal
+                </h3>
+                <ul className="space-y-3">
+                  {footerLinks.legal.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
+                      >
+                        {link.label}
+                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-
-          {/* Enlaces rápidos */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">
-              Plataforma
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/torneos"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Torneos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/equipos"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Equipos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/jugadores"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Jugadores
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/noticias"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Noticias
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Empresa */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">
-              Empresa
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Acerca de
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Carreras
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Prensa
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#contacto"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Contacto
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Soporte */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-white dark:text-gray-200">
-              Soporte
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Centro de Ayuda
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Documentación
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  API
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                >
-                  Estado del Sistema
-                </a>
-              </li>
-            </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 dark:border-gray-700 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 dark:text-gray-500 text-sm">
-              © 2024 GOLAZO. Todos los derechos reservados.
+        {/* Barra inferior */}
+        <div className="border-t border-gray-800 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} GOLAZO. Todos los derechos
+              reservados.
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a
-                href="#"
-                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 text-sm transition-colors"
-              >
-                Política de Privacidad
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 text-sm transition-colors"
-              >
-                Términos de Servicio
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 text-sm transition-colors"
-              >
-                Cookies
-              </a>
+
+            {/* Badges de confianza */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span>Todos los sistemas operativos</span>
+              </div>
+              <div className="hidden sm:block w-px h-4 bg-gray-700" />
+              <div className="hidden sm:flex items-center gap-2 text-gray-500 text-sm">
+                <span>🔒</span>
+                <span>Conexión segura SSL</span>
+              </div>
             </div>
           </div>
         </div>
@@ -209,4 +213,3 @@ export function Footer() {
     </footer>
   );
 }
-
