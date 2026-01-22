@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { LoadingPage } from "@/components/loading-spinner";
-import { INoticia } from "@/components/noticias/types";
+import { INoticia } from "@modules/noticias/types";
 
 export default function AdminNoticiaDetail({
   params,
@@ -200,7 +200,7 @@ export default function AdminNoticiaDetail({
                   asChild
                   className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 >
-                  <Link href={`/public/noticias/${article.id}`} target="_blank">
+                  <Link href={`/noticias/${article.id}`} target="_blank">
                     <Eye className="h-4 w-4 mr-2" />
                     Ver en sitio
                   </Link>
@@ -572,7 +572,7 @@ export default function AdminNoticiaDetail({
                           {article.publishedAt
                             ? formatDate(
                                 article.publishedAt,
-                                "dd 'de' MMMM yyyy"
+                                "dd 'de' MMMM yyyy",
                               )
                             : "Sin fecha"}
                         </span>

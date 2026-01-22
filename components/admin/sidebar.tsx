@@ -32,51 +32,56 @@ const menuItems = [
     href: "/admin/dashboard",
     icon: Home,
     enabled: true,
-    roles: ["admin", "editor", "viewer"],
+    roles: ["ADMINISTRADOR", "EDITOR", "USUARIO"],
   },
   {
     title: "Noticias",
     href: "/admin/noticias",
     icon: Newspaper,
     enabled: true,
-    roles: ["admin", "editor"],
+    roles: ["ADMINISTRADOR", "EDITOR"],
   },
   {
     title: "Torneos",
     href: "/admin/torneos",
     icon: Trophy,
     enabled: true,
-    roles: ["admin", "editor"],
+    roles: ["ADMINISTRADOR", "EDITOR"],
   },
   {
     title: "Equipos",
     href: "/admin/equipos",
     icon: Users,
     enabled: true,
+    roles: ["ADMINISTRADOR", "EDITOR"],
   },
   {
     title: "Jugadores",
     href: "/admin/jugadores",
     icon: UserCheck,
     enabled: true,
+    roles: ["ADMINISTRADOR", "EDITOR"],
   },
   {
     title: "Partidos",
     href: "/admin/partidos",
     icon: Calendar,
     enabled: false,
+    roles: ["ADMINISTRADOR"],
   },
   {
     title: "Estadísticas",
     href: "/admin/estadisticas",
     icon: BarChart3,
     enabled: false,
+    roles: ["ADMINISTRADOR"],
   },
   {
     title: "Configuración",
     href: "/admin/configuracion",
     icon: Settings,
     enabled: false,
+    roles: ["ADMINISTRADOR"],
   },
 ];
 
@@ -198,19 +203,21 @@ export function AdminSidebar(props: Readonly<AdminSidebarProps>) {
       <div className="border-t border-gray-200 p-6 bg-gradient-to-r from-gray-50/50 to-white/50 flex-shrink-0">
         <div className="space-y-3">
           {/* Info del usuario */}
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-semibold">
-                {role?.charAt(0).toUpperCase()}
-              </span>
+          <Link href="/profile" className="block group/profile">
+            <div className="flex items-center gap-3 p-3 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-colors cursor-pointer">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-semibold">
+                  {role?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 capitalize group-hover/profile:text-[#ad45ff] transition-colors">
+                  {role || "Usuario"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">Ver Perfil</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 capitalize">
-                {role || "Usuario"}
-              </p>
-              <p className="text-xs text-gray-500 truncate">Administrador</p>
-            </div>
-          </div>
+          </Link>
 
           {/* Botón de volver */}
           <Button

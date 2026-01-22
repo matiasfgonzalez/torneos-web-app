@@ -1,8 +1,8 @@
 "use clinet";
 
 import { useEffect, useState } from "react";
-import { ITournamentTeam } from "@/components/tournament-teams/types";
-import { ITorneo } from "@/components/torneos/types";
+import { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
+import { ITorneo } from "@modules/torneos/types";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { IPlayer, IPlayerTeam } from "@/components/jugadores/types";
+import { IPlayer, IPlayerTeam } from "@modules/jugadores/types";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -42,7 +42,7 @@ interface TeamPlayerFormValues {
 }
 
 const DialogAddEditTeamPlayer = (
-  props: Readonly<DialogAddEditTeamPlayerProps>
+  props: Readonly<DialogAddEditTeamPlayerProps>,
 ) => {
   const { mode, tournamentData, teamData } = props;
 
@@ -129,22 +129,22 @@ const DialogAddEditTeamPlayer = (
         toast.success(
           method === "POST"
             ? "Agregado correctamente"
-            : "Actualizado correctamente"
+            : "Actualizado correctamente",
         );
         router.refresh();
       } else {
         const errorData = await res.json();
         console.error("Error del servidor:", errorData);
         toast.error(
-          method === "POST" ? "Error al agregar" : "Error al actualizar"
+          method === "POST" ? "Error al agregar" : "Error al actualizar",
         );
       }
     } catch (error) {
       console.error(
-        `${method} === "POST" ? "Error al cargar" : "Error al actualizar": ${error}`
+        `${method} === "POST" ? "Error al cargar" : "Error al actualizar": ${error}`,
       );
       toast.error(
-        `${method} === "POST" ? "Error al cargar" : "Error al actualizar": ${error}`
+        `${method} === "POST" ? "Error al cargar" : "Error al actualizar": ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -164,7 +164,7 @@ const DialogAddEditTeamPlayer = (
       !(
         players.some((p) => p.id === player.id) &&
         arrayPlayersAs.some((p) => p.id === player.id)
-      )
+      ),
   );
 
   return (
@@ -363,8 +363,8 @@ const DialogAddEditTeamPlayer = (
               {isLoading
                 ? "Cargando..."
                 : mode === "edit"
-                ? "Guardar cambios"
-                : "Asociar jugador"}
+                  ? "Guardar cambios"
+                  : "Asociar jugador"}
             </Button>
           </div>
         </form>

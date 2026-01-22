@@ -17,13 +17,13 @@ const HeroSection = () => {
           fútbol de tu región en tiempo real.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Link href="/public/torneos">
-            <button className="cursor-pointer px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 font-semibold shadow-lg hover:scale-105 transition">
+          <Link href="/torneos">
+            <button className="cursor-pointer px-6 py-3 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] font-semibold shadow-lg hover:scale-105 transition text-white">
               Ver Torneos Activos
             </button>{" "}
           </Link>
-          <Link href="/public/noticias">
-            <button className="cursor-pointer px-6 py-3 rounded-xl border border-white/20 dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 hover:bg-white/20 dark:hover:bg-gray-700/50 font-semibold text-white">
+          <Link href="/noticias">
+            <button className="cursor-pointer px-6 py-3 rounded-xl border border-[#ad45ff]/30 bg-[#ad45ff]/10 hover:bg-[#ad45ff]/20 font-semibold text-white">
               Últimas Noticias
             </button>
           </Link>

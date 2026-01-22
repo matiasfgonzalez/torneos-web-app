@@ -124,7 +124,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   /* Smooth scrolling */
@@ -169,7 +171,8 @@
   }
 
   .golazo-shadow {
-    box-shadow: 0 10px 25px -5px rgba(173, 69, 255, 0.1),
+    box-shadow:
+      0 10px 25px -5px rgba(173, 69, 255, 0.1),
       0 10px 10px -5px rgba(173, 69, 255, 0.04);
   }
 
@@ -185,6 +188,34 @@
 
   .text-pretty {
     text-wrap: pretty;
+  }
+
+  /* Glassmorphism Utilities */
+  .glass-card {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
+  }
+
+  .glass-header {
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border-b border-white/20 dark:border-white/10;
+  }
+
+  /* Golazo Design System */
+  .premium-gradient-bg {
+    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50/50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/30;
+  }
+
+  .premium-gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#ad45ff] dark:to-[#a3b3ff];
+  }
+
+  .premium-border {
+    @apply border border-transparent bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20;
+  }
+
+  .premium-shadow {
+    box-shadow:
+      0 0 20px -5px rgba(173, 69, 255, 0.15),
+      0 0 10px -5px rgba(163, 179, 255, 0.1);
   }
 
   /* Line clamp utilities */
@@ -276,4 +307,255 @@
   .no-print {
     display: none !important;
   }
+}
+
+/* ========================================
+   Clerk Premium Golazo Overrides
+   ======================================== */
+
+/* UserButton Popover - Premium Styling */
+.cl-userButtonPopoverCard {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(249, 250, 251, 0.98) 100%
+  ) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(173, 69, 255, 0.15) !important;
+  box-shadow:
+    0 25px 50px -12px rgba(173, 69, 255, 0.25),
+    0 0 0 1px rgba(173, 69, 255, 0.05),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8) !important;
+  animation: clerkPopoverIn 0.2s ease-out !important;
+}
+
+.dark .cl-userButtonPopoverCard {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 10, 46, 0.98) 0%,
+    rgba(45, 27, 78, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(173, 69, 255, 0.3) !important;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(173, 69, 255, 0.1),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+/* User preview section */
+.cl-userButtonPopoverMain {
+  padding: 1rem !important;
+  background: transparent !important;
+}
+
+.cl-userPreview {
+  padding: 0.75rem !important;
+  border-radius: 1rem !important;
+  background: linear-gradient(
+    135deg,
+    rgba(173, 69, 255, 0.08) 0%,
+    rgba(163, 179, 255, 0.08) 100%
+  ) !important;
+  border: 1px solid rgba(173, 69, 255, 0.1) !important;
+}
+
+.dark .cl-userPreview {
+  background: linear-gradient(
+    135deg,
+    rgba(173, 69, 255, 0.15) 0%,
+    rgba(163, 179, 255, 0.15) 100%
+  ) !important;
+  border: 1px solid rgba(173, 69, 255, 0.2) !important;
+}
+
+.cl-userPreviewAvatarBox {
+  width: 3rem !important;
+  height: 3rem !important;
+  border-radius: 50% !important;
+  outline: 2px solid rgba(173, 69, 255, 0.3) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 20px rgba(173, 69, 255, 0.2) !important;
+}
+
+.cl-userPreviewMainIdentifier {
+  font-weight: 600 !important;
+  color: #1a0a2e !important;
+}
+
+.dark .cl-userPreviewMainIdentifier {
+  color: #ffffff !important;
+}
+
+.cl-userPreviewSecondaryIdentifier {
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
+}
+
+.dark .cl-userPreviewSecondaryIdentifier {
+  color: #9ca3af !important;
+}
+
+/* Action buttons */
+.cl-userButtonPopoverActions {
+  padding: 0.5rem !important;
+  border-top: none !important;
+}
+
+.dark .cl-userButtonPopoverActions {
+  border-top: none !important;
+}
+
+.cl-userButtonPopoverActionButton {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.75rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  transition: all 0.2s ease !important;
+}
+
+.dark .cl-userButtonPopoverActionButton {
+  color: #e5e7eb !important;
+}
+
+.cl-userButtonPopoverActionButton:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(173, 69, 255, 0.1) 0%,
+    rgba(163, 179, 255, 0.1) 100%
+  ) !important;
+  color: #ad45ff !important;
+  transform: translateX(4px) !important;
+}
+
+.cl-userButtonPopoverActionButtonIcon {
+  color: #ad45ff !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+/* Footer - Ocultar completamente */
+.cl-userButtonPopoverFooter {
+  display: none !important;
+}
+
+/* Ocultar el botón de Manage Account */
+.cl-userButtonPopoverActionButton[data-localization-key="userButton.action__manageAccount"],
+.cl-userButtonPopoverActionButton__manageAccount {
+  display: none !important;
+}
+
+/* UserButton avatar trigger */
+.cl-userButtonTrigger {
+  transition: all 0.2s ease !important;
+}
+
+.cl-userButtonTrigger:hover {
+  transform: scale(1.05) !important;
+}
+
+.cl-userButtonAvatarBox {
+  border-radius: 50% !important;
+  box-shadow:
+    0 0 0 2px rgba(173, 69, 255, 0.3),
+    0 4px 12px rgba(173, 69, 255, 0.15) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-userButtonTrigger:hover .cl-userButtonAvatarBox {
+  box-shadow:
+    0 0 0 3px rgba(173, 69, 255, 0.5),
+    0 8px 20px rgba(173, 69, 255, 0.25) !important;
+}
+
+/* Modal cards (SignIn, SignUp, UserProfile) */
+.cl-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(249, 250, 251, 0.98) 100%
+  ) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(173, 69, 255, 0.15) !important;
+  box-shadow:
+    0 25px 50px -12px rgba(173, 69, 255, 0.25),
+    0 0 0 1px rgba(173, 69, 255, 0.05) !important;
+  border-radius: 1.5rem !important;
+}
+
+.dark .cl-card {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 10, 46, 0.98) 0%,
+    rgba(45, 27, 78, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(173, 69, 255, 0.3) !important;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(173, 69, 255, 0.1) !important;
+}
+
+/* Primary buttons */
+.cl-formButtonPrimary {
+  background: linear-gradient(135deg, #ad45ff 0%, #a3b3ff 100%) !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 15px rgba(173, 69, 255, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-formButtonPrimary:hover {
+  background: linear-gradient(135deg, #9d35ef 0%, #93a3ef 100%) !important;
+  box-shadow: 0 8px 25px rgba(173, 69, 255, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Inputs */
+.cl-formFieldInput {
+  border: 1px solid rgba(173, 69, 255, 0.2) !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-formFieldInput:focus {
+  border-color: #ad45ff !important;
+  box-shadow: 0 0 0 3px rgba(173, 69, 255, 0.15) !important;
+}
+
+/* Social buttons */
+.cl-socialButtonsBlockButton {
+  border: 1px solid rgba(173, 69, 255, 0.15) !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-socialButtonsBlockButton:hover {
+  border-color: rgba(173, 69, 255, 0.4) !important;
+  background: rgba(173, 69, 255, 0.05) !important;
+}
+
+/* Clerk animation */
+@keyframes clerkPopoverIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Badge secured by clerk */
+.cl-internal-b3fm6y {
+  background: linear-gradient(
+    135deg,
+    rgba(173, 69, 255, 0.1) 0%,
+    rgba(163, 179, 255, 0.1) 100%
+  ) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
 }

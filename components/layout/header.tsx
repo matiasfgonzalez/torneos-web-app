@@ -81,12 +81,20 @@ export function Header(props: Readonly<HeaderProps>) {
             ))}
             {/* Authentication Buttons */}
             {isLogued && (
-              <Link
-                href="/admin/dashboard"
-                className="text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
-              >
-                Administración
-              </Link>
+              <>
+                <Link
+                  href="/admin/dashboard"
+                  className="text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
+                >
+                  Administración
+                </Link>
+                <Link
+                  href="/profile"
+                  className="text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
+                >
+                  Mi Perfil
+                </Link>
+              </>
             )}
             {/* Theme Toggle */}
             <ThemeToggle />
@@ -137,13 +145,22 @@ export function Header(props: Readonly<HeaderProps>) {
               ))}
               {/* Authentication Buttons */}
               {isLogued && (
-                <Link
-                  href="/admin/dashboard"
-                  className="block px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
-                  onClick={close}
-                >
-                  Administración
-                </Link>
+                <>
+                  <Link
+                    href="/admin/dashboard"
+                    className="block px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
+                    onClick={close}
+                  >
+                    Administración
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="block px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors"
+                    onClick={close}
+                  >
+                    Mi Perfil
+                  </Link>
+                </>
               )}
               <div className="px-3 py-2">
                 <SignedOut>
@@ -165,3 +182,4 @@ export function Header(props: Readonly<HeaderProps>) {
     </nav>
   );
 }
+

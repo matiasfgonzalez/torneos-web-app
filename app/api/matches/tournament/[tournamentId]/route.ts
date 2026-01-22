@@ -34,6 +34,20 @@ export async function GET(_req: Request, { params }: { params: tParams }) {
             },
           },
         },
+        cards: {
+          include: {
+            teamPlayer: {
+              include: {
+                player: true,
+              },
+            },
+          },
+        },
+        referees: {
+          include: {
+            referee: true,
+          },
+        },
       },
       orderBy: { dateTime: "asc" },
     });

@@ -1,7 +1,7 @@
 import StatsCards from "./components/StatsCards";
 import ListTournaments from "./components/ListTournaments";
 import DialogAddTournaments from "./components/DialogAddTournaments";
-import { getTorneos } from "@/app/actions/torneos/getTorneos";
+import { getTorneos } from "@modules/torneos/actions/getTorneos";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -11,7 +11,7 @@ export default async function AdminTorneos() {
   console.log("Torneos obtenidos:", tournaments);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900/50">
+    <div className="min-h-screen">
       <div className="space-y-8 p-6 sm:p-8">
         {/* Header mejorado */}
         <div className="relative">
@@ -63,7 +63,7 @@ export default async function AdminTorneos() {
                       <span className="text-sm font-medium text-green-700 dark:text-green-300">
                         {
                           tournaments.filter(
-                            (t) => t.status === "Inscripciones"
+                            (t) => t.status === "Inscripciones",
                           ).length
                         }{" "}
                         inscribiendo

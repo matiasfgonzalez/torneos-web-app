@@ -44,8 +44,8 @@ export default function GoogleSignIn() {
       // Redirige al flujo de Google OAuth
       await signIn?.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/sso-callback", // ruta interna temporal
-        redirectUrlComplete: "/admin/dashboard", // redirección final
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/admin/dashboard",
       });
     } catch (err) {
       console.error("Error iniciando sesión con Google:", err);
@@ -53,8 +53,7 @@ export default function GoogleSignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md space-y-6 sm:space-y-8">
+    <div className="w-full max-w-md space-y-6 sm:space-y-8">
         {/* Header con branding mejorado */}
         <div className="text-center space-y-4">
           <Link href="/" className="inline-flex items-center space-x-3 group">
@@ -72,8 +71,8 @@ export default function GoogleSignIn() {
           </Link>
         </div>
 
-        {/* Tarjeta principal mejorada */}
-        <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+        {/* Tarjeta principal con glassmorphism */}
+        <Card className="glass-card border-0 shadow-2xl rounded-3xl overflow-hidden">
           <CardHeader className="text-center space-y-4 pb-4 px-4 sm:px-6">
             <div className="inline-flex items-center space-x-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium mx-auto">
               <CheckCircle className="w-4 h-4" />
@@ -163,6 +162,5 @@ export default function GoogleSignIn() {
           </Link>
         </div>
       </div>
-    </div>
   );
 }

@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    // 🔹 auth y currentUser en paralelo
-    const [{ userId }, userLogued] = await Promise.all([auth(), currentUser()]);
+    // 🔹 auth solo
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,16 +21,14 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no registrado en la base de datos" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    const role = userLogued?.publicMetadata?.role as string | null;
-
-    if (role !== "admin") {
+    if (user.role !== "ADMINISTRADOR") {
       return NextResponse.json(
         { error: "No tienes permisos para actualizar el partido" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -49,7 +47,7 @@ export async function POST(req: Request) {
     console.error("Error al crear la relación equipo-jugador:", error);
     return NextResponse.json(
       { error: "Error al crear la relación equipo-jugador" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

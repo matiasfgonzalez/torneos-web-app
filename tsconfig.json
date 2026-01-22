@@ -19,7 +19,16 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@modules/*": ["./modules/*"],
+      "@modules/torneos/*": ["./modules/torneos/*"],
+      "@modules/equipos/*": ["./modules/equipos/*"],
+      "@modules/jugadores/*": ["./modules/jugadores/*"],
+      "@modules/partidos/*": ["./modules/partidos/*"],
+      "@modules/noticias/*": ["./modules/noticias/*"],
+      "@modules/arbitros/*": ["./modules/arbitros/*"],
+      "@modules/usuarios/*": ["./modules/usuarios/*"],
+      "@modules/shared/*": ["./modules/shared/*"]
     }
   },
   "include": [

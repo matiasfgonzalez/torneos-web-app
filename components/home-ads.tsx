@@ -535,3 +535,4 @@ export function HomeAds({ variant = "mixed", className }: HomeAdsProps) {
         </section>
     );
 }
+

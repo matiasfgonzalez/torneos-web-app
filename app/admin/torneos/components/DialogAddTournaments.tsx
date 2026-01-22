@@ -6,7 +6,11 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TOURNAMENT_CATEGORIES, TOURNAMENT_FORMATS } from "@/lib/constants";
+import {
+  TOURNAMENT_CATEGORIES_OPTIONS,
+  TOURNAMENT_FORMAT_OPTIONS,
+  TOURNAMENT_STATUS_OPTIONS,
+} from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
@@ -36,7 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit, Plus, Loader2 } from "lucide-react";
-import { ITorneo } from "@/components/torneos/types";
+import { ITorneo } from "@modules/torneos/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -77,6 +81,7 @@ const tournamentSchema = z
     format: z.string().min(1, "El formato es obligatorio"),
     homeAndAway: z.boolean(),
     nextMatch: z.date().optional(),
+    status: z.string().min(1, "El estado es obligatorio"),
   })
   .refine(
     (data) => {
@@ -88,7 +93,7 @@ const tournamentSchema = z
     {
       message: "La fecha de fin no puede ser anterior a la fecha de inicio.",
       path: ["endDate"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -100,7 +105,7 @@ const tournamentSchema = z
     {
       message: "El próximo partido debe ser posterior a la fecha de inicio.",
       path: ["nextMatch"],
-    }
+    },
   );
 
 type TournamentFormValues = z.infer<typeof tournamentSchema>;
@@ -145,7 +150,7 @@ const useSubmitTournament = (isEditMode: boolean, tournament?: ITorneo) => {
         toast.success(
           isEditMode
             ? "Torneo editado correctamente"
-            : "Torneo creado correctamente"
+            : "Torneo creado correctamente",
         );
         router.refresh();
         return true;
@@ -155,7 +160,7 @@ const useSubmitTournament = (isEditMode: boolean, tournament?: ITorneo) => {
           errorData.message ||
             (isEditMode
               ? "Error al editar el torneo"
-              : "Error al crear el torneo")
+              : "Error al crear el torneo"),
         );
         console.error("Error al procesar torneo:", errorData);
         return false;
@@ -182,7 +187,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
 
   const { submitTournament, isLoading } = useSubmitTournament(
     isEditMode,
-    tournament
+    tournament,
   );
 
   // Inicializar useForm con zodResolver y defaultValues
@@ -192,8 +197,8 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       name: isEditMode && tournament?.name ? tournament.name : "",
       description: isEditMode ? tournament?.description || "" : "",
       category: isEditMode
-        ? tournament?.category || TOURNAMENT_CATEGORIES[0].value
-        : TOURNAMENT_CATEGORIES[0].value,
+        ? tournament?.category || TOURNAMENT_CATEGORIES_OPTIONS[0].value
+        : TOURNAMENT_CATEGORIES_OPTIONS[0].value,
       locality: isEditMode ? tournament?.locality || "" : "",
       startDate:
         isEditMode && tournament?.startDate
@@ -206,13 +211,16 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       logoUrl: isEditMode ? tournament?.logoUrl || "" : "",
       liga: isEditMode ? tournament?.liga || "" : "",
       format: isEditMode
-        ? tournament?.format || TOURNAMENT_FORMATS[0].value
-        : TOURNAMENT_FORMATS[0].value,
+        ? tournament?.format || TOURNAMENT_FORMAT_OPTIONS[0].value
+        : TOURNAMENT_FORMAT_OPTIONS[0].value,
       homeAndAway: isEditMode ? tournament?.homeAndAway || false : false,
       nextMatch:
         isEditMode && tournament?.nextMatch
           ? new Date(tournament.nextMatch)
           : undefined,
+      status: isEditMode
+        ? tournament?.status || TOURNAMENT_STATUS_OPTIONS[0].value
+        : TOURNAMENT_STATUS_OPTIONS[0].value,
     },
   });
 
@@ -236,52 +244,68 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
             variant="secondary"
             size="sm"
             asChild
-            className="bg-green-700 hover:bg-green-900 text-white cursor-pointer"
+            className="bg-green-600 hover:bg-green-700 text-white cursor-pointer rounded-xl shadow-lg"
           >
             <div>
               <Edit className="h-4 w-4" />
             </div>
           </Button>
         ) : (
-          <Button
-            className="bg-gradient-to-r from-primary to-blue-600 rounded-3xl p-6 text-white
-        hover:from-primary/80 hover:to-blue-700 hover:scale-105 transition-all duration-300
-         cursor-pointer"
-          >
-            <Plus className="mr-2 h-4 w-4" />
+          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
+            <Plus className="mr-2 h-5 w-5" />
             Crear Torneo
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[750px] max-w-[95vw] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 text-black dark:text-white">
-        <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">
-            {isEditMode ? "Editar Torneo" : "Crear Nuevo Torneo"}
-          </DialogTitle>
-          <DialogDescription className="text-sm sm:text-base">
-            Completa la información básica del torneo
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[750px] max-w-[95vw] max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
+        {/* Header con gradiente */}
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff] rounded-t-2xl" />
+
+        <DialogHeader className="space-y-4 pt-4">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+              {isEditMode ? (
+                <Edit className="h-6 w-6 text-white" />
+              ) : (
+                <Plus className="h-6 w-6 text-white" />
+              )}
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                {isEditMode ? "Editar Torneo" : "Crear Nuevo Torneo"}
+              </DialogTitle>
+              <DialogDescription className="text-gray-600 dark:text-gray-300 text-base">
+                Completa la información básica del torneo
+              </DialogDescription>
+            </div>
+          </div>
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent" />
         </DialogHeader>
 
         {/* Formulario con react-hook-form */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4 py-4"
+            className="grid gap-6 py-6 px-1"
           >
             {/* Campo: Nombre del Torneo */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre del Torneo</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Nombre del Torneo
+                    </FormLabel>
+                  </div>
                   <FormControl>
                     <Input
                       placeholder="Ej: Copa de Verano 2024"
                       {...field}
                       disabled={isLoading}
-                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -294,14 +318,19 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="locality"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Localidad</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Localidad
+                    </FormLabel>
+                  </div>
                   <FormControl>
                     <Input
                       placeholder="Ej: Buenos Aires"
                       {...field}
                       disabled={isLoading}
-                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -314,20 +343,25 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoría</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Categoría
+                    </FormLabel>
+                  </div>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                     disabled={isLoading}
                   >
-                    <FormControl className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300">
-                      <SelectTrigger>
+                    <FormControl>
+                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
                         <SelectValue placeholder="Selecciona una categoría" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      {TOURNAMENT_CATEGORIES.map((cat) => (
+                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      {TOURNAMENT_CATEGORIES_OPTIONS.map((cat) => (
                         <SelectItem key={cat.value} value={cat.value}>
                           {cat.label}
                         </SelectItem>
@@ -345,13 +379,16 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 control={form.control}
                 name="startDate"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha de Inicio</FormLabel>
+                  <FormItem className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Fecha de Inicio
+                      </FormLabel>
+                    </div>
                     <FormControl>
                       <Input
                         type="date"
-                        // `field.value` para un input type="date" debe ser un string YYYY-MM-DD
-                        // Si Zod transforma a Date, necesitas transformar de vuelta para el input.
                         value={
                           field.value
                             ? field.value.toISOString().split("T")[0]
@@ -361,7 +398,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           field.onChange(new Date(e.target.value))
                         }
                         disabled={isLoading}
-                        className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -373,12 +410,16 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 control={form.control}
                 name="endDate"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha de Fin</FormLabel>
+                  <FormItem className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Fecha de Fin
+                      </FormLabel>
+                    </div>
                     <FormControl>
                       <Input
                         type="date"
-                        // `field.value` para un input type="date" debe ser un string YYYY-MM-DD
                         value={
                           field.value
                             ? field.value.toISOString().split("T")[0]
@@ -388,7 +429,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           field.onChange(new Date(e.target.value))
                         }
                         disabled={isLoading}
-                        className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -402,14 +443,20 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="description"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Descripción
+                    </FormLabel>
+                  </div>
                   <FormControl>
                     <Textarea
                       placeholder="Descripción del torneo..."
                       {...field}
                       disabled={isLoading}
-                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                      rows={3}
+                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -422,20 +469,25 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="format"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Formato</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Formato
+                    </FormLabel>
+                  </div>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                     disabled={isLoading}
                   >
-                    <FormControl className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300">
-                      <SelectTrigger>
+                    <FormControl>
+                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
                         <SelectValue placeholder="Selecciona un formato" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      {TOURNAMENT_FORMATS.map((format) => (
+                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      {TOURNAMENT_FORMAT_OPTIONS.map((format) => (
                         <SelectItem key={format.value} value={format.value}>
                           {format.label}
                         </SelectItem>
@@ -452,17 +504,67 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="homeAndAway"
               render={({ field }) => (
-                <FormItem className="flex items-center space-x-2">
-                  <FormLabel className="mb-0">¿Ida y vuelta?</FormLabel>
-                  <FormControl>
-                    <input
-                      type="checkbox"
-                      className="scale-125"
-                      checked={field.value}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="homeAndAway"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-[#ad45ff] focus:ring-[#ad45ff] dark:focus:ring-[#a3b3ff]"
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        disabled={isLoading}
+                      />
+                      <div>
+                        <FormLabel
+                          htmlFor="homeAndAway"
+                          className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+                        >
+                          ¿Ida y vuelta?
+                        </FormLabel>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {field.value
+                            ? "Los equipos jugarán partidos de ida y vuelta"
+                            : "Los equipos jugarán solo un partido"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Campo: Estado del Torneo (Select) */}
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Estado del Torneo
+                    </FormLabel>
+                  </div>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                        <SelectValue placeholder="Selecciona un estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      {TOURNAMENT_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -473,14 +575,19 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="liga"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Liga o Asociación (Organizador)</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Liga o Asociación (Organizador)
+                    </FormLabel>
+                  </div>
                   <FormControl>
                     <Input
                       placeholder="Ej: AFA, Liga Cordobesa..."
                       {...field}
                       disabled={isLoading}
-                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -493,15 +600,20 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="logoUrl"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL del Logo</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      URL del Logo
+                    </FormLabel>
+                  </div>
                   <FormControl>
                     <Input
                       type="url"
                       placeholder="https://logo.com/escudo.png"
                       {...field}
                       disabled={isLoading}
-                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -509,18 +621,24 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               )}
             />
             {form.getValues("logoUrl") && (
-              <div className="mt-2">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Vista previa:
-                </p>
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
                 <img
                   src={form.getValues("logoUrl") || "/placeholder.svg"}
                   alt="Vista previa del logo"
-                  className="w-20 h-20 object-cover rounded-lg border"
+                  className="w-16 h-16 object-cover rounded-xl border-2 border-gray-200 dark:border-gray-600 shadow-lg"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
                   }}
                 />
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Vista previa del logo
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Asegúrate de que la imagen sea cuadrada para mejor
+                    visualización
+                  </p>
+                </div>
               </div>
             )}
 
@@ -529,8 +647,13 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               control={form.control}
               name="nextMatch"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Próximo partido (opcional)</FormLabel>
+                <FormItem className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Próximo partido (opcional)
+                    </FormLabel>
+                  </div>
                   <FormControl>
                     <Input
                       type="datetime-local"
@@ -541,7 +664,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       }
                       onChange={(e) => field.onChange(new Date(e.target.value))}
                       disabled={isLoading}
-                      className="border-2 border-gray-300 focus:border-blue-500 focus:ring-0 transition-all duration-300"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -549,11 +672,11 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               )}
             />
 
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
               <Button
                 type="button"
-                variant="default"
-                className="bg-red-500 hover:bg-red-600 hover:scale-105 transition-all duration-300 cursor-pointer"
+                variant="outline"
+                className="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl font-medium transition-all duration-200"
                 onClick={handleCancel}
                 disabled={isLoading}
               >
@@ -562,9 +685,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               {isEditMode ? (
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-white
-                  hover:from-yellow-500 hover:to-yellow-600 hover:scale-105 transition-all duration-300
-                  active:scale-95 cursor-pointer"
+                  className="px-8 py-2.5 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -579,9 +700,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               ) : (
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-primary to-blue-600 text-white
-                  hover:from-primary/80 hover:to-blue-700 hover:scale-105 transition-all duration-300
-                  active:scale-95 cursor-pointer"
+                  className="px-8 py-2.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -590,7 +709,10 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       Creando...
                     </>
                   ) : (
-                    "Registrar Torneo"
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Registrar Torneo
+                    </>
                   )}
                 </Button>
               )}

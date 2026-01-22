@@ -7,3 +7,4 @@ export const navigationLinks = [
   { href: "/noticias", label: "Noticias" },
   { href: "#contacto", label: "Contacto" },
 ] as const;
+

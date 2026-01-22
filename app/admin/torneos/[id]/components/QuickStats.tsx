@@ -1,123 +1,111 @@
-import { ITorneo } from "@/components/torneos/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ITorneo } from "@modules/torneos/types";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatDate } from "@/lib/formatDate";
-import {
-  Users,
-  Trophy,
-  Target,
-  Clock,
-  Building,
-  Calendar,
-  TrendingUp,
-} from "lucide-react";
+import { Users, Trophy, Target, Clock, Building, Calendar } from "lucide-react";
+import { TOURNAMENT_FORMAT_LABELS } from "@/lib/constants";
+import { TournamentFormat } from "@prisma/client";
 
 interface PropsQuickStats {
-  tournamentData: ITorneo;
+  readonly tournamentData: ITorneo;
 }
 
-const QuickStats = (props: PropsQuickStats) => {
-  const { tournamentData } = props;
+const QuickStats = ({ tournamentData }: PropsQuickStats) => {
+  const getFormatLabel = (format: string) => {
+    return TOURNAMENT_FORMAT_LABELS[format as TournamentFormat] || format;
+  };
 
   const stats = [
     {
-      title: "Equipos Registrados",
+      title: "Equipos",
       value: tournamentData.tournamentTeams?.length || 0,
       icon: Users,
       color: "from-blue-500 to-cyan-500",
-      bgColor:
-        "from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20",
-      description: "equipos participantes",
+      iconBg: "bg-gradient-to-br from-blue-500 to-cyan-500",
+      description: "registrados",
     },
     {
       title: "Partidos",
       value: tournamentData.matches?.length || 0,
       icon: Target,
       color: "from-green-500 to-emerald-500",
-      bgColor:
-        "from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20",
-      description: "encuentros registrados",
+      iconBg: "bg-gradient-to-br from-green-500 to-emerald-500",
+      description: "programados",
     },
     {
       title: "Formato",
-      value: tournamentData.format || "Liga",
+      value: getFormatLabel(tournamentData.format || "LIGA"),
       icon: Trophy,
-      color: "from-[#ad45ff] to-[#a3b3ff]",
-      bgColor:
-        "from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#ad45ff]/20 dark:to-[#a3b3ff]/20",
-      description: "tipo de competencia",
+      color: "from-[#ad45ff] to-[#c77dff]",
+      iconBg: "bg-gradient-to-br from-[#ad45ff] to-[#c77dff]",
+      description: "de competencia",
       isText: true,
     },
     {
-      title: "Ida y Vuelta",
-      value: tournamentData.homeAndAway ? "Sí" : "No",
+      title: "Modalidad",
+      value: tournamentData.homeAndAway ? "Ida y Vuelta" : "Solo Ida",
       icon: Calendar,
       color: "from-purple-500 to-pink-500",
-      bgColor:
-        "from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20",
-      description: "modalidad de juego",
+      iconBg: "bg-gradient-to-br from-purple-500 to-pink-500",
+      description: "de juego",
       isText: true,
     },
     {
-      title: "Liga/Asociación",
-      value: tournamentData.liga || "No especificado",
+      title: "Liga",
+      value: tournamentData.liga || "Sin asignar",
       icon: Building,
       color: "from-orange-500 to-red-500",
-      bgColor:
-        "from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20",
+      iconBg: "bg-gradient-to-br from-orange-500 to-red-500",
       description: "organizador",
       isText: true,
     },
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <div className="w-1 h-6 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+          <Trophy className="w-5 h-5 text-white" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
           Estadísticas del Torneo
         </h2>
       </div>
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => {
           const IconComponent = stat.icon;
           return (
             <Card
               key={stat.title}
-              className="group relative overflow-hidden border-2 border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/30 dark:hover:border-[#ad45ff]/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white dark:bg-gray-800"
+              className="group relative overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:shadow-[#ad45ff]/10 hover:-translate-y-1 bg-white dark:bg-gray-900 rounded-2xl"
             >
-              {/* Background gradient sutil */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${stat.bgColor} opacity-50`}
-              />
+              {/* Gradient accent bar */}
+              <div className={`h-1 bg-gradient-to-r ${stat.color}`} />
 
-              <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
-                <div className="space-y-1">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {stat.title}
-                  </CardTitle>
-                  <div
-                    className={`${
-                      stat.isText ? "text-lg" : "text-2xl"
-                    } font-bold text-gray-900 dark:text-white ${
-                      stat.isText && stat.value.length > 10 ? "text-sm" : ""
-                    }`}
-                  >
-                    {stat.value}
-                  </div>
-                </div>
+              {/* Hover gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/0 to-[#c77dff]/0 group-hover:from-[#ad45ff]/5 group-hover:to-[#c77dff]/5 transition-all duration-300 pointer-events-none" />
 
+              <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2 pt-4 px-4">
                 <div
-                  className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                  className={`p-2.5 rounded-xl ${stat.iconBg} shadow-lg group-hover:scale-110 transition-transform duration-300`}
                 >
-                  <IconComponent className="w-6 h-6 text-white" />
+                  <IconComponent className="w-5 h-5 text-white" />
                 </div>
               </CardHeader>
 
-              <CardContent className="relative pt-0">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-3 h-3 text-green-500" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <CardContent className="relative px-4 pb-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {stat.title}
+                  </p>
+                  <div
+                    className={`${stat.isText ? "text-lg" : "text-3xl"} font-black text-gray-900 dark:text-white ${stat.isText && String(stat.value).length > 12 ? "text-sm" : ""}`}
+                  >
+                    {stat.value}
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     {stat.description}
                   </p>
                 </div>
@@ -129,20 +117,21 @@ const QuickStats = (props: PropsQuickStats) => {
 
       {/* Próximo partido destacado */}
       {tournamentData.nextMatch && (
-        <Card className="border-2 border-yellow-200 dark:border-yellow-600/30 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center">
-                <Clock className="w-5 h-5 text-white" />
+        <Card className="relative overflow-hidden border border-amber-200 dark:border-amber-700/30 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl">
+          <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400" />
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl shadow-lg shadow-amber-500/25">
+                <Clock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
+                <h3 className="font-bold text-gray-900 dark:text-white text-lg">
                   Próximo Partido
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-amber-700 dark:text-amber-300 font-medium">
                   {formatDate(
                     tournamentData.nextMatch,
-                    "EEEE dd 'de' MMMM 'a las' HH:mm"
+                    "EEEE dd 'de' MMMM 'a las' HH:mm",
                   )}
                 </p>
               </div>

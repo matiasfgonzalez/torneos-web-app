@@ -37,12 +37,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { Trash2, Trophy, Search, Filter } from "lucide-react";
+import { Trash2, Trophy, Search, Filter, Users } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ITeam } from "@/components/equipos/types";
+import { ITeam } from "@modules/equipos/types/types";
 import { cn } from "@/lib/utils";
-import { ITournamentTeam } from "@/components/tournament-teams/types";
-import { ITorneo } from "@/components/torneos/types";
+import { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
+import { ITorneo } from "@modules/torneos/types";
 import DialogAddEditTeamTournament from "../DialogAddEditTeamTournament";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
 
   const usedTeamIds = useMemo(
     () => associations.map((a) => a.teamId),
-    [associations]
+    [associations],
   );
 
   const associationsForTable = useMemo(() => {
@@ -126,53 +126,60 @@ const TabsTeams = (props: TabsTeamsProps) => {
           message="Eliminando equipo..."
         />
       )}
-      <TabsContent value="teams" className="space-y-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Equipos del Torneo
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {associations.length || 0} equipos asociados
-            </p>
+      <TabsContent value="teams" className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+              <Users className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                Equipos del Torneo
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {associations.length || 0} equipos asociados
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-2 md:items-center">
+          <div className="flex flex-col md:flex-row gap-3 md:items-center">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar equipo por nombre o alias..."
+                placeholder="Buscar equipo..."
                 value={searchTeam}
                 onChange={(e) => setSearchTeam(e.target.value)}
-                className="pl-8 w-full md:w-[280px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
+                className="pl-10 w-full md:w-[250px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <Select
-                value={filterGroup}
-                onValueChange={(v) => setFilterGroup(v)}
-              >
-                <SelectTrigger className="w-[140px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
-                  <SelectValue placeholder="Grupo" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                  <SelectItem
-                    value="ALL"
-                    className="text-gray-900 dark:text-white"
-                  >
-                    Todos
-                  </SelectItem>
-                  {groupsList.map((g) => (
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Select
+                  value={filterGroup}
+                  onValueChange={(v) => setFilterGroup(v)}
+                >
+                  <SelectTrigger className="pl-10 w-[160px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]">
+                    <SelectValue placeholder="Grupo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
                     <SelectItem
-                      key={g}
-                      value={g}
+                      value="ALL"
                       className="text-gray-900 dark:text-white"
                     >
-                      Grupo {g}
+                      Todos los grupos
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    {groupsList.map((g) => (
+                      <SelectItem
+                        key={g}
+                        value={g}
+                        className="text-gray-900 dark:text-white"
+                      >
+                        Grupo {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogAddEditTeamTournament
               mode="create"
@@ -184,229 +191,260 @@ const TabsTeams = (props: TabsTeamsProps) => {
           </div>
         </div>
 
-        <Card className="border-2 border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-white">
-              Lista de Equipos Asociados
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-300">
-              Gestiona asociaciones, grupos, estado y estadísticas
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-b dark:border-gray-700">
-                    <TableHead className="text-gray-900 dark:text-white">
-                      Equipo
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      Grupo
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      Estado
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      PJ
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      G
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      E
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      P
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      GF
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      GC
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      DG
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white">
-                      Pts
-                    </TableHead>
-                    <TableHead className="text-right text-gray-900 dark:text-white">
-                      Acciones
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {associationsForTable.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 border-b dark:border-gray-700"
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={
-                              row.team?.logoUrl ||
-                              "/placeholder.svg?height=32&width=32&query=team"
-                            }
-                            alt={`Logo ${row.team?.name || "Equipo"}`}
-                            className="w-8 h-8 object-cover rounded"
-                          />
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {row.team?.name || "Desconocido"}
-                            </div>
-                            {row.team?.shortName && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {row.team.shortName}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex space-x-1">
-                            {row.team?.homeColor && (
-                              <span
-                                className="w-3 h-3 rounded-full border border-gray-300 dark:border-gray-600"
-                                style={{ backgroundColor: row.team.homeColor }}
-                                title="Color local"
-                              />
-                            )}
-                            {row.team?.awayColor && (
-                              <span
-                                className="w-3 h-3 rounded-full border border-gray-300 dark:border-gray-600"
-                                style={{ backgroundColor: row.team.awayColor }}
-                                title="Color visitante"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium text-gray-900 dark:text-white">
-                        {row.group || "-"}
-                      </TableCell>
-                      <TableCell>
-                        {row.isEliminated ? (
-                          <Badge
-                            variant="destructive"
-                            className="bg-red-600 text-white"
-                          >
-                            Eliminado
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="border-green-500 text-green-600 dark:border-green-400 dark:text-green-400"
-                          >
-                            En competencia
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-gray-900 dark:text-white">
-                        {row.matchesPlayed}
-                      </TableCell>
-                      <TableCell className="text-gray-900 dark:text-white">
-                        {row.wins}
-                      </TableCell>
-                      <TableCell className="text-gray-900 dark:text-white">
-                        {row.draws}
-                      </TableCell>
-                      <TableCell className="text-gray-900 dark:text-white">
-                        {row.losses}
-                      </TableCell>
-                      <TableCell className="text-gray-900 dark:text-white">
-                        {row.goalsFor}
-                      </TableCell>
-                      <TableCell className="text-gray-900 dark:text-white">
-                        {row.goalsAgainst}
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          "font-medium",
-                          row.goalDifference < 0
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-gray-900 dark:text-white"
-                        )}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+          <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
+            <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+                  <Trophy className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
+                    Lista de Equipos Asociados
+                  </CardTitle>
+                  <CardDescription className="text-gray-500 dark:text-gray-400">
+                    Gestiona asociaciones, grupos, estado y estadísticas
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/80">
+                    <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-transparent">
+                      <TableHead className="font-bold text-gray-900 dark:text-white">
+                        Equipo
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center">
+                        Grupo
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center">
+                        Estado
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center hidden sm:table-cell">
+                        PJ
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center hidden md:table-cell">
+                        G
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center hidden md:table-cell">
+                        E
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center hidden md:table-cell">
+                        P
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center hidden lg:table-cell">
+                        GF
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center hidden lg:table-cell">
+                        GC
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center">
+                        DG
+                      </TableHead>
+                      <TableHead className="font-bold text-gray-900 dark:text-white text-center">
+                        Pts
+                      </TableHead>
+                      <TableHead className="text-right font-bold text-gray-900 dark:text-white">
+                        Acciones
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {associationsForTable.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 transition-colors duration-200"
                       >
-                        {row.goalDifference}
-                      </TableCell>
-                      <TableCell className="font-bold text-gray-900 dark:text-white">
-                        {row.points}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <DialogAddEditTeamPlayer
-                            mode="create"
-                            tournamentData={tournamentData}
-                            teamData={row}
-                          />
-                          <DialogAddEditTeamTournament
-                            mode="edit"
-                            tournamentData={tournamentData}
-                            equipos={equipos}
-                            usedTeamIds={usedTeamIds}
-                            tournamentTeam={row}
-                          />
-                          <AlertDialog
-                            open={!!deleteAssoc && deleteAssoc.id === row.id}
-                            onOpenChange={(o) => !o && setDeleteAssoc(null)}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md">
+                              <img
+                                src={row.team?.logoUrl || "/placeholder.svg"}
+                                alt={`Logo ${row.team?.name || "Equipo"}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-gray-900 dark:text-white">
+                                {row.team?.name || "Desconocido"}
+                              </div>
+                              {row.team?.shortName && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  {row.team.shortName}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex space-x-1">
+                              {row.team?.homeColor && (
+                                <span
+                                  className="w-4 h-4 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+                                  style={{
+                                    backgroundColor: row.team.homeColor,
+                                  }}
+                                  title="Color local"
+                                />
+                              )}
+                              {row.team?.awayColor && (
+                                <span
+                                  className="w-4 h-4 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+                                  style={{
+                                    backgroundColor: row.team.awayColor,
+                                  }}
+                                  title="Color visitante"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {row.group ? (
+                            <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0 shadow-sm">
+                              Grupo {row.group}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {row.isEliminated ? (
+                            <Badge className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-0">
+                              Eliminado
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-0">
+                              En juego
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center font-medium text-gray-700 dark:text-gray-300 hidden sm:table-cell">
+                          {row.matchesPlayed}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-green-600 dark:text-green-400 hidden md:table-cell">
+                          {row.wins}
+                        </TableCell>
+                        <TableCell className="text-center font-medium text-gray-500 dark:text-gray-400 hidden md:table-cell">
+                          {row.draws}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-red-600 dark:text-red-400 hidden md:table-cell">
+                          {row.losses}
+                        </TableCell>
+                        <TableCell className="text-center font-medium text-gray-700 dark:text-gray-300 hidden lg:table-cell">
+                          {row.goalsFor}
+                        </TableCell>
+                        <TableCell className="text-center font-medium text-gray-700 dark:text-gray-300 hidden lg:table-cell">
+                          {row.goalsAgainst}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span
+                            className={cn(
+                              "inline-flex items-center justify-center w-8 h-6 rounded-md text-sm font-semibold",
+                              row.goalDifference < 0
+                                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                : row.goalDifference > 0
+                                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+                            )}
                           >
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                title="Quitar del torneo"
-                                onClick={() => setDeleteAssoc(row)}
-                                className="cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-red-600 dark:text-red-400"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-gray-900 dark:text-white">
-                                  Quitar equipo del torneo
-                                </AlertDialogTitle>
-                                <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
-                                  Esta acción eliminará la relación del equipo{" "}
-                                  <strong className="text-gray-900 dark:text-white">
-                                    {" "}
-                                    {row.team?.name}
-                                  </strong>{" "}
-                                  con este torneo. Las estadísticas asociadas a
-                                  esta relación se perderán.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
-                                  Cancelar
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
-                                  onClick={() => handleDelete(row.id)}
+                            {row.goalDifference > 0 ? "+" : ""}
+                            {row.goalDifference}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white font-bold text-lg rounded-lg shadow-lg shadow-[#ad45ff]/25">
+                            {row.points}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <DialogAddEditTeamPlayer
+                              mode="create"
+                              tournamentData={tournamentData}
+                              teamData={row}
+                            />
+                            <DialogAddEditTeamTournament
+                              mode="edit"
+                              tournamentData={tournamentData}
+                              equipos={equipos}
+                              usedTeamIds={usedTeamIds}
+                              tournamentTeam={row}
+                            />
+                            <AlertDialog
+                              open={!!deleteAssoc && deleteAssoc.id === row.id}
+                              onOpenChange={(o) => !o && setDeleteAssoc(null)}
+                            >
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title="Quitar del torneo"
+                                  onClick={() => setDeleteAssoc(row)}
+                                  className="cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-red-600 dark:text-red-400"
                                 >
-                                  Quitar equipo
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {associationsForTable.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={12} className="text-center py-8">
-                        <Trophy className="mx-auto h-10 w-10 text-gray-400 dark:text-gray-500 mb-2" />
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          No se encontraron asociaciones
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-gray-900 dark:text-white">
+                                    Quitar equipo del torneo
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
+                                    Esta acción eliminará la relación del equipo{" "}
+                                    <strong className="text-gray-900 dark:text-white">
+                                      {" "}
+                                      {row.team?.name}
+                                    </strong>{" "}
+                                    con este torneo. Las estadísticas asociadas
+                                    a esta relación se perderán.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+                                    onClick={() => handleDelete(row.id)}
+                                  >
+                                    Quitar equipo
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {associationsForTable.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={12} className="text-center py-16">
+                          <div className="space-y-4">
+                            <div className="w-20 h-20 bg-gradient-to-br from-[#ad45ff]/10 to-[#c77dff]/10 rounded-2xl flex items-center justify-center mx-auto">
+                              <Trophy className="w-10 h-10 text-[#ad45ff]" />
+                            </div>
+                            <div>
+                              <p className="text-gray-900 dark:text-white font-semibold text-lg">
+                                No hay equipos asociados
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Agrega equipos para comenzar a gestionar el
+                                torneo
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </TabsContent>
     </>
   );

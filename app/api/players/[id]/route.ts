@@ -1,6 +1,6 @@
 // app/api/teams/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 type tParams = Promise<{ id: string }>;
@@ -12,7 +12,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!id) {
       return NextResponse.json(
         { error: "ID no proporcionado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!userId) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,17 +32,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no registrado en la base de datos" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    const userLogued = await currentUser();
-    const role = userLogued?.publicMetadata?.role as string | null;
-
-    if (role !== "admin") {
+    if (user.role !== "ADMINISTRADOR") {
       return NextResponse.json(
         { error: "No tienes permisos para actualizar el jugador" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -63,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     console.error("Error en PATCH /api/players:", error);
     return NextResponse.json(
       { error: "Error al actualizar el jugador" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,6 @@
 // /app/api/tournament-teams/route.ts
 import { NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,23 +24,15 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Validar que el user sea admin
-    const userLogued = await currentUser();
-    if (!userLogued) {
+    if (user.role !== "ADMINISTRADOR") {
       return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 }
-      );
-    }
-    const role = userLogued.publicMetadata?.role as string | null;
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "No tienes permisos para crear un torneo" },
-        { status: 403 }
+        { error: "No tienes permisos para gestionar equipos en torneos" },
+        { status: 403 },
       );
     }
 
@@ -64,7 +56,7 @@ export async function POST(req: Request) {
     if (!tournamentId || !teamId) {
       return NextResponse.json(
         { error: "tournamentId y teamId son requeridos" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -92,7 +84,7 @@ export async function POST(req: Request) {
     console.error("Error al crear la relación equipo-torneo:", error);
     return NextResponse.json(
       { error: "Error al crear la relación equipo-torneo" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

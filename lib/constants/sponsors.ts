@@ -47,3 +47,4 @@ export const featuredSponsor = {
   description:
     "Nos enorgullece patrocinar GOLAZO, la plataforma que está revolucionando la gestión de torneos deportivos. Juntos promovemos el deporte profesional y la excelencia competitiva.",
 } as const;
+

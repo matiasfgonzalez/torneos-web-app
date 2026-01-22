@@ -407,3 +407,4 @@ export function VideoAds({ variant = "featured", className }: VideoAdsProps) {
 
     return null;
 }
+

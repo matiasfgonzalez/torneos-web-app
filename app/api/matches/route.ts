@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db"; // Asegúrate de tener este cliente configurado
+import { MatchStatus } from "@prisma/client";
+import {
+  applyMatchResult,
+  extractMatchResult,
+} from "@/lib/standings/calculate-standings";
 
 // GET /api/matches
 export async function GET() {
@@ -24,7 +29,7 @@ export async function GET() {
     console.error("Error fetching matches:", error);
     return NextResponse.json(
       { error: "Error fetching matches" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -55,36 +60,46 @@ export async function POST(req: NextRequest) {
     if (!dateTime || !tournamentId || !homeTeamId || !awayTeamId) {
       return NextResponse.json(
         { error: "Faltan datos requeridos" },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    // Sanitizar campos opcionales de FK - convertir strings vacíos a null
+    const sanitizedPhaseId = phaseId || null;
+    const sanitizedPenaltyWinnerTeamId = penaltyWinnerTeamId || null;
 
     const match = await db.match.create({
       data: {
         dateTime: new Date(dateTime),
-        stadium,
-        city,
-        description,
+        stadium: stadium || null,
+        city: city || null,
+        description: description || null,
         status,
         tournamentId,
         homeTeamId,
         awayTeamId,
-        phaseId,
+        phaseId: sanitizedPhaseId,
         homeScore,
         awayScore,
-        penaltyWinnerTeamId,
+        penaltyWinnerTeamId: sanitizedPenaltyWinnerTeamId,
         penaltyScoreHome,
         penaltyScoreAway,
         roundNumber,
       },
     });
 
+    // 📌 Si el partido se crea ya FINALIZADO, calcular estadísticas
+    if (match.status === MatchStatus.FINALIZADO) {
+      const newResult = extractMatchResult(match);
+      await applyMatchResult(null, newResult);
+    }
+
     return NextResponse.json(match, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Error al crear el partido" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

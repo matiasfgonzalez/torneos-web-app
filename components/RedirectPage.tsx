@@ -69,7 +69,7 @@ const WelcomePage = () => {
           </div>
 
           <button className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg inline-flex items-center gap-3">
-            <Link href="/public/index">INGRESAR</Link>
+            <Link href="/">INGRESAR</Link>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>

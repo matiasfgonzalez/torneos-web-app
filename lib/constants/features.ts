@@ -45,3 +45,4 @@ export const features = [
       "Publica noticias, resultados y actualizaciones importantes con sistema de notificaciones push.",
   },
 ] as const;
+

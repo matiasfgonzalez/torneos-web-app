@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,23 +25,15 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Validar que el user sea admin
-    const userLogued = await currentUser();
-    if (!userLogued) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 }
-      );
-    }
-    const role = userLogued.publicMetadata?.role as string | null;
-    if (role !== "admin") {
+    if (user.role !== "ADMINISTRADOR") {
       return NextResponse.json(
         { error: "No tienes permisos para crear un torneo" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -98,7 +90,7 @@ export async function GET(req: Request) {
     if (!tournaments || tournaments.length === 0) {
       return NextResponse.json(
         { message: "No se encontraron torneos." },
-        { status: 200 } // Devuelve un 200 OK incluso si no hay resultados
+        { status: 200 }, // Devuelve un 200 OK incluso si no hay resultados
       );
     }
 

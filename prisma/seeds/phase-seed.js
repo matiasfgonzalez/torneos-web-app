@@ -4,6 +4,15 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  // Limpiar primero para evitar conflictos
+  console.log("Deleting Users...");
+  await prisma.user.deleteMany({});
+  console.log("Deleting Legacy Phases...");
+  await prisma.phase.deleteMany({});
+  console.log("✅ Database cleared successfully.");
+
+  console.log("🌱 Seeding initial Phases...");
+  
   const phases = [
     { name: "FECHA", order: 1 },
     { name: "CRUCES", order: 2 },
@@ -15,15 +24,13 @@ async function main() {
     { name: "FINAL", order: 8 },
   ];
 
-  for (const phase of phases) {
-    await prisma.phase.upsert({
-      where: { name: phase.name },
-      update: {},
-      create: phase,
-    });
-  }
+  // Usar createMany en lugar de upsert
+  await prisma.phase.createMany({
+    data: phases,
+    skipDuplicates: true,
+  });
 
-  console.log("Phases seeded!");
+  console.log("✅ Database reset and seeded complete!");
 }
 
 main()

@@ -325,3 +325,4 @@ const BuscandoRivales = () => {
 };
 
 export default BuscandoRivales;
+

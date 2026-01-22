@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { LoadingPage } from "@/components/loading-spinner";
-import { INoticia } from "@/components/noticias/types";
+import { INoticia } from "@modules/noticias/types";
 import { toast } from "sonner";
 
 export default function AdminNoticias() {
@@ -86,12 +86,12 @@ export default function AdminNoticias() {
   const filteredNews = noticias.filter(
     (article) =>
       article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.summary.toLowerCase().includes(searchTerm.toLowerCase())
+      article.summary.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const sortedNews = [...filteredNews].sort(
     (a, b) =>
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 
   const getStatusBadge = (published: boolean) => {
@@ -203,8 +203,8 @@ export default function AdminNoticias() {
             onOpenChange={setIsCreateDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg">
-                <Plus className="mr-2 h-4 w-4" />
+              <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold">
+                <Plus className="mr-2 h-5 w-5" />
                 Nueva Noticia
               </Button>
             </DialogTrigger>

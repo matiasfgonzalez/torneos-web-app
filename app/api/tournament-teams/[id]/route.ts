@@ -1,7 +1,8 @@
 // /app/api/tournament-teams/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { checkUser } from "@/lib/checkUser";
 
 type tParams = Promise<{ id: string }>;
 
@@ -12,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!id) {
       return NextResponse.json(
         { error: "ID no proporcionado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -22,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!userId) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,23 +34,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    const userLogued = await currentUser();
-    if (!userLogued) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 }
-      );
-    }
-
-    const role = userLogued.publicMetadata?.role as string | null;
-    if (role !== "admin") {
+    if (user.role !== "ADMINISTRADOR") {
       return NextResponse.json(
         { error: "No tienes permisos para actualizar esta asociación" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -61,7 +53,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (!association) {
       return NextResponse.json(
         { error: "Asociación equipo-torneo no encontrada" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -88,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     console.error("Error al actualizar relación equipo-torneo:", error);
     return NextResponse.json(
       { error: "Error al actualizar la relación equipo-torneo" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -96,6 +88,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 export async function DELETE(req: Request, { params }: { params: tParams }) {
   try {
     const { id } = await params;
+
+    const user = await checkUser();
+    if (!user || user.role !== "ADMINISTRADOR") {
+      return NextResponse.json(
+        { error: "No tienes permisos para eliminar esta asociación" },
+        { status: 403 },
+      );
+    }
 
     const deleted = await db.tournamentTeam.delete({
       where: { id },
@@ -106,7 +106,7 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
     console.error("Error eliminando asociación:", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -24,21 +24,21 @@ export default async function ResponsiveHeader({
 
   const navigationItems = [
     {
-      href: "/public/index",
+      href: "/",
       label: "Inicio",
       key: "inicio",
       disabled: false,
     },
-    { href: "/torneos", label: "Torneos", key: "torneos", disabled: true },
-    { href: "/equipos", label: "Equipos", key: "equipos", disabled: true },
+    { href: "/torneos", label: "Torneos", key: "torneos", disabled: false },
+    { href: "/equipos", label: "Equipos", key: "equipos", disabled: false },
     {
       href: "/jugadores",
       label: "Jugadores",
       key: "jugadores",
-      disabled: true,
+      disabled: false,
     },
     {
-      href: "/public/noticias",
+      href: "/noticias",
       label: "Noticias",
       key: "noticias",
       disabled: false,
@@ -68,7 +68,7 @@ export default async function ResponsiveHeader({
           <nav className="flex items-center justify-between">
             {/* Logo */}
             <Link
-              href="/public/index"
+              href="/"
               className="flex items-center text-xl font-bold text-purple-400 hover:scale-105 transition"
             >
               🏆
@@ -186,3 +186,4 @@ export default async function ResponsiveHeader({
     </header>
   );
 }
+
