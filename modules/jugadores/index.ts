@@ -9,6 +9,7 @@
 
 // Actions
 export * from "./actions/getJugadores";
+export * from "./actions/getJugadorById";
 
 // Types
 export * from "./types/player";
