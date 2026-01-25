@@ -9,3 +9,6 @@
 
 // Actions
 export * from "./actions/actions";
+
+// Types
+export * from "./types";

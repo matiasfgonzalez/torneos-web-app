@@ -488,12 +488,26 @@ model Phase {
 }
 
 // NUEVO: Árbitros
+enum RefereeStatus {
+  ACTIVO
+  INACTIVO
+  SUSPENDIDO
+  RETIRADO
+}
+
 model Referee {
-  id        String   @id @default(uuid())
-  name      String
-  email     String?
-  phone     String?
-  certificationLevel String? 
+  id                 String        @id @default(uuid())
+  name               String
+  email              String?
+  phone              String?
+  nationalId         String?       // DNI o documento de identidad
+  birthDate          DateTime?     // Fecha de nacimiento
+  nationality        String?       // Nacionalidad
+  imageUrl           String?       // Foto del árbitro
+  certificationLevel String?       // Nivel de certificación
+  status             RefereeStatus @default(ACTIVO)
+  enabled            Boolean       @default(true)  // Para habilitar/deshabilitar
+  deletedAt          DateTime?     // Eliminación lógica
   
   userId    String?  // Opcional: si el árbitro tiene usuario en el sistema
   user      User?    @relation(fields: [userId], references: [id])

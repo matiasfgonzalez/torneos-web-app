@@ -63,6 +63,13 @@ const menuItems = [
     roles: ["ADMINISTRADOR", "EDITOR"],
   },
   {
+    title: "Árbitros",
+    href: "/admin/arbitros",
+    icon: Shield,
+    enabled: true,
+    roles: ["ADMINISTRADOR", "EDITOR"],
+  },
+  {
     title: "Partidos",
     href: "/admin/partidos",
     icon: Calendar,

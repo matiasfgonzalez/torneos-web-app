@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,12 +11,31 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   createReferee,
   updateReferee,
 } from "@modules/arbitros/actions/actions";
+import {
+  IReferee,
+  CERTIFICATION_LEVELS,
+  REFEREE_STATUS_LABELS,
+} from "@modules/arbitros/types";
 import { toast } from "sonner";
-import { Loader2, Plus, Edit, User, Mail, Phone, Award } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Edit,
+  User,
+  Mail,
+  Phone,
+  Award,
+  Calendar,
+  MapPin,
+  CreditCard,
+  Image as ImageIcon,
+  Shield,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -24,19 +43,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Referee {
-  id: string;
-  name: string;
-  email?: string | null;
-  phone?: string | null;
-  certificationLevel?: string | null;
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { RefereeStatus } from "@prisma/client";
 
 interface DialogRefereeProps {
-  mode: "create" | "edit";
-  referee?: Referee;
-  onSuccess: () => void;
+  readonly mode: "create" | "edit";
+  readonly referee?: IReferee;
+  readonly onSuccess: () => void;
 }
 
 export default function DialogReferee({
@@ -47,221 +60,408 @@ export default function DialogReferee({
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [name, setName] = useState(referee?.name || "");
-  const [email, setEmail] = useState(referee?.email || "");
-  const [phone, setPhone] = useState(referee?.phone || "");
-  const [certificationLevel, setCertificationLevel] = useState(
-    referee?.certificationLevel || "Nivel 1",
-  );
+  // Form fields
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [certificationLevel, setCertificationLevel] = useState("Nivel 1");
+  const [status, setStatus] = useState<RefereeStatus>("ACTIVO");
+
+  // Reset form when dialog opens or referee changes
+  useEffect(() => {
+    if (open && referee && mode === "edit") {
+      setName(referee.name || "");
+      setEmail(referee.email || "");
+      setPhone(referee.phone || "");
+      setNationalId(referee.nationalId || "");
+      setBirthDate(
+        referee.birthDate
+          ? new Date(referee.birthDate).toISOString().split("T")[0]
+          : "",
+      );
+      setNationality(referee.nationality || "");
+      setImageUrl(referee.imageUrl || "");
+      setCertificationLevel(referee.certificationLevel || "Nivel 1");
+      setStatus(referee.status);
+    } else if (open && mode === "create") {
+      // Reset for create mode
+      setName("");
+      setEmail("");
+      setPhone("");
+      setNationalId("");
+      setBirthDate("");
+      setNationality("");
+      setImageUrl("");
+      setCertificationLevel("Nivel 1");
+      setStatus("ACTIVO");
+    }
+  }, [open, referee, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      const data = {
+        name,
+        email: email || undefined,
+        phone: phone || undefined,
+        nationalId: nationalId || undefined,
+        birthDate: birthDate || undefined,
+        nationality: nationality || undefined,
+        imageUrl: imageUrl || undefined,
+        certificationLevel: certificationLevel || undefined,
+        status: mode === "edit" ? status : undefined,
+      };
+
       let res;
       if (mode === "create") {
-        res = await createReferee({ name, email, phone, certificationLevel });
+        res = await createReferee(data);
       } else {
         if (!referee) return;
-        res = await updateReferee(referee.id, {
-          name,
-          email,
-          phone,
-          certificationLevel,
-        });
+        res = await updateReferee(referee.id, data);
       }
 
       if (res.success) {
         toast.success(
-          mode === "create" ? "Árbitro creado" : "Árbitro actualizado",
+          mode === "create"
+            ? "Árbitro creado correctamente"
+            : "Árbitro actualizado correctamente",
         );
         setOpen(false);
         onSuccess();
-        if (mode === "create") {
-          setName("");
-          setEmail("");
-          setPhone("");
-        }
       } else {
         toast.error(res.error || "Error en la operación");
       }
     } catch (error) {
+      console.error("Error:", error);
       toast.error("Error inesperado");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Componente reutilizable para labels con barra violeta
-  const FormLabel = ({
-    icon: Icon,
-    children,
-    required,
-  }: {
-    icon: React.ElementType;
-    children: React.ReactNode;
-    required?: boolean;
-  }) => (
-    <div className="flex items-center space-x-2 mb-2">
-      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
-      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-        {children}
-        {required && <span className="text-red-500">*</span>}
-      </label>
-    </div>
-  );
-
-  const inputClassName =
-    "h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200";
-
-  const selectTriggerClassName =
-    "h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl";
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "create" ? (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
+          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all duration-300 rounded-xl px-6 py-6 text-base font-semibold cursor-pointer">
             <Plus className="w-5 h-5 mr-2" /> Nuevo Árbitro
           </Button>
         ) : (
           <Button
             variant="outline"
             size="icon"
-            className="hover:bg-[#ad45ff] hover:text-white hover:border-[#ad45ff] transition-all duration-200"
+            className="h-9 w-9 rounded-lg border-[#ad45ff]/50 text-[#ad45ff] hover:bg-[#ad45ff]/10 hover:border-[#ad45ff] transition-all"
+            title="Editar"
           >
             <Edit className="w-4 h-4" />
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
-        {/* Header con gradiente */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff] rounded-t-2xl" />
 
-        <DialogHeader className="space-y-4 pt-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
-              {mode === "create" ? (
-                <Award className="h-6 w-6 text-white" />
-              ) : (
-                <Edit className="h-6 w-6 text-white" />
-              )}
+      <DialogContent className="w-[95vw] max-w-[400px] sm:max-w-[600px] md:max-w-[750px] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/50 shadow-2xl shadow-black/50 rounded-2xl p-0">
+        {/* Barra de acento */}
+        <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 rounded-t-2xl" />
+        <div className="h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent" />
+
+        {/* Header */}
+        <div className="relative px-6 pt-6 pb-4">
+          <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-tr from-[#ad45ff]/20 to-[#c77dff]/10 rounded-full blur-2xl pointer-events-none" />
+
+          <DialogHeader className="space-y-3 relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
+                {mode === "create" ? (
+                  <Award className="w-6 h-6 text-white" />
+                ) : (
+                  <Edit className="w-6 h-6 text-white" />
+                )}
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
+                  {mode === "create" ? "Nuevo Árbitro" : "Editar Árbitro"}
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 mt-1">
+                  {mode === "create"
+                    ? "Registra un nuevo árbitro en el sistema"
+                    : "Modifica la información del árbitro"}
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                {mode === "create" ? "Crear Árbitro" : "Editar Árbitro"}
-              </DialogTitle>
-              <DialogDescription className="text-gray-600 dark:text-gray-300 text-base">
-                {mode === "create"
-                  ? "Registra un nuevo árbitro en el sistema"
-                  : "Modifica la información del árbitro"}
-              </DialogDescription>
-            </div>
-          </div>
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent" />
-        </DialogHeader>
+          </DialogHeader>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          <div>
-            <FormLabel icon={User} required>
-              Nombre Completo
-            </FormLabel>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Ej: Horacio Elizondo"
-              disabled={isLoading}
-              className={inputClassName}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
+          {/* Card: Información Personal */}
+          <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-amber-500/20 rounded-xl overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-3 text-amber-400">
+                <div className="p-2 bg-amber-500/20 rounded-lg">
+                  <User className="h-5 w-5 text-amber-400" />
+                </div>
+                <span className="text-lg font-bold">Información Personal</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Nombre */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <User className="w-3 h-3" />
+                  Nombre completo <span className="text-red-400">*</span>
+                </Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="Ej: Néstor Pitana"
+                  disabled={isLoading}
+                  className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-amber-500/50 focus:border-amber-500 rounded-xl text-white placeholder:text-gray-500 transition-colors"
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <FormLabel icon={Mail}>Email</FormLabel>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="contacto@arbitro.com"
-                disabled={isLoading}
-                className={inputClassName}
-              />
-            </div>
-            <div>
-              <FormLabel icon={Phone}>Teléfono</FormLabel>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+54 9 11..."
-                disabled={isLoading}
-                className={inputClassName}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* DNI */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <CreditCard className="w-3 h-3" />
+                    DNI / Documento
+                  </Label>
+                  <Input
+                    value={nationalId}
+                    onChange={(e) => setNationalId(e.target.value)}
+                    placeholder="Ej: 12345678"
+                    disabled={isLoading}
+                    className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-slate-500 focus:border-amber-500 rounded-xl text-white placeholder:text-gray-500 transition-colors"
+                  />
+                </div>
 
-          <div>
-            <FormLabel icon={Award}>Nivel de Certificación</FormLabel>
-            <Select
-              value={certificationLevel}
-              onValueChange={setCertificationLevel}
-              disabled={isLoading}
-            >
-              <SelectTrigger className={selectTriggerClassName}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <SelectItem value="Nivel 1">Nivel 1 (Amateur)</SelectItem>
-                <SelectItem value="Nivel 2">Nivel 2 (Regional)</SelectItem>
-                <SelectItem value="FIFA">FIFA / Profesional</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                {/* Fecha de nacimiento */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Calendar className="w-3 h-3" />
+                    Fecha de nacimiento
+                  </Label>
+                  <Input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    disabled={isLoading}
+                    className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-slate-500 focus:border-amber-500 rounded-xl text-white transition-colors [color-scheme:dark]"
+                  />
+                </div>
+              </div>
 
-          {/* Botones de Acción */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+              {/* Nacionalidad */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="w-3 h-3" />
+                  Nacionalidad
+                </Label>
+                <Input
+                  value={nationality}
+                  onChange={(e) => setNationality(e.target.value)}
+                  placeholder="Ej: Argentina"
+                  disabled={isLoading}
+                  className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-slate-500 focus:border-amber-500 rounded-xl text-white placeholder:text-gray-500 transition-colors"
+                />
+              </div>
+
+              {/* URL de imagen */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <ImageIcon className="w-3 h-3" />
+                  URL de foto
+                </Label>
+                <div className="flex gap-3">
+                  <Input
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://ejemplo.com/foto.jpg"
+                    disabled={isLoading}
+                    className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-slate-500 focus:border-amber-500 rounded-xl text-white placeholder:text-gray-500 transition-colors flex-1"
+                  />
+                  {imageUrl && (
+                    <div className="w-12 h-12 rounded-xl bg-slate-700 overflow-hidden flex items-center justify-center border border-slate-600">
+                      <img
+                        src={imageUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card: Contacto */}
+          <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-[#ad45ff]/20 rounded-xl overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff]" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-3 text-[#ad45ff]">
+                <div className="p-2 bg-[#ad45ff]/20 rounded-lg">
+                  <Phone className="h-5 w-5 text-[#ad45ff]" />
+                </div>
+                <span className="text-lg font-bold">
+                  Información de Contacto
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Mail className="w-3 h-3" />
+                    Email
+                  </Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="arbitro@email.com"
+                    disabled={isLoading}
+                    className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-[#ad45ff]/50 focus:border-[#ad45ff] rounded-xl text-white placeholder:text-gray-500 transition-colors"
+                  />
+                </div>
+
+                {/* Teléfono */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Phone className="w-3 h-3" />
+                    Teléfono
+                  </Label>
+                  <Input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+54 9 11 1234-5678"
+                    disabled={isLoading}
+                    className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-[#ad45ff]/50 focus:border-[#ad45ff] rounded-xl text-white placeholder:text-gray-500 transition-colors"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card: Profesional */}
+          <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-emerald-500/20 rounded-xl overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-emerald-400 to-teal-400" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-3 text-emerald-400">
+                <div className="p-2 bg-emerald-500/20 rounded-lg">
+                  <Shield className="h-5 w-5 text-emerald-400" />
+                </div>
+                <span className="text-lg font-bold">
+                  Información Profesional
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nivel de certificación */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Award className="w-3 h-3" />
+                    Nivel de certificación
+                  </Label>
+                  <Select
+                    value={certificationLevel}
+                    onValueChange={setCertificationLevel}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-emerald-500/50 focus:border-emerald-500 rounded-xl text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {CERTIFICATION_LEVELS.map((level) => (
+                        <SelectItem
+                          key={level.value}
+                          value={level.value}
+                          className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20"
+                        >
+                          {level.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Estado (solo en modo edición) */}
+                {mode === "edit" && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                      <Shield className="w-3 h-3" />
+                      Estado
+                    </Label>
+                    <Select
+                      value={status}
+                      onValueChange={(v) => setStatus(v as RefereeStatus)}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger className="h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-emerald-500/50 focus:border-emerald-500 rounded-xl text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        {Object.entries(REFEREE_STATUS_LABELS).map(
+                          ([value, label]) => (
+                            <SelectItem
+                              key={value}
+                              value={value}
+                              className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20"
+                            >
+                              {label}
+                            </SelectItem>
+                          ),
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Botones de acción */}
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
-              className="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl font-medium transition-all duration-200"
               onClick={() => setOpen(false)}
               disabled={isLoading}
+              className="px-6 h-12 bg-transparent border-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 rounded-xl font-semibold transition-all duration-300"
             >
               Cancelar
             </Button>
-            {mode === "edit" ? (
-              <Button
-                type="submit"
-                className="px-8 py-2.5 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  "Actualizar"
-                )}
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                className="px-8 py-2.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  "Guardar"
-                )}
-              </Button>
-            )}
+            <Button
+              type="submit"
+              disabled={isLoading || !name.trim()}
+              className={`px-6 h-12 text-white shadow-lg rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+                mode === "edit"
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30"
+                  : "bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30"
+              }`}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : mode === "edit" ? (
+                "Guardar cambios"
+              ) : (
+                "Crear árbitro"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>
