@@ -59,13 +59,13 @@ const formatMatchTime = (date: Date | string) => {
 };
 
 // Estados que indican que el partido aún no se jugó
-const UPCOMING_STATUSES = new Set([
+const UPCOMING_STATUSES: Set<MatchStatus> = new Set([
   MatchStatus.PROGRAMADO,
   MatchStatus.POSTERGADO,
 ]);
 
 // Estados que indican que el partido ya se jugó o está en juego
-const PLAYED_STATUSES = new Set([
+const PLAYED_STATUSES: Set<MatchStatus> = new Set([
   MatchStatus.EN_JUEGO,
   MatchStatus.ENTRETIEMPO,
   MatchStatus.FINALIZADO,

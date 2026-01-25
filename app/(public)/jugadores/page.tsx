@@ -92,7 +92,7 @@ const PlayersListInterface = () => {
 
   // Filtrar y ordenar jugadores
   const filteredPlayers = useMemo(() => {
-    let result = players.filter((player) => {
+    const result = players.filter((player) => {
       const matchesSearch =
         player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         player.nationality?.toLowerCase().includes(searchTerm.toLowerCase()) ||

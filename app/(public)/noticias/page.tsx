@@ -88,7 +88,7 @@ export default function NoticiasPage() {
 
   // Filtrar y ordenar
   const noticiasFiltradas = useMemo(() => {
-    let result = noticias.filter((noticia) => {
+    const result = noticias.filter((noticia) => {
       const matchesSearch =
         noticia.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         noticia.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||

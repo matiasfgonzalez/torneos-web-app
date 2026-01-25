@@ -2,7 +2,7 @@ import StatsCards from "./components/StatsCards";
 import PlayersTable from "./components/PlayersTable";
 import PlayerForm from "./components/player-form";
 import { getJugadores } from "@modules/jugadores/actions/getJugadores";
-import { Users, TrendingUp, Activity, Award } from "lucide-react";
+import { Users, Activity, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function AdminJugadores() {

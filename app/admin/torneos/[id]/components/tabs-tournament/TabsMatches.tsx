@@ -271,7 +271,8 @@ const TabsMatches = (props: TabsTournamentProps) => {
                           <div className="space-y-3">
                             <Search className="w-10 h-10 text-gray-400 mx-auto" />
                             <p className="text-gray-500 dark:text-gray-400">
-                              No se encontraron partidos con "{searchTerm}"
+                              No se encontraron partidos con &ldquo;{searchTerm}
+                              &rdquo;
                             </p>
                           </div>
                         </TableCell>

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { User } from "@prisma/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Shield, Calendar } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,10 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
         {tournaments.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-1">
             {tournaments.map((tournament) => (
-              <Link key={tournament.id} href={`/admin/torneos/${tournament.id}`}>
+              <Link
+                key={tournament.id}
+                href={`/admin/torneos/${tournament.id}`}
+              >
                 <Card className="glass-card hover:bg-white/40 dark:hover:bg-gray-800/40 transition-all cursor-pointer group border-0">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -54,7 +57,10 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
                           <Calendar className="w-3 h-3" />
                           {new Date(tournament.startDate).toLocaleDateString()}
                           <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
-                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] h-5 px-1.5"
+                          >
                             {tournament.status}
                           </Badge>
                         </div>
@@ -75,17 +81,16 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
       {/* Placeholder for future sections like "Equipos", "Partidos", etc. */}
       <div>
         <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#a3b3ff]" />
-            Equipos (Próximamente)
+          <Shield className="w-5 h-5 text-[#a3b3ff]" />
+          Equipos (Próximamente)
         </h3>
         <Card className="glass-card border-dashed border-2 border-gray-200 dark:border-gray-800 bg-transparent shadow-none">
-            <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                La gestión de equipos vinculados a tu perfil estará disponible pronto.
-            </CardContent>
+          <CardContent className="p-6 text-center text-sm text-muted-foreground">
+            La gestión de equipos vinculados a tu perfil estará disponible
+            pronto.
+          </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }
-

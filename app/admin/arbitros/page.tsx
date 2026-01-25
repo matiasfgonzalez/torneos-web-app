@@ -100,7 +100,7 @@ export default function RefereesPage() {
     setActionLoading(null);
   };
 
-  const handleToggleEnabled = async (id: string, name: string) => {
+  const handleToggleEnabled = async (id: string) => {
     setActionLoading(id);
     const res = await toggleRefereeEnabled(id);
     if (res.success) {
@@ -431,9 +431,7 @@ export default function RefereesPage() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={() =>
-                                  handleToggleEnabled(referee.id, referee.name)
-                                }
+                                onClick={() => handleToggleEnabled(referee.id)}
                                 disabled={actionLoading === referee.id}
                                 className={`h-9 w-9 rounded-lg transition-all ${
                                   referee.enabled

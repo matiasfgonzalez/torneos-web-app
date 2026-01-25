@@ -2,7 +2,7 @@ import TeamForm from "@modules/equipos/components/admin/team-form";
 import StatsCards from "@modules/equipos/components/admin/StatsCards";
 import TeamsTable from "@modules/equipos/components/admin/TeamsTable";
 import { getEquipos } from "@modules/equipos/actions/getEquipos";
-import { Trophy, Users, TrendingUp, Sparkles } from "lucide-react";
+import { Trophy, Users, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function AdminEquipos() {

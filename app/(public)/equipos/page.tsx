@@ -1,6 +1,7 @@
 import { getEquipos } from "@modules/equipos/actions/getEquipos";
 import TeamsList from "@modules/equipos/components/public/TeamsList";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import {
   Users,
   MapPin,
@@ -228,12 +229,12 @@ export default async function PublicTeamsPage() {
               <TrendingUp className="w-5 h-5" />
               Registrar Equipo
             </a>
-            <a
+            <Link
               href="/torneos"
               className="inline-flex items-center justify-center gap-2 bg-white/20 backdrop-blur-xl text-white px-8 py-4 rounded-xl font-bold border border-white/30 hover:bg-white/30 transition-all duration-300"
             >
               Ver Torneos Disponibles
-            </a>
+            </Link>
           </div>
         </div>
       </section>
