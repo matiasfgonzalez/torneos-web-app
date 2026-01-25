@@ -30,6 +30,13 @@ interface PlayerOption {
   number: number | null;
 }
 
+// Tipo para opciones de tarjeta disponibles para un jugador
+type CardOption = {
+  value: CardType;
+  label: string;
+  disabled: boolean;
+};
+
 export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingPlayers, setIsFetchingPlayers] = useState(false);
@@ -42,10 +49,84 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
   );
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>("");
   const [minute, setMinute] = useState<string>("");
-  const [cardType, setCardType] = useState<CardType>(CardType.YELLOW);
+  const [cardType, setCardType] = useState<CardType>(CardType.AMARILLA);
   const [reason, setReason] = useState("");
 
   const cards = match.cards || [];
+
+  // Función para obtener las tarjetas de un jugador en este partido
+  const getPlayerCards = (playerId: string) => {
+    return cards.filter((card: any) => card.teamPlayerId === playerId);
+  };
+
+  // Función para verificar si un jugador ya está expulsado
+  const isPlayerExpelled = (playerId: string): boolean => {
+    const playerCards = getPlayerCards(playerId);
+    // Expulsado si tiene roja directa o 2+ amarillas
+    const hasRedCard = playerCards.some((c: any) => c.type === "ROJA");
+    const yellowCount = playerCards.filter(
+      (c: any) => c.type === "AMARILLA",
+    ).length;
+    return hasRedCard || yellowCount >= 2;
+  };
+
+  // Función para obtener las opciones de tarjeta disponibles para el jugador seleccionado
+  const getAvailableCardOptions = (): CardOption[] => {
+    if (!selectedPlayerId) {
+      return [
+        { value: CardType.AMARILLA, label: "Amarilla", disabled: false },
+        { value: CardType.ROJA, label: "Roja", disabled: false },
+      ];
+    }
+
+    const playerCards = getPlayerCards(selectedPlayerId);
+    const yellowCount = playerCards.filter(
+      (c: any) => c.type === "AMARILLA",
+    ).length;
+    const hasRedCard = playerCards.some((c: any) => c.type === "ROJA");
+
+    // Si ya tiene roja, no puede recibir más tarjetas
+    if (hasRedCard) {
+      return [
+        {
+          value: CardType.AMARILLA,
+          label: "Amarilla (Expulsado)",
+          disabled: true,
+        },
+        { value: CardType.ROJA, label: "Roja (Ya expulsado)", disabled: true },
+      ];
+    }
+
+    // Si tiene 1 amarilla, la próxima amarilla será doble amarilla = roja
+    if (yellowCount === 1) {
+      return [
+        {
+          value: CardType.AMARILLA,
+          label: "Amarilla (2da → Expulsión)",
+          disabled: false,
+        },
+        { value: CardType.ROJA, label: "Roja Directa", disabled: false },
+      ];
+    }
+
+    // Si tiene 2+ amarillas, ya está expulsado
+    if (yellowCount >= 2) {
+      return [
+        {
+          value: CardType.AMARILLA,
+          label: "Amarilla (Expulsado)",
+          disabled: true,
+        },
+        { value: CardType.ROJA, label: "Roja (Ya expulsado)", disabled: true },
+      ];
+    }
+
+    // Sin tarjetas previas
+    return [
+      { value: CardType.AMARILLA, label: "Amarilla", disabled: false },
+      { value: CardType.ROJA, label: "Roja Directa", disabled: false },
+    ];
+  };
   const sortedCards = [...cards].sort(
     (a, b) => (a.minute || 0) - (b.minute || 0),
   );
@@ -89,6 +170,24 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
       return;
     }
 
+    // Validar si el jugador ya está expulsado
+    if (isPlayerExpelled(selectedPlayerId)) {
+      toast.error(
+        "Este jugador ya está expulsado y no puede recibir más tarjetas",
+      );
+      return;
+    }
+
+    // Verificar si las opciones están deshabilitadas
+    const options = getAvailableCardOptions();
+    const selectedOption = options.find((o) => o.value === cardType);
+    if (selectedOption?.disabled) {
+      toast.error(
+        "Esta opción no está disponible para el jugador seleccionado",
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = await addCard({
@@ -100,9 +199,18 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
       });
 
       if (res.success) {
-        toast.success("Tarjeta agregada");
+        // Mostrar mensaje apropiado según el resultado
+        if (res.doubleYellow) {
+          toast.success("¡Segunda amarilla! El jugador ha sido expulsado");
+        } else if (cardType === CardType.ROJA) {
+          toast.success("Tarjeta roja registrada - Jugador expulsado");
+        } else {
+          toast.success("Tarjeta amarilla registrada");
+        }
         setMinute("");
         setReason("");
+        setSelectedPlayerId("");
+        setCardType(CardType.AMARILLA);
         onUpdate();
       } else {
         toast.error(res.error || "Error al agregar");
@@ -207,15 +315,29 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
             <Select
               value={cardType}
               onValueChange={(v) => setCardType(v as CardType)}
+              disabled={isPlayerExpelled(selectedPlayerId)}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={CardType.YELLOW}>Amarilla</SelectItem>
-                <SelectItem value={CardType.RED}>Roja</SelectItem>
+                {getAvailableCardOptions().map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    disabled={option.disabled}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            {selectedPlayerId &&
+              getPlayerCards(selectedPlayerId).length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Tarjetas previas: {getPlayerCards(selectedPlayerId).length}
+                </p>
+              )}
           </div>
         </div>
 
@@ -254,7 +376,7 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
             {sortedCards.map((card: any) => {
               const p = card.teamPlayer?.player?.name || "Desconocido";
-              const isRed = card.type === "RED";
+              const isRed = card.type === "ROJA";
 
               return (
                 <div

@@ -71,6 +71,21 @@ export interface IGoal {
   isPenalty: boolean; // si fue un penal
   createdAt: string; // fecha de creación
   updatedAt: string; // fecha de última actualización
+  teamPlayer?: {
+    id: string;
+    player: {
+      id: string;
+      name: string;
+    };
+    tournamentTeam?: {
+      id: string;
+      team: {
+        id: string;
+        name: string;
+        logoUrl?: string;
+      };
+    };
+  };
 }
 export enum MatchStatus {
   PROGRAMADO = "PROGRAMADO",
@@ -95,8 +110,8 @@ export const MATCH_STATUS = [
 ] as const;
 
 export enum CardType {
-  YELLOW = "YELLOW",
-  RED = "RED",
+  AMARILLA = "AMARILLA",
+  ROJA = "ROJA",
 }
 
 export interface ICard {

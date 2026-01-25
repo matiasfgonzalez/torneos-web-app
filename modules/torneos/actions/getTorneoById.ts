@@ -42,6 +42,41 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
             },
             phase: true,
             tournamentPhase: true, // 👈 incluye la fase del partido
+            goals: {
+              include: {
+                teamPlayer: {
+                  include: {
+                    player: true,
+                    tournamentTeam: {
+                      include: {
+                        team: true,
+                      },
+                    },
+                  },
+                },
+              },
+              orderBy: { minute: "asc" },
+            },
+            cards: {
+              include: {
+                teamPlayer: {
+                  include: {
+                    player: true,
+                    tournamentTeam: {
+                      include: {
+                        team: true,
+                      },
+                    },
+                  },
+                },
+              },
+              orderBy: { minute: "asc" },
+            },
+            referees: {
+              include: {
+                referee: true,
+              },
+            },
           },
           orderBy: { dateTime: "asc" },
         },

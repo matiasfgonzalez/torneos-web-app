@@ -10,7 +10,7 @@ export async function addCard(data: {
   type: CardType;
   minute?: number;
   reason?: string;
-}) {
+}): Promise<{ success: boolean; error?: string; doubleYellow?: boolean }> {
   try {
     const { matchId, teamPlayerId, type, minute, reason } = data;
 
@@ -23,7 +23,53 @@ export async function addCard(data: {
       return { success: false, error: "Partido no encontrado" };
     }
 
-    // Crear la tarjeta
+    // Obtener las tarjetas existentes del jugador en este partido
+    const existingCards = await db.card.findMany({
+      where: {
+        matchId,
+        teamPlayerId,
+      },
+    });
+
+    // Verificar si el jugador ya está expulsado
+    const hasRedCard = existingCards.some((c) => c.type === CardType.ROJA);
+    const yellowCount = existingCards.filter(
+      (c) => c.type === CardType.AMARILLA,
+    ).length;
+
+    if (hasRedCard || yellowCount >= 2) {
+      return { success: false, error: "El jugador ya está expulsado" };
+    }
+
+    // Si es una amarilla y ya tiene una, registrar como doble amarilla
+    if (type === CardType.AMARILLA && yellowCount === 1) {
+      // Crear la segunda amarilla
+      await db.card.create({
+        data: {
+          matchId,
+          teamPlayerId,
+          type: CardType.AMARILLA,
+          minute,
+          reason: reason || "Segunda amarilla",
+        },
+      });
+
+      // Crear la roja automática por doble amarilla
+      await db.card.create({
+        data: {
+          matchId,
+          teamPlayerId,
+          type: CardType.ROJA,
+          minute,
+          reason: "Doble amarilla - Expulsión automática",
+        },
+      });
+
+      revalidatePath(`/admin/torneos/${match.tournamentId}`);
+      return { success: true, doubleYellow: true };
+    }
+
+    // Crear la tarjeta normal
     await db.card.create({
       data: {
         matchId,
@@ -64,4 +110,3 @@ export async function deleteCard(cardId: string) {
     return { success: false, error: "Error al eliminar tarjeta" };
   }
 }
-

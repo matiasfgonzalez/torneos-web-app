@@ -1,5 +1,5 @@
 import { IPlayerTeam } from "@modules/jugadores/types";
-import { IGoal, IPhase } from "@modules/partidos/types";
+import { IGoal, IPhase, ICard, IMatchReferee } from "@modules/partidos/types";
 
 export interface ITournamentTeam {
   id: string;
@@ -118,6 +118,8 @@ export interface IMatch {
   awayTeam?: ITournamentTeam;
 
   goals?: IGoal[]; // Asume que tienes una interfaz Goal
+  cards?: ICard[]; // Tarjetas del partido
+  referees?: IMatchReferee[]; // Árbitros del partido
 
   penaltyWinnerTeamId?: string;
   penaltyWinnerTeam?: ITournamentTeam;

@@ -22,13 +22,16 @@ import {
   BarChart3,
   Medal,
   CalendarClock,
+  ShieldAlert,
 } from "lucide-react";
 
 import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
+import { getTournamentStats } from "@modules/torneos/actions/getTournamentStats";
 import { notFound } from "next/navigation";
 import HeaderTorneo from "@modules/torneos/components/HeaderTorneo";
 import TeamsCarousel from "@modules/equipos/components/TeamsCarousel";
 import PublicStandingsSection from "@modules/torneos/components/PublicStandingsSection";
+import MatchDetailModal from "@modules/torneos/components/MatchDetailModal";
 import { MatchStatus } from "@prisma/client";
 import {
   ITournamentTeam,
@@ -106,64 +109,16 @@ const getStatusColor = (status: MatchStatus): string => {
   }
 };
 
-const topScorers = [
-  {
-    position: 1,
-    player: "Carlos Rodríguez",
-    team: "Club Deportivo Águilas",
-    goals: 12,
-  },
-  { position: 2, player: "Miguel Santos", team: "Los Leones FC", goals: 10 },
-  { position: 3, player: "Juan Pérez", team: "Tigres Unidos", goals: 9 },
-  { position: 4, player: "Diego Martín", team: "Real Futbol Club", goals: 8 },
-  {
-    position: 5,
-    player: "Roberto Silva",
-    team: "Deportivo Central",
-    goals: 7,
-  },
-];
-
-const cleanSheets = [
-  {
-    position: 1,
-    player: "Antonio López",
-    team: "Club Deportivo Águilas",
-    cleanSheets: 8,
-  },
-  {
-    position: 2,
-    player: "Fernando García",
-    team: "Los Leones FC",
-    cleanSheets: 6,
-  },
-  {
-    position: 3,
-    player: "Luis Morales",
-    team: "Tigres Unidos",
-    cleanSheets: 5,
-  },
-  {
-    position: 4,
-    player: "Pedro Ruiz",
-    team: "Real Futbol Club",
-    cleanSheets: 4,
-  },
-  {
-    position: 5,
-    player: "Manuel Torres",
-    team: "Deportivo Central",
-    cleanSheets: 3,
-  },
-];
-
 export default async function TournamentDetailPage({
   params,
 }: Readonly<{
   params: Promise<{ id: string }>;
 }>) {
   const { id } = await params;
-  const tournamentData = await getTorneoById(id);
+  const [tournamentData, stats] = await Promise.all([
+    getTorneoById(id),
+    getTournamentStats(id),
+  ]);
 
   if (!tournamentData) return notFound();
 
@@ -673,6 +628,11 @@ export default async function TournamentDetailPage({
                                 </span>
                               </div>
                             )}
+
+                            {/* Ver detalle button */}
+                            <div className="mt-4 flex justify-center">
+                              <MatchDetailModal match={match as IMatch} />
+                            </div>
                           </div>
                         </div>
                       );
@@ -685,6 +645,62 @@ export default async function TournamentDetailPage({
 
           {/* Statistics Tab - Premium Golazo Style */}
           <TabsContent value="stats">
+            {/* Stats Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <Card className="bg-white dark:bg-gray-900/80 border border-gray-100 dark:border-gray-800 rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-[#ad45ff] to-[#c77dff] flex items-center justify-center">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.totalGoals}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Goles Totales
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-900/80 border border-gray-100 dark:border-gray-800 rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <Swords className="w-6 h-6 text-white" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.totalMatches}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Partidos Jugados
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-900/80 border border-gray-100 dark:border-gray-800 rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center">
+                    <ShieldAlert className="w-6 h-6 text-white" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.totalYellowCards}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Tarjetas Amarillas
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-900/80 border border-gray-100 dark:border-gray-800 rounded-xl">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                    <ShieldAlert className="w-6 h-6 text-white" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.totalRedCards}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Tarjetas Rojas
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-8">
               {/* Top Scorers */}
               <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm">
@@ -701,48 +717,64 @@ export default async function TournamentDetailPage({
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="space-y-3">
-                    {topScorers.map((scorer) => (
-                      <div
-                        key={scorer.position}
-                        className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:shadow-lg hover:shadow-[#ad45ff]/10 transition-all duration-300"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform group-hover:scale-110 ${
-                              scorer.position === 1
-                                ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-yellow-500/30"
-                                : scorer.position === 2
-                                  ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
-                                  : scorer.position === 3
-                                    ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
-                                    : "bg-gradient-to-br from-[#ad45ff] to-[#c77dff] text-white shadow-[#ad45ff]/30"
-                            }`}
-                          >
-                            {scorer.position}
+                  {stats.topScorers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Sin goleadores registrados</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {stats.topScorers.map((scorer) => (
+                        <div
+                          key={scorer.playerId}
+                          className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:shadow-lg hover:shadow-[#ad45ff]/10 transition-all duration-300"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform group-hover:scale-110 ${
+                                scorer.position === 1
+                                  ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-yellow-500/30"
+                                  : scorer.position === 2
+                                    ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
+                                    : scorer.position === 3
+                                      ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
+                                      : "bg-gradient-to-br from-[#ad45ff] to-[#c77dff] text-white shadow-[#ad45ff]/30"
+                              }`}
+                            >
+                              {scorer.position}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {scorer.teamLogoUrl && (
+                                <img
+                                  src={scorer.teamLogoUrl}
+                                  alt={scorer.teamName}
+                                  className="w-8 h-8 rounded-lg object-contain bg-white dark:bg-gray-800 p-0.5"
+                                />
+                              )}
+                              <div>
+                                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors">
+                                  {scorer.playerName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {scorer.teamName}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-semibold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors">
-                              {scorer.player}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {scorer.team}
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <Medal className="w-5 h-5 text-[#ad45ff]" />
+                            <span className="font-bold text-2xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] bg-clip-text text-transparent">
+                              {scorer.goals}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Medal className="w-5 h-5 text-[#ad45ff]" />
-                          <span className="font-bold text-2xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] bg-clip-text text-transparent">
-                            {scorer.goals}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              {/* Clean Sheets */}
+              {/* Least Goals Conceded (Vallas Menos Vencidas) */}
               <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm">
                 {/* Gradient accent bar */}
                 <div className="h-1.5 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500" />
@@ -752,49 +784,146 @@ export default async function TournamentDetailPage({
                       <Shield className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-gray-900 dark:text-white text-xl">
-                      Vallas Invictas
+                      Vallas Menos Vencidas
                     </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="space-y-3">
-                    {cleanSheets.map((keeper) => (
-                      <div
-                        key={keeper.position}
-                        className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform group-hover:scale-110 ${
-                              keeper.position === 1
-                                ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-yellow-500/30"
-                                : keeper.position === 2
-                                  ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
-                                  : keeper.position === 3
-                                    ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
-                                    : "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-green-500/30"
-                            }`}
-                          >
-                            {keeper.position}
+                  {stats.leastConceded.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Shield className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Sin datos disponibles</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {stats.leastConceded.map((team) => (
+                        <div
+                          key={team.teamId}
+                          className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform group-hover:scale-110 ${
+                                team.position === 1
+                                  ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-yellow-500/30"
+                                  : team.position === 2
+                                    ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
+                                    : team.position === 3
+                                      ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
+                                      : "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-green-500/30"
+                              }`}
+                            >
+                              {team.position}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {team.teamLogoUrl && (
+                                <img
+                                  src={team.teamLogoUrl}
+                                  alt={team.teamName}
+                                  className="w-10 h-10 rounded-lg object-contain bg-white dark:bg-gray-800 p-0.5"
+                                />
+                              )}
+                              <div>
+                                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                                  {team.teamName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {team.matchesPlayed} partidos jugados
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                              {keeper.player}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {keeper.team}
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-green-500" />
+                            <span className="font-bold text-2xl bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
+                              {team.goalsAgainst}
+                            </span>
+                            <span className="text-xs text-gray-400">GC</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-5 h-5 text-green-500" />
-                          <span className="font-bold text-2xl bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
-                            {keeper.cleanSheets}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Most Carded Players */}
+              <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm md:col-span-2">
+                {/* Gradient accent bar */}
+                <div className="h-1.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500" />
+                <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl shadow-lg shadow-yellow-500/25">
+                      <ShieldAlert className="h-5 w-5 text-white" />
+                    </div>
+                    <CardTitle className="text-gray-900 dark:text-white text-xl">
+                      Jugadores con más Tarjetas
+                    </CardTitle>
                   </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {stats.mostCarded.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <ShieldAlert className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Sin tarjetas registradas</p>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {stats.mostCarded.map((player) => (
+                        <div
+                          key={player.playerId}
+                          className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform group-hover:scale-110 ${
+                                player.position === 1
+                                  ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-yellow-500/30"
+                                  : player.position === 2
+                                    ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
+                                    : player.position === 3
+                                      ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
+                                      : "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-orange-500/30"
+                              }`}
+                            >
+                              {player.position}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {player.teamLogoUrl && (
+                                <img
+                                  src={player.teamLogoUrl}
+                                  alt={player.teamName}
+                                  className="w-8 h-8 rounded-lg object-contain bg-white dark:bg-gray-800 p-0.5"
+                                />
+                              )}
+                              <div>
+                                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-orange-500 transition-colors">
+                                  {player.playerName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {player.teamName}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1">
+                              <div className="w-4 h-6 rounded-sm bg-yellow-400 border border-black/10 shadow-sm" />
+                              <span className="font-bold text-lg text-yellow-600">
+                                {player.yellowCards}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="w-4 h-6 rounded-sm bg-red-500 border border-black/10 shadow-sm" />
+                              <span className="font-bold text-lg text-red-600">
+                                {player.redCards}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
