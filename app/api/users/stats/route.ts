@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Obtener estadísticas generales
     const [
@@ -25,41 +25,41 @@ export async function GET(request: NextRequest) {
       db.user.count({
         where: {
           isActive: true,
-          status: UserStatus.ACTIVE,
+          status: UserStatus.ACTIVO,
         },
       }),
       // Usuarios inactivos
       db.user.count({
         where: {
           isActive: true,
-          status: UserStatus.INACTIVE,
+          status: UserStatus.INACTIVO,
         },
       }),
       // Usuarios suspendidos
       db.user.count({
         where: {
           isActive: true,
-          status: UserStatus.SUSPENDED,
+          status: UserStatus.SUSPENDIDO,
         },
       }),
       // Usuarios pendientes
       db.user.count({
         where: {
           isActive: true,
-          status: UserStatus.PENDING,
+          status: UserStatus.PENDIENTE,
         },
       }),
       // Conteo por roles
       db.user.count({
         where: {
           isActive: true,
-          role: UserRole.ADMIN,
+          role: UserRole.ADMINISTRADOR,
         },
       }),
       db.user.count({
         where: {
           isActive: true,
-          role: UserRole.MODERATOR,
+          role: UserRole.MODERADOR,
         },
       }),
       db.user.count({
@@ -71,13 +71,13 @@ export async function GET(request: NextRequest) {
       db.user.count({
         where: {
           isActive: true,
-          role: UserRole.ORGANIZER,
+          role: UserRole.ORGANIZADOR,
         },
       }),
       db.user.count({
         where: {
           isActive: true,
-          role: UserRole.USER,
+          role: UserRole.USUARIO,
         },
       }),
     ]);
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
             year: "numeric",
           }).format(start),
         };
-      })
+      }),
     );
 
     // Construir respuesta
@@ -203,7 +203,8 @@ export async function GET(request: NextRequest) {
         averageContentPerUser:
           totalUsers > 0
             ? Math.round(
-                ((totalNews + totalTournaments + totalTeams) / totalUsers) * 100
+                ((totalNews + totalTournaments + totalTeams) / totalUsers) *
+                  100,
               ) / 100
             : 0,
       },
@@ -232,8 +233,7 @@ export async function GET(request: NextRequest) {
         error: "Error interno del servidor",
         message: "No se pudieron obtener las estadísticas de usuarios",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

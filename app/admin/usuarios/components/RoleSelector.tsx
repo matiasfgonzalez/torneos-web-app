@@ -40,13 +40,13 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
 }) => {
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN:
+      case UserRole.ADMINISTRADOR:
         return <Crown className="h-4 w-4" />;
-      case UserRole.MODERATOR:
+      case UserRole.MODERADOR:
         return <ShieldCheck className="h-4 w-4" />;
       case UserRole.EDITOR:
         return <PenTool className="h-4 w-4" />;
-      case UserRole.ORGANIZER:
+      case UserRole.ORGANIZADOR:
         return <Calendar className="h-4 w-4" />;
       default:
         return <UserIcon className="h-4 w-4" />;
@@ -58,12 +58,12 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
     if (!currentUserRole) return Object.values(UserRole);
 
     switch (currentUserRole) {
-      case UserRole.ADMIN:
+      case UserRole.ADMINISTRADOR:
         return Object.values(UserRole); // Los admins pueden asignar cualquier rol
-      case UserRole.MODERATOR:
-        return [UserRole.USER, UserRole.EDITOR, UserRole.ORGANIZER]; // Los moderadores pueden USER, EDITOR y ORGANIZER
+      case UserRole.MODERADOR:
+        return [UserRole.USUARIO, UserRole.EDITOR, UserRole.ORGANIZADOR]; // Los moderadores pueden USER, EDITOR y ORGANIZER
       default:
-        return [UserRole.USER]; // Otros roles solo pueden asignar USER
+        return [UserRole.USUARIO]; // Otros roles solo pueden asignar USER
     }
   };
 
@@ -138,9 +138,9 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
       size === "sm" ? "h-3 w-3" : size === "lg" ? "h-5 w-5" : "h-4 w-4";
 
     switch (role) {
-      case UserRole.ADMIN:
+      case UserRole.ADMINISTRADOR:
         return <Crown className={iconSize} />;
-      case UserRole.MODERATOR:
+      case UserRole.MODERADOR:
         return <ShieldCheck className={iconSize} />;
       case UserRole.EDITOR:
         return <PenTool className={iconSize} />;

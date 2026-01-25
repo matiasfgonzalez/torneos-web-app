@@ -50,11 +50,10 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-interface ApiUser
-  extends Omit<
-    IUser,
-    "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
-  > {
+interface ApiUser extends Omit<
+  IUser,
+  "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
+> {
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string | null;
@@ -75,18 +74,14 @@ interface ApiUser
   };
 }
 
-export default function EditUser({
-  params,
-}: {
-  readonly params: Promise<{ id: string }>;
-}) {
+export default function EditUser() {
   const resolvedParams = useParams();
   const userId = resolvedParams?.id as string;
 
   const [user, setUser] = useState<ApiUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [currentUserRole] = useState<UserRole>(UserRole.ADMIN); // En producción vendría del contexto de autenticación
+  const [currentUserRole] = useState<UserRole>(UserRole.ADMINISTRADOR); // En producción vendría del contexto de autenticación
   const [hasChanges, setHasChanges] = useState(false);
 
   const [formData, setFormData] = useState<IUpdateUserData>({
@@ -94,8 +89,8 @@ export default function EditUser({
     phone: "",
     location: "",
     bio: "",
-    role: UserRole.USER,
-    status: UserStatus.ACTIVE,
+    role: UserRole.USUARIO,
+    status: UserStatus.ACTIVO,
     imageUrl: "",
   });
 
@@ -139,7 +134,7 @@ export default function EditUser({
 
   const handleInputChange = (
     field: keyof IUpdateUserData,
-    value: string | UserRole | UserStatus
+    value: string | UserRole | UserStatus,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -624,7 +619,7 @@ export default function EditUser({
                     disabled={
                       !canAssignRole(
                         currentUserRole,
-                        formData.role || UserRole.USER
+                        formData.role || UserRole.USUARIO,
                       )
                     }
                   >
@@ -634,7 +629,7 @@ export default function EditUser({
                     <SelectContent>
                       {Object.entries(ROLE_LABELS)
                         .filter(([role]) =>
-                          canAssignRole(currentUserRole, role as UserRole)
+                          canAssignRole(currentUserRole, role as UserRole),
                         )
                         .map(([role, label]) => (
                           <SelectItem key={role} value={role}>
@@ -645,7 +640,7 @@ export default function EditUser({
                   </Select>
                   {!canAssignRole(
                     currentUserRole,
-                    formData.role || UserRole.USER
+                    formData.role || UserRole.USUARIO,
                   ) && (
                     <p className="text-xs text-amber-600 dark:text-amber-400">
                       No puedes cambiar este rol debido a tus permisos

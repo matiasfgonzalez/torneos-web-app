@@ -86,9 +86,10 @@ export function SponsorsSection() {
                   Patrocinador Principal
                 </div>
                 <blockquote className="text-2xl font-medium mb-6 leading-relaxed">
-                  "GOLAZO ha revolucionado la forma en que gestionamos nuestros
-                  torneos corporativos. La plataforma es intuitiva, completa y
-                  nos ha ayudado a crear experiencias deportivas excepcionales."
+                  &ldquo;GOLAZO ha revolucionado la forma en que gestionamos
+                  nuestros torneos corporativos. La plataforma es intuitiva,
+                  completa y nos ha ayudado a crear experiencias deportivas
+                  excepcionales.&rdquo;
                 </blockquote>
                 <cite className="text-white/80 font-medium">
                   — María González, Directora de Marketing Deportivo

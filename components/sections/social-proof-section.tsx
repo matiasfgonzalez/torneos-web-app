@@ -47,7 +47,7 @@ export function SocialProofSection() {
 
                 {/* Contenido del testimonio */}
                 <blockquote className="text-gray-700 dark:text-gray-300 leading-relaxed mb-8 text-lg">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </blockquote>
 
                 {/* Autor */}
