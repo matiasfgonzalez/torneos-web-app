@@ -7,8 +7,8 @@ import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  TOURNAMENT_CATEGORIES,
-  TOURNAMENT_FORMATS,
+  TOURNAMENT_CATEGORIES_OPTIONS,
+  TOURNAMENT_FORMAT_OPTIONS,
   TOURNAMENT_STATUS_OPTIONS,
 } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
@@ -207,8 +207,8 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       name: isEditMode && tournament?.name ? tournament.name : "",
       description: isEditMode ? tournament?.description || "" : "",
       category: isEditMode
-        ? tournament?.category || TOURNAMENT_CATEGORIES[0].value
-        : TOURNAMENT_CATEGORIES[0].value,
+        ? tournament?.category || TOURNAMENT_CATEGORIES_OPTIONS[0].value
+        : TOURNAMENT_CATEGORIES_OPTIONS[0].value,
       locality: isEditMode ? tournament?.locality || "" : "",
       startDate:
         isEditMode && tournament?.startDate
@@ -221,8 +221,8 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       logoUrl: isEditMode ? tournament?.logoUrl || "" : "",
       liga: isEditMode ? tournament?.liga || "" : "",
       format: isEditMode
-        ? tournament?.format || TOURNAMENT_FORMATS[0].value
-        : TOURNAMENT_FORMATS[0].value,
+        ? tournament?.format || TOURNAMENT_FORMAT_OPTIONS[0].value
+        : TOURNAMENT_FORMAT_OPTIONS[0].value,
       homeAndAway: isEditMode ? tournament?.homeAndAway || false : false,
       nextMatch:
         isEditMode && tournament?.nextMatch
@@ -375,7 +375,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      {TOURNAMENT_CATEGORIES.map((cat) => (
+                      {TOURNAMENT_CATEGORIES_OPTIONS.map((cat) => (
                         <SelectItem key={cat.value} value={cat.value}>
                           {cat.label}
                         </SelectItem>
@@ -501,7 +501,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      {TOURNAMENT_FORMATS.map((format) => (
+                      {TOURNAMENT_FORMAT_OPTIONS.map((format) => (
                         <SelectItem key={format.value} value={format.value}>
                           {format.label}
                         </SelectItem>

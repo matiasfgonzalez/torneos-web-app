@@ -24,13 +24,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     const animationClass = animated ? "animate-pulse" : "";
 
     switch (status) {
-      case UserStatus.ACTIVE:
+      case UserStatus.ACTIVO:
         return <CheckCircle className={`${iconSize} ${animationClass}`} />;
-      case UserStatus.INACTIVE:
+      case UserStatus.INACTIVO:
         return <XCircle className={`${iconSize} ${animationClass}`} />;
-      case UserStatus.PENDING:
+      case UserStatus.PENDIENTE:
         return <Clock className={`${iconSize} ${animationClass}`} />;
-      case UserStatus.SUSPENDED:
+      case UserStatus.SUSPENDIDO:
         return <Ban className={`${iconSize} ${animationClass}`} />;
       default:
         return <Clock className={`${iconSize} ${animationClass}`} />;
@@ -67,13 +67,13 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
 }) => {
   const getStatusDescription = (status: UserStatus): string => {
     switch (status) {
-      case UserStatus.ACTIVE:
+      case UserStatus.ACTIVO:
         return "El usuario está activo y puede acceder al sistema";
-      case UserStatus.INACTIVE:
+      case UserStatus.INACTIVO:
         return "El usuario está inactivo temporalmente";
-      case UserStatus.PENDING:
+      case UserStatus.PENDIENTE:
         return "El usuario está pendiente de activación";
-      case UserStatus.SUSPENDED:
+      case UserStatus.SUSPENDIDO:
         return "El usuario ha sido suspendido temporalmente";
       default:
         return "";
@@ -85,15 +85,15 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
       <div className="flex items-center space-x-2">
         <div
           className={`w-2 h-2 rounded-full ${
-            status === UserStatus.ACTIVE
+            status === UserStatus.ACTIVO
               ? "bg-green-500"
-              : status === UserStatus.INACTIVE
-              ? "bg-gray-500"
-              : status === UserStatus.PENDING
-              ? "bg-yellow-500"
-              : status === UserStatus.SUSPENDED
-              ? "bg-orange-500"
-              : "bg-red-500"
+              : status === UserStatus.INACTIVO
+                ? "bg-gray-500"
+                : status === UserStatus.PENDIENTE
+                  ? "bg-yellow-500"
+                  : status === UserStatus.SUSPENDIDO
+                    ? "bg-orange-500"
+                    : "bg-red-500"
           }`}
         />
         <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -105,7 +105,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
 
   return (
     <div className="space-y-1">
-      <StatusBadge status={status} animated={status === UserStatus.PENDING} />
+      <StatusBadge status={status} animated={status === UserStatus.PENDIENTE} />
       {showDescription && (
         <p className="text-xs text-gray-600 dark:text-gray-400">
           {getStatusDescription(status)}
@@ -119,18 +119,18 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
 export const useStatusChange = () => {
   const canChangeStatus = (
     currentStatus: UserStatus,
-    newStatus: UserStatus
+    newStatus: UserStatus,
   ): boolean => {
     // Reglas de negocio para cambios de estado
     switch (currentStatus) {
-      case UserStatus.PENDING:
-        return [UserStatus.ACTIVE, UserStatus.SUSPENDED].includes(newStatus);
-      case UserStatus.ACTIVE:
-        return [UserStatus.INACTIVE, UserStatus.SUSPENDED].includes(newStatus);
-      case UserStatus.INACTIVE:
-        return [UserStatus.ACTIVE, UserStatus.SUSPENDED].includes(newStatus);
-      case UserStatus.SUSPENDED:
-        return [UserStatus.ACTIVE].includes(newStatus);
+      case UserStatus.PENDIENTE:
+        return [UserStatus.ACTIVO, UserStatus.SUSPENDIDO].includes(newStatus);
+      case UserStatus.ACTIVO:
+        return [UserStatus.INACTIVO, UserStatus.SUSPENDIDO].includes(newStatus);
+      case UserStatus.INACTIVO:
+        return [UserStatus.ACTIVO, UserStatus.SUSPENDIDO].includes(newStatus);
+      case UserStatus.SUSPENDIDO:
+        return [UserStatus.ACTIVO].includes(newStatus);
       default:
         return false;
     }
@@ -139,7 +139,7 @@ export const useStatusChange = () => {
   const getAvailableStatuses = (currentStatus: UserStatus): UserStatus[] => {
     return Object.values(UserStatus).filter(
       (status) =>
-        status !== currentStatus && canChangeStatus(currentStatus, status)
+        status !== currentStatus && canChangeStatus(currentStatus, status),
     );
   };
 
@@ -150,4 +150,3 @@ export const useStatusChange = () => {
 };
 
 export default StatusBadge;
-

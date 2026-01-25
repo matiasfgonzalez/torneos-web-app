@@ -28,36 +28,38 @@ interface UserStatsProps {
 
 export const UserStats: React.FC<UserStatsProps> = ({
   users,
-  showTrends = false,
+  // showTrends - Reserved for future use
   compact = false,
 }) => {
   // Calcular estadísticas
   const totalUsers = users.length;
   const activeUsers = users.filter(
-    (u) => u.status === UserStatus.ACTIVE
+    (u) => u.status === UserStatus.ACTIVO,
   ).length;
   const pendingUsers = users.filter(
-    (u) => u.status === UserStatus.PENDING
+    (u) => u.status === UserStatus.PENDIENTE,
   ).length;
   const suspendedUsers = users.filter(
-    (u) => u.status === UserStatus.SUSPENDED
+    (u) => u.status === UserStatus.SUSPENDIDO,
   ).length;
 
-  const adminCount = users.filter((u) => u.role === UserRole.ADMIN).length;
+  const adminCount = users.filter(
+    (u) => u.role === UserRole.ADMINISTRADOR,
+  ).length;
   const moderatorCount = users.filter(
-    (u) => u.role === UserRole.MODERATOR
+    (u) => u.role === UserRole.MODERADOR,
   ).length;
   const editorCount = users.filter((u) => u.role === UserRole.EDITOR).length;
   const organizerCount = users.filter(
-    (u) => u.role === UserRole.ORGANIZER
+    (u) => u.role === UserRole.ORGANIZADOR,
   ).length;
-  const userCount = users.filter((u) => u.role === UserRole.USER).length;
+  const userCount = users.filter((u) => u.role === UserRole.USUARIO).length;
 
   // Usuarios registrados en los últimos 30 días
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const recentUsers = users.filter(
-    (u) => new Date(u.createdAt) > thirtyDaysAgo
+    (u) => new Date(u.createdAt) > thirtyDaysAgo,
   ).length;
 
   const stats = [
@@ -74,7 +76,7 @@ export const UserStats: React.FC<UserStatsProps> = ({
       value: activeUsers,
       icon: Activity,
       description: `${((activeUsers / totalUsers) * 100).toFixed(
-        1
+        1,
       )}% del total`,
       color: "bg-green-500",
       gradient: "from-green-500 to-green-600",
@@ -98,11 +100,11 @@ export const UserStats: React.FC<UserStatsProps> = ({
   ];
 
   const roleStats = [
-    { role: UserRole.ADMIN, count: adminCount, icon: Crown },
-    { role: UserRole.MODERATOR, count: moderatorCount, icon: ShieldCheck },
+    { role: UserRole.ADMINISTRADOR, count: adminCount, icon: Crown },
+    { role: UserRole.MODERADOR, count: moderatorCount, icon: ShieldCheck },
     { role: UserRole.EDITOR, count: editorCount, icon: PenTool },
-    { role: UserRole.ORGANIZER, count: organizerCount, icon: Calendar },
-    { role: UserRole.USER, count: userCount, icon: UserIcon },
+    { role: UserRole.ORGANIZADOR, count: organizerCount, icon: Calendar },
+    { role: UserRole.USUARIO, count: userCount, icon: UserIcon },
   ];
 
   if (compact) {
@@ -213,7 +215,7 @@ export const UserStats: React.FC<UserStatsProps> = ({
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  {STATUS_LABELS[UserStatus.ACTIVE]}
+                  {STATUS_LABELS[UserStatus.ACTIVO]}
                 </span>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -225,11 +227,11 @@ export const UserStats: React.FC<UserStatsProps> = ({
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  {STATUS_LABELS[UserStatus.INACTIVE]}
+                  {STATUS_LABELS[UserStatus.INACTIVO]}
                 </span>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
-                {users.filter((u) => u.status === UserStatus.INACTIVE).length}
+                {users.filter((u) => u.status === UserStatus.INACTIVO).length}
               </span>
             </div>
 
@@ -237,7 +239,7 @@ export const UserStats: React.FC<UserStatsProps> = ({
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  {STATUS_LABELS[UserStatus.PENDING]}
+                  {STATUS_LABELS[UserStatus.PENDIENTE]}
                 </span>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -249,7 +251,7 @@ export const UserStats: React.FC<UserStatsProps> = ({
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  {STATUS_LABELS[UserStatus.SUSPENDED]}
+                  {STATUS_LABELS[UserStatus.SUSPENDIDO]}
                 </span>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -264,4 +266,3 @@ export const UserStats: React.FC<UserStatsProps> = ({
 };
 
 export default UserStats;
-

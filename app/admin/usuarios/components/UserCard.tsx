@@ -38,19 +38,19 @@ interface UserCardProps {
 export const UserCard: React.FC<UserCardProps> = ({
   user,
   onDelete,
-  onStatusToggle,
+  // onStatusToggle - Reserved for future use
   showActions = true,
   compact = false,
 }) => {
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN:
+      case UserRole.ADMINISTRADOR:
         return <Crown className="h-4 w-4" />;
-      case UserRole.MODERATOR:
+      case UserRole.MODERADOR:
         return <ShieldCheck className="h-4 w-4" />;
       case UserRole.EDITOR:
         return <PenTool className="h-4 w-4" />;
-      case UserRole.ORGANIZER:
+      case UserRole.ORGANIZADOR:
         return <Calendar className="h-4 w-4" />;
       default:
         return <UserIcon className="h-4 w-4" />;
@@ -203,4 +203,3 @@ export const UserCard: React.FC<UserCardProps> = ({
 };
 
 export default UserCard;
-

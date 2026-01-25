@@ -148,8 +148,9 @@ const TabsOverview = (props: PropsTabsOverview) => {
                     Formato
                   </span>
                   <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0 shadow-lg shadow-[#ad45ff]/25">
-                    {TOURNAMENT_FORMAT_LABELS[tournamentData.format] ||
-                      tournamentData.format}
+                    {TOURNAMENT_FORMAT_LABELS[
+                      tournamentData.format as keyof typeof TOURNAMENT_FORMAT_LABELS
+                    ] || tournamentData.format}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
@@ -157,8 +158,9 @@ const TabsOverview = (props: PropsTabsOverview) => {
                     Categoría
                   </span>
                   <Badge className="bg-gradient-to-r from-[#c77dff] to-[#a3b3ff] text-white border-0 shadow-lg shadow-[#c77dff]/25">
-                    {TOURNAMENT_CATEGORY_LABELS[tournamentData.category] ||
-                      tournamentData.category}
+                    {TOURNAMENT_CATEGORY_LABELS[
+                      tournamentData.category as keyof typeof TOURNAMENT_CATEGORY_LABELS
+                    ] || tournamentData.category}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
