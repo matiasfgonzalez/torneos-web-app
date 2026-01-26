@@ -188,6 +188,7 @@ model Team {
   homeColor   String?    // Color principal del equipo
   awayColor   String?    // Color secundario del equipo
   logoUrl     String?    // URL del escudo/logo
+  logoPublicId String?   // Public ID de Cloudinary para eliminar la imagen
   enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
   deletedAt   DateTime?   // Fecha de eliminación lógica (si aplica)
 

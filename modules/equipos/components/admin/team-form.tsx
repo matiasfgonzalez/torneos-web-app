@@ -15,7 +15,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Upload,
   Palette,
   User,
   Trophy,
@@ -39,6 +38,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import { ITeam } from "@modules/equipos/types/types";
 
 const teamSchema = z.object({
@@ -51,7 +51,8 @@ const teamSchema = z.object({
   yearFounded: z.string().optional(),
   homeColor: z.string().optional(),
   awayColor: z.string().optional(),
-  logoUrl: z.string().optional(),
+  logoUrl: z.string().optional().nullable(),
+  logoPublicId: z.string().optional().nullable(),
 });
 
 type TeamFormValues = z.infer<typeof teamSchema>;
@@ -146,7 +147,8 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
       yearFounded: isEditMode ? team?.yearFounded || "" : "",
       homeColor: isEditMode ? team?.homeColor || "#FFFFFF" : "#FFFFFF",
       awayColor: isEditMode ? team?.awayColor || "#000000" : "#000000",
-      logoUrl: isEditMode ? team?.logoUrl || "" : "",
+      logoUrl: isEditMode ? team?.logoUrl || null : null,
+      logoPublicId: isEditMode ? (team as ITeam & { logoPublicId?: string })?.logoPublicId || null : null,
     },
   });
 
@@ -493,33 +495,21 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                       <div className="flex items-center space-x-2">
                         <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                          URL del Escudo
+                          Escudo del Equipo
                         </FormLabel>
                       </div>
                       <FormControl>
-                        <div className="flex gap-2">
-                          <div className="relative flex-1">
-                            <Upload className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
-                            <Input
-                              placeholder="https://ejemplo.com/escudo.png"
-                              className="pl-10 h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl"
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </div>
-                          {logoUrl && (
-                            <div className="w-12 h-12 border-2 border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                              <img
-                                src={logoUrl || "/placeholder.svg"}
-                                alt="Preview"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = "none";
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
+                        <CloudinaryUpload
+                          folder="equipos/logos"
+                          value={field.value}
+                          publicId={form.watch("logoPublicId")}
+                          onChange={(url, publicId) => {
+                            form.setValue("logoUrl", url);
+                            form.setValue("logoPublicId", publicId);
+                          }}
+                          disabled={isLoading}
+                          placeholder="Arrastra el escudo o haz clic para seleccionar"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
