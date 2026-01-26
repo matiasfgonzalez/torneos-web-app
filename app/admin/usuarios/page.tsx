@@ -73,13 +73,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Función para obtener icono del rol
 const getRoleIcon = (role: UserRole) => {
   switch (role) {
-    case UserRole.ADMIN:
+    case UserRole.ADMINISTRADOR:
       return <Crown className="h-4 w-4" />;
-    case UserRole.MODERATOR:
+    case UserRole.MODERADOR:
       return <ShieldCheck className="h-4 w-4" />;
     case UserRole.EDITOR:
       return <PenTool className="h-4 w-4" />;
-    case UserRole.ORGANIZER:
+    case UserRole.ORGANIZADOR:
       return <Calendar className="h-4 w-4" />;
     default:
       return <UserIcon className="h-4 w-4" />;
@@ -341,11 +341,10 @@ interface UserFilters {
 }
 
 // Tipo extendido para la API que maneja fechas como strings
-interface ApiUser
-  extends Omit<
-    IUser,
-    "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
-  > {
+interface ApiUser extends Omit<
+  IUser,
+  "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
+> {
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string | null;
@@ -418,6 +417,7 @@ export default function UsersPage() {
   }, []);
 
   // Función para manejar cambios de filtros
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFilterChange = (key: keyof UserFilters, value: any) => {
     const newFilters = { ...filters, [key]: value, page: 1 }; // Reset page when filtering
     setFilters(newFilters);
@@ -438,6 +438,7 @@ export default function UsersPage() {
         method: "DELETE",
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result: ApiResponse<any> = await response.json();
 
       if (result.success) {
@@ -535,7 +536,7 @@ export default function UsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {users.filter((u) => u.status === UserStatus.ACTIVE).length}
+                    {users.filter((u) => u.status === UserStatus.ACTIVO).length}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Activos
@@ -552,7 +553,10 @@ export default function UsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {users.filter((u) => u.role === UserRole.ADMIN).length}
+                    {
+                      users.filter((u) => u.role === UserRole.ADMINISTRADOR)
+                        .length
+                    }
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Administradores
@@ -568,7 +572,7 @@ export default function UsersPage() {
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {
-                      users.filter((u) => u.status === UserStatus.PENDING)
+                      users.filter((u) => u.status === UserStatus.PENDIENTE)
                         .length
                     }
                   </p>
@@ -662,7 +666,7 @@ export default function UsersPage() {
                   onClick={() =>
                     handleFilterChange(
                       "sortOrder",
-                      filters.sortOrder === "asc" ? "desc" : "asc"
+                      filters.sortOrder === "asc" ? "desc" : "asc",
                     )
                   }
                   className="flex-1"
@@ -780,4 +784,3 @@ export default function UsersPage() {
     </div>
   );
 }
-

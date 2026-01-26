@@ -20,15 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Loader2,
-  Plus,
-  Trash2,
-  Goal as GoalIcon,
-  ShieldAlert,
-  Badge as BadgeIcon,
-} from "lucide-react";
-import { IPartidos, IGoal } from "@modules/partidos/types";
+import { Loader2, Plus, Trash2, Goal as GoalIcon } from "lucide-react";
+import { IPartidos } from "@modules/partidos/types";
 import { getTournamentTeamPlayers } from "@modules/equipos/actions/getTournamentTeamPlayers";
 import { addGoal, deleteGoal } from "@modules/partidos/actions/goals";
 import { toast } from "sonner";
@@ -85,6 +78,7 @@ export default function DialogManageGoals({
       ]);
 
       setHomePlayers(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         home.map((tp: any) => ({
           id: tp.id,
           name: tp.player.name,
@@ -93,6 +87,7 @@ export default function DialogManageGoals({
       );
 
       setAwayPlayers(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         away.map((tp: any) => ({
           id: tp.id,
           name: tp.player.name,
@@ -134,7 +129,8 @@ export default function DialogManageGoals({
       } else {
         toast.error(res.error || "Error al agregar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Ocurrió un error inesperado");
     } finally {
       setIsLoading(false);
@@ -153,7 +149,8 @@ export default function DialogManageGoals({
       } else {
         toast.error(res.error || "Error al eliminar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Ocurrió un error inesperado");
     } finally {
       setIsLoading(false);
@@ -317,17 +314,13 @@ export default function DialogManageGoals({
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 {sortedGoals.map((goal) => {
                   const p =
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (goal as any).teamPlayer?.player?.name ||
                     "Jugador desconocido";
-                  const teamId = (goal as any).teamPlayer?.tournamentTeamId; // Assuming this is available, if not we rely on join logic
                   // Note: 'goal' prop usually has included relations if fetched correctly.
                   // In the IPartidos type, goal is IGoal[], but IGoal interface in types.ts doesn't show relations.
                   // However, server returns them. We cast to any to avoid TS errors for now or update type properly.
 
-                  const isHomeGoalTeam = teamId === match.homeTeamId;
-                  const isHomeScorer = goal.isOwnGoal
-                    ? !isHomeGoalTeam
-                    : isHomeGoalTeam;
                   // If own goal, the team who scored is NOT the team who gets the point
                   // But visually we usually list it under the team who benefitted or the player who did it?
                   // Convention: Listed by the player who did it, with (EC) tag.
@@ -342,7 +335,7 @@ export default function DialogManageGoals({
                           variant="outline"
                           className="w-10 justify-center"
                         >
-                          {goal.minute}'
+                          {goal.minute}&apos;
                         </Badge>
                         <div className="flex flex-col">
                           <span className="font-medium">{p}</span>

@@ -56,6 +56,7 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
 
   // Función para obtener las tarjetas de un jugador en este partido
   const getPlayerCards = (playerId: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return cards.filter((card: any) => card.teamPlayerId === playerId);
   };
 
@@ -63,8 +64,10 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
   const isPlayerExpelled = (playerId: string): boolean => {
     const playerCards = getPlayerCards(playerId);
     // Expulsado si tiene roja directa o 2+ amarillas
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hasRedCard = playerCards.some((c: any) => c.type === "ROJA");
     const yellowCount = playerCards.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (c: any) => c.type === "AMARILLA",
     ).length;
     return hasRedCard || yellowCount >= 2;
@@ -81,8 +84,10 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
 
     const playerCards = getPlayerCards(selectedPlayerId);
     const yellowCount = playerCards.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (c: any) => c.type === "AMARILLA",
     ).length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hasRedCard = playerCards.some((c: any) => c.type === "ROJA");
 
     // Si ya tiene roja, no puede recibir más tarjetas
@@ -143,6 +148,7 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
         getTournamentTeamPlayers(match.awayTeamId),
       ]);
       setHomePlayers(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         home.map((tp: any) => ({
           id: tp.id,
           name: tp.player.name,
@@ -150,6 +156,7 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
         })),
       );
       setAwayPlayers(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         away.map((tp: any) => ({
           id: tp.id,
           name: tp.player.name,
@@ -215,7 +222,8 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
       } else {
         toast.error(res.error || "Error al agregar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Ocurrió un error inesperado");
     } finally {
       setIsLoading(false);
@@ -233,7 +241,8 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
       } else {
         toast.error(res.error || "Error al eliminar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Error inesperado");
     } finally {
       setIsLoading(false);
@@ -374,6 +383,7 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
           </p>
         ) : (
           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {sortedCards.map((card: any) => {
               const p = card.teamPlayer?.player?.name || "Desconocido";
               const isRed = card.type === "ROJA";
@@ -385,7 +395,7 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
                 >
                   <div className="flex items-center gap-3">
                     <Badge variant="outline" className="w-10 justify-center">
-                      {card.minute}'
+                      {card.minute}&apos;
                     </Badge>
                     <div
                       className={`w-4 h-6 rounded-sm ${isRed ? "bg-red-500" : "bg-yellow-400"} border border-black/10 shadow-sm`}

@@ -224,6 +224,7 @@ export default function UserDetailPage() {
         method: "DELETE",
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result: ApiResponse<any> = await response.json();
 
       if (result.success) {
@@ -243,13 +244,13 @@ export default function UserDetailPage() {
   // Función para obtener icono del rol
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN:
+      case UserRole.ADMINISTRADOR:
         return <Crown className="h-4 w-4" />;
-      case UserRole.MODERATOR:
+      case UserRole.MODERADOR:
         return <ShieldCheck className="h-4 w-4" />;
       case UserRole.EDITOR:
         return <PenTool className="h-4 w-4" />;
-      case UserRole.ORGANIZER:
+      case UserRole.ORGANIZADOR:
         return <Calendar className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
@@ -259,13 +260,13 @@ export default function UserDetailPage() {
   // Función para obtener icono del estado
   const getStatusIcon = (status: UserStatus) => {
     switch (status) {
-      case UserStatus.ACTIVE:
+      case UserStatus.ACTIVO:
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case UserStatus.INACTIVE:
+      case UserStatus.INACTIVO:
         return <Clock className="h-4 w-4 text-gray-500" />;
-      case UserStatus.SUSPENDED:
+      case UserStatus.SUSPENDIDO:
         return <Ban className="h-4 w-4 text-red-500" />;
-      case UserStatus.PENDING:
+      case UserStatus.PENDIENTE:
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
       default:
         return <User className="h-4 w-4" />;

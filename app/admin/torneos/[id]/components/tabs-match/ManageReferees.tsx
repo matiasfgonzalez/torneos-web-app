@@ -86,7 +86,8 @@ export default function ManageReferees({
       } else {
         toast.error(res.error || "Error al asignar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Error inesperado");
     } finally {
       setIsAssigning(false);
@@ -104,7 +105,8 @@ export default function ManageReferees({
       } else {
         toast.error(res.error);
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Error inesperado");
     } finally {
       setIsAssigning(false);

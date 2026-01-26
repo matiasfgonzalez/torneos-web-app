@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       search: searchParams.get("search") || undefined,
       role: (searchParams.get("role") as UserRole) || undefined,
       status: (searchParams.get("status") as UserStatus) || undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sortBy: (searchParams.get("sortBy") as any) || "createdAt",
       sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
       page: parseInt(searchParams.get("page") || "1"),
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Construir filtros WHERE
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       isActive: true, // Solo usuarios activos
     };
@@ -51,6 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Configurar ordenamiento
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orderBy: any = {};
     if (filters.sortBy) {
       orderBy[filters.sortBy] = filters.sortOrder;
@@ -125,7 +128,7 @@ export async function GET(request: NextRequest) {
         error: "Error interno del servidor",
         message: "No se pudieron obtener los usuarios",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -154,7 +157,7 @@ export async function POST(request: NextRequest) {
           error: "Datos requeridos faltantes",
           message: "Email y nombre son requeridos",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -170,7 +173,7 @@ export async function POST(request: NextRequest) {
           error: "Usuario ya existe",
           message: "Ya existe un usuario con este email",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -182,8 +185,8 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         location: location || null,
         bio: bio || null,
-        role: role || UserRole.USER,
-        status: status || UserStatus.PENDING,
+        role: role || UserRole.USUARIO,
+        status: status || UserStatus.PENDIENTE,
         clerkUserId: clerkUserId || `temp_${Date.now()}`, // Temporal hasta integrar con Clerk
         imageUrl: imageUrl || null,
         emailVerified: false,
@@ -210,7 +213,7 @@ export async function POST(request: NextRequest) {
         data: newUser,
         message: "Usuario creado exitosamente",
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Error creating user:", error);
@@ -220,8 +223,7 @@ export async function POST(request: NextRequest) {
         error: "Error interno del servidor",
         message: "No se pudo crear el usuario",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

@@ -162,6 +162,7 @@ export function groupTeamsByGroup<T extends { group?: string | null }>(
 
   // Ordenar cada grupo internamente (asumiendo que tienen stats)
   groups.forEach((groupTeams, groupName) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sortedTeams = [...groupTeams].sort((a: any, b: any) => {
       if (a.points !== b.points) return (b.points || 0) - (a.points || 0);
       if (a.goalDifference !== b.goalDifference)

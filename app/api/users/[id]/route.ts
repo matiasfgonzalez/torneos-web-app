@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -18,7 +15,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           error: "ID requerido",
           message: "El ID del usuario es requerido",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -111,7 +108,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           error: "Usuario no encontrado",
           message: "No se encontró el usuario especificado",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -170,14 +167,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         error: "Error interno del servidor",
         message: "No se pudo obtener el usuario",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     if (!id) {
@@ -187,7 +187,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           error: "ID requerido",
           message: "El ID del usuario es requerido",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -214,11 +214,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           error: "Usuario no encontrado",
           message: "No se encontró el usuario especificado",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Preparar datos de actualización
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
 
     if (name !== undefined) updateData.name = name;
@@ -275,14 +276,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         error: "Error interno del servidor",
         message: "No se pudo actualizar el usuario",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -291,7 +295,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
           error: "ID requerido",
           message: "El ID del usuario es requerido",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -307,7 +311,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
           error: "Usuario no encontrado",
           message: "No se encontró el usuario especificado",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -316,7 +320,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data: {
         isActive: false,
-        status: "INACTIVE",
+        status: "INACTIVO",
       },
     });
 
@@ -343,7 +347,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         error: "Error interno del servidor",
         message: "No se pudo eliminar el usuario",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

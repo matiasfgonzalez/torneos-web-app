@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Plus, Trash2, Goal as GoalIcon } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { IPartidos } from "@modules/partidos/types";
 import { getTournamentTeamPlayers } from "@modules/equipos/actions/getTournamentTeamPlayers";
 import { addGoal, deleteGoal } from "@modules/partidos/actions/goals";
@@ -62,6 +62,7 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
       ]);
 
       setHomePlayers(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         home.map((tp: any) => ({
           id: tp.id,
           name: tp.player.name,
@@ -70,6 +71,7 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
       );
 
       setAwayPlayers(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         away.map((tp: any) => ({
           id: tp.id,
           name: tp.player.name,
@@ -110,7 +112,8 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
       } else {
         toast.error(res.error || "Error al agregar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Ocurrió un error inesperado");
     } finally {
       setIsLoading(false);
@@ -129,7 +132,8 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
       } else {
         toast.error(res.error || "Error al eliminar");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       toast.error("Ocurrió un error inesperado");
     } finally {
       setIsLoading(false);
@@ -272,6 +276,7 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
             {sortedGoals.map((goal) => {
               const p =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (goal as any).teamPlayer?.player?.name || "Jugador desconocido";
               return (
                 <div
@@ -280,7 +285,7 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
                 >
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="w-10 justify-center">
-                      {goal.minute}'
+                      {goal.minute}&apos;
                     </Badge>
                     <div className="flex flex-col">
                       <span className="font-medium">{p}</span>

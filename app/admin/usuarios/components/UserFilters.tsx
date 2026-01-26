@@ -65,13 +65,13 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN:
+      case UserRole.ADMINISTRADOR:
         return <Crown className="h-4 w-4" />;
-      case UserRole.MODERATOR:
+      case UserRole.MODERADOR:
         return <ShieldCheck className="h-4 w-4" />;
       case UserRole.EDITOR:
         return <PenTool className="h-4 w-4" />;
-      case UserRole.ORGANIZER:
+      case UserRole.ORGANIZADOR:
         return <Calendar className="h-4 w-4" />;
       default:
         return <UserIcon className="h-4 w-4" />;
@@ -89,28 +89,28 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
           user.name.toLowerCase().includes(searchLower) ||
           user.email.toLowerCase().includes(searchLower) ||
           user.phone?.toLowerCase().includes(searchLower) ||
-          user.location?.toLowerCase().includes(searchLower)
+          user.location?.toLowerCase().includes(searchLower),
       );
     }
 
     // Filtro por rol
     if (newFilters.role !== "all") {
       filteredUsers = filteredUsers.filter(
-        (user) => user.role === newFilters.role
+        (user) => user.role === newFilters.role,
       );
     }
 
     // Filtro por estado
     if (newFilters.status !== "all") {
       filteredUsers = filteredUsers.filter(
-        (user) => user.status === newFilters.status
+        (user) => user.status === newFilters.status,
       );
     }
 
     // Filtro por rango de fechas
     if (newFilters.dateRange !== "all") {
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       switch (newFilters.dateRange) {
         case "today":
@@ -128,7 +128,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
       }
 
       filteredUsers = filteredUsers.filter(
-        (user) => new Date(user.createdAt) >= startDate
+        (user) => new Date(user.createdAt) >= startDate,
       );
     }
 
@@ -161,6 +161,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
     onFilteredUsersChange(filteredUsers);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
@@ -362,7 +363,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
             </span>
             {filters.search && (
               <Badge variant="secondary" className="text-xs">
-                Búsqueda: "{filters.search}"
+                Búsqueda: &ldquo;{filters.search}&rdquo;
               </Badge>
             )}
             {filters.role !== "all" && (
@@ -398,4 +399,3 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
 };
 
 export default UserFilters;
-

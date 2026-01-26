@@ -58,6 +58,7 @@ export interface IUserActivity {
   userId: string;
   action: string;
   description: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   createdAt: Date;
   ipAddress?: string;
@@ -124,56 +125,57 @@ export interface IUpdateUserData {
 
 // Utilidades para roles y permisos
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  [UserRole.USER]: 1,
+  [UserRole.USUARIO]: 1,
   [UserRole.EDITOR]: 2,
-  [UserRole.ORGANIZER]: 3,
-  [UserRole.MODERATOR]: 4,
-  [UserRole.ADMIN]: 5,
+  [UserRole.ORGANIZADOR]: 3,
+  [UserRole.MODERADOR]: 4,
+  [UserRole.ADMINISTRADOR]: 5,
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {
-  [UserRole.ADMIN]: "Administrador",
-  [UserRole.MODERATOR]: "Moderador",
+  [UserRole.ADMINISTRADOR]: "Administrador",
+  [UserRole.MODERADOR]: "Moderador",
   [UserRole.EDITOR]: "Editor",
-  [UserRole.ORGANIZER]: "Organizador",
-  [UserRole.USER]: "Usuario",
+  [UserRole.ORGANIZADOR]: "Organizador",
+  [UserRole.USUARIO]: "Usuario",
 };
 
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
-  [UserRole.USER]: "Acceso básico para visualizar contenido",
+  [UserRole.USUARIO]: "Acceso básico para visualizar contenido",
   [UserRole.EDITOR]: "Puede crear y editar contenido",
-  [UserRole.ORGANIZER]: "Puede crear y gestionar torneos y equipos",
-  [UserRole.MODERATOR]: "Puede moderar contenido y gestionar usuarios básicos",
-  [UserRole.ADMIN]: "Acceso completo a todas las funcionalidades",
+  [UserRole.ORGANIZADOR]: "Puede crear y gestionar torneos y equipos",
+  [UserRole.MODERADOR]: "Puede moderar contenido y gestionar usuarios básicos",
+  [UserRole.ADMINISTRADOR]: "Acceso completo a todas las funcionalidades",
 };
 
 export const STATUS_LABELS: Record<UserStatus, string> = {
-  [UserStatus.ACTIVE]: "Activo",
-  [UserStatus.INACTIVE]: "Inactivo",
-  [UserStatus.SUSPENDED]: "Suspendido",
-  [UserStatus.PENDING]: "Pendiente",
+  [UserStatus.ACTIVO]: "Activo",
+  [UserStatus.INACTIVO]: "Inactivo",
+  [UserStatus.SUSPENDIDO]: "Suspendido",
+  [UserStatus.PENDIENTE]: "Pendiente",
 };
 
 export const ROLE_COLORS: Record<UserRole, string> = {
-  [UserRole.ADMIN]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  [UserRole.MODERATOR]:
+  [UserRole.ADMINISTRADOR]:
+    "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  [UserRole.MODERADOR]:
     "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   [UserRole.EDITOR]:
     "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  [UserRole.ORGANIZER]:
+  [UserRole.ORGANIZADOR]:
     "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  [UserRole.USER]:
+  [UserRole.USUARIO]:
     "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
 };
 
 export const STATUS_COLORS: Record<UserStatus, string> = {
-  [UserStatus.ACTIVE]:
+  [UserStatus.ACTIVO]:
     "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  [UserStatus.INACTIVE]:
+  [UserStatus.INACTIVO]:
     "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
-  [UserStatus.SUSPENDED]:
+  [UserStatus.SUSPENDIDO]:
     "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  [UserStatus.PENDING]:
+  [UserStatus.PENDIENTE]:
     "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
 };
 
@@ -194,13 +196,13 @@ export const canAssignRole = (
 
 export const getRoleIcon = (role: UserRole): string => {
   switch (role) {
-    case UserRole.ADMIN:
+    case UserRole.ADMINISTRADOR:
       return "👑";
-    case UserRole.MODERATOR:
+    case UserRole.MODERADOR:
       return "🛡️";
     case UserRole.EDITOR:
       return "✏️";
-    case UserRole.USER:
+    case UserRole.USUARIO:
       return "👤";
     default:
       return "👤";
@@ -209,13 +211,13 @@ export const getRoleIcon = (role: UserRole): string => {
 
 export const getStatusIcon = (status: UserStatus): string => {
   switch (status) {
-    case UserStatus.ACTIVE:
+    case UserStatus.ACTIVO:
       return "✅";
-    case UserStatus.INACTIVE:
+    case UserStatus.INACTIVO:
       return "⚪";
-    case UserStatus.SUSPENDED:
+    case UserStatus.SUSPENDIDO:
       return "🚫";
-    case UserStatus.PENDING:
+    case UserStatus.PENDIENTE:
       return "⏳";
     default:
       return "❓";
