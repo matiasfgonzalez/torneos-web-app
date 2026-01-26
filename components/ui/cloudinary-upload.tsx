@@ -268,19 +268,30 @@ export function CloudinaryUpload({
   };
 
   /**
-   * Maneja la acción de eliminar imagen del usuario
+   * Maneja la acción de eliminar/desasociar imagen del usuario
+   * Si tiene publicId, la elimina de Cloudinary
+   * Si no tiene publicId, solo limpia el preview (desasocia)
    */
   const handleRemove = async () => {
-    if (!currentPublicId) return;
+    // Si no hay imagen, no hacer nada
+    if (!previewUrl && !currentPublicId) return;
 
     setIsUploading(true);
     try {
-      await deleteImage(currentPublicId);
+      // Solo intentar eliminar de Cloudinary si tenemos el publicId
+      if (currentPublicId) {
+        await deleteImage(currentPublicId);
+      }
+      // Siempre limpiar el estado local y notificar al padre
       setPreviewUrl(null);
       setCurrentPublicId(null);
       onChange?.(null, null);
     } catch (err) {
       console.error("Error al eliminar:", err);
+      // Aún así limpiar localmente aunque falle en Cloudinary
+      setPreviewUrl(null);
+      setCurrentPublicId(null);
+      onChange?.(null, null);
     } finally {
       setIsUploading(false);
     }
