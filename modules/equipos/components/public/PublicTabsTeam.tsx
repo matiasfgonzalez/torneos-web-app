@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import { PLAYER_POSITION_LABELS } from "@/lib/constants";
 import { PlayerPosition } from "@prisma/client";
+import MatchCard from "./MatchCard";
 
 interface PropsTabsTeam {
   readonly teamData: any;
@@ -370,176 +371,15 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {teamData.partidos.map((partido: any) => {
-                  // Determine match result for this team
-                  const teamScore = partido.esLocal
-                    ? partido.homeScore
-                    : partido.awayScore;
-                  const rivalScore = partido.esLocal
-                    ? partido.awayScore
-                    : partido.homeScore;
-                  const isWin =
-                    teamScore !== null &&
-                    rivalScore !== null &&
-                    teamScore > rivalScore;
-                  const isLoss =
-                    teamScore !== null &&
-                    rivalScore !== null &&
-                    teamScore < rivalScore;
-                  const isDraw =
-                    teamScore !== null &&
-                    rivalScore !== null &&
-                    teamScore === rivalScore;
-
-                  return (
-                    <div
-                      key={partido.id}
-                      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:shadow-xl hover:shadow-[#ad45ff]/10 transition-all duration-300"
-                    >
-                      {/* Result indicator strip */}
-                      <div
-                        className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                          partido.status !== "FINALIZADO"
-                            ? "bg-gradient-to-b from-[#ad45ff] to-[#c77dff]"
-                            : isWin
-                              ? "bg-gradient-to-b from-green-400 to-green-600"
-                              : isLoss
-                                ? "bg-gradient-to-b from-red-400 to-red-600"
-                                : "bg-gradient-to-b from-amber-400 to-amber-600"
-                        }`}
-                      />
-
-                      <div className="flex flex-col sm:flex-row items-center p-5 pl-6 gap-4">
-                        {/* Date & Status */}
-                        <div className="flex flex-col items-center sm:items-start min-w-[100px] text-center sm:text-left">
-                          <span className="font-bold text-gray-900 dark:text-white text-lg">
-                            {formatDate(partido.dateTime, "dd MMM")}
-                          </span>
-                          <Badge
-                            variant="secondary"
-                            className={`text-[10px] uppercase tracking-wider ${
-                              partido.status === "FINALIZADO"
-                                ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                                : "bg-[#ad45ff]/10 text-[#ad45ff]"
-                            }`}
-                          >
-                            {partido.status === "FINALIZADO"
-                              ? "Finalizado"
-                              : partido.status === "PROGRAMADO"
-                                ? "Programado"
-                                : partido.status}
-                          </Badge>
-                        </div>
-
-                        {/* Score Board */}
-                        <div className="flex-1 grid grid-cols-[1fr,auto,1fr] items-center gap-3 sm:gap-4 w-full">
-                          {/* Home Team */}
-                          <div className="flex items-center justify-end gap-2 sm:gap-3 text-right">
-                            <span
-                              className={`font-semibold hidden sm:inline truncate max-w-[120px] ${partido.esLocal ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}
-                            >
-                              {partido.esLocal
-                                ? teamData.shortName || teamData.name
-                                : partido.equipoRival.shortName ||
-                                  partido.equipoRival.name}
-                            </span>
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 relative flex-shrink-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 p-1 shadow-md border border-gray-100 dark:border-gray-700">
-                              <img
-                                src={
-                                  partido.esLocal
-                                    ? teamData.logoUrl || "/placeholder.svg"
-                                    : partido.equipoRival.logoUrl ||
-                                      "/placeholder.svg"
-                                }
-                                className="w-full h-full object-contain"
-                                alt="Home"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Score */}
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold text-xl sm:text-2xl ${
-                                partido.status === "FINALIZADO" &&
-                                partido.esLocal &&
-                                isWin
-                                  ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
-                                  : partido.status === "FINALIZADO" &&
-                                      !partido.esLocal &&
-                                      isLoss
-                                    ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
-                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                              }`}
-                            >
-                              {partido.esLocal
-                                ? (partido.homeScore ?? "-")
-                                : (partido.awayScore ?? "-")}
-                            </div>
-                            <span className="text-gray-400 dark:text-gray-500 font-medium">
-                              -
-                            </span>
-                            <div
-                              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold text-xl sm:text-2xl ${
-                                partido.status === "FINALIZADO" &&
-                                partido.esLocal &&
-                                isLoss
-                                  ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
-                                  : partido.status === "FINALIZADO" &&
-                                      !partido.esLocal &&
-                                      isWin
-                                    ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
-                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                              }`}
-                            >
-                              {partido.esLocal
-                                ? (partido.awayScore ?? "-")
-                                : (partido.homeScore ?? "-")}
-                            </div>
-                          </div>
-
-                          {/* Away Team */}
-                          <div className="flex items-center justify-start gap-2 sm:gap-3 text-left">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 relative flex-shrink-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 p-1 shadow-md border border-gray-100 dark:border-gray-700">
-                              <img
-                                src={
-                                  partido.esLocal
-                                    ? partido.equipoRival.logoUrl ||
-                                      "/placeholder.svg"
-                                    : teamData.logoUrl || "/placeholder.svg"
-                                }
-                                className="w-full h-full object-contain"
-                                alt="Away"
-                              />
-                            </div>
-                            <span
-                              className={`font-semibold hidden sm:inline truncate max-w-[120px] ${!partido.esLocal ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}
-                            >
-                              {partido.esLocal
-                                ? partido.equipoRival.shortName ||
-                                  partido.equipoRival.name
-                                : teamData.shortName || teamData.name}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Tournament Name */}
-                        {partido.torneoNombre && (
-                          <div className="w-full sm:w-auto text-center sm:text-right">
-                            <Badge
-                              variant="outline"
-                              className="text-xs text-[#ad45ff] border-[#ad45ff]/30 bg-[#ad45ff]/5 truncate max-w-[180px]"
-                            >
-                              <Trophy className="w-3 h-3 mr-1" />
-                              {partido.torneoNombre}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {teamData.partidos.map((partido: any) => (
+                  <MatchCard
+                    key={partido.id}
+                    partido={partido}
+                    teamId={teamData.id}
+                    teamLogo={teamData.logoUrl}
+                  />
+                ))}
               </div>
             )}
           </CardContent>

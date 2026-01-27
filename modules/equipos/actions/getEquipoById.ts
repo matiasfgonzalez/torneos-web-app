@@ -22,6 +22,31 @@ export async function getEquipoById(id: string) {
                     team: true,
                   },
                 },
+                goals: {
+                  include: {
+                    teamPlayer: {
+                      include: {
+                        player: true,
+                        tournamentTeam: true,
+                      },
+                    },
+                  },
+                },
+                cards: {
+                  include: {
+                    teamPlayer: {
+                      include: {
+                        player: true,
+                        tournamentTeam: true,
+                      },
+                    },
+                  },
+                },
+                referees: {
+                  include: {
+                    referee: true,
+                  },
+                },
               },
               orderBy: {
                 dateTime: "desc",
@@ -33,6 +58,31 @@ export async function getEquipoById(id: string) {
                 homeTeam: {
                   include: {
                     team: true,
+                  },
+                },
+                goals: {
+                  include: {
+                    teamPlayer: {
+                      include: {
+                        player: true,
+                        tournamentTeam: true,
+                      },
+                    },
+                  },
+                },
+                cards: {
+                  include: {
+                    teamPlayer: {
+                      include: {
+                        player: true,
+                        tournamentTeam: true,
+                      },
+                    },
+                  },
+                },
+                referees: {
+                  include: {
+                    referee: true,
                   },
                 },
               },
