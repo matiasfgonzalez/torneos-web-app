@@ -47,10 +47,7 @@ export function ContactSection() {
                       Email
                     </h4>
                     <p className="text-gray-600 dark:text-gray-400">
-                      contacto@golazo.com
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      soporte@golazo.com
+                      matiasgonzalez.652@gmail.com
                     </p>
                   </div>
                 </div>
@@ -64,7 +61,7 @@ export function ContactSection() {
                       Teléfono
                     </h4>
                     <p className="text-gray-600 dark:text-gray-400">
-                      +1 (555) 123-4567
+                      +54 9 345 4432164
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-500">
                       Lun - Vie: 9:00 AM - 6:00 PM
@@ -81,10 +78,7 @@ export function ContactSection() {
                       Oficina
                     </h4>
                     <p className="text-gray-600 dark:text-gray-400">
-                      123 Sports Avenue
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Ciudad Deportiva, CD 12345
+                      Oro Verde, Entre Rios, Argentina
                     </p>
                   </div>
                 </div>
