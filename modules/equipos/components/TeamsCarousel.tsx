@@ -81,7 +81,7 @@ const TeamsCarousel = (props: PropsTeamsCarousel) => {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {visibleTeams.map((team) => (
-            <Link key={team.id} href={`/equipos/${team.id}`} className="group">
+            <Link key={team.id} href={`/equipos/${team.team.id}`} className="group">
               <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer border-2 hover:border-primary/50">
                 <CardContent className="p-4 text-center">
                   <div className="relative mb-3">
