@@ -12,11 +12,17 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 interface HeaderProps {
   isLogued?: boolean;
+  isLandingPage?: boolean;
 }
 
 export function Header(props: Readonly<HeaderProps>) {
-  const { isLogued } = props;
+  const { isLogued, isLandingPage = false } = props;
   const { isOpen, toggle, close } = useMobileMenu();
+
+  // Filtrar enlaces de ancla cuando no estamos en la landing page
+  const visibleLinks = isLandingPage
+    ? navigationLinks
+    : navigationLinks.filter((link) => !link.href.startsWith("#"));
 
   return (
     <header className="sticky top-0 z-50">
@@ -44,7 +50,7 @@ export function Header(props: Readonly<HeaderProps>) {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {navigationLinks.map((link) => (
+              {visibleLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
@@ -127,7 +133,7 @@ export function Header(props: Readonly<HeaderProps>) {
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
-            {navigationLinks.map((link) => (
+            {visibleLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}

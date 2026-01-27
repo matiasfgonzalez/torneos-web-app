@@ -1,16 +1,28 @@
-import ResponsiveHeader from "@/components/responsive-header";
+import { Header } from "@/components/layout/header";
 import { Mic } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
+import { checkUser } from "@/lib/checkUser";
+import { currentUser } from "@clerk/nextjs/server";
 
-export default function AdminLayout({
+export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await checkUser();
+  let isLogued: boolean = false;
+
+  if (user) {
+    const userLogued = await currentUser();
+    if (userLogued) {
+      isLogued = true;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <ResponsiveHeader />
+      <Header isLogued={isLogued} />
       {children}
       {/* Footer */}
       <footer className="bg-background dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-12">
