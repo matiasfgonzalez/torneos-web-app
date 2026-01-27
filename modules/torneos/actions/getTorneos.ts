@@ -7,13 +7,17 @@ import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 export async function getTorneos(): Promise<ITorneo[]> {
   try {
     const torneos = await db.tournament.findMany({
+      where: {
+        enabled: true, // Solo torneos habilitados
+      },
       include: {
-        user: true, // Opcional: incluye los datos del usuario creador
+        user: true,
+        tournamentTeams: true,
+        matches: true, // Incluir partidos para contar programados
       },
       orderBy: {
         createdAt: "desc",
       },
-      take: 3, // 👈 Limita a las 3 noticias más recientes
     });
     return torneos as ITorneo[];
   } catch (error) {

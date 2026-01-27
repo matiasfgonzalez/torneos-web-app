@@ -24,7 +24,11 @@ export default async function TorneosPage() {
     (acc, t) => acc + (t.tournamentTeams?.length || 0),
     0,
   );
-  const proximosPartidos = torneos.filter((t) => t.nextMatch).length;
+  // Contar partidos programados
+  const proximosPartidos = torneos.reduce(
+    (acc, t) => acc + (t.matches?.filter((m) => m.status === "PROGRAMADO")?.length || 0),
+    0,
+  );
 
   return (
     <div className="min-h-screen premium-gradient-bg">

@@ -19,9 +19,9 @@ export interface ITournamentTeam {
   createdAt: string | Date;
   updatedAt: string | Date;
 
-  // Relaciones
-  team: Team;
-  tournament: Tournament;
+  // Relaciones (opcionales porque no siempre se incluyen en queries)
+  team?: Team;
+  tournament?: Tournament;
   teamPlayer?: IPlayerTeam[];
 
   // Relaciones inversas
