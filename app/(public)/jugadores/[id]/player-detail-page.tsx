@@ -172,12 +172,12 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-200 selection:bg-amber-500/30">
       {/* Hero Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-gradient-to-r from-purple-500/5 via-transparent to-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent rounded-full blur-3xl mix-blend-multiply dark:mix-blend-normal" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-3xl mix-blend-multiply dark:mix-blend-normal" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-gradient-to-r from-purple-500/5 via-transparent to-blue-500/5 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-normal" />
 
         {/* Líneas decorativas Premium Golazo */}
         <div className="absolute top-20 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
@@ -195,7 +195,7 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
         </Link>
 
         {/* Main Hero Card */}
-        <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/50 mb-8">
+        <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 mb-8">
           {/* Gold accent lines */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400" />
           <div className="absolute top-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-300/50 to-transparent" />
@@ -203,11 +203,11 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
           <div className="flex flex-col lg:flex-row">
             {/* Left Section - Player Image */}
             <div className="lg:w-2/5 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-emerald-500/10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-emerald-500/5 dark:from-amber-500/10 dark:to-emerald-500/10" />
 
               {/* Player Number Watermark */}
               {player.number && (
-                <div className="absolute top-4 left-4 text-[120px] lg:text-[200px] font-black text-white/5 leading-none select-none">
+                <div className="absolute top-4 left-4 text-[120px] lg:text-[200px] font-black text-slate-900/5 dark:text-white/5 leading-none select-none">
                   {player.number}
                 </div>
               )}
@@ -215,10 +215,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
               <div className="relative p-8 lg:p-12 flex items-center justify-center min-h-[400px] lg:min-h-[500px]">
                 <div className="relative group">
                   {/* Glow Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 to-orange-500/30 rounded-2xl blur-2xl scale-110 group-hover:scale-125 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-400/30 dark:to-orange-500/30 rounded-2xl blur-2xl scale-110 group-hover:scale-125 transition-transform duration-500" />
 
                   {/* Image Container */}
-                  <div className="relative w-64 h-80 lg:w-80 lg:h-96 rounded-2xl overflow-hidden border-2 border-amber-400/30 shadow-2xl shadow-black/50">
+                  <div className="relative w-64 h-80 lg:w-80 lg:h-96 rounded-2xl overflow-hidden border-2 border-amber-400/30 shadow-2xl shadow-slate-400/20 dark:shadow-black/50">
                     {player.imageUrl ? (
                       <img
                         src={player.imageUrl}
@@ -232,13 +232,13 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                         className="absolute inset-0 w-full h-full object-cover object-center"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
-                        <User className="w-24 h-24 text-slate-600" />
+                      <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                        <User className="w-24 h-24 text-slate-400 dark:text-slate-600" />
                       </div>
                     )}
 
                     {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent dark:from-black/40" />
                   </div>
 
                   {/* Decorative elements */}
@@ -254,7 +254,7 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
               <div className="mb-8">
                 <div className="flex flex-wrap items-center gap-3 mb-3">
                   {player.number && (
-                    <span className="text-5xl lg:text-6xl font-black text-amber-400/30">
+                    <span className="text-5xl lg:text-6xl font-black text-slate-200 dark:text-amber-400/30">
                       #{player.number}
                     </span>
                   )}
@@ -265,19 +265,19 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                   </Badge>
                 </div>
 
-                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent tracking-tight mb-3">
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-amber-100 dark:to-amber-300 bg-clip-text text-transparent tracking-tight mb-3">
                   {player.name}
                 </h1>
 
                 {player.position && (
-                  <div className="flex items-center gap-2 text-xl text-amber-400 font-semibold">
+                  <div className="flex items-center gap-2 text-xl text-amber-600 dark:text-amber-400 font-semibold">
                     <Shirt className="w-5 h-5" />
                     <span>{getPositionLabel(player.position)}</span>
                   </div>
                 )}
 
                 {player.description && (
-                  <p className="mt-4 text-gray-400 text-lg leading-relaxed max-w-2xl">
+                  <p className="mt-4 text-slate-600 dark:text-gray-400 text-lg leading-relaxed max-w-2xl">
                     {player.description}
                   </p>
                 )}
@@ -290,9 +290,9 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                         href={player.instagramUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-3 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl border border-pink-500/30 hover:border-pink-400 hover:scale-110 transition-all duration-300"
+                        className="p-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 dark:from-pink-500/20 dark:to-purple-500/20 rounded-xl border border-pink-500/30 hover:border-pink-400 hover:scale-110 transition-all duration-300"
                       >
-                        <InstagramIcon className="w-5 h-5 text-pink-400" />
+                        <InstagramIcon className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                       </a>
                     )}
                     {player.twitterUrl && (
@@ -300,9 +300,9 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                         href={player.twitterUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-3 bg-gradient-to-br from-slate-500/20 to-gray-500/20 rounded-xl border border-slate-500/30 hover:border-slate-400 hover:scale-110 transition-all duration-300"
+                        className="p-3 bg-gradient-to-br from-slate-500/10 to-gray-500/10 dark:from-slate-500/20 dark:to-gray-500/20 rounded-xl border border-slate-500/30 hover:border-slate-400 hover:scale-110 transition-all duration-300"
                       >
-                        <XTwitterIcon className="w-5 h-5 text-slate-300" />
+                        <XTwitterIcon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                       </a>
                     )}
                   </div>
@@ -313,17 +313,17 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {/* Fecha de Nacimiento */}
                 {player.birthDate && (
-                  <div className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-4 border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
+                  <div className="group bg-slate-50 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 hover:border-amber-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:shadow-amber-500/10">
                     <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-4 h-4 text-amber-400" />
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <Calendar className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                      <span className="text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider">
                         Fecha de Nacimiento
                       </span>
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
                       {formatDateOk(player.birthDate, "dd 'de' MMMM yyyy")}
                     </div>
-                    <div className="text-sm text-amber-400 font-medium">
+                    <div className="text-sm text-amber-600 dark:text-amber-400 font-medium">
                       {calcularEdad(player.birthDate)} años
                     </div>
                   </div>
@@ -331,14 +331,14 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
                 {/* Lugar de Nacimiento */}
                 {player.birthPlace && (
-                  <div className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-4 border border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                  <div className="group bg-slate-50 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/10">
                     <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <MapPin className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                      <span className="text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider">
                         Lugar de Nacimiento
                       </span>
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
                       {player.birthPlace}
                     </div>
                   </div>
@@ -346,14 +346,14 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
                 {/* Nacionalidad */}
                 {player.nationality && (
-                  <div className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-4 border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
+                  <div className="group bg-slate-50 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-500/10">
                     <div className="flex items-center gap-2 mb-2">
-                      <Flag className="w-4 h-4 text-blue-400" />
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <Flag className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                      <span className="text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider">
                         Nacionalidad
                       </span>
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
                       {player.nationality}
                     </div>
                   </div>
@@ -361,17 +361,17 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
                 {/* Altura */}
                 {player.height && (
-                  <div className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-4 border border-slate-700/50 hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
+                  <div className="group bg-slate-50 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-purple-500/10">
                     <div className="flex items-center gap-2 mb-2">
-                      <Ruler className="w-4 h-4 text-purple-400" />
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <Ruler className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                      <span className="text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider">
                         Altura
                       </span>
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
                       {player.height} cm
                     </div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-slate-500 dark:text-gray-400">
                       {(player.height / 100).toFixed(2)} m
                     </div>
                   </div>
@@ -379,14 +379,14 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
                 {/* Peso */}
                 {player.weight && (
-                  <div className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-4 border border-slate-700/50 hover:border-pink-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/10">
+                  <div className="group bg-slate-50 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 hover:border-pink-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/10 dark:hover:shadow-pink-500/10">
                     <div className="flex items-center gap-2 mb-2">
-                      <Weight className="w-4 h-4 text-pink-400" />
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <Weight className="w-4 h-4 text-pink-500 dark:text-pink-400" />
+                      <span className="text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider">
                         Peso
                       </span>
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
                       {player.weight} kg
                     </div>
                   </div>
@@ -394,14 +394,14 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
                 {/* Pie Dominante */}
                 {player.dominantFoot && (
-                  <div className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-4 border border-slate-700/50 hover:border-teal-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-teal-500/10">
+                  <div className="group bg-slate-50 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 hover:border-teal-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-teal-500/10 dark:hover:shadow-teal-500/10">
                     <div className="flex items-center gap-2 mb-2">
-                      <Footprints className="w-4 h-4 text-teal-400" />
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <Footprints className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+                      <span className="text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider">
                         Pie Dominante
                       </span>
                     </div>
-                    <div className="text-lg font-bold text-white">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
                       {getFootLabel(player.dominantFoot)}
                     </div>
                   </div>
@@ -414,49 +414,49 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
         {/* Statistics Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {/* Goles */}
-          <Card className="relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-slate-900/95 to-slate-900/95 backdrop-blur-xl border border-amber-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300">
+          <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-amber-200 dark:border-amber-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300 shadow-xl shadow-amber-500/5 dark:shadow-none">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Goal className="w-8 h-8 text-amber-400 mx-auto mb-3" />
-            <div className="text-4xl font-black text-amber-400 mb-1">
+            <Goal className="w-8 h-8 text-amber-500 dark:text-amber-400 mx-auto mb-3" />
+            <div className="text-4xl font-black text-amber-600 dark:text-amber-400 mb-1">
               {totalGoals}
             </div>
-            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="text-sm font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">
               Goles
             </div>
           </Card>
 
           {/* Equipos */}
-          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-500/10 via-slate-900/95 to-slate-900/95 backdrop-blur-xl border border-emerald-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300">
+          <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-200 dark:border-emerald-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300 shadow-xl shadow-emerald-500/5 dark:shadow-none">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Shield className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
-            <div className="text-4xl font-black text-emerald-400 mb-1">
+            <Shield className="w-8 h-8 text-emerald-500 dark:text-emerald-400 mx-auto mb-3" />
+            <div className="text-4xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
               {teamsPlayed}
             </div>
-            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="text-sm font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">
               Equipos
             </div>
           </Card>
 
           {/* Tarjetas Amarillas */}
-          <Card className="relative overflow-hidden bg-gradient-to-br from-yellow-500/10 via-slate-900/95 to-slate-900/95 backdrop-blur-xl border border-yellow-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300">
+          <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-yellow-200 dark:border-yellow-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300 shadow-xl shadow-yellow-500/5 dark:shadow-none">
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="w-8 h-10 bg-yellow-400 rounded-sm mx-auto mb-3 shadow-lg shadow-yellow-400/30" />
-            <div className="text-4xl font-black text-yellow-400 mb-1">
+            <div className="text-4xl font-black text-yellow-600 dark:text-yellow-400 mb-1">
               {yellowCards}
             </div>
-            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="text-sm font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">
               T. Amarillas
             </div>
           </Card>
 
           {/* Tarjetas Rojas */}
-          <Card className="relative overflow-hidden bg-gradient-to-br from-red-500/10 via-slate-900/95 to-slate-900/95 backdrop-blur-xl border border-red-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300">
+          <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-red-200 dark:border-red-500/30 p-6 text-center group hover:scale-105 transition-transform duration-300 shadow-xl shadow-red-500/5 dark:shadow-none">
             <div className="absolute inset-0 bg-gradient-to-br from-red-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="w-8 h-10 bg-red-500 rounded-sm mx-auto mb-3 shadow-lg shadow-red-500/30" />
-            <div className="text-4xl font-black text-red-400 mb-1">
+            <div className="text-4xl font-black text-red-600 dark:text-red-400 mb-1">
               {redCards}
             </div>
-            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="text-sm font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">
               T. Rojas
             </div>
           </Card>
@@ -466,10 +466,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Active Teams */}
           {activeTeams.length > 0 && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-emerald-500/30 p-6">
+            <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-200 dark:border-emerald-500/30 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-400" />
 
-              <h3 className="flex items-center gap-3 text-xl font-bold text-emerald-400 mb-6">
+              <h3 className="flex items-center gap-3 text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-6">
                 <Shield className="w-6 h-6" />
                 Equipos Actuales
               </h3>
@@ -478,10 +478,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                 {activeTeams.map((tp) => (
                   <div
                     key={tp.id}
-                    className="bg-gradient-to-r from-emerald-500/10 to-slate-800/50 rounded-xl p-4 border border-emerald-500/20 hover:border-emerald-400/40 transition-all"
+                    className="bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-500/10 dark:to-slate-800/50 rounded-xl p-4 border border-emerald-100 dark:border-emerald-500/20 hover:border-emerald-300 dark:hover:border-emerald-400/40 transition-all shadow-sm"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-700">
+                      <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm">
                         {tp.tournamentTeam?.team?.logoUrl ? (
                           <img
                             src={tp.tournamentTeam.team.logoUrl}
@@ -489,32 +489,32 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                             className="w-12 h-12 object-contain"
                           />
                         ) : (
-                          <Shield className="w-6 h-6 text-slate-600" />
+                          <Shield className="w-6 h-6 text-slate-400 dark:text-slate-600" />
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className="font-bold text-white text-lg">
+                        <div className="font-bold text-slate-900 dark:text-white text-lg">
                           {tp.tournamentTeam?.team?.name || "Equipo"}
                         </div>
                         {tp.tournamentTeam?.tournament && (
-                          <div className="text-sm text-gray-400">
+                          <div className="text-sm text-slate-500 dark:text-gray-400">
                             <Trophy className="w-3 h-3 inline mr-1" />
                             {tp.tournamentTeam.tournament.name}
                           </div>
                         )}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-slate-400 dark:text-gray-500 mt-1">
                           <Clock className="w-3 h-3 inline mr-1" />
                           Desde {formatDateOk(tp.joinedAt, "MMMM yyyy")}
                         </div>
                       </div>
                       <div className="text-right">
                         {tp.number && (
-                          <div className="text-2xl font-black text-emerald-400">
+                          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                             #{tp.number}
                           </div>
                         )}
                         {tp.position && (
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-slate-400 dark:text-gray-400">
                             {getPositionLabel(tp.position)}
                           </div>
                         )}
@@ -528,21 +528,21 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
           {/* Biography */}
           {player.bio && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-purple-500/30 p-6">
+            <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-purple-200 dark:border-purple-500/30 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 to-pink-400" />
 
-              <h3 className="flex items-center gap-3 text-xl font-bold text-purple-400 mb-6">
+              <h3 className="flex items-center gap-3 text-xl font-bold text-purple-600 dark:text-purple-400 mb-6">
                 <User className="w-6 h-6" />
                 Biografía
               </h3>
 
-              <p className="text-gray-300 leading-relaxed whitespace-pre-line">
+              <p className="text-slate-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                 {player.bio}
               </p>
 
               {player.joinedAt && (
-                <div className="mt-6 pt-4 border-t border-slate-700">
-                  <div className="text-sm text-gray-400">
+                <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="text-sm text-slate-500 dark:text-gray-400">
                     <Clock className="w-4 h-4 inline mr-2" />
                     Se unió el{" "}
                     {formatDateOk(player.joinedAt, "dd 'de' MMMM 'de' yyyy")}
@@ -554,10 +554,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
           {/* Former Teams */}
           {formerTeams.length > 0 && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-600/30 p-6">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-500 to-slate-400" />
+            <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-600/30 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-slate-300 dark:from-slate-500 dark:to-slate-400" />
 
-              <h3 className="flex items-center gap-3 text-xl font-bold text-slate-400 mb-6">
+              <h3 className="flex items-center gap-3 text-xl font-bold text-slate-600 dark:text-slate-400 mb-6">
                 <Clock className="w-6 h-6" />
                 Historial de Equipos
               </h3>
@@ -566,10 +566,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                 {formerTeams.map((tp) => (
                   <div
                     key={tp.id}
-                    className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 hover:border-slate-600 transition-all"
+                    className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700/50 hover:border-slate-400 dark:hover:border-slate-600 transition-all shadow-sm"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-700">
+                      <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700">
                         {tp.tournamentTeam?.team?.logoUrl ? (
                           <img
                             src={tp.tournamentTeam.team.logoUrl}
@@ -577,14 +577,14 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                             className="w-8 h-8 object-contain"
                           />
                         ) : (
-                          <Shield className="w-4 h-4 text-slate-600" />
+                          <Shield className="w-4 h-4 text-slate-400 dark:text-slate-600" />
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-white">
+                        <div className="font-semibold text-slate-900 dark:text-white">
                           {tp.tournamentTeam?.team?.name || "Equipo"}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-slate-500 dark:text-gray-500">
                           {formatDateOk(tp.joinedAt, "MMM yyyy")} -{" "}
                           {tp.leftAt
                             ? formatDateOk(tp.leftAt, "MMM yyyy")
@@ -592,7 +592,7 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                         </div>
                       </div>
                       {tp.number && (
-                        <div className="text-lg font-bold text-slate-500">
+                        <div className="text-lg font-bold text-slate-400 dark:text-slate-500">
                           #{tp.number}
                         </div>
                       )}
@@ -608,10 +608,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Goals */}
           {recentGoals.length > 0 && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-amber-500/30 p-6">
+            <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-amber-200 dark:border-amber-500/30 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-400" />
 
-              <h3 className="flex items-center gap-3 text-xl font-bold text-amber-400 mb-6">
+              <h3 className="flex items-center gap-3 text-xl font-bold text-amber-600 dark:text-amber-400 mb-6">
                 <Goal className="w-6 h-6" />
                 Últimos Goles
               </h3>
@@ -620,19 +620,19 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                 {recentGoals.map((goal) => (
                   <div
                     key={goal.id}
-                    className="bg-gradient-to-r from-amber-500/10 to-slate-800/50 rounded-lg p-4 border border-amber-500/20"
+                    className="bg-gradient-to-r from-amber-50 to-white dark:from-amber-500/10 dark:to-slate-800/50 rounded-lg p-4 border border-amber-100 dark:border-amber-500/20 shadow-sm"
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Goal className="w-4 h-4 text-amber-400" />
-                          <span className="font-semibold text-white">
+                          <Goal className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                          <span className="font-semibold text-slate-800 dark:text-white">
                             {goal.isPenalty && "⚽ Penal - "}
                             {goal.isOwnGoal && "🔴 Autogol - "}
                             {!goal.isPenalty && !goal.isOwnGoal && "⚽ Gol"}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-400 mt-1">
+                        <div className="text-sm text-slate-500 dark:text-gray-400 mt-1">
                           {goal.match?.homeTeam?.team?.name || "Local"} vs{" "}
                           {goal.match?.awayTeam?.team?.name || "Visitante"}
                         </div>
@@ -641,7 +641,7 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                         {goal.minute && (
                           <Badge
                             variant="outline"
-                            className="border-amber-500/50 text-amber-400"
+                            className="border-amber-500/50 text-amber-600 dark:text-amber-400 font-bold"
                           >
                             {goal.minute}&apos;
                           </Badge>
@@ -656,10 +656,10 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
 
           {/* Recent Cards */}
           {recentCards.length > 0 && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-600/30 p-6">
+            <Card className="relative overflow-hidden bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-600/30 p-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400" />
 
-              <h3 className="flex items-center gap-3 text-xl font-bold text-gray-300 mb-6">
+              <h3 className="flex items-center gap-3 text-xl font-bold text-slate-700 dark:text-gray-300 mb-6">
                 <AlertTriangle className="w-6 h-6" />
                 Últimas Tarjetas
               </h3>
@@ -668,16 +668,16 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                 {recentCards.map((card) => (
                   <div
                     key={card.id}
-                    className={`rounded-lg p-4 border ${
+                    className={`rounded-lg p-4 border shadow-sm ${
                       card.type === "ROJA"
-                        ? "bg-gradient-to-r from-red-500/10 to-slate-800/50 border-red-500/30"
-                        : "bg-gradient-to-r from-yellow-500/10 to-slate-800/50 border-yellow-500/30"
+                        ? "bg-gradient-to-r from-red-50 to-white dark:from-red-500/10 dark:to-slate-800/50 border-red-200 dark:border-red-500/30"
+                        : "bg-gradient-to-r from-yellow-50 to-white dark:from-yellow-500/10 dark:to-slate-800/50 border-yellow-200 dark:border-yellow-500/30"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-6 h-8 rounded-sm ${
+                          className={`w-6 h-8 rounded-sm shadow-md ${
                             card.type === "ROJA"
                               ? "bg-red-500"
                               : "bg-yellow-400"
@@ -687,14 +687,14 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                           <span
                             className={`font-semibold ${
                               card.type === "ROJA"
-                                ? "text-red-400"
-                                : "text-yellow-400"
+                                ? "text-red-600 dark:text-red-400"
+                                : "text-yellow-600 dark:text-yellow-400"
                             }`}
                           >
                             Tarjeta {getCardTypeLabel(card.type)}
                           </span>
                           {card.reason && (
-                            <div className="text-sm text-gray-400">
+                            <div className="text-sm text-slate-500 dark:text-gray-400">
                               {card.reason}
                             </div>
                           )}
@@ -705,8 +705,8 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                           variant="outline"
                           className={
                             card.type === "ROJA"
-                              ? "border-red-500/50 text-red-400"
-                              : "border-yellow-500/50 text-yellow-400"
+                              ? "border-red-500/50 text-red-600 dark:text-red-400 font-bold"
+                              : "border-yellow-500/50 text-yellow-600 dark:text-yellow-400 font-bold"
                           }
                         >
                           {card.minute}&apos;
