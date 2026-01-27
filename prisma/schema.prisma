@@ -260,7 +260,9 @@ model Player {
   position     PlayerPosition?
   number       Int?
   imageUrl     String?
+  imagePublicId String?   // Public ID para foto cuerpo entero
   imageUrlFace     String?
+  imageFacePublicId String? // Public ID para foto rostro
   description  String?
   bio          String?
   status       PlayerStatus @default(ACTIVO)

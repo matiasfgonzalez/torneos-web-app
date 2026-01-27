@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -19,16 +23,36 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@modules/*": ["./modules/*"],
-      "@modules/torneos/*": ["./modules/torneos/*"],
-      "@modules/equipos/*": ["./modules/equipos/*"],
-      "@modules/jugadores/*": ["./modules/jugadores/*"],
-      "@modules/partidos/*": ["./modules/partidos/*"],
-      "@modules/noticias/*": ["./modules/noticias/*"],
-      "@modules/arbitros/*": ["./modules/arbitros/*"],
-      "@modules/usuarios/*": ["./modules/usuarios/*"],
-      "@modules/shared/*": ["./modules/shared/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@modules/*": [
+        "./modules/*"
+      ],
+      "@modules/torneos/*": [
+        "./modules/torneos/*"
+      ],
+      "@modules/equipos/*": [
+        "./modules/equipos/*"
+      ],
+      "@modules/jugadores/*": [
+        "./modules/jugadores/*"
+      ],
+      "@modules/partidos/*": [
+        "./modules/partidos/*"
+      ],
+      "@modules/noticias/*": [
+        "./modules/noticias/*"
+      ],
+      "@modules/arbitros/*": [
+        "./modules/arbitros/*"
+      ],
+      "@modules/usuarios/*": [
+        "./modules/usuarios/*"
+      ],
+      "@modules/shared/*": [
+        "./modules/shared/*"
+      ]
     }
   },
   "include": [
@@ -36,7 +60,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "prisma/seeds/phase-seed.js"
+    "prisma/seeds/phase-seed.js",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

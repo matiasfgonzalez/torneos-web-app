@@ -26,7 +26,9 @@ export interface IPlayer {
   position: string;
   number: number;
   imageUrl: string;
+  imagePublicId?: string;
   imageUrlFace: string;
+  imageFacePublicId?: string;
   description: string;
   bio: string;
   status: string;

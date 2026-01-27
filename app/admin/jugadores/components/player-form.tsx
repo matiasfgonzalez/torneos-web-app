@@ -43,6 +43,7 @@ import {
   Loader2,
   Activity,
 } from "lucide-react";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -75,7 +76,9 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
     position: isEditMode ? player?.position || "" : "",
     number: isEditMode ? player?.number || "" : "",
     imageUrl: isEditMode ? player?.imageUrl || "" : "",
+    imagePublicId: isEditMode ? player?.imagePublicId || "" : "",
     imageUrlFace: isEditMode ? player?.imageUrlFace || "" : "",
+    imageFacePublicId: isEditMode ? player?.imageFacePublicId || "" : "",
     description: isEditMode ? player?.description || "" : "",
     bio: isEditMode ? player?.bio || "" : "",
     status: isEditMode ? player?.status || "ACTIVO" : "ACTIVO",
@@ -84,21 +87,8 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
     twitterUrl: isEditMode ? player?.twitterUrl || "" : "",
   });
 
-  const [imagePreview, setImagePreview] = useState(player?.imageUrl || "");
-  const [imageFacePreview, setImageFacePreview] = useState(
-    player?.imageUrlFace || "",
-  );
-
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-
-    if (field === "imageUrl") {
-      setImagePreview(value);
-    }
-
-    if (field === "imageUrlFace") {
-      setImageFacePreview(value);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -517,56 +507,38 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <FormLabel icon={ImageIcon}>Foto cuerpo entero</FormLabel>
-                  <Input
-                    id="imageUrl"
+                  <CloudinaryUpload
+                    folder="jugadores/cuerpo"
                     value={formData.imageUrl}
-                    onChange={(e) =>
-                      handleInputChange("imageUrl", e.target.value)
-                    }
-                    placeholder="https://ejemplo.com/foto-jugador.jpg"
+                    publicId={formData.imagePublicId}
+                    onChange={(url, publicId) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        imageUrl: url || "",
+                        imagePublicId: publicId || "",
+                      }));
+                    }}
                     disabled={isLoading}
-                    className={inputClassName}
+                    placeholder="Arrastra foto de cuerpo entero"
                   />
-                  {imagePreview && (
-                    <div className="mt-3 flex items-center gap-3">
-                      <img
-                        src={imagePreview || "/placeholder.svg"}
-                        alt="Vista previa"
-                        className="w-16 h-16 rounded-xl object-cover border-2 border-gray-200 dark:border-gray-600 shadow-lg"
-                        onError={() => setImagePreview("")}
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Vista previa
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 <div>
                   <FormLabel icon={ImageIcon}>Foto de rostro</FormLabel>
-                  <Input
-                    id="imageUrlFace"
+                  <CloudinaryUpload
+                    folder="jugadores/rostro"
                     value={formData.imageUrlFace}
-                    onChange={(e) =>
-                      handleInputChange("imageUrlFace", e.target.value)
-                    }
-                    placeholder="https://ejemplo.com/foto-rostro.jpg"
+                    publicId={formData.imageFacePublicId}
+                    onChange={(url, publicId) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        imageUrlFace: url || "",
+                        imageFacePublicId: publicId || "",
+                      }));
+                    }}
                     disabled={isLoading}
-                    className={inputClassName}
+                    placeholder="Arrastra foto de rostro"
                   />
-                  {imageFacePreview && (
-                    <div className="mt-3 flex items-center gap-3">
-                      <img
-                        src={imageFacePreview || "/placeholder.svg"}
-                        alt="Vista previa"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 shadow-lg"
-                        onError={() => setImageFacePreview("")}
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Vista previa
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
 
