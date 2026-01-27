@@ -8,11 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, Plus, Search, Clock, MapPin, Target } from "lucide-react";
+import { Calendar, Plus, Search, Clock, MapPin, Target, Filter } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import DialogAddEditMatch from "../DialogAddEditMatch";
 import DialogMatchDetails from "../DialogMatchDetails";
-import { IPartidos, MatchStatus } from "@modules/partidos/types";
+import { IPartidos, MatchStatus, MATCH_STATUS } from "@modules/partidos/types";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -23,7 +23,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatDateOk } from "@/lib/formatDate";
+import { formatDate } from "@/lib/formatDate";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TabsTournamentProps {
   tournamentData: ITorneo;
@@ -33,17 +40,21 @@ const TabsMatches = (props: TabsTournamentProps) => {
   const { tournamentData } = props;
   const [matches, setMatches] = useState<IPartidos[] | []>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  const filteredMatches = matches.filter(
-    (match) =>
-      match.homeTeam.team.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      match.awayTeam.team.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      match.tournament.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredMatches = matches
+    .filter(
+      (match) =>
+        (match.homeTeam.team.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        match.awayTeam.team.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        match.tournament.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (statusFilter === "ALL" || match.status === statusFilter)
+    )
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
   const getStatusBadge = (status: MatchStatus) => {
     switch (status) {
@@ -137,8 +148,8 @@ const TabsMatches = (props: TabsTournamentProps) => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="relative flex-1 max-w-md">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+                <div className="relative flex-1 w-full sm:max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar partidos..."
@@ -146,6 +157,22 @@ const TabsMatches = (props: TabsTournamentProps) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
                   />
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
+                      <SelectValue placeholder="Estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Todos los estados</SelectItem>
+                      {MATCH_STATUS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -219,10 +246,10 @@ const TabsMatches = (props: TabsTournamentProps) => {
                           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                             <Calendar className="h-4 w-4 text-[#ad45ff]" />
                             <span>
-                              {formatDateOk(match.dateTime, "dd MMM")}
+                              {formatDate(match.dateTime, "dd MMM yyyy")}
                             </span>
                             <Clock className="h-4 w-4 text-[#c77dff]" />
-                            <span>{formatDateOk(match.dateTime, "HH:mm")}</span>
+                            <span>{formatDate(match.dateTime, "HH:mm")}</span>
                           </div>
                         </TableCell>
                         <TableCell className="hidden xl:table-cell">
