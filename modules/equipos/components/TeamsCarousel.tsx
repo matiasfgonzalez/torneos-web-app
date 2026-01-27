@@ -80,15 +80,15 @@ const TeamsCarousel = (props: PropsTeamsCarousel) => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {visibleTeams.map((team) => (
-            <Link key={team.id} href={`/equipos/${team.team.id}`} className="group">
+          {visibleTeams.filter((t) => t.team).map((team) => (
+            <Link key={team.id} href={`/equipos/${team.team?.id}`} className="group">
               <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer border-2 hover:border-primary/50">
                 <CardContent className="p-4 text-center">
                   <div className="relative mb-3">
                     <div className="w-16 h-16 mx-auto mb-2 relative">
                       <img
-                        src={team.team.logoUrl || "/placeholder.svg"}
-                        alt={`Escudo de ${team.team.name}`}
+                        src={team.team?.logoUrl || "/placeholder.svg"}
+                        alt={`Escudo de ${team.team?.name}`}
                         width={64}
                         height={64}
                         className="object-cover border-border group-hover:border-primary/50 transition-colors"
@@ -99,24 +99,24 @@ const TeamsCarousel = (props: PropsTeamsCarousel) => {
                       <div
                         className="w-3 h-3 rounded-full border border-border"
                         style={{
-                          backgroundColor: team.team.homeColor,
+                          backgroundColor: team.team?.homeColor,
                         }}
                         title="Color local"
                       />
                       <div
                         className="w-3 h-3 rounded-full border border-border"
                         style={{
-                          backgroundColor: team.team.awayColor,
+                          backgroundColor: team.team?.awayColor,
                         }}
                         title="Color visitante"
                       />
                     </div>
                   </div>
                   <h3 className="font-semibold text-sm group-hover:text-primary transition-colors mb-1">
-                    {team.team.name}
+                    {team.team?.name}
                   </h3>
                   <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                    {team.team.homeCity}
+                    {team.team?.homeCity}
                   </p>
                 </CardContent>
               </Card>
