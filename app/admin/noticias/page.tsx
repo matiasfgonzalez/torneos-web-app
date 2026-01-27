@@ -56,6 +56,7 @@ import { formatDate } from "@/lib/formatDate";
 import { LoadingPage } from "@/components/loading-spinner";
 import { INoticia } from "@modules/noticias/types";
 import { toast } from "sonner";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 
 export default function AdminNoticias() {
   const [noticias, setNoticias] = useState<INoticia[]>([]);
@@ -67,6 +68,7 @@ export default function AdminNoticias() {
     summary: "",
     content: "",
     coverImageUrl: "",
+    coverImagePublicId: "",
     published: false,
   });
 
@@ -130,6 +132,7 @@ export default function AdminNoticias() {
         summary: "",
         content: "",
         coverImageUrl: "",
+        coverImagePublicId: "",
         published: false,
       });
     } catch (err) {
@@ -318,36 +321,19 @@ export default function AdminNoticias() {
                       Imagen de Portada
                     </Label>
                   </div>
-                  <div className="space-y-3">
-                    <Input
-                      id="coverImage"
-                      placeholder="https://ejemplo.com/imagen-noticia.jpg"
-                      value={newArticle.coverImageUrl}
-                      onChange={(e) =>
-                        setNewArticle({
-                          ...newArticle,
-                          coverImageUrl: e.target.value,
-                        })
-                      }
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                    />
-                    {newArticle.coverImageUrl && (
-                      <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-lg">
-                        <img
-                          src={newArticle.coverImageUrl}
-                          alt="Vista previa"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black/10 dark:bg-black/20" />
-                        <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
-                          Vista previa
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <CloudinaryUpload
+                    folder="noticias/covers"
+                    value={newArticle.coverImageUrl || null}
+                    publicId={newArticle.coverImagePublicId || null}
+                    onChange={(url, publicId) =>
+                      setNewArticle({
+                        ...newArticle,
+                        coverImageUrl: url || "",
+                        coverImagePublicId: publicId || "",
+                      })
+                    }
+                    placeholder="Arrastra la imagen o haz clic para seleccionar"
+                  />
                 </div>
 
                 {/* Estado de publicación */}

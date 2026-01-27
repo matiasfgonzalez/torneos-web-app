@@ -59,6 +59,7 @@ model News {
   summary       String?   // Resumen corto para vistas previas
   content       String
   coverImageUrl String?   // Imagen destacada (opcional)
+  coverImagePublicId String? // Public ID de Cloudinary para eliminar la imagen
   published     Boolean   @default(false) // Para controlar si ya está visible o en borrador
   publishedAt   DateTime  @default(now()) // Fecha de publicación  
   userId        String
@@ -129,6 +130,7 @@ model Tournament {
   category    TournamentCategory
   locality    String
   logoUrl     String?    // URL del escudo/logo
+  logoPublicId String?   // Public ID de Cloudinary para eliminar la imagen
   liga        String?    // Nombre de la liga o asociación organizadora
   status      TournamentStatus @default(PENDIENTE)
   format      TournamentFormat @default(LIGA)

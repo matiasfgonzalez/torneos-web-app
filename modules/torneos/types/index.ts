@@ -19,6 +19,7 @@ export interface ITorneo {
   updatedAt: string | Date;
   user: IUser;
   logoUrl?: string; // URL del logo del torneo
+  logoPublicId?: string; // Public ID de Cloudinary para eliminar la imagen
   format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
   homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
   liga: string; // Liga a la que pertenece el torneo

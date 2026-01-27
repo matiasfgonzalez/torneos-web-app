@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import { Edit, Plus, Loader2 } from "lucide-react";
 import { ITorneo } from "@modules/torneos/types";
 import { toast } from "sonner";
@@ -62,18 +63,8 @@ const tournamentSchema = z
       .max(50, "La localidad no puede superar los 50 caracteres"),
     startDate: z.date(),
     endDate: z.date().optional(),
-    logoUrl: z
-      .string()
-      .refine((val) => {
-        if (!val || val === "") return true;
-        try {
-          new URL(val);
-          return true;
-        } catch {
-          return false;
-        }
-      }, "Debe ser una URL válida")
-      .optional(),
+    logoUrl: z.string().optional().nullable(),
+    logoPublicId: z.string().optional().nullable(),
     liga: z
       .string()
       .max(100, "La liga no puede superar los 100 caracteres")
@@ -218,7 +209,8 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
         isEditMode && tournament?.endDate
           ? new Date(tournament.endDate)
           : undefined,
-      logoUrl: isEditMode ? tournament?.logoUrl || "" : "",
+      logoUrl: isEditMode ? tournament?.logoUrl || null : null,
+      logoPublicId: isEditMode ? tournament?.logoPublicId || null : null,
       liga: isEditMode ? tournament?.liga || "" : "",
       format: isEditMode
         ? tournament?.format || TOURNAMENT_FORMAT_OPTIONS[0].value
@@ -645,7 +637,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               )}
             />
 
-            {/* Campo: URL del Logo */}
+            {/* Campo: Logo del Torneo */}
             <FormField
               control={form.control}
               name="logoUrl"
@@ -654,43 +646,26 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                   <div className="flex items-center space-x-2">
                     <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      URL del Logo
+                      Logo del Torneo
                     </FormLabel>
                   </div>
                   <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://logo.com/escudo.png"
-                      {...field}
+                    <CloudinaryUpload
+                      folder="torneos/logos"
+                      value={field.value}
+                      publicId={form.watch("logoPublicId")}
+                      onChange={(url, publicId) => {
+                        form.setValue("logoUrl", url);
+                        form.setValue("logoPublicId", publicId);
+                      }}
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                      placeholder="Arrastra el logo o haz clic para seleccionar"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {form.getValues("logoUrl") && (
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
-                <img
-                  src={form.getValues("logoUrl") || "/placeholder.svg"}
-                  alt="Vista previa del logo"
-                  className="w-16 h-16 object-cover rounded-xl border-2 border-gray-200 dark:border-gray-600 shadow-lg"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Vista previa del logo
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Asegúrate de que la imagen sea cuadrada para mejor
-                    visualización
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Campo: Próximo partido (opcional) */}
             <FormField

@@ -14,6 +14,7 @@ export interface INoticia {
     summary: string;
     content: string;
     coverImageUrl: string;
+    coverImagePublicId?: string;
     published: boolean;
     publishedAt: string | Date;
     userId: string;
