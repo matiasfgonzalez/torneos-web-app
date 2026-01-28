@@ -2,6 +2,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 type tParams = Promise<{ id: string }>;
 
@@ -16,31 +17,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no registrado en la base de datos" },
-        { status: 404 },
-      );
-    }
-
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para actualizar el equipo" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update teams
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const body = await req.json();

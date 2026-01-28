@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 interface UserFilters {
   search?: string;
@@ -13,6 +14,12 @@ interface UserFilters {
 }
 
 export async function GET(request: NextRequest) {
+  // Validate that only ADMINISTRADOR can access user management
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
 
@@ -134,6 +141,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Validate that only ADMINISTRADOR can create users
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await request.json();
 

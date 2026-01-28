@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 type tParams = Promise<{ id: string }>;
 
@@ -55,20 +56,10 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // Validar que el user sea admin
-    const userLogued = await checkUser();
-    if (!userLogued) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    if (userLogued.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para actualizar una noticia" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR or EDITOR can update news
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const updatedNoticia = await db.news.update({
@@ -110,20 +101,10 @@ export async function DELETE(
       );
     }
 
-    // Validar que el user sea admin
-    const userLogued = await checkUser();
-    if (!userLogued) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    if (userLogued.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para eliminar una noticia" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR or EDITOR can delete news
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const deletedNoticia = await db.news.delete({

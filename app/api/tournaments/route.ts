@@ -1,41 +1,18 @@
 // app/api/tournaments/route.ts
 import { Prisma, TournamentCategory } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 export async function POST(req: Request) {
+  // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create tournaments
+  const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await req.json();
-
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    // Check if user exists
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 },
-      );
-    }
-
-    // Validar que el user sea admin
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para crear un torneo" },
-        { status: 403 },
-      );
-    }
 
     const newTournament = await db.tournament.create({
       data: {
@@ -51,7 +28,7 @@ export async function POST(req: Request) {
         homeAndAway: body.homeAndAway ?? false,
         startDate: new Date(body.startDate),
         endDate: body.endDate ? new Date(body.endDate) : null,
-        userId: user.id,
+        userId: authResult.user!.id,
       },
     });
 

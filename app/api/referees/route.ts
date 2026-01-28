@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { RefereeStatus } from "@prisma/client";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 /**
  * GET /api/referees
@@ -79,33 +79,10 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     // Verificar autenticación
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    // Verificar usuario en la base de datos
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no registrado en la base de datos" },
-        { status: 404 },
-      );
-    }
-
-    // Verificar permisos de administrador
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para crear árbitros" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create referees
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const body = await req.json();

@@ -1,7 +1,7 @@
 // app/api/players/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 export async function POST(req: Request) {
   try {
@@ -29,31 +29,10 @@ export async function POST(req: Request) {
       bio,
     } = body;
 
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 },
-      );
-    }
-
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para crear un jugador" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create players
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const newPlayer = await db.player.create({

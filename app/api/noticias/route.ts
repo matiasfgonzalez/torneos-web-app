@@ -1,7 +1,7 @@
 // app/api/noticias/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,6 +36,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Validate that only ADMINISTRADOR or EDITOR can create news
+  const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await req.json();
 
@@ -48,38 +54,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get logged in user
-    const { userId } = await auth();
-
-    // Check for user
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    // Get user from database
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    // Check if user exists
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 },
-      );
-    }
-
-    // Validar que el user sea admin
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para crear una noticia" },
-        { status: 403 },
-      );
-    }
-
     const newNews = await db.news.create({
       data: {
         title,
@@ -87,7 +61,7 @@ export async function POST(req: NextRequest) {
         content,
         coverImageUrl,
         published: published ?? false,
-        userId: user.id,
+        userId: authResult.user!.id,
       },
     });
 

@@ -1,42 +1,17 @@
-// app/api/tournaments/route.ts
+// app/api/teams/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 export async function POST(req: Request) {
+  // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create teams
+  const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await req.json();
-
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    // Check if user exists
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 },
-      );
-    }
-
-    // Validar que el user sea admin
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para crear un equipo" },
-        { status: 403 },
-      );
-    }
-
-    // --- Validación de 'yearFounded' ---
     const yearFounded = Number(body.yearFounded);
     const currentYear = new Date().getFullYear();
 

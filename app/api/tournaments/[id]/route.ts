@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 type tParams = Promise<{ id: string }>;
 
@@ -19,20 +20,10 @@ export async function DELETE(
       );
     }
 
-    // Validar que el user sea admin
-    const userLogued = await checkUser();
-    if (!userLogued) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    if (userLogued.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para eliminar un torneo" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can delete tournaments
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const deletedTournament = await db.tournament.delete({
@@ -65,19 +56,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const body = await req.json();
 
-    const userLogued = await checkUser();
-    if (!userLogued) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    if (userLogued.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para editar un torneo" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update tournaments
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const startDate = new Date(body.startDate + "T00:00:00");

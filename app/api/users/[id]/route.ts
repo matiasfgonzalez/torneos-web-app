@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { validateApiRole, canManageUserApi } from "@/lib/apiRoleValidation";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Validate that only ADMINISTRADOR can access user details
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const { id } = await params;
 
@@ -176,6 +183,12 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Validate that only ADMINISTRADOR can update users
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -218,7 +231,19 @@ export async function PUT(
       );
     }
 
-    // Preparar datos de actualización
+    // Validate role hierarchy - cannot modify users of equal or higher rank
+    if (!canManageUserApi(authResult.user!.role, existingUser.role)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Permisos insuficientes",
+          message: "No puedes modificar usuarios de igual o mayor jerarquía",
+        },
+        { status: 403 }
+      );
+    }
+
+    // Prepare update data
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
 
@@ -285,6 +310,12 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Validate that only ADMINISTRADOR can delete users
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const { id } = await params;
 
@@ -312,6 +343,18 @@ export async function DELETE(
           message: "No se encontró el usuario especificado",
         },
         { status: 404 },
+      );
+    }
+
+    // Validate role hierarchy - cannot delete users of equal or higher rank
+    if (!canManageUserApi(authResult.user!.role, existingUser.role)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Permisos insuficientes",
+          message: "No puedes eliminar usuarios de igual o mayor jerarquía",
+        },
+        { status: 403 }
       );
     }
 
