@@ -14,6 +14,7 @@ import {
 import {
   Trophy,
   Users,
+  Users2,
   UserCheck,
   Calendar,
   BarChart3,
@@ -68,6 +69,13 @@ const menuItems = [
     icon: Shield,
     enabled: true,
     roles: ["ADMINISTRADOR", "EDITOR"],
+  },
+  {
+    title: "Usuarios",
+    href: "/admin/usuarios",
+    icon: Users2,
+    enabled: true,
+    roles: ["ADMINISTRADOR"],
   },
   {
     title: "Partidos",

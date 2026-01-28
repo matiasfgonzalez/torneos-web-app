@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/formatDate";
+import { FullscreenLoading } from "@/components/fullscreen-loading";
 import {
   IUser,
   UserRole,
@@ -154,19 +155,19 @@ const UserCard = ({
                   Eliminar
                 </DropdownMenuItem>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-gray-900 dark:text-white">¿Estás seguro?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
                     Esta acción marcará al usuario como inactivo. Esta operación
                     puede deshacerse.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">Cancelar</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => onDelete(user.id)}
-                    className="bg-red-600 hover:bg-red-700"
+                    className="bg-red-600 hover:bg-red-700 text-white"
                   >
                     Eliminar
                   </AlertDialogAction>
@@ -455,18 +456,11 @@ export default function UsersPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-[#ad45ff]" />
-              <p className="text-gray-600 dark:text-gray-400">
-                Cargando usuarios...
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FullscreenLoading
+        isVisible={true}
+        message="Cargando usuarios"
+        submessage="Obteniendo lista de usuarios..."
+      />
     );
   }
 
