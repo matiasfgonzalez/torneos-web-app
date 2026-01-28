@@ -117,7 +117,7 @@ export default function NoticiaIndividualPage({
       {/* Hero Section con imagen de fondo */}
       <section className="relative">
         {/* Background Image con overlay */}
-        <div className="absolute inset-0 h-[500px] lg:h-[600px]">
+        <div className="absolute inset-0 h-[650px] sm:h-[550px] lg:h-[600px]">
           <img
             src={noticia.coverImageUrl || "/placeholder.svg"}
             alt={noticia.title}
@@ -182,9 +182,9 @@ export default function NoticiaIndividualPage({
               {noticia.title}
             </h1>
 
-            {/* Summary */}
+            {/* Summary - oculto en móvil */}
             {noticia.summary && (
-              <p className="text-lg lg:text-xl text-white/90 text-pretty leading-relaxed max-w-3xl">
+              <p className="hidden sm:block text-lg lg:text-xl text-white/90 text-pretty leading-relaxed max-w-3xl">
                 {noticia.summary}
               </p>
             )}
