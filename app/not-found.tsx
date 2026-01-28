@@ -3,15 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Home,
-  ArrowLeft,
-  Trophy,
-  Users,
-  Calendar,
-  BarChart3,
-} from "lucide-react";
+import { Home, ArrowLeft, Trophy, Users, Newspaper, Search } from "lucide-react";
 
 export default function NotFound() {
   const router = useRouter();
@@ -25,184 +17,246 @@ export default function NotFound() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full text-center">
-        {/* Soccer Ball Animation */}
-        <div className="mb-8 flex justify-center">
-          <div className="relative">
-            <div
-              className="w-32 h-32 rounded-full bg-white dark:bg-gray-100 border-4 border-gray-800 dark:border-gray-700 relative overflow-hidden animate-spin"
-              style={{ animationDuration: "3s" }}
-            >
-              {/* Soccer ball pattern */}
-              <div className="absolute inset-0">
-                {/* Pentagon in center */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-gray-800 dark:bg-gray-700 rounded-sm rotate-45"></div>
+    <div className="min-h-screen flex items-center justify-center overflow-hidden relative">
+      {/* Premium Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0f051a] via-[#1a0a2e] to-[#0f051a]" />
 
-                {/* Hexagons around */}
-                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gray-800 dark:bg-gray-700 rounded-sm rotate-12"></div>
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gray-800 dark:bg-gray-700 rounded-sm rotate-12"></div>
-                <div className="absolute left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-gray-800 dark:bg-gray-700 rounded-sm rotate-45"></div>
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-gray-800 dark:bg-gray-700 rounded-sm rotate-45"></div>
+      {/* Subtle Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#ad45ff]/10 via-transparent to-[#a3b3ff]/10" />
 
-                {/* Lines connecting */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-gray-800 dark:bg-gray-700 rotate-45"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-gray-800 dark:bg-gray-700 -rotate-45"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-16 bg-gray-800 dark:bg-gray-700"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-0.5 bg-gray-800 dark:bg-gray-700"></div>
-              </div>
-            </div>
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute w-2 h-2 bg-[#ad45ff]/60 rounded-full blur-[1px]"
+          style={{
+            left: "15%",
+            top: "20%",
+            animation: "float-particle 6s ease-in-out infinite",
+          }}
+        />
+        <div
+          className="absolute w-1.5 h-1.5 bg-[#c77dff]/50 rounded-full blur-[1px]"
+          style={{
+            left: "75%",
+            top: "30%",
+            animation: "float-particle 8s ease-in-out infinite",
+            animationDelay: "1s",
+          }}
+        />
+        <div
+          className="absolute w-1 h-1 bg-[#a3b3ff]/70 rounded-full"
+          style={{
+            left: "10%",
+            top: "75%",
+            animation: "float-particle 7s ease-in-out infinite",
+            animationDelay: "2s",
+          }}
+        />
+        <div
+          className="absolute w-2 h-2 bg-[#ad45ff]/40 rounded-full blur-[2px]"
+          style={{
+            left: "85%",
+            top: "65%",
+            animation: "float-particle 9s ease-in-out infinite",
+            animationDelay: "0.5s",
+          }}
+        />
+        <div
+          className="absolute w-1.5 h-1.5 bg-[#c77dff]/60 rounded-full"
+          style={{
+            left: "45%",
+            top: "85%",
+            animation: "float-particle 7s ease-in-out infinite",
+            animationDelay: "3s",
+          }}
+        />
+        <div
+          className="absolute w-1 h-1 bg-[#a3b3ff]/50 rounded-full"
+          style={{
+            left: "55%",
+            top: "10%",
+            animation: "float-particle 6s ease-in-out infinite",
+            animationDelay: "1.5s",
+          }}
+        />
 
-            {/* Shadow */}
-            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-gray-400 dark:bg-gray-600 rounded-full opacity-30 blur-sm"></div>
+        {/* Ambient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ad45ff]/5 rounded-full blur-3xl" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 max-w-lg w-full mx-4 text-center">
+        {/* Logo with Animation */}
+        <div className="relative mb-8 inline-block">
+          {/* Glow */}
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl blur-2xl opacity-30"
+            style={{ animation: "pulse-glow 3s ease-in-out infinite" }}
+          />
+
+          {/* Logo */}
+          <div
+            className="relative w-24 h-24 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#ad45ff]/30 mx-auto"
+            style={{ animation: "float 4s ease-in-out infinite" }}
+          >
+            <span className="text-5xl">🏆</span>
+          </div>
+
+          {/* Orbital ring */}
+          <div
+            className="absolute -inset-6 border border-[#ad45ff]/20 rounded-full"
+            style={{ animation: "spin-slow 15s linear infinite" }}
+          >
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#ad45ff] rounded-full shadow-lg shadow-[#ad45ff]/50" />
           </div>
         </div>
 
-        {/* Error Message */}
-        <Card className="mb-8 border-2 border-green-200 dark:border-[#ad45ff]/30 shadow-lg bg-white dark:bg-gray-800/95 backdrop-blur-sm">
-          <CardContent className="p-8">
-            <div className="mb-6">
-              <h1 className="text-6xl font-bold text-gray-800 dark:text-white mb-2">
-                404
-              </h1>
-              <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
-                ¡Gol perdido!
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-                Parece que la página que buscas se fue fuera del campo.
-                <br />
-                No te preocupes, podemos ayudarte a volver al juego.
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  0
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Páginas encontradas
-                </div>
-              </div>
-              <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  1
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Error detectado
-                </div>
-              </div>
-              <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  ∞
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Posibilidades
-                </div>
-              </div>
-              <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  100%
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Solución garantizada
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation Options */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  asChild
-                  className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white"
-                >
-                  <Link href="/" className="flex items-center gap-2">
-                    <Home className="w-4 h-4" />
-                    Volver al Inicio
-                  </Link>
-                </Button>
-                <Button
-                  onClick={handleGoBack}
-                  variant="outline"
-                  className="border-[#ad45ff] dark:border-[#8b39cc] text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20 bg-transparent flex items-center gap-2 cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Página Anterior
-                </Button>
-              </div>
-
-              {/* Quick Links */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  O explora estas secciones:
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600 dark:text-gray-400 hover:text-[#ad45ff] dark:hover:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
-                  >
-                    <Link href="/torneos" className="flex items-center gap-2">
-                      <Trophy className="w-4 h-4" />
-                      Torneos
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600 dark:text-gray-400 hover:text-[#ad45ff] dark:hover:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
-                  >
-                    <Link href="/equipos" className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      Equipos
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600 dark:text-gray-400 hover:text-[#ad45ff] dark:hover:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
-                  >
-                    <Link href="/noticias" className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Noticias
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600 dark:text-gray-400 hover:text-[#ad45ff] dark:hover:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
-                  >
-                    <Link
-                      href="/estadisticas"
-                      className="flex items-center gap-2"
-                    >
-                      <BarChart3 className="w-4 h-4" />
-                      Estadísticas
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer Message */}
-        <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
-          <p>
-            Si crees que esto es un error, contacta al administrador del torneo.
-          </p>
-          <p className="mt-1">
-            ¡Gracias por tu paciencia y que siga el juego! ⚽
+        {/* 404 Error */}
+        <div className="mb-8">
+          <h1 className="text-8xl font-bold bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent mb-4">
+            404
+          </h1>
+          <h2 className="text-2xl font-semibold text-white mb-3">
+            ¡Página no encontrada!
+          </h2>
+          <p className="text-white/60 text-lg leading-relaxed max-w-md mx-auto">
+            Parece que la página que buscas se fue fuera del campo. No te
+            preocupes, podemos ayudarte a volver al juego.
           </p>
         </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+          <Button
+            asChild
+            className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-[#ad45ff]/40 transition-all px-6 py-5"
+          >
+            <Link href="/" className="flex items-center gap-2">
+              <Home className="w-5 h-5" />
+              Volver al Inicio
+            </Link>
+          </Button>
+          <Button
+            onClick={handleGoBack}
+            variant="link"
+            className="border-white/20 text-white hover:bg-white/10 transition-all cursor-pointer px-6 py-5"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Página Anterior
+          </Button>
+        </div>
+
+        {/* Quick Links */}
+        <div className="border-t border-white/10 pt-8">
+          <p className="text-white/40 text-sm mb-4">
+            O explora estas secciones:
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <Link href="/torneos" className="flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                Torneos
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <Link href="/equipos" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Equipos
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <Link href="/noticias" className="flex items-center gap-2">
+                <Newspaper className="w-4 h-4" />
+                Noticias
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <Link href="/jugadores" className="flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                Jugadores
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-10 flex items-center justify-center gap-2 text-white/30">
+          <span className="text-sm">GOLAZO</span>
+          <span className="text-xs">•</span>
+          <span className="text-xs">Gestión Profesional de Torneos</span>
+        </div>
       </div>
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        
+        @keyframes float-particle {
+          0%, 100% {
+            transform: translateY(0px) translateX(0px);
+            opacity: 0.3;
+          }
+          25% {
+            transform: translateY(-20px) translateX(10px);
+            opacity: 0.8;
+          }
+          50% {
+            transform: translateY(-10px) translateX(-5px);
+            opacity: 0.5;
+          }
+          75% {
+            transform: translateY(-25px) translateX(5px);
+            opacity: 0.7;
+          }
+        }
+        
+        @keyframes pulse-glow {
+          0%, 100% {
+            opacity: 0.25;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.4;
+            transform: scale(1.1);
+          }
+        }
+        
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
