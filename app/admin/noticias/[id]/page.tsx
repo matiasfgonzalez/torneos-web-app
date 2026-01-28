@@ -39,7 +39,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
-import { LoadingPage } from "@/components/loading-spinner";
+import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { INoticia } from "@modules/noticias/types";
 
 export default function AdminNoticiaDetail({
@@ -86,7 +86,14 @@ export default function AdminNoticiaDetail({
       });
   }, []);
 
-  if (loading) return <LoadingPage message="Procesando..." />;
+  if (loading)
+    return (
+      <FullscreenLoading
+        isVisible={true}
+        message="Cargando noticia"
+        submessage="Obteniendo detalles del artículo..."
+      />
+    );
   if (error) return <p>Error al cargar la noticia.</p>;
 
   const proximamente = true;

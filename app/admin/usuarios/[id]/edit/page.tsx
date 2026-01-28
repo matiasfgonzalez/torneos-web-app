@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
+import { FullscreenLoading } from "@/components/fullscreen-loading";
 import {
   IUser,
   IUpdateUserData,
@@ -233,18 +234,11 @@ export default function EditUser() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900/50 p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-[#ad45ff]" />
-              <p className="text-gray-600 dark:text-gray-400">
-                Cargando datos del usuario...
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FullscreenLoading
+        isVisible={true}
+        message="Cargando usuario"
+        submessage="Obteniendo datos del perfil..."
+      />
     );
   }
 

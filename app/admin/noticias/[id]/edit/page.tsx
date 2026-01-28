@@ -40,7 +40,7 @@ import {
 import { toast } from "sonner";
 import { INoticia } from "@modules/noticias/types";
 import { formatDate } from "@/lib/formatDate";
-import { LoadingPage } from "@/components/loading-spinner";
+import { FullscreenLoading } from "@/components/fullscreen-loading";
 
 export default function EditNoticia() {
   const router = useRouter();
@@ -153,7 +153,13 @@ export default function EditNoticia() {
   };
 
   if (loadingArticle) {
-    return <LoadingPage message="Cargando noticia..." />;
+    return (
+      <FullscreenLoading
+        isVisible={true}
+        message="Cargando noticia"
+        submessage="Preparando el editor..."
+      />
+    );
   }
 
   if (error) {
