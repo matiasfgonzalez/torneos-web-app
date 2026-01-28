@@ -123,8 +123,8 @@ export default function NoticiaIndividualPage({
             alt={noticia.title}
             className="w-full h-full object-cover"
           />
-          {/* Gradient Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/80 to-gray-950/40" />
+          {/* Gradient Overlays - más oscuros para mejor contraste */}
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/90 to-gray-950/60" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20" />
         </div>
 
@@ -184,22 +184,22 @@ export default function NoticiaIndividualPage({
 
             {/* Summary */}
             {noticia.summary && (
-              <p className="text-lg lg:text-xl text-white/80 text-pretty leading-relaxed max-w-3xl">
+              <p className="text-lg lg:text-xl text-white/90 text-pretty leading-relaxed max-w-3xl">
                 {noticia.summary}
               </p>
             )}
 
             {/* Meta Information */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-white/60 pt-6 border-t border-white/10">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm pt-6 border-t border-white/20">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] flex items-center justify-center shadow-lg">
                   <User className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-white/90 font-medium">
+                <span className="text-white font-medium">
                   {noticia.user.name || "Anónimo"}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-white/70">
                 <Calendar className="w-4 h-4" />
                 <span>
                   {noticia.publishedAt
@@ -207,7 +207,7 @@ export default function NoticiaIndividualPage({
                     : "Sin fecha"}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-white/70">
                 <BookOpen className="w-4 h-4" />
                 <span>{readingTime} min de lectura</span>
               </div>
@@ -224,14 +224,14 @@ export default function NoticiaIndividualPage({
             <article className="lg:col-span-8">
               {/* Content Card */}
               <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                {/* Featured Image (visible en móvil) */}
-                <div className="lg:hidden">
-                  <img
-                    src={noticia.coverImageUrl || "/placeholder.svg"}
-                    alt={noticia.title}
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
+              {/* Featured Image - visible en todas las pantallas */}
+              <div className="">
+                <img
+                  src={noticia.coverImageUrl || "/placeholder.svg"}
+                  alt={noticia.title}
+                  className="w-full h-64 lg:h-80 object-cover"
+                />
+              </div>
 
                 {/* Article Body */}
                 <div className="p-6 sm:p-8 lg:p-10">
