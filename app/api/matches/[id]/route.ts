@@ -5,6 +5,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 type tParams = Promise<{ id: string }>;
 
@@ -19,32 +20,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // 🔹 auth en paralelo
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no registrado en la base de datos" },
-        { status: 404 },
-      );
-    }
-
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para actualizar el partido" },
-        { status: 403 },
-      );
+    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update matches
+    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     // 📌 Obtener estado anterior del partido ANTES de actualizar

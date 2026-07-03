@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,108 @@ const XTwitterIcon = ({ className }: { className?: string }) => (
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 );
+
+// ============================================
+// PARTICULAS FLOTANTES PREMIUM GOLAZO
+// ============================================
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+  delay: number;
+  colorIndex: number;
+  type: "circle" | "diamond" | "star";
+}
+
+const FloatingParticles = () => {
+  const [particles] = useState<Particle[]>(() => {
+    const types: Array<"circle" | "diamond" | "star"> = [
+      "circle",
+      "diamond",
+      "star",
+    ];
+
+    return Array.from({ length: 25 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 10 + 6,
+      duration: Math.random() * 12 + 8,
+      delay: Math.random() * 8,
+      colorIndex: Math.floor(Math.random() * 5),
+      type: types[Math.floor(Math.random() * types.length)],
+    }));
+  });
+
+  const getParticleColor = (colorIndex: number): string => {
+    const colors = [
+      "rgba(251, 191, 36, 0.7)", // amber
+      "rgba(52, 211, 153, 0.7)", // emerald
+      "rgba(168, 85, 247, 0.7)", // purple
+      "rgba(96, 165, 250, 0.7)", // blue
+      "rgba(251, 113, 133, 0.7)", // rose
+    ];
+    return colors[colorIndex] || colors[0];
+  };
+
+  const getParticleGradient = (colorIndex: number): string => {
+    const gradients = [
+      "linear-gradient(135deg, rgba(251, 191, 36, 0.6), rgba(251, 146, 60, 0.4))",
+      "linear-gradient(135deg, rgba(52, 211, 153, 0.6), rgba(20, 184, 166, 0.4))",
+      "linear-gradient(135deg, rgba(168, 85, 247, 0.6), rgba(236, 72, 153, 0.4))",
+      "linear-gradient(135deg, rgba(96, 165, 250, 0.6), rgba(34, 211, 238, 0.4))",
+      "linear-gradient(135deg, rgba(251, 113, 133, 0.6), rgba(239, 68, 68, 0.4))",
+    ];
+    return gradients[colorIndex] || gradients[0];
+  };
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((particle) => (
+        <div
+          key={particle.id}
+          className="absolute"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            animation: `float-particle ${particle.duration}s ease-in-out ${particle.delay}s infinite`,
+          }}
+        >
+          {particle.type === "circle" && (
+            <div
+              className="w-full h-full rounded-full opacity-50"
+              style={{
+                background: `radial-gradient(circle, ${getParticleColor(particle.colorIndex)} 0%, transparent 70%)`,
+              }}
+            />
+          )}
+          {particle.type === "diamond" && (
+            <div
+              className="w-full h-full rotate-45 opacity-50"
+              style={{ background: getParticleGradient(particle.colorIndex) }}
+            />
+          )}
+          {particle.type === "star" && (
+            <svg
+              viewBox="0 0 24 24"
+              className="w-full h-full opacity-50"
+              style={{ color: getParticleColor(particle.colorIndex) }}
+            >
+              <path
+                fill="currentColor"
+                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+              />
+            </svg>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // ============================================
 // MAPEOS DE ENUMS A ESPAÑOL
@@ -182,6 +284,9 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
         {/* Líneas decorativas Premium Golazo */}
         <div className="absolute top-20 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
         <div className="absolute top-24 left-0 w-2/3 h-px bg-gradient-to-r from-transparent via-orange-400/20 to-transparent" />
+
+        {/* Partículas flotantes */}
+        <FloatingParticles />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 py-8">

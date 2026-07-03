@@ -81,8 +81,8 @@ const menuItems = [
     title: "Partidos",
     href: "/admin/partidos",
     icon: Calendar,
-    enabled: false,
-    roles: ["ADMINISTRADOR"],
+    enabled: true,
+    roles: ["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"],
   },
   {
     title: "Estadísticas",

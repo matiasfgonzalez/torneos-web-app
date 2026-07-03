@@ -5,6 +5,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 // GET /api/matches
 export async function GET() {
@@ -35,6 +36,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create matches
+  const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await req.json();
 
