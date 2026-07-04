@@ -83,18 +83,49 @@ export interface CloudinaryDeleteResponse {
 // ============================================================================
 
 /**
+ * Carpetas permitidas para subida de imágenes.
+ * Al agregar una nueva entidad con imágenes, registrar su carpeta acá.
+ */
+export const ALLOWED_UPLOAD_FOLDERS = [
+  "torneos/logos",
+  "equipos/logos",
+  "noticias/covers",
+  "jugadores/cuerpo",
+  "jugadores/rostro",
+] as const;
+
+/** Prefijos raíz gestionados por la app (derivados de las carpetas permitidas) */
+const ALLOWED_ROOT_PREFIXES = [
+  ...new Set(ALLOWED_UPLOAD_FOLDERS.map((f) => f.split("/")[0])),
+];
+
+const publicIdPattern = new RegExp(
+  String.raw`^(${ALLOWED_ROOT_PREFIXES.join("|")})/[\w\-/]+$`,
+);
+
+/**
  * Esquema para validar la solicitud de firma
  */
 export const signatureRequestSchema = z.object({
-  folder: z.string().optional(),
-  tags: z.string().optional(),
+  folder: z.enum(ALLOWED_UPLOAD_FOLDERS),
+  tags: z
+    .string()
+    .max(200)
+    .regex(/^[\w,\- ]*$/, "Tags inválidos")
+    .optional(),
 });
 
 /**
- * Esquema para validar la solicitud de eliminación
+ * Esquema para validar la solicitud de eliminación.
+ * Solo se aceptan publicIds dentro de las carpetas gestionadas por la app,
+ * para impedir borrar assets arbitrarios del bucket.
  */
 export const deleteRequestSchema = z.object({
-  publicId: z.string().min(1, "El public_id es requerido"),
+  publicId: z
+    .string()
+    .min(1, "El public_id es requerido")
+    .max(300)
+    .regex(publicIdPattern, "publicId fuera de las carpetas gestionadas"),
 });
 
 /**
@@ -102,7 +133,7 @@ export const deleteRequestSchema = z.object({
  * Útil para react-hook-form con zod
  */
 export const cloudinaryImageSchema = z.object({
-  secure_url: z.string().url("URL inválida").optional().nullable(),
+  secure_url: z.url("URL inválida").optional().nullable(),
   public_id: z.string().optional().nullable(),
 });
 

@@ -11,20 +11,20 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { generateSignature } from "@/lib/cloudinary";
 import { signatureRequestSchema } from "@/types/cloudinary";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 export async function POST(request: Request) {
   try {
-    // Verificar autenticación
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: "No autorizado. Debes iniciar sesión." },
-        { status: 401 }
-      );
+    // Solo roles con gestión de contenido pueden obtener firmas de subida
+    const authResult = await validateApiRole([
+      "ADMINISTRADOR",
+      "EDITOR",
+      "ORGANIZADOR",
+    ]);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     // Parsear y validar el body

@@ -69,10 +69,11 @@
 
 ### C4. Cloudinary sign/delete abiertos a cualquier usuario autenticado
 
-- [ ] **Problema:** `POST /api/cloudinary/sign` y `DELETE /api/cloudinary/delete` solo exigen `userId` de Clerk. Un usuario con rol `USUARIO` puede obtener firmas de subida y **borrar cualquier imagen del bucket por publicId** ([app/api/cloudinary/delete/route.ts](app/api/cloudinary/delete/route.ts)).
+- [x] **Problema:** `POST /api/cloudinary/sign` y `DELETE /api/cloudinary/delete` solo exigen `userId` de Clerk. Un usuario con rol `USUARIO` puede obtener firmas de subida y **borrar cualquier imagen del bucket por publicId** ([app/api/cloudinary/delete/route.ts](app/api/cloudinary/delete/route.ts)).
 - **Impacto/Riesgo:** Vandalismo del CDN completo (logos, fotos, portadas). Irreversible.
 - **Solución:** `validateApiRole(["ADMINISTRADOR","EDITOR","ORGANIZADOR"])` en ambos + validar que el `publicId` pertenezca a una entidad que el usuario puede gestionar (buscar el publicId en Tournament/Team/Player/News antes de borrar) + restringir `folder` firmado a un prefijo por entidad.
-- **Esfuerzo:** E:Medio · **Beneficio:** Protege todos los assets del producto.
+- **Implementado (2026-07-04):** rol en ambos endpoints; `folder` de firma restringido a enum `ALLOWED_UPLOAD_FOLDERS` ([types/cloudinary.ts](types/cloudinary.ts)) — al agregar una entidad con imágenes hay que registrar su carpeta ahí; `publicId` de borrado limitado por regex a las carpetas gestionadas (`torneos/`, `equipos/`, `noticias/`, `jugadores/`).
+- **Pendiente (→ S2/C7):** el check "publicId pertenece a una entidad del usuario" no se implementó: rompería el flujo de reemplazo/quitar imagen del uploader (borra assets recién subidos aún no persistidos) y sin multi-tenancy todos los roles de gestión administran todo. Rehacer cuando exista `organizationId`.
 
 ### C5. XSS almacenado en detalle de noticia
 
