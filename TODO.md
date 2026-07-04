@@ -77,9 +77,10 @@
 
 ### C5. XSS almacenado en detalle de noticia
 
-- [ ] **Problema:** `dangerouslySetInnerHTML` con contenido editable sin sanitizar ([app/(public)/noticias/[id]/page.tsx:245](app/(public)/noticias/[id]/page.tsx#L245)).
+- [x] **Problema:** `dangerouslySetInnerHTML` con contenido editable sin sanitizar ([app/(public)/noticias/[id]/page.tsx:245](app/(public)/noticias/[id]/page.tsx#L245)).
 - **Explicación:** Un EDITOR (o cualquiera si la API de noticias se ve comprometida) puede inyectar `<script>`/`onerror` que se ejecuta en todos los visitantes.
 - **Solución:** Sanitizar con `isomorphic-dompurify` en el server antes de renderizar, o migrar el contenido a un formato estructurado (tiptap/markdown).
+- **Implementado (2026-07-04):** el contenido es texto plano (Textarea en admin), así que se eliminó `dangerouslySetInnerHTML` y se renderiza como texto React con `whitespace-pre-line` (conserva saltos de línea, sin HTML). ⚠️ Si a futuro se agrega editor rich-text (tiptap/markdown), reintroducir render HTML **solo** con sanitización server-side (`isomorphic-dompurify`).
 - **Esfuerzo:** E:Bajo · **Beneficio:** Elimina OWASP A03 en la superficie pública.
 
 ### C6. Integridad de standings: sin transacciones + bugs de fase

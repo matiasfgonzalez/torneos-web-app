@@ -236,16 +236,15 @@ export default function NoticiaIndividualPage({
                 {/* Article Body */}
                 <div className="p-6 sm:p-8 lg:p-10">
                   <div
-                    className="prose prose-lg dark:prose-invert max-w-none
+                    className="prose prose-lg dark:prose-invert max-w-none whitespace-pre-line
                       prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
                       prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
                       prose-a:text-[#ad45ff] prose-a:no-underline hover:prose-a:underline
                       prose-strong:text-gray-900 dark:prose-strong:text-white
                       prose-img:rounded-xl prose-img:shadow-lg"
-                    dangerouslySetInnerHTML={{
-                      __html: noticia.content.replaceAll("\n", "<br/>"),
-                    }}
-                  />
+                  >
+                    {noticia.content}
+                  </div>
                 </div>
 
                 {/* Tags / Categories */}
