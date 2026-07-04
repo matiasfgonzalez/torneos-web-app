@@ -2,6 +2,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { playerUpdateSchema } from "@/lib/validators/player";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -24,14 +26,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const body = await req.json();
 
+    const parsed = playerUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
     const updatedPlayer = await db.player.update({
       where: { id },
-      data: {
-        ...body,
-        birthDate: new Date(body.birthDate),
-        joinedAt: new Date(body.joinedAt),
-        updatedAt: new Date(),
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(updatedPlayer, { status: 200 });

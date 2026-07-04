@@ -37,7 +37,7 @@
 
 ### C2. Mass assignment (`data: { ...body }`) en mutaciones
 
-- [ ] **Problema:** Varias rutas insertan/actualizan con spread directo del body: [app/api/team-player/route.ts](app/api/team-player/route.ts), [app/api/team-player/[id]/route.ts](app/api/team-player/[id]/route.ts), [app/api/players/[id]/route.ts](app/api/players/[id]/route.ts), [app/api/matches/[id]/route.ts](app/api/matches/[id]/route.ts).
+- [x] **Problema:** Varias rutas insertan/actualizan con spread directo del body: [app/api/team-player/route.ts](app/api/team-player/route.ts), [app/api/team-player/[id]/route.ts](app/api/team-player/[id]/route.ts), [app/api/players/[id]/route.ts](app/api/players/[id]/route.ts), [app/api/matches/[id]/route.ts](app/api/matches/[id]/route.ts).
 - **Explicación:** Un cliente malicioso puede enviar campos no previstos (`tournamentId`, `createdAt`, ids de relaciones) y sobreescribirlos; los campos desconocidos además provocan errores 500 de Prisma.
 - **Impacto/Riesgo:** Corrupción de datos, escalada de datos entre torneos. OWASP A04/A08.
 - **Solución:** Whitelist explícita de campos + validación Zod (ver C3). Nunca `...body`.

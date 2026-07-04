@@ -6,6 +6,8 @@ import {
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { matchUpdateSchema } from "@/lib/validators/match";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -47,21 +49,15 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const body = await req.json();
 
-    // Sanitizar campos opcionales de FK - convertir strings vacíos a null
-    const sanitizedData = {
-      ...body,
-      dateTime: new Date(body.dateTime),
-      phaseId: body.phaseId || null,
-      penaltyWinnerTeamId: body.penaltyWinnerTeamId || null,
-      stadium: body.stadium || null,
-      city: body.city || null,
-      description: body.description || null,
-    };
+    const parsed = matchUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
 
     // 📌 Actualizar el partido
     const updatedMatch = await db.match.update({
       where: { id },
-      data: sanitizedData,
+      data: parsed.data,
     });
 
     // 📌 Aplicar cambios a la tabla de posiciones usando cálculo de deltas

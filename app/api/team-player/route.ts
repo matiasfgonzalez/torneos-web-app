@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { teamPlayerCreateSchema } from "@/lib/validators/team-player";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function POST(req: Request) {
   try {
@@ -34,12 +36,13 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    const parsed = teamPlayerCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
     const teamPlayer = await db.teamPlayer.create({
-      data: {
-        ...body,
-        joinedAt: new Date(body.joinedAt),
-        leftAt: body.leftAt ? new Date(body.leftAt) : null,
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(teamPlayer, { status: 201 });
