@@ -3,6 +3,8 @@ import { Prisma, TournamentCategory } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { tournamentCreateSchema } from "@/lib/validators/tournament";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function POST(req: Request) {
   // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create tournaments
@@ -14,20 +16,15 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    const parsed = tournamentCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
     const newTournament = await db.tournament.create({
       data: {
-        name: body.name,
-        description: body.description || null,
-        category: body.category,
-        locality: body.locality,
-        logoUrl: body.logoUrl || null,
-        liga: body.liga || null,
+        ...parsed.data,
         status: "PENDIENTE",
-        format: body.format,
-        nextMatch: body.nextMatch ? new Date(body.nextMatch) : null,
-        homeAndAway: body.homeAndAway ?? false,
-        startDate: new Date(body.startDate),
-        endDate: body.endDate ? new Date(body.endDate) : null,
         userId: authResult.user!.id,
       },
     });

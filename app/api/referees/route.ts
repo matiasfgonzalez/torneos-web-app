@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { RefereeStatus } from "@prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { refereeCreateSchema } from "@/lib/validators/referee";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 /**
  * GET /api/referees
@@ -86,24 +88,13 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const {
-      name,
-      email,
-      phone,
-      nationalId,
-      birthDate,
-      nationality,
-      imageUrl,
-      certificationLevel,
-    } = body;
 
-    // Validar nombre obligatorio
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      return NextResponse.json(
-        { error: "El nombre es obligatorio" },
-        { status: 400 },
-      );
+    const parsed = refereeCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
+
+    const { email, nationalId } = parsed.data;
 
     // Validar unicidad de email si se proporciona
     if (email) {
@@ -133,14 +124,7 @@ export async function POST(req: Request) {
 
     const referee = await db.referee.create({
       data: {
-        name: name.trim(),
-        email: email?.trim() || null,
-        phone: phone?.trim() || null,
-        nationalId: nationalId?.trim() || null,
-        birthDate: birthDate ? new Date(birthDate) : null,
-        nationality: nationality?.trim() || null,
-        imageUrl: imageUrl?.trim() || null,
-        certificationLevel: certificationLevel?.trim() || null,
+        ...parsed.data,
         status: "ACTIVO",
         enabled: true,
       },

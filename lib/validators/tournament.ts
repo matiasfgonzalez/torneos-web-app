@@ -1,0 +1,70 @@
+import { z } from "zod";
+import {
+  TournamentCategory,
+  TournamentFormat,
+  TournamentStatus,
+} from "@prisma/client";
+import { nullableString } from "./common";
+
+// Fechas date-only ("2025-07-01") se interpretan en hora local, no UTC,
+// para no correr el día por zona horaria
+const localDate = z.preprocess(
+  (value) =>
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? `${value}T00:00:00`
+      : value,
+  z.coerce.date(),
+);
+
+const nullableLocalDate = z.preprocess(
+  (value) => (value === "" || value === undefined || value === null ? null : value),
+  z.union([
+    z.null(),
+    z.preprocess(
+      (value) =>
+        typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+          ? `${value}T00:00:00`
+          : value,
+      z.coerce.date(),
+    ),
+  ]),
+);
+
+const tournamentBase = z.object({
+  name: z.string().trim().min(1).max(150),
+  description: nullableString(2000),
+  category: z.enum(TournamentCategory),
+  locality: z.string().trim().min(1).max(120),
+  logoUrl: nullableString(500),
+  logoPublicId: nullableString(255),
+  liga: nullableString(120),
+  format: z.enum(TournamentFormat),
+  nextMatch: nullableLocalDate,
+  homeAndAway: z.boolean(),
+  startDate: localDate,
+  endDate: nullableLocalDate,
+  status: z.enum(TournamentStatus),
+  enabled: z.boolean(),
+  rules: nullableString(20000),
+  trophy: nullableString(500),
+});
+
+// status/enabled se fijan server-side al crear
+export const tournamentCreateSchema = tournamentBase
+  .omit({ status: true, enabled: true })
+  .partial({
+    description: true,
+    logoUrl: true,
+    logoPublicId: true,
+    liga: true,
+    nextMatch: true,
+    homeAndAway: true,
+    endDate: true,
+    rules: true,
+    trophy: true,
+  });
+
+export const tournamentUpdateSchema = tournamentBase.partial();
+
+export type TournamentCreateInput = z.infer<typeof tournamentCreateSchema>;
+export type TournamentUpdateInput = z.infer<typeof tournamentUpdateSchema>;

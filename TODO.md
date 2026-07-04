@@ -45,7 +45,7 @@
 
 ### C3. Sin validación de entrada (Zod) en la API — fechas incluidas
 
-- [ ] **Problema:** Solo Cloudinary valida con Zod. El resto hace `new Date(body.dateTime)` / `new Date(body.birthDate)` sin guards (ej. [app/api/matches/[id]/route.ts:53](app/api/matches/[id]/route.ts#L53), [app/api/players/[id]/route.ts](app/api/players/[id]/route.ts)); un body sin fecha guarda `Invalid Date` o revienta con 500.
+- [x] **Problema:** Solo Cloudinary valida con Zod. El resto hace `new Date(body.dateTime)` / `new Date(body.birthDate)` sin guards (ej. [app/api/matches/[id]/route.ts:53](app/api/matches/[id]/route.ts#L53), [app/api/players/[id]/route.ts](app/api/players/[id]/route.ts)); un body sin fecha guarda `Invalid Date` o revienta con 500.
 - **Explicación:** Zod ya está en las dependencias y se usa en formularios; falta la capa server.
 - **Solución:** Crear `lib/validators/*.ts` con esquemas por entidad y reutilizarlos en API + formularios (una sola fuente de verdad).
 - **Ejemplo:**
@@ -88,6 +88,7 @@
   2. El PATCH de partido selecciona el estado previo **sin `tournamentPhaseId`** (`select` en línea ~31), por lo que `applyMatchResult` compara `undefined !== nuevaFase` y suma/resta en la fase equivocada → `TeamPhaseStats` se corrompe al editar resultados.
   3. `recalculateTournamentStandings` resetea `TournamentTeam` pero **no** `TeamPhaseStats`, y su `findMany` tampoco selecciona `tournamentPhaseId` → cada recálculo duplica acumulados de fase.
   4. `phaseTypeCountsPoints()` existe en [lib/standings/phase-utils.ts](lib/standings/phase-utils.ts) pero **nunca se invoca**: los partidos de fases KNOCKOUT suman puntos a la tabla general (regla de negocio rota). El estado `WALKOVER` tampoco computa resultado.
+  5. (Hallazgo C3, 2026-07-04) La API `tournament-teams` acepta stats de standings (`wins`, `points`, `goalDifference`, etc.) directamente del cliente en POST/PATCH; hoy validado con Zod (rango -999..9999) pero sigue siendo doble fuente de verdad frente al cálculo automático. Decidir si esos campos se quitan del contrato público o se limitan a un flujo de "ajuste manual" auditado.
 - **Solución:** Envolver match+stats en `db.$transaction`; incluir `tournamentPhaseId` en ambos selects; resetear/eliminar `TeamPhaseStats` en el recálculo; aplicar `phaseTypeCountsPoints` antes de sumar puntos globales; implementar WALKOVER según decisión ✅: el admin marca el equipo ganador y el sistema fija 3-0 automáticamente, computándolo como partido finalizado con puntos.
 - **Ejemplo:**
   ```ts
@@ -152,7 +153,7 @@
 
 ### A4. Sincronización de usuarios Clerk↔BD incompleta
 
-- [ ] **Problema:** No existe webhook de Clerk (verificado: 0 referencias a svix/webhook). Consecuencias: `lastLoginAt` y `emailVerified` **nunca se actualizan** (la UI de usuarios muestra "Nunca"); si un usuario cambia email/foto o se elimina en Clerk, la BD queda desincronizada; `checkUser()` hace find+create sin manejar la race (dos requests simultáneas → error P2002) y corre una query por cada request de página.
+- [ ] **Problema:** No existe webhook de Clerk (verificado: 0 referencias a svix/webhook). Consecuencias: `lastLoginAt` y `emailVerified` **nunca se actualizan** (la UI de usuarios muestra "Nunca"); si un usuario cambia email/foto o se elimina en Clerk, la BD queda desincronizada; `checkUser()` hace find+create sin manejar la race (dos requests simultáneas → error P2002) y corre una query por cada request de página. Además (hallazgo C3, 2026-07-04) `POST /api/users` crea usuarios con `clerkUserId: temp_${Date.now()}` — usuarios que jamás podrán loguearse ni vincularse a Clerk.
 - **Solución:** Crear `app/api/webhooks/clerk/route.ts` (svix) para `user.created/updated/deleted` + `session.created` (actualiza `lastLoginAt`); en `checkUser` usar `upsert` y cachear con `React.cache()` por request.
 - **Esfuerzo:** E:Medio · **Beneficio:** Datos de usuarios reales y confiables; menos queries.
 
@@ -199,6 +200,14 @@
 - [ ] **Problema:** 20 `console.log` incluyendo el objeto usuario completo en [app/admin/layout.tsx](app/admin/layout.tsx) y [app/page.tsx](app/page.tsx) (PII en logs de hosting).
 - **Solución:** Eliminarlos; introducir logger mínimo (`lib/logger.ts` con niveles y no-op en prod) para lo que valga la pena conservar.
 - **Esfuerzo:** E:Bajo · **Beneficio:** Sin PII en logs; ruido cero.
+
+### A11. Endpoints referenciados por la UI que no existen (hallazgo C3, 2026-07-04)
+
+- [ ] **Problema:** La UI llama endpoints sin handler → 405 silencioso:
+  1. `GET /api/teams`: [components/admin/match-dialog.tsx:109](components/admin/match-dialog.tsx#L109) hace `fetch("/api/teams")` pero [app/api/teams/route.ts](app/api/teams/route.ts) solo exporta POST.
+  2. `PATCH /api/team-player/[id]`: [DialogAddEditTeamPlayer.tsx:182](app/admin/torneos/[id]/components/DialogAddEditTeamPlayer.tsx#L182) usa PATCH en modo edición pero [app/api/team-player/[id]/route.ts](app/api/team-player/[id]/route.ts) solo tiene GET/DELETE → editar asociación jugador-equipo nunca funcionó.
+- **Solución:** Implementar GET (lista de equipos activos) y PATCH (con `teamPlayerCreateSchema.partial()` de `lib/validators/team-player.ts` + `validateApiRole`), o eliminar los flujos muertos de la UI.
+- **Esfuerzo:** E:Bajo · **Beneficio:** Flujos de edición admin funcionales.
 
 ---
 
@@ -252,6 +261,7 @@
 ### M9. Limpieza de imágenes huérfanas en Cloudinary
 
 - [ ] Al eliminar torneo/equipo/jugador/noticia no se borra su imagen (`logoPublicId` queda huérfano). Borrar el asset en la misma operación (o job diferido) usando los `publicId` ya guardados. **E:Bajo**
+- [ ] (Hallazgo C3, 2026-07-04) `News.coverImagePublicId` y `Team.logoPublicId` nunca se persistían: las rutas los descartaban del body. Los validators Zod ahora los aceptan, pero falta verificar que los formularios los envíen al subir imagen; sin ese dato la limpieza de huérfanos es imposible. **E:Bajo**
 
 ### M10. Estados vacíos y skeletons consistentes
 

@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { newsCreateSchema } from "@/lib/validators/news";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function GET(req: NextRequest) {
   try {
@@ -45,22 +47,15 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { title, summary, content, coverImageUrl, published } = body;
-
-    if (!title || !content) {
-      return NextResponse.json(
-        { error: "Faltan campos obligatorios" },
-        { status: 400 },
-      );
+    const parsed = newsCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
 
     const newNews = await db.news.create({
       data: {
-        title,
-        summary,
-        content,
-        coverImageUrl,
-        published: published ?? false,
+        ...parsed.data,
+        published: parsed.data.published ?? false,
         userId: authResult.user!.id,
       },
     });

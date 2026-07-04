@@ -6,6 +6,8 @@ import {
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { matchCreateSchema } from "@/lib/validators/match";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 // GET /api/matches
 export async function GET() {
@@ -45,54 +47,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Validación mínima (puedes mejorar con Zod)
-    const {
-      dateTime,
-      stadium,
-      city,
-      description,
-      status,
-      tournamentId,
-      homeTeamId,
-      awayTeamId,
-      phaseId,
-      homeScore,
-      awayScore,
-      penaltyWinnerTeamId,
-      penaltyScoreHome,
-      penaltyScoreAway,
-      roundNumber,
-    } = body;
-
-    if (!dateTime || !tournamentId || !homeTeamId || !awayTeamId) {
-      return NextResponse.json(
-        { error: "Faltan datos requeridos" },
-        { status: 400 },
-      );
+    const parsed = matchCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
 
-    // Sanitizar campos opcionales de FK - convertir strings vacíos a null
-    const sanitizedPhaseId = phaseId || null;
-    const sanitizedPenaltyWinnerTeamId = penaltyWinnerTeamId || null;
-
     const match = await db.match.create({
-      data: {
-        dateTime: new Date(dateTime),
-        stadium: stadium || null,
-        city: city || null,
-        description: description || null,
-        status,
-        tournamentId,
-        homeTeamId,
-        awayTeamId,
-        phaseId: sanitizedPhaseId,
-        homeScore,
-        awayScore,
-        penaltyWinnerTeamId: sanitizedPenaltyWinnerTeamId,
-        penaltyScoreHome,
-        penaltyScoreAway,
-        roundNumber,
-      },
+      data: parsed.data,
     });
 
     // 📌 Si el partido se crea ya FINALIZADO, calcular estadísticas

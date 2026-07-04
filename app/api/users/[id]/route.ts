@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole, canManageUserApi } from "@/lib/apiRoleValidation";
+import { userUpdateSchema } from "@/lib/validators/user";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function GET(
   request: NextRequest,
@@ -204,16 +206,10 @@ export async function PUT(
       );
     }
 
-    const {
-      name,
-      phone,
-      location,
-      bio,
-      role,
-      status,
-      imageUrl,
-      emailVerified,
-    } = body;
+    const parsed = userUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
 
     // Verificar que el usuario existe
     const existingUser = await db.user.findUnique({
@@ -243,18 +239,7 @@ export async function PUT(
       );
     }
 
-    // Prepare update data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {};
-
-    if (name !== undefined) updateData.name = name;
-    if (phone !== undefined) updateData.phone = phone;
-    if (location !== undefined) updateData.location = location;
-    if (bio !== undefined) updateData.bio = bio;
-    if (role !== undefined) updateData.role = role;
-    if (status !== undefined) updateData.status = status;
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
-    if (emailVerified !== undefined) updateData.emailVerified = emailVerified;
+    const updateData = parsed.data;
 
     // Actualizar el usuario
     const updatedUser = await db.user.update({

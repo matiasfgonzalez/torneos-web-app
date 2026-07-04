@@ -2,32 +2,12 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { playerCreateSchema } from "@/lib/validators/player";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
-    const {
-      name,
-      birthDate,
-      birthPlace,
-      nationality,
-      height,
-      weight,
-      dominantFoot,
-      position,
-      number,
-      status,
-      joinedAt,
-      imageUrl,
-      imagePublicId,
-      imageUrlFace,
-      imageFacePublicId,
-      instagramUrl,
-      twitterUrl,
-      description,
-      bio,
-    } = body;
 
     // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create players
     const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
@@ -35,28 +15,13 @@ export async function POST(req: Request) {
       return authResult.error;
     }
 
+    const parsed = playerCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
     const newPlayer = await db.player.create({
-      data: {
-        name,
-        birthDate: birthDate ? new Date(birthDate) : null,
-        birthPlace,
-        nationality,
-        height: height ? parseFloat(height) : null,
-        weight: weight ? parseFloat(weight) : null,
-        dominantFoot,
-        position,
-        number: number ? parseInt(number) : null,
-        imageUrl,
-        imagePublicId,
-        imageUrlFace,
-        imageFacePublicId,
-        description,
-        bio,
-        status,
-        joinedAt: joinedAt ? new Date(joinedAt) : null,
-        instagramUrl,
-        twitterUrl,
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(newPlayer, { status: 201 });

@@ -8,7 +8,7 @@ import {
   nullableString,
 } from "./common";
 
-export const playerUpdateSchema = z
+const playerBase = z
   .object({
     name: z.string().trim().min(1).max(120),
     birthDate: nullableDate(),
@@ -29,7 +29,10 @@ export const playerUpdateSchema = z
     joinedAt: nullableDate(),
     instagramUrl: nullableString(255),
     twitterUrl: nullableString(255),
-  })
-  .partial();
+  });
 
+export const playerCreateSchema = playerBase.partial().required({ name: true });
+export const playerUpdateSchema = playerBase.partial();
+
+export type PlayerCreateInput = z.infer<typeof playerCreateSchema>;
 export type PlayerUpdateInput = z.infer<typeof playerUpdateSchema>;

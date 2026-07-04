@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { RefereeStatus } from "@prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { refereeUpdateSchema } from "@/lib/validators/referee";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -126,18 +127,13 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
     }
 
     const body = await req.json();
-    const {
-      name,
-      email,
-      phone,
-      nationalId,
-      birthDate,
-      nationality,
-      imageUrl,
-      certificationLevel,
-      status,
-      enabled,
-    } = body;
+
+    const parsed = refereeUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
+    const { email, nationalId } = parsed.data;
 
     // Validar unicidad de email si se cambia
     if (email && email !== existingReferee.email) {
@@ -173,32 +169,9 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
       }
     }
 
-    // Validar status si se proporciona
-    if (status && !Object.values(RefereeStatus).includes(status)) {
-      return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
-    }
-
-    // Construir objeto de actualización
-    const updateData: Record<string, unknown> = {};
-
-    if (name !== undefined) updateData.name = name.trim();
-    if (email !== undefined) updateData.email = email?.trim() || null;
-    if (phone !== undefined) updateData.phone = phone?.trim() || null;
-    if (nationalId !== undefined)
-      updateData.nationalId = nationalId?.trim() || null;
-    if (birthDate !== undefined)
-      updateData.birthDate = birthDate ? new Date(birthDate) : null;
-    if (nationality !== undefined)
-      updateData.nationality = nationality?.trim() || null;
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl?.trim() || null;
-    if (certificationLevel !== undefined)
-      updateData.certificationLevel = certificationLevel?.trim() || null;
-    if (status !== undefined) updateData.status = status;
-    if (enabled !== undefined) updateData.enabled = enabled;
-
     const referee = await db.referee.update({
       where: { id },
-      data: updateData,
+      data: parsed.data,
       include: {
         _count: {
           select: { matches: true },

@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { tournamentTeamCreateSchema } from "@/lib/validators/tournament-team";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function POST(req: Request) {
   try {
@@ -36,47 +38,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const {
-      tournamentId,
-      teamId,
-      group,
-      isEliminated,
-      notes,
-      matchesPlayed,
-      wins,
-      draws,
-      losses,
-      goalsFor,
-      goalsAgainst,
-      goalDifference,
-      points,
-    } = body;
-
-    // Validaciones mínimas
-    if (!tournamentId || !teamId) {
-      return NextResponse.json(
-        { error: "tournamentId y teamId son requeridos" },
-        { status: 400 },
-      );
+    const parsed = tournamentTeamCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
 
     // Crear la relación equipo-torneo
     const tournamentTeam = await db.tournamentTeam.create({
-      data: {
-        tournamentId,
-        teamId,
-        group,
-        isEliminated,
-        notes,
-        matchesPlayed: matchesPlayed ?? 0,
-        wins: wins ?? 0,
-        draws: draws ?? 0,
-        losses: losses ?? 0,
-        goalsFor: goalsFor ?? 0,
-        goalsAgainst: goalsAgainst ?? 0,
-        goalDifference: goalDifference ?? 0,
-        points: points ?? 0,
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(tournamentTeam, { status: 201 });

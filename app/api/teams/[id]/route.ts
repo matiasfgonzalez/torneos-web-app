@@ -1,8 +1,9 @@
 // app/api/teams/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { teamUpdateSchema } from "@/lib/validators/team";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -25,43 +26,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const body = await req.json();
 
-    // Validación opcional del año
-    if (body.yearFounded !== undefined) {
-      const yearFounded = Number(body.yearFounded);
-      const currentYear = new Date().getFullYear();
-
-      if (isNaN(yearFounded)) {
-        return NextResponse.json(
-          { error: "El año de fundación debe ser un número válido." },
-          { status: 400 },
-        );
-      }
-
-      if (yearFounded < 1900 || yearFounded > currentYear) {
-        return NextResponse.json(
-          {
-            error: `El año debe estar entre 1900 y ${currentYear}.`,
-          },
-          { status: 400 },
-        );
-      }
+    const parsed = teamUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
 
     const updatedTournament = await db.team.update({
       where: { id },
-      data: {
-        name: body.name,
-        shortName: body.shortName,
-        description: body.description,
-        history: body.history,
-        coach: body.coach,
-        homeCity: body.homeCity,
-        yearFounded: body.yearFounded,
-        homeColor: body.homeColor,
-        awayColor: body.awayColor,
-        logoUrl: body.logoUrl,
-        updatedAt: new Date(),
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(updatedTournament, { status: 200 });

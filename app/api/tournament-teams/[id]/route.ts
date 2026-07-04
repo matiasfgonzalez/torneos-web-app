@@ -3,6 +3,8 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
+import { tournamentTeamUpdateSchema } from "@/lib/validators/tournament-team";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -57,22 +59,15 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
+    const parsed = tournamentTeamUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
     // Actualizar datos (solo los que vienen en el body)
     const updatedAssociation = await db.tournamentTeam.update({
       where: { id },
-      data: {
-        group: body.group ?? association.group,
-        isEliminated: body.isEliminated ?? association.isEliminated,
-        notes: body.notes ?? association.notes,
-        matchesPlayed: body.matchesPlayed ?? association.matchesPlayed,
-        wins: body.wins ?? association.wins,
-        draws: body.draws ?? association.draws,
-        losses: body.losses ?? association.losses,
-        goalsFor: body.goalsFor ?? association.goalsFor,
-        goalsAgainst: body.goalsAgainst ?? association.goalsAgainst,
-        goalDifference: body.goalDifference ?? association.goalDifference,
-        points: body.points ?? association.points,
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(updatedAssociation, { status: 200 });

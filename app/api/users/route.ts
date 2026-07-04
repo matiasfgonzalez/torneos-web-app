@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { userCreateSchema } from "@/lib/validators/user";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 interface UserFilters {
   search?: string;
@@ -150,29 +152,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const {
-      email,
-      name,
-      phone,
-      location,
-      bio,
-      role,
-      status,
-      clerkUserId,
-      imageUrl,
-    } = body;
-
-    // Validaciones básicas
-    if (!email || !name) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos requeridos faltantes",
-          message: "Email y nombre son requeridos",
-        },
-        { status: 400 },
-      );
+    const parsed = userCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
+
+    const { email, name, phone, location, bio, role, status, clerkUserId, imageUrl } =
+      parsed.data;
 
     // Verificar si el email ya existe
     const existingUser = await db.user.findUnique({
@@ -195,13 +181,13 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         name,
-        phone: phone || null,
-        location: location || null,
-        bio: bio || null,
-        role: role || UserRole.USUARIO,
-        status: status || UserStatus.PENDIENTE,
-        clerkUserId: clerkUserId || `temp_${Date.now()}`, // Temporal hasta integrar con Clerk
-        imageUrl: imageUrl || null,
+        phone: phone ?? null,
+        location: location ?? null,
+        bio: bio ?? null,
+        role: role ?? UserRole.USUARIO,
+        status: status ?? UserStatus.PENDIENTE,
+        clerkUserId: clerkUserId ?? `temp_${Date.now()}`, // Temporal hasta integrar con Clerk
+        imageUrl: imageUrl ?? null,
         emailVerified: false,
         lastLoginAt: null,
       },

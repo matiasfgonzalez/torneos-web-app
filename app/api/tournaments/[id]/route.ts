@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { tournamentUpdateSchema } from "@/lib/validators/tournament";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -62,36 +63,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       return authResult.error;
     }
 
-    const startDate = new Date(body.startDate + "T00:00:00");
-    const endDate = body.endDate ? new Date(body.endDate + "T00:00:00") : null;
-    const nextMatch = body.nextMatch ? new Date(body.nextMatch) : null;
-
-    if (startDate && isNaN(startDate.getTime())) {
-      return NextResponse.json(
-        { error: "Fecha de inicio inválida" },
-        { status: 400 },
-      );
+    const parsed = tournamentUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
 
     const updatedTournament = await db.tournament.update({
       where: { id },
-      data: {
-        startDate,
-        endDate,
-        nextMatch,
-        name: body.name,
-        description: body.description,
-        category: body.category,
-        locality: body.locality,
-        logoUrl: body.logoUrl,
-        liga: body.liga,
-        format: body.format,
-        homeAndAway: body.homeAndAway,
-        status: body.status,
-        enabled: body.enabled,
-        rules: body.rules || null,
-        trophy: body.trophy || null,
-      },
+      data: parsed.data,
     });
 
     return NextResponse.json(

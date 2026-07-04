@@ -1,8 +1,9 @@
 // app/api/noticias/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { newsUpdateSchema } from "@/lib/validators/news";
+import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
@@ -47,8 +48,6 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
     const { id } = await params;
     const body = await req.json();
 
-    const { title, summary, content, coverImageUrl, published } = body;
-
     if (!id) {
       return NextResponse.json(
         { error: "ID no proporcionado" },
@@ -62,16 +61,14 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
       return authResult.error;
     }
 
+    const parsed = newsUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
     const updatedNoticia = await db.news.update({
       where: { id },
-      data: {
-        title,
-        summary,
-        content,
-        coverImageUrl,
-        published,
-        updatedAt: new Date(),
-      },
+      data: parsed.data,
       include: { user: true },
     });
 
