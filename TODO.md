@@ -29,7 +29,7 @@
 
 ### C1. `GET /api/users/stats` sin ningún control de acceso
 
-- [ ] **Problema:** El endpoint devuelve métricas completas de usuarios (totales, roles, crecimiento, logins) sin verificar sesión ni rol. Verificado: no importa `auth()` ni `validateApiRole` ([app/api/users/stats/route.ts](app/api/users/stats/route.ts)).
+- [x] **Problema:** El endpoint devuelve métricas completas de usuarios (totales, roles, crecimiento, logins) sin verificar sesión ni rol. Verificado: no importa `auth()` ni `validateApiRole` ([app/api/users/stats/route.ts](app/api/users/stats/route.ts)).
 - **Explicación:** Cualquier visitante anónimo puede hacer `curl /api/users/stats` y obtener inteligencia del negocio y distribución de roles (útil para atacar cuentas ADMINISTRADOR).
 - **Impacto/Riesgo:** Fuga de datos e inteligencia de negocio. OWASP A01 (Broken Access Control).
 - **Solución:** Agregar `validateApiRole(["ADMINISTRADOR"])` al inicio del handler, igual que en `app/api/users/route.ts`.

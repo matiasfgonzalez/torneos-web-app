@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
+import { validateApiRole } from "@/lib/apiRoleValidation";
 
 export async function GET() {
+  // Validate that only ADMINISTRADOR can access user stats
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     // Obtener estadísticas generales
     const [
