@@ -115,7 +115,8 @@
 
 ### C8. Middleware sin protección de rutas (defensa en profundidad)
 
-- [ ] **Problema:** [middleware.ts](middleware.ts) es `clerkMiddleware()` pelado: no protege `/admin` ni `/api`. Toda la seguridad depende de que cada page/handler se acuerde de validar (y varios no lo hacen, ver C1).
+- [x] **Problema:** [middleware.ts](middleware.ts) es `clerkMiddleware()` pelado: no protege `/admin` ni `/api`. Toda la seguridad depende de que cada page/handler se acuerde de validar (y varios no lo hacen, ver C1).
+- **Implementado (2026-07-05):** `/admin(.*)` y `/profile(.*)` con `auth.protect()` (anon → redirect a sign-in); toda mutación de `/api` (métodos no GET/HEAD/OPTIONS) exige sesión → 401 aunque el handler olvide validar; `/api/webhooks(.*)` excluido (validarán firma propia: Clerk/Mercado Pago). GETs públicos siguen abiertos. Verificado con dev server: POST/PATCH/DELETE anónimos → 401, GETs públicos → 200, /admin → 307 a Clerk.
 - **Solución:**
   ```ts
   const isProtected = createRouteMatcher(["/admin(.*)", "/profile(.*)"]);
