@@ -106,11 +106,13 @@
 
 ### C7. Autorización sin ownership + borrado físico en cascada
 
-- [ ] **Problema:** Cualquier `ORGANIZADOR`/`EDITOR` puede editar o **eliminar físicamente** torneos de otros usuarios ([app/api/tournaments/[id]/route.ts](app/api/tournaments/[id]/route.ts) hace `db.tournament.delete` → cascade borra partidos, goles, tarjetas, stats e historia). Existe `deletedAt` en el modelo pero no se usa.
+- [~] **Problema:** Cualquier `ORGANIZADOR`/`EDITOR` puede editar o **eliminar físicamente** torneos de otros usuarios ([app/api/tournaments/[id]/route.ts](app/api/tournaments/[id]/route.ts) hace `db.tournament.delete` → cascade borra partidos, goles, tarjetas, stats e historia). Existe `deletedAt` en el modelo pero no se usa.
 - **Solución (regla confirmada ✅):**
   1. ADMINISTRADOR y MODERADOR gestionan todo; ORGANIZADOR/EDITOR solo ven y editan recursos propios (`userId === user.id`), tanto en listados del admin como en mutaciones.
   2. DELETE → soft delete (`deletedAt: new Date()`) + filtrar `deletedAt: null` en todos los listados.
   3. Helper único `assertCanManage(user, resource)` en `lib/`, preparado para recibir `organizationId` cuando llegue S2.
+- **Implementado parcial (2026-07-05) — punto 2:** DELETE de torneo es soft delete (`deletedAt + enabled:false`), PATCH y recalculate rechazan torneos eliminados (404), y todos los listados/lecturas filtran `deletedAt: null` (`GET /api/tournaments`, `getTorneos`, `getTorneoById`, historial de perfil). Los datos quedan recuperables (restaurar = `deletedAt: null`; UI de papelera pendiente, va con F3).
+- **Pendiente — puntos 1 y 3 (ownership fino):** NO implementar con `userId`; N1/N2 lo redefinen por organización (`requireOrgRole`). Hacerlo dos veces es trabajo tirado — se resuelve en la migración del Sprint 3.
 - **Esfuerzo:** E:Medio · **Beneficio:** Aislamiento entre organizadores (pre-requisito para multi-tenancy) y datos recuperables.
 
 ### C8. Middleware sin protección de rutas (defensa en profundidad)

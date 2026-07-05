@@ -9,6 +9,7 @@ export async function getTorneos(): Promise<ITorneo[]> {
     const torneos = await db.tournament.findMany({
       where: {
         enabled: true, // Solo torneos habilitados
+        deletedAt: null, // Excluir eliminados lógicamente
       },
       include: {
         user: true,

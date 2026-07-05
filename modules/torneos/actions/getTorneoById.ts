@@ -5,8 +5,8 @@ import { db } from "@/lib/db";
 
 export async function getTorneoById(id: string): Promise<ITorneo | null> {
   try {
-    const torneo = await db.tournament.findUnique({
-      where: { id },
+    const torneo = await db.tournament.findFirst({
+      where: { id, deletedAt: null },
       include: {
         user: true, // Incluye datos del usuario creador, si es necesario
         tournamentTeams: {

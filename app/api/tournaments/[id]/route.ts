@@ -27,12 +27,29 @@ export async function DELETE(
       return authResult.error;
     }
 
-    const deletedTournament = await db.tournament.delete({
+    const existing = await db.tournament.findUnique({
       where: { id },
+      select: { id: true, deletedAt: true },
+    });
+
+    if (!existing || existing.deletedAt) {
+      return NextResponse.json(
+        { error: "Torneo no encontrado" },
+        { status: 404 },
+      );
+    }
+
+    // Soft delete: conserva partidos, goles, tarjetas y standings (recuperable)
+    const deletedTournament = await db.tournament.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        enabled: false,
+      },
     });
 
     return NextResponse.json(
-      { message: "Torneo eliminada correctamente", deletedTournament },
+      { message: "Torneo eliminado correctamente", deletedTournament },
       { status: 200 },
     );
   } catch (error) {
@@ -66,6 +83,18 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const parsed = tournamentUpdateSchema.safeParse(body);
     if (!parsed.success) {
       return validationErrorResponse(parsed.error);
+    }
+
+    const existing = await db.tournament.findUnique({
+      where: { id },
+      select: { deletedAt: true },
+    });
+
+    if (!existing || existing.deletedAt) {
+      return NextResponse.json(
+        { error: "Torneo no encontrado" },
+        { status: 404 },
+      );
     }
 
     const updatedTournament = await db.tournament.update({

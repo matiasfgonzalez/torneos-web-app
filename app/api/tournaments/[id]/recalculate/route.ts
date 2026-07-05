@@ -52,8 +52,8 @@ export async function POST(req: NextRequest, { params }: { params: tParams }) {
     }
 
     // Verificar que el torneo existe
-    const tournament = await db.tournament.findUnique({
-      where: { id: tournamentId },
+    const tournament = await db.tournament.findFirst({
+      where: { id: tournamentId, deletedAt: null },
       select: { id: true, name: true },
     });
 

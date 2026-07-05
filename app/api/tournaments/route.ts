@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     const liga = url.searchParams.get("liga");
 
     // Construir el objeto de consulta para Prisma
-    const query: Prisma.TournamentWhereInput = {};
+    const query: Prisma.TournamentWhereInput = { deletedAt: null };
     if (category) {
       query.category = category as TournamentCategory;
     }
