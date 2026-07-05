@@ -80,14 +80,99 @@ model Organization {
   ownerId String
   owner   User   @relation("OwnedOrganizations", fields: [ownerId], references: [id])
 
-  members     OrganizationMember[]
-  tournaments Tournament[]
-  teams       Team[]
-  players     Player[]
-  referees    Referee[]
+  members      OrganizationMember[]
+  tournaments  Tournament[]
+  teams        Team[]
+  players      Player[]
+  referees     Referee[]
+  subscription Subscription?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// PLANES Y PAGOS (N4/N5 — freemium D7, pagos manuales D8)
+// ============================================================
+
+model Plan {
+  id                    String  @id @default(uuid())
+  code                  String  @unique // FREE | PRO | PREMIUM
+  name                  String
+  priceMonthly          Decimal @db.Decimal(10, 2)
+  currency              String  @default("ARS")
+  maxActiveTournaments  Int
+  maxTeamsPerTournament Int
+  maxMembers            Int
+  // Flags: { "exportPdf": bool, "customBranding": bool, "liveMatch": bool }
+  features              Json
+  isActive              Boolean @default(true)
+  order                 Int     @default(0)
+
+  subscriptions Subscription[]
+}
+
+enum SubStatus {
+  ACTIVA
+  VENCIDA // pasó currentPeriodEnd → límites de FREE (nunca se ocultan datos)
+  CANCELADA
+}
+
+model Subscription {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  status           SubStatus @default(ACTIVA)
+  currentPeriodEnd DateTime? // null = FREE sin vencimiento
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments Payment[]
+}
+
+enum PayMethod {
+  TRANSFERENCIA
+  EFECTIVO
+  MERCADOPAGO // futuro: webhook crea el Payment aprobado con externalId
+}
+
+enum PayStatus {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+model Payment {
+  id             String       @id @default(uuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Plan que se está pagando (puede diferir del plan actual = upgrade)
+  planId String?
+
+  amount       Decimal   @db.Decimal(10, 2)
+  currency     String    @default("ARS")
+  periodMonths Int       @default(1)
+  method       PayMethod
+  status       PayStatus @default(PENDIENTE)
+
+  receiptUrl      String? // comprobante (Cloudinary: pagos/comprobantes)
+  receiptPublicId String?
+  externalId      String? // ID de Mercado Pago cuando exista
+  notes           String? // nota del organizador
+  reviewNotes     String? // motivo de rechazo del admin
+  reviewedById    String?
+  reviewedAt      DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([subscriptionId])
 }
 
 model OrganizationMember {

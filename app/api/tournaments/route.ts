@@ -3,6 +3,7 @@ import { AgeGroup, Gender, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgContext } from "@/lib/orgAuth";
+import { assertPlanLimit } from "@/lib/planLimits";
 import { apiError } from "@/lib/apiResponse";
 import { tournamentCreateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -21,6 +22,12 @@ export async function POST(req: Request) {
     const parsed = tournamentCreateSchema.safeParse(body);
     if (!parsed.success) {
       return validationErrorResponse(parsed.error);
+    }
+
+    // Límite del plan (402 = upsell)
+    const check = await assertPlanLimit(auth.org.id, "createTournament");
+    if (!check.ok) {
+      return apiError(402, check.error);
     }
 
     const newTournament = await db.tournament.create({

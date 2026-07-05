@@ -25,50 +25,69 @@ import {
   Newspaper,
   ArrowLeft,
   Info,
+  CreditCard,
+  Wallet,
 } from "lucide-react";
 
+// Roles de PLATAFORMA (N1): ADMINISTRADOR | USUARIO.
+// El acceso fino por organización lo validan los layouts/APIs;
+// acá USUARIO = miembro de organización con acceso al panel.
 const menuItems = [
   {
     title: "Dashboard",
     href: "/admin/dashboard",
     icon: Home,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR", "USUARIO"],
+    roles: ["ADMINISTRADOR", "USUARIO"],
   },
   {
     title: "Noticias",
     href: "/admin/noticias",
     icon: Newspaper,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR"],
+    roles: ["ADMINISTRADOR"],
   },
   {
     title: "Torneos",
     href: "/admin/torneos",
     icon: Trophy,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR"],
+    roles: ["ADMINISTRADOR", "USUARIO"],
   },
   {
     title: "Equipos",
     href: "/admin/equipos",
     icon: Users,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR"],
+    roles: ["ADMINISTRADOR", "USUARIO"],
   },
   {
     title: "Jugadores",
     href: "/admin/jugadores",
     icon: UserCheck,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR"],
+    roles: ["ADMINISTRADOR", "USUARIO"],
   },
   {
     title: "Árbitros",
     href: "/admin/arbitros",
     icon: Shield,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR"],
+    roles: ["ADMINISTRADOR", "USUARIO"],
+  },
+  {
+    title: "Partidos",
+    href: "/admin/partidos",
+    icon: Calendar,
+    enabled: true,
+    roles: ["ADMINISTRADOR", "USUARIO"],
+  },
+  {
+    title: "Plan y Pagos",
+    href: "/admin/plan",
+    icon: CreditCard,
+    enabled: true,
+    roles: ["ADMINISTRADOR", "USUARIO"],
   },
   {
     title: "Usuarios",
@@ -78,11 +97,11 @@ const menuItems = [
     roles: ["ADMINISTRADOR"],
   },
   {
-    title: "Partidos",
-    href: "/admin/partidos",
-    icon: Calendar,
+    title: "Aprobar Pagos",
+    href: "/admin/pagos",
+    icon: Wallet,
     enabled: true,
-    roles: ["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"],
+    roles: ["ADMINISTRADOR"],
   },
   {
     title: "Estadísticas",

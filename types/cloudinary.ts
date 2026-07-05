@@ -92,6 +92,7 @@ export const ALLOWED_UPLOAD_FOLDERS = [
   "noticias/covers",
   "jugadores/cuerpo",
   "jugadores/rostro",
+  "pagos/comprobantes",
 ] as const;
 
 /** Prefijos raíz gestionados por la app (derivados de las carpetas permitidas) */

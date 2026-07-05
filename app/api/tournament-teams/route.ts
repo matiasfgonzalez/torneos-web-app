@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getTournamentOrgId, requireApiOrgAccess } from "@/lib/orgAuth";
+import { assertPlanLimit } from "@/lib/planLimits";
 import { tournamentTeamCreateSchema } from "@/lib/validators/tournament-team";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -25,6 +26,14 @@ export async function POST(req: Request) {
     const auth = await requireApiOrgAccess(orgId);
     if (auth.error) {
       return auth.error;
+    }
+
+    // Límite del plan: equipos por torneo (402 = upsell)
+    const check = await assertPlanLimit(orgId, "addTeamToTournament", {
+      tournamentId: parsed.data.tournamentId,
+    });
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: 402 });
     }
 
     // Crear la relación equipo-torneo

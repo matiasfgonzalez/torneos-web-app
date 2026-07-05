@@ -513,7 +513,9 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N4. 🟠 Planes y límites — schema + enforcement (E:Medio)
 
-- [ ] **Qué:** modelo de planes con límites, sin pasarela todavía.
+> ✅ **Implementado (2026-07-05):** modelos `Plan`/`Subscription` (migración `planes_y_pagos`), seed idempotente con FREE/PRO/PREMIUM ([prisma/seed.js](prisma/seed.js) — **precios placeholder: $0/$15.000/$25.000 ARS, editarlos ahí o en BD**). [lib/planLimits.ts](lib/planLimits.ts): suscripción FREE auto-creada, plan efectivo (vencida → límites FREE sin ocultar datos), `assertPlanLimit` aplicado en crear torneo (402) y agregar equipo a torneo (402), `hasFeature()` listo para exportPdf/branding/liveMatch. **Pendiente:** enforcement de `maxMembers` (no hay endpoint de invitaciones aún — va con N6) y UI de upsell linda ante el 402 (hoy toast con el mensaje).
+
+- [x] **Qué:** modelo de planes con límites, sin pasarela todavía.
   ```prisma
   model Plan {
     id            String  @id @default(uuid())
@@ -546,7 +548,10 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N5. 🟠 Pagos manuales con comprobante (E:Medio)
 
-- [ ] **Qué:** flujo completo sin pasarela, diseñado para enchufar Mercado Pago después sin migrar.
+> ✅ **Implementado (2026-07-05):** modelo `Payment` (con `planId` del plan pagado, `method`/`externalId` MP-ready). API: `POST /api/payments` (solo OWNER/admin; monto calculado server-side), `GET /api/payments` (admin: todos; organizador: su org), `PATCH /api/payments/[id]` (admin aprueba/rechaza; aprobar activa plan + extiende vencimiento en transacción), `GET /api/plans`, `GET /api/org/subscription` (plan efectivo + uso). Páginas: [/admin/plan](app/admin/plan/page.tsx) (plan actual, uso, contratar con comprobante vía Cloudinary `pagos/comprobantes`, historial) y [/admin/pagos](app/admin/pagos/page.tsx) (cola admin con comprobante, aprobar/rechazar con motivo). Sidebar actualizado a roles nuevos + links Plan/Pagos.
+> **Pendientes de N5:** (1) alias/CBU de transferencia hardcodeado como "GOLAZO.PAGOS" en la página de plan — mover a env/config con el dato real; (2) notificación al admin al informar pago y al OWNER al aprobar/rechazar — llega con S5; (3) los comprobantes en Cloudinary son URL pública no listada — evaluar delivery privado/URL firmada; (4) integración Mercado Pago (webhook → Payment APROBADO).
+
+- [x] **Qué:** flujo completo sin pasarela, diseñado para enchufar Mercado Pago después sin migrar.
   ```prisma
   model Payment {
     id             String   @id @default(uuid())
