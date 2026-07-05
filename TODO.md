@@ -357,7 +357,7 @@
 > Ordenadas por relación valor/esfuerzo. Las 4 primeras convierten la app de "gestor interno" a "plataforma".
 
 - [ ] **S1. Generador automático de fixture (E:Alto, valor máximo):** round-robin (ida/vuelta), grupos balanceados y brackets con byes a partir de los equipos inscriptos; hoy crear cada partido a mano es el mayor dolor del organizador. Algoritmo puro + tests (encaja con A8).
-- [ ] **S2. Multi-tenancy con organizaciones/ligas (E:Alto, decisión tomada ✅ — el producto es SaaS multi-liga):** modelo `Organization` (dueño, miembros con roles por organización, branding propio, slug `/liga/[slug]`); `Tournament`, `Team`, `Player`, `Referee` y `News` referencian `organizationId`. Evaluar Clerk Organizations para membresías. Diseñar el schema en el Sprint 3 (junto con A6) aunque la UI llegue después, para no migrar dos veces.
+- [ ] **S2. Multi-tenancy con organizaciones/ligas:** ✅ definido y detallado en N2 (schema concreto de `Organization`/`OrganizationMember`, News queda global, sin Clerk Organizations). Ver sección 🧭.
 - [ ] **S3. Inscripción online de equipos (E:Alto):** flujo público — organizador publica torneo con cupos y fecha límite → delegados registran equipo + plantel → organizador aprueba/rechaza. Estados `INSCRIPCION` ya existen en el enum; falta el workflow. Opcional: cobro de inscripción con Mercado Pago.
 - [ ] **S4. Página pública compartible + QR (E:Medio):** URL limpia por torneo con OG image dinámica (marcador/tabla), botón compartir por WhatsApp (canal #1 en ligas amateur) y QR imprimible.
 - [ ] **S5. Notificaciones (E:Medio):** in-app (campana con no-leídas) + email (Resend) para: resultado cargado, próximo partido, equipo aprobado. Base: modelo `Notification` + preferencias por usuario.
@@ -366,7 +366,216 @@
 - [ ] **S8. Exportables (E:Bajo-Medio):** fixture y tabla en PDF con branding, planteles en CSV. Muy pedido por organizadores.
 - [ ] **S9. PWA (E:Medio):** manifest + service worker; los usuarios finales lo usan desde el celular en la cancha.
 - [ ] **S10. Multi-deporte (E:Alto, evaluar):** campo `sport` en Tournament con configuración de puntaje por deporte (básquet/vóley no usan 3-1-0). Solo si el negocio lo pide; diseñarlo en S2 para no migrar dos veces.
-- [ ] **S11. Billing/planes freemium (E:Alto, post-MVP):** límite de torneos/equipos por plan, Stripe o Mercado Pago Suscripciones. Depende de S2.
+- [ ] **S11. Billing/planes freemium:** ✅ definido y detallado en N4 (planes/límites) + N5 (pagos manuales) + Mercado Pago después. Ver sección 🧭.
+
+---
+
+## 🧭 NEGOCIO Y MODELO DE DATOS — Auditoría de Prisma vs. objetivos del producto (2026-07-05)
+
+> Auditoría profunda del schema, la estructura y las reglas de negocio contra la visión definida por el product owner:
+> landing atractiva para captar clientes → registro como usuario básico → upgrade a ORGANIZADOR contratando un plan →
+> organizadores gestionan torneos completos (equipos, jugadores, partidos, árbitros, goles, tarjetas) → el administrador
+> gestiona todo, aprueba pagos manuales (comprobante) y más adelante integra Mercado Pago.
+
+### Diagnóstico: qué cumple y qué no
+
+**Lo que el modelo actual hace bien (conservar):**
+
+- El núcleo deportivo es rico y está bien normalizado: `Tournament → TournamentPhase → Match → Goal/Card/MatchReferee`, con `TournamentTeam` (equipo-en-torneo) y `TeamPlayer` (jugador-en-equipo-en-torneo) como tablas puente correctas. Esto permite que un mismo equipo/jugador participe en múltiples torneos con stats separadas — exactamente lo que un SaaS de ligas necesita.
+- `TeamPhaseStats` con `bonusPoints` ya soporta grupos, fases y ajustes manuales.
+- `Referee`/`MatchReferee` con roles por partido es más completo que la mayoría de competidores amateur.
+
+**Lo que NO cumple con los objetivos (bloqueante para el modelo de negocio):**
+
+1. **Roles globales equivocados.** `UserRole` mezcla roles de plataforma (ADMINISTRADOR) con roles de trabajo (EDITOR, MODERADOR, ORGANIZADOR) a nivel global. En el negocio real, "organizador" no es un rol global: es una relación con UNA liga/organización. Hoy un ORGANIZADOR ve/toca datos de todos. → N1/N2.
+2. **No existe `Organization`.** Sin ella no hay: varios organizadores por torneo, datos privados por liga, planes por cliente, ni facturación. Es LA tabla que convierte la app de "gestor personal" a SaaS. → N2.
+3. **No existe nada de billing.** Ni plan, ni suscripción, ni pago. El flujo "contratar plan → ser organizador" no tiene dónde vivir. → N4/N5.
+4. **Reglas deportivas hardcodeadas.** 3-1-0 puntos fijo en `calculateTeamStats`, sin criterios de desempate configurables, sin sanciones automáticas por acumulación, sin campo para ganador de walkover. → N7/N8.
+5. **Sin identidad pública.** No hay `slug` en Tournament ni Organization: las URLs públicas compartibles (el canal de adquisición #1: WhatsApp) no se pueden construir bien. → N9.
+6. **`User.status = PENDIENTE` por default** sin flujo de activación definido: hoy un registrado queda en limbo. → N1.
+
+### Decisiones de negocio nuevas (2026-07-05) — ver sección Decisiones al final
+
+Roles simplificados (D5), datos privados por organización (D6), freemium (D7), pagos manuales primero (D8), múltiples organizadores vía membresía (D9). Las tareas N* implementan estas decisiones.
+
+### Tareas por prioridad
+
+#### N1. 🔴 Redefinir roles: plataforma vs. organización (E:Medio)
+
+- [ ] **Qué:** separar rol de plataforma y rol dentro de una organización.
+  - `UserRole` global queda en 2: `ADMINISTRADOR` (vos) y `USUARIO` (todo registrado; el "cliente/visitante").
+  - Rol de trabajo pasa a `OrganizationMember.role`: `OWNER` (creó la liga, gestiona plan y miembros), `ORGANIZADOR` (gestión completa de torneos/equipos/jugadores/partidos), `COLABORADOR` (solo carga resultados/eventos en vivo; ideal planilleros).
+  - Migración de datos existentes: EDITOR/MODERADOR/ORGANIZADOR actuales → `USUARIO` global + membresía en una organización creada para ellos.
+  - Registro nuevo: `status = ACTIVO` directo (eliminar PENDIENTE como default; queda para moderación manual si hiciera falta).
+- **Permisos resultantes:**
+  | Acción | Anónimo | USUARIO | COLABORADOR | ORGANIZADOR | OWNER | ADMIN |
+  |---|---|---|---|---|---|---|
+  | Ver páginas públicas | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+  | Favoritos/seguir torneos | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+  | Cargar resultados/goles/tarjetas | ❌ | ❌ | ✅ (su org) | ✅ (su org) | ✅ | ✅ |
+  | CRUD torneos/equipos/jugadores/árbitros | ❌ | ❌ | ❌ | ✅ (su org) | ✅ | ✅ |
+  | Miembros, plan, pagos de la org | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+  | Noticias globales, planes, aprobar pagos, todo | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+- **Detalles:** reemplaza los checks `validateApiRole(["ADMINISTRADOR","EDITOR","ORGANIZADOR"])` por `requireOrgRole(orgId, ["ORGANIZADOR","OWNER"])` + `requireAdmin()`. Resuelve C7 y C10 de forma definitiva. Noticias globales = solo ADMIN (marketing de la plataforma).
+
+#### N2. 🔴 Modelo `Organization` + membresías — concreta S2 (E:Alto)
+
+- [ ] **Qué:** la tabla central del SaaS. Schema propuesto:
+  ```prisma
+  model Organization {
+    id          String   @id @default(uuid())
+    name        String            // "Liga Municipal de Rafaela"
+    slug        String   @unique  // /liga/liga-municipal-rafaela
+    logoUrl     String?
+    logoPublicId String?
+    description String?
+    locality    String?
+    phone       String?           // contacto público (WhatsApp)
+    status      OrgStatus @default(ACTIVA) // ACTIVA | SUSPENDIDA (por falta de pago/abuso)
+    ownerId     String
+    owner       User     @relation(fields: [ownerId], references: [id])
+    members     OrganizationMember[]
+    subscription Subscription?
+    tournaments Tournament[]
+    teams       Team[]
+    players     Player[]
+    referees    Referee[]
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+  }
+
+  model OrganizationMember {
+    id             String   @id @default(uuid())
+    organizationId String
+    userId         String
+    role           OrgRole  // OWNER | ORGANIZADOR | COLABORADOR
+    invitedById    String?
+    createdAt      DateTime @default(now())
+    @@unique([organizationId, userId])
+  }
+  ```
+  - `organizationId` **obligatorio** en `Tournament`, `Team`, `Player`, `Referee` (nullable solo durante la migración). `News` queda global (solo admin).
+  - "Un torneo con varios organizadores" = varios `OrganizationMember` con rol ORGANIZADOR/COLABORADOR. No hace falta tabla torneo-organizador; si a futuro se quiere restringir un miembro a UN torneo, se agrega `TournamentAccess` opcional (no ahora).
+- **Detalles:** ejecutar en la MISMA migración que A6 (índices) y M13 (categorías) para migrar una sola vez. Invitaciones por email (miembro existente o invitación pendiente por email). Clerk Organizations: evaluado — **no usar**; membresía propia en BD da control total sobre roles/planes y evita acoplar billing a Clerk.
+
+#### N3. 🔴 Visibilidad de datos entre organizaciones (E:Bajo, es política + queries)
+
+- [ ] **Qué:** definir y aplicar la regla de qué ve cada organizador.
+  - **Privado por organización (gestión):** equipos, jugadores, árbitros y torneos se crean, ven y editan SOLO dentro de la organización dueña. Otro organizador NO los ve en sus paneles ni los puede reutilizar. Razones: (a) integridad — nadie quiere que otra liga edite a sus jugadores; (b) privacidad — datos personales (DNI, fecha de nacimiento, fotos de menores); (c) simplicidad de permisos.
+  - **Público read-only (difusión):** las páginas públicas de torneo/equipo/jugador son visibles para todos (es el marketing del organizador y de GOLAZO).
+  - **Reutilización dentro de la org:** el mismo `Team`/`Player` participa en todos los torneos de su organización (Apertura, Clausura, Copa) — el modelo actual ya lo soporta vía `TournamentTeam`/`TeamPlayer`.
+  - **Cross-liga (futuro, N12):** identidad global de jugador por DNI con stats agregadas de todas las ligas. Es un diferenciador fuerte pero requiere verificación de identidad; NO entra ahora.
+
+#### N4. 🟠 Planes y límites — schema + enforcement (E:Medio)
+
+- [ ] **Qué:** modelo de planes con límites, sin pasarela todavía.
+  ```prisma
+  model Plan {
+    id            String  @id @default(uuid())
+    code          String  @unique  // FREE | PRO | PREMIUM
+    name          String
+    priceMonthly  Decimal @db.Decimal(10,2)
+    currency      String  @default("ARS")
+    maxActiveTournaments Int      // FREE: 1
+    maxTeamsPerTournament Int     // FREE: 12
+    maxMembers    Int             // FREE: 2
+    features      Json            // { "exportPdf": false, "customBranding": false, "liveMatch": false, ... }
+    isActive      Boolean @default(true)
+    order         Int     @default(0)
+  }
+
+  model Subscription {
+    id             String   @id @default(uuid())
+    organizationId String   @unique
+    planId         String
+    status         SubStatus // ACTIVA | VENCIDA | CANCELADA
+    currentPeriodEnd DateTime? // null = FREE sin vencimiento
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+    payments       Payment[]
+  }
+  ```
+  - **Sugerencia de planes iniciales:** FREE (1 torneo activo, 12 equipos/torneo, 2 miembros, marca "Powered by GOLAZO" en páginas públicas) / PRO (torneos ilimitados, 30 equipos, 10 miembros, export PDF, sin marca) / PREMIUM (todo + branding propio de la liga + live match center cuando exista). Precios los definís vos; el schema no los hardcodea.
+  - **Enforcement:** helper único `assertPlanLimit(orgId, "createTournament" | "addTeam" | "addMember")` llamado en los endpoints de creación; devuelve 402 con mensaje de upsell. Features por flag: `hasFeature(orgId, "exportPdf")`. Los límites se leen del Plan, nunca se copian a la org (cambiar un plan actualiza a todos sus clientes).
+  - **Vencimiento:** job/check on-read — si `currentPeriodEnd < now` → status VENCIDA → la org pasa a límites de FREE (no se borra nada; solo se bloquea crear). Nunca ocultar datos ya cargados: es la mejor política de retención.
+
+#### N5. 🟠 Pagos manuales con comprobante (E:Medio)
+
+- [ ] **Qué:** flujo completo sin pasarela, diseñado para enchufar Mercado Pago después sin migrar.
+  ```prisma
+  model Payment {
+    id             String   @id @default(uuid())
+    subscriptionId String
+    amount         Decimal  @db.Decimal(10,2)
+    currency       String   @default("ARS")
+    periodMonths   Int      @default(1)   // cuántos meses paga
+    method         PayMethod // TRANSFERENCIA | EFECTIVO | MERCADOPAGO
+    status         PayStatus @default(PENDIENTE) // PENDIENTE | APROBADO | RECHAZADO
+    receiptUrl     String?   // comprobante (Cloudinary, carpeta pagos/comprobantes)
+    receiptPublicId String?
+    externalId     String?   // ID de MP cuando exista
+    notes          String?   // nota del organizador
+    reviewNotes    String?   // motivo de rechazo del admin
+    reviewedById   String?
+    reviewedAt     DateTime?
+    createdAt      DateTime @default(now())
+  }
+  ```
+  - **Flujo:** OWNER elige plan → página muestra datos de transferencia (alias/CBU) → sube comprobante → `Payment PENDIENTE` → notificación al admin → admin aprueba (extiende `currentPeriodEnd` += periodMonths y activa) o rechaza con motivo → notificación al OWNER.
+  - **Páginas nuevas:** `/admin/pagos` (cola con comprobante visible, aprobar/rechazar) y `/org/plan` (plan actual, vencimiento, historial de pagos, subir comprobante).
+  - **Mercado Pago después:** mismo modelo — webhook de MP crea `Payment` con `method: MERCADOPAGO, status: APROBADO, externalId` y extiende el período. Cero migración.
+  - ⚠️ Agregar carpeta `pagos/comprobantes` a `ALLOWED_UPLOAD_FOLDERS` (C4) y que el comprobante NO sea público (usar delivery privado de Cloudinary o guardarlo con URL firmada).
+
+#### N6. 🟠 Onboarding de organizador — "Creá tu liga" (E:Medio)
+
+- [ ] **Qué:** el camino USUARIO → OWNER con la menor fricción posible.
+  - **Recomendación fuerte (freemium):** cualquier USUARIO crea su organización GRATIS (plan FREE) self-service, sin aprobación manual. Prueba el producto con 1 torneo real y paga cuando choca con los límites. Pedir pago antes de probar mata la conversión en este mercado.
+  - Wizard: nombre de la liga → localidad/logo → primer torneo (nombre, formato, fecha) → invitar co-organizadores (opcional) → listo, panel.
+  - CTAs en landing: "Creá tu torneo gratis" (hero) + pricing con los 3 planes + FAQ.
+  - El registro común queda como está (USUARIO): puede seguir torneos y ver todo lo público; el upsell a crear liga está siempre visible en su home.
+
+#### N7. 🟠 Configuración deportiva por torneo (E:Medio)
+
+- [ ] **Qué:** sacar las reglas hardcodeadas del código y llevarlas al torneo.
+  - `Tournament`: `pointsWin Int @default(3)`, `pointsDraw Int @default(1)`, `pointsLoss Int @default(0)`, `tiebreakers Json` (orden de criterios: PTS, DIF, GF, H2H, FairPlay, Sorteo), `walkoverScore Int @default(3)`.
+  - `Match`: `walkoverWinnerTeamId String?` — el organizador marca el ganador y el server fija el marcador automáticamente (cierra el pendiente de C6; la UI deja de exigir cargar 3-0 a mano).
+  - `calculateTeamStats` recibe la config del torneo en vez de 3-1-0 fijo; el orden de la tabla usa `tiebreakers`.
+  - Esto habilita multi-deporte después (S10): básquet/vóley solo cambian puntos y desempates.
+
+#### N8. 🟡 Sanciones automáticas (E:Medio)
+
+- [ ] **Qué:** el organizador no debería llevar la cuenta de amarillas a mano.
+  - `Tournament`: `yellowsForSuspension Int @default(5)`, `matchesPerRedCard Int @default(1)`.
+  - Modelo `Suspension { teamPlayerId, tournamentId, reason (ACUMULACION|ROJA|MANUAL), totalMatches, servedMatches, isActive }`.
+  - Al cargar una Card: recalcular; si corresponde, crear suspensión y notificar. Al finalizar cada partido: descontar `servedMatches` de los suspendidos que no jugaron.
+  - Vista pública "Sancionados" por torneo + warning al organizador si alinea (carga gol/tarjeta de) un jugador suspendido.
+
+#### N9. 🟡 Slugs y URLs públicas compartibles (E:Bajo)
+
+- [ ] **Qué:** `slug @unique` en `Organization` y `Tournament` (único por org), rutas `/liga/[slug]` y `/liga/[slug]/[torneo]`, redirect de las rutas por UUID. Es prerequisito de S4 (QR + OG images + compartir por WhatsApp). Generación automática desde el nombre con desambiguación (`-2`).
+
+#### N10. 🟡 Vistas y páginas faltantes por rol (E:Alto, iterativo)
+
+- [ ] **Público (no logueado):** directorio de ligas/torneos activos con búsqueda por localidad; página de torneo (tabla, fixture, resultados, goleadores, tarjetas, sancionados); página de equipo (plantel, historial); página de jugador (stats por torneo). Todo SEO-first (M3) — es el embudo de adquisición: jugador busca su torneo → lo ve → "Creá el tuyo gratis".
+- [ ] **USUARIO logueado:** home con torneos/equipos seguidos (`Favorite { userId, tournamentId?, teamId? }`), notificaciones (S5), perfil. CTA permanente "Creá tu liga".
+- [ ] **Organizador (panel org):** dashboard (próximos partidos, resultados sin cargar, estado del plan); **carga rápida de resultados mobile-first** (desde la cancha: marcador + goleadores + tarjetas en una pantalla — es LA pantalla más usada del producto); gestión de miembros; `/org/plan`.
+- [ ] **Admin (vos):** cola de pagos (N5); CRUD de planes; listado de organizaciones con estado/plan/último pago y acción suspender; métricas SaaS (orgs activas, conversiones FREE→PRO, ingresos del mes, torneos creados); "ver como organización" (impersonar solo lectura para soporte).
+
+#### N11. 🟡 Limpieza y completitud del schema (E:Medio, misma migración que N2/A6/M13)
+
+- [ ] Eliminar el modelo legacy `Phase` + `Match.phaseId` + `Tournament.phaseId` (migrar datos existentes a `TournamentPhase`).
+- [ ] `TournamentPhase.type`: String → enum `PhaseType (LEAGUE|GROUP|KNOCKOUT)`.
+- [ ] `Team.yearFounded`: String? → Int?.
+- [ ] `Player.nationalId String?` (DNI) con `@@unique([organizationId, nationalId])` — evita duplicados dentro de la liga y prepara N12 e inscripciones (S3).
+- [ ] `Goal.assistTeamPlayerId String?` (asistencias — stat muy pedida y barata).
+- [ ] `TeamPlayer.isCaptain Boolean @default(false)`.
+- [ ] `TournamentTeam.registrationStatus` enum (`INSCRIPTO` default | `PENDIENTE` | `RECHAZADO`) — base para inscripción online (S3).
+- [ ] `deletedAt` consistente: hoy existe en Tournament/Team/Referee pero no en Player/News; unificar y filtrar `deletedAt: null` en TODOS los listados (relacionado C7).
+- [ ] Revisar `TournamentFormat`: marcar qué formatos soporta realmente el generador de fixture (S1) y ocultar el resto en la UI (evita torneos "SUIZO" que nada implementa).
+
+#### N12. 🟢 Identidad global de jugador cross-liga (E:Alto, post-N2, diferenciador futuro)
+
+- [ ] Perfil global verificado por DNI: un jugador puede reclamar su perfil (registrándose con el DNI que cargó su organizador), ver sus stats agregadas de todas las ligas y su "carnet digital" con QR (verificación anti-suplantación en la cancha, dolor real de ligas amateur). Convierte a los ~jugadores (miles) en usuarios de la plataforma → embudo de nuevos organizadores. Requiere N2, N3 y política de privacidad.
 
 ---
 
@@ -374,13 +583,14 @@
 
 | Sprint | Contenido | Resultado |
 |---|---|---|
-| 1 | C1–C9 completos | Producto seguro; datos íntegros |
+| 1 | C1–C10 completos | Producto seguro; datos íntegros |
 | 2 | A1, A2, A4, A5, A7, A10 | Base de código única y honesta |
-| 3 | A3, A6 + M13 + schema `Organization` (S2) en una sola migración, A8 (tests de standings + CI) | Escalable, multi-tenant a nivel datos y con red de seguridad |
-| 4 | F0 + M6 + M10 (design system) | Fundaciones visuales |
-| 5 | F2 + F3 (rediseño público y admin) + M2, M7 | UI nivel SaaS |
-| 6 | M3, M4, M8, M9, M11, M12 + F4 | Pulido enterprise |
-| 7+ | S1 → S2 → S3 → S4/S5 | Diferenciación de producto |
+| 3 | A3, A6 + M13 + **N1 + N2 + N3 + N11** en una sola migración, A8 (tests de standings + CI) | Multi-tenant real: roles correctos, organizaciones, datos privados por liga |
+| 4 | **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + N9 | Modelo de negocio operativo: se puede cobrar |
+| 5 | F0 + M6 + M10 (design system) + **N7** | Fundaciones visuales + reglas deportivas configurables |
+| 6 | F2 + F3 (rediseño público y admin) + M2, M7 + **N10** | UI nivel SaaS con las vistas por rol completas |
+| 7 | M3, M4, M8, M9, M11, M12 + F4 + **N8** | Pulido enterprise + sanciones automáticas |
+| 8+ | S1 (fixture) → S3 (inscripciones) → S4/S5 → Mercado Pago → **N12** | Diferenciación de producto |
 
 ## ✅ Decisiones de negocio definidas (2026-07-03)
 
@@ -399,3 +609,20 @@
 4. **Categorías (M13): separar el enum en 3 campos.**
    - `ageGroup` (LIBRE, SUB_17, SUB_20, JUVENIL, VETERANO, M30, ...), `gender` (MASCULINO, FEMENINO, MIXTO) y `division` (texto opcional: "A", "Primera", ...).
    - Reemplaza a `TournamentCategory`. Permite "Sub-17 Femenino A", filtros reales y estadísticas cruzadas. Ejecutar junto con la migración de A6.
+
+### Decisiones agregadas el 2026-07-05 (auditoría de negocio, sección 🧭)
+
+5. **Roles (N1): 2 roles de plataforma + 3 roles por organización.**
+   - Global: `ADMINISTRADOR` (product owner) y `USUARIO` (todo registrado). Se eliminan EDITOR/MODERADOR/ORGANIZADOR globales.
+   - Por organización: `OWNER`, `ORGANIZADOR`, `COLABORADOR` (solo carga de resultados). Registro nuevo queda ACTIVO directo.
+6. **Visibilidad (N3): datos privados por organización, públicos read-only.**
+   - Equipos, jugadores, árbitros y torneos se gestionan solo dentro de su organización. Otras organizaciones no los ven ni reutilizan.
+   - Las páginas públicas (torneo/equipo/jugador) son visibles para todos. Identidad cross-liga por DNI queda para N12.
+7. **Freemium (N4/N6): crear liga es gratis, pagar es para crecer.**
+   - Cualquier USUARIO crea su organización con plan FREE self-service (1 torneo activo, límites bajos, marca GOLAZO).
+   - Los planes pagos (PRO/PREMIUM) levantan límites y features. Al vencer un pago la org vuelve a límites FREE; nunca se ocultan datos ya cargados.
+8. **Pagos (N5): manuales con comprobante primero, Mercado Pago después.**
+   - OWNER sube comprobante de transferencia → admin aprueba/rechaza desde `/admin/pagos` → se extiende el período.
+   - El modelo `Payment` nace preparado para MP (`method`, `externalId`): la integración posterior no migra datos.
+9. **Múltiples organizadores por torneo (N2): vía membresía de la organización.**
+   - Todos los miembros ORGANIZADOR/COLABORADOR de la org gestionan sus torneos. Sin tabla torneo-organizador por ahora.
