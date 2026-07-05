@@ -26,18 +26,7 @@ export async function addGoal(data: {
 
     if (!previousMatch) throw new Error("Partido no encontrado");
 
-    // 2. Crear el gol
-    await db.goal.create({
-      data: {
-        matchId: data.matchId,
-        teamPlayerId: data.teamPlayerId,
-        minute: data.minute,
-        isOwnGoal: data.isOwnGoal,
-        isPenalty: data.isPenalty,
-      },
-    });
-
-    // 3. Determinar a quién sumar el gol en el marcador
+    // 2. Determinar a quién sumar el gol en el marcador
     // Si es autogol, se suma al equipo contrario
     // Si NO es autogol, se suma al equipo del jugador
     const isHome = previousMatch.homeTeamId === data.teamId;
@@ -50,19 +39,32 @@ export async function addGoal(data: {
       if (data.isOwnGoal) incrementHome = 1; else incrementAway = 1;
     }
 
-    // 4. Actualizar marcador del partido
-    const updatedMatch = await db.match.update({
-      where: { id: data.matchId },
-      data: {
-        homeScore: (previousMatch.homeScore || 0) + incrementHome,
-        awayScore: (previousMatch.awayScore || 0) + incrementAway,
-      },
-    });
+    // 3. Gol + marcador + tabla de posiciones en una única transacción
+    await db.$transaction(async (tx) => {
+      await tx.goal.create({
+        data: {
+          matchId: data.matchId,
+          teamPlayerId: data.teamPlayerId,
+          minute: data.minute,
+          isOwnGoal: data.isOwnGoal,
+          isPenalty: data.isPenalty,
+        },
+      });
 
-    // 5. Aplicar cambios a la tabla de posiciones con deltas
-    const previousResult = extractMatchResult(previousMatch);
-    const newResult = extractMatchResult(updatedMatch);
-    await applyMatchResult(previousResult, newResult);
+      const updatedMatch = await tx.match.update({
+        where: { id: data.matchId },
+        data: {
+          homeScore: (previousMatch.homeScore || 0) + incrementHome,
+          awayScore: (previousMatch.awayScore || 0) + incrementAway,
+        },
+      });
+
+      await applyMatchResult(
+        tx,
+        extractMatchResult(previousMatch),
+        extractMatchResult(updatedMatch),
+      );
+    });
 
     revalidatePath(`/admin/torneos/${previousMatch.tournamentId}`);
     return { success: true };
@@ -105,28 +107,30 @@ export async function deleteGoal(goalId: string) {
       if (goal.isOwnGoal) decrementHome = 1; else decrementAway = 1;
     }
 
-    // 3. Eliminar el gol
-    await db.goal.delete({
-      where: { id: goalId },
-    });
-
-    // 4. Actualizar marcador del partido
-    // Aseguramos no bajar de 0
+    // 3. Calcular nuevo marcador (asegurando no bajar de 0)
     const newHomeScore = Math.max(0, (previousMatch.homeScore || 0) - decrementHome);
     const newAwayScore = Math.max(0, (previousMatch.awayScore || 0) - decrementAway);
 
-    const updatedMatch = await db.match.update({
-      where: { id: goal.matchId },
-      data: {
-        homeScore: newHomeScore,
-        awayScore: newAwayScore,
-      },
-    });
+    // 4. Borrado + marcador + tabla de posiciones en una única transacción
+    await db.$transaction(async (tx) => {
+      await tx.goal.delete({
+        where: { id: goalId },
+      });
 
-    // 5. Aplicar cambios a la tabla de posiciones con deltas
-    const previousResult = extractMatchResult(previousMatch);
-    const newResult = extractMatchResult(updatedMatch);
-    await applyMatchResult(previousResult, newResult);
+      const updatedMatch = await tx.match.update({
+        where: { id: goal.matchId },
+        data: {
+          homeScore: newHomeScore,
+          awayScore: newAwayScore,
+        },
+      });
+
+      await applyMatchResult(
+        tx,
+        extractMatchResult(previousMatch),
+        extractMatchResult(updatedMatch),
+      );
+    });
 
     revalidatePath(`/admin/torneos/${previousMatch.tournamentId}`);
     return { success: true };

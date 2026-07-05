@@ -1,11 +1,17 @@
-"use server";
-
 import { db } from "@/lib/db";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus, Prisma } from "@prisma/client";
 import { MatchResult, extractMatchResult } from "./utils";
+import { phaseTypeCountsPoints } from "./phase-utils";
 
 // Re-exportar para compatibilidad con código existente que importa desde aquí
 export { extractMatchResult };
+
+/**
+ * Cliente de base de datos: acepta tanto `db` como un cliente de transacción.
+ * Todas las operaciones de standings deben correr dentro de `db.$transaction`
+ * junto con la mutación del partido que las origina.
+ */
+type DbClient = Prisma.TransactionClient;
 
 /**
  * Estadísticas que se actualizan en TournamentTeam
@@ -23,13 +29,13 @@ interface TeamStatsUpdate {
 
 /**
  * Calcula las estadísticas de un equipo basado en un resultado
- * @param teamScore - Goles del equipo  
+ * @param teamScore - Goles del equipo
  * @param opponentScore - Goles del oponente
  * @returns Estadísticas calculadas
  */
 function calculateTeamStats(
   teamScore: number,
-  opponentScore: number
+  opponentScore: number,
 ): TeamStatsUpdate {
   const isWin = teamScore > opponentScore;
   const isDraw = teamScore === opponentScore;
@@ -48,47 +54,68 @@ function calculateTeamStats(
 }
 
 /**
- * Invierte los signos de las estadísticas (para restar)
+ * Multiplica las estadísticas por un signo (+1 sumar, -1 restar)
  */
-function negateStats(stats: TeamStatsUpdate): TeamStatsUpdate {
+function scaleStats(stats: TeamStatsUpdate, sign: 1 | -1): TeamStatsUpdate {
   return {
-    matchesPlayed: -stats.matchesPlayed,
-    wins: -stats.wins,
-    draws: -stats.draws,
-    losses: -stats.losses,
-    goalsFor: -stats.goalsFor,
-    goalsAgainst: -stats.goalsAgainst,
-    goalDifference: -stats.goalDifference,
-    points: -stats.points,
+    matchesPlayed: sign * stats.matchesPlayed,
+    wins: sign * stats.wins,
+    draws: sign * stats.draws,
+    losses: sign * stats.losses,
+    goalsFor: sign * stats.goalsFor,
+    goalsAgainst: sign * stats.goalsAgainst,
+    goalDifference: sign * stats.goalDifference,
+    points: sign * stats.points,
   };
+}
+
+/**
+ * Determina si la fase del partido suma a la tabla general del torneo.
+ * Sin fase asignada → suma (comportamiento por defecto).
+ * Fases KNOCKOUT → no suman puntos a la tabla general (solo a TeamPhaseStats).
+ */
+async function phaseCountsForGlobal(
+  tx: DbClient,
+  tournamentPhaseId: string | null | undefined,
+): Promise<boolean> {
+  if (!tournamentPhaseId) return true;
+  const phase = await tx.tournamentPhase.findUnique({
+    where: { id: tournamentPhaseId },
+    select: { type: true },
+  });
+  return phaseTypeCountsPoints(phase?.type);
 }
 
 /**
  * Aplica estadísticas incrementales a un TournamentTeam y opcionalmente a una Fase
  */
 async function applyStatsToTeam(
+  tx: DbClient,
   teamId: string,
   stats: TeamStatsUpdate,
-  tournamentPhaseId?: string | null
+  tournamentPhaseId: string | null | undefined,
+  countsForGlobal: boolean,
 ): Promise<void> {
-  // 1. Actualizar estadísticas globales del torneo (Acumulado)
-  await db.tournamentTeam.update({
-    where: { id: teamId },
-    data: {
-      matchesPlayed: { increment: stats.matchesPlayed },
-      wins: { increment: stats.wins },
-      draws: { increment: stats.draws },
-      losses: { increment: stats.losses },
-      goalsFor: { increment: stats.goalsFor },
-      goalsAgainst: { increment: stats.goalsAgainst },
-      goalDifference: { increment: stats.goalDifference },
-      points: { increment: stats.points },
-    },
-  });
+  // 1. Actualizar estadísticas globales del torneo (solo si la fase suma puntos)
+  if (countsForGlobal) {
+    await tx.tournamentTeam.update({
+      where: { id: teamId },
+      data: {
+        matchesPlayed: { increment: stats.matchesPlayed },
+        wins: { increment: stats.wins },
+        draws: { increment: stats.draws },
+        losses: { increment: stats.losses },
+        goalsFor: { increment: stats.goalsFor },
+        goalsAgainst: { increment: stats.goalsAgainst },
+        goalDifference: { increment: stats.goalDifference },
+        points: { increment: stats.points },
+      },
+    });
+  }
 
   // 2. Actualizar estadísticas de la fase específica (si aplica)
   if (tournamentPhaseId) {
-    await db.teamPhaseStats.upsert({
+    await tx.teamPhaseStats.upsert({
       where: {
         tournamentTeamId_tournamentPhaseId: {
           tournamentTeamId: teamId,
@@ -122,163 +149,143 @@ async function applyStatsToTeam(
 }
 
 /**
- * Verifica si un resultado es "contable" (partido finalizado con scores)
+ * Verifica si un resultado es "contable".
+ * FINALIZADO y WALKOVER computan (WALKOVER se carga con marcador fijo, ej. 3-0).
  */
 function isCountableResult(result: MatchResult | null): boolean {
   if (!result) return false;
   return (
-    result.status === MatchStatus.FINALIZADO &&
+    (result.status === MatchStatus.FINALIZADO ||
+      result.status === MatchStatus.WALKOVER) &&
     result.homeScore !== null &&
     result.awayScore !== null
   );
 }
 
 /**
- * Aplica el resultado de un partido a las tablas de posiciones
- * Maneja correctamente ediciones y reversiones comparando estado anterior vs nuevo
- * 
+ * Suma (sign=1) o resta (sign=-1) un resultado a las tablas.
+ * Las queries corren secuenciales: el cliente de transacción de Prisma
+ * no soporta operaciones concurrentes.
+ */
+async function applyResultDelta(
+  tx: DbClient,
+  result: MatchResult,
+  sign: 1 | -1,
+): Promise<void> {
+  const countsForGlobal = await phaseCountsForGlobal(
+    tx,
+    result.tournamentPhaseId,
+  );
+
+  const homeStats = scaleStats(
+    calculateTeamStats(result.homeScore!, result.awayScore!),
+    sign,
+  );
+  const awayStats = scaleStats(
+    calculateTeamStats(result.awayScore!, result.homeScore!),
+    sign,
+  );
+
+  await applyStatsToTeam(
+    tx,
+    result.homeTeamId,
+    homeStats,
+    result.tournamentPhaseId,
+    countsForGlobal,
+  );
+  await applyStatsToTeam(
+    tx,
+    result.awayTeamId,
+    awayStats,
+    result.tournamentPhaseId,
+    countsForGlobal,
+  );
+}
+
+/**
+ * Aplica el resultado de un partido a las tablas de posiciones.
+ * Maneja ediciones y reversiones: resta el estado anterior (si contaba)
+ * y suma el nuevo (si cuenta). Cubre cambios de fase, de equipos y de marcador.
+ *
+ * ⚠️ Debe llamarse dentro de la MISMA transacción que la mutación del partido.
+ *
+ * @param tx - Cliente de transacción de Prisma
  * @param previousResult - Estado anterior del partido (null si es nuevo)
  * @param newResult - Nuevo estado del partido
  */
 export async function applyMatchResult(
+  tx: DbClient,
   previousResult: MatchResult | null,
-  newResult: MatchResult
+  newResult: MatchResult,
 ): Promise<void> {
-  const wasCounted = isCountableResult(previousResult);
-  const shouldCount = isCountableResult(newResult);
-
-  // Caso 1: El partido no era contable y sigue sin serlo → nada que hacer
-  if (!wasCounted && !shouldCount) {
-    return;
+  if (previousResult && isCountableResult(previousResult)) {
+    await applyResultDelta(tx, previousResult, -1);
   }
 
-  // Caso 2: El partido era contable pero ya no lo es → restar estadísticas
-  if (wasCounted && !shouldCount && previousResult) {
-    const homeStats = calculateTeamStats(
-      previousResult.homeScore!,
-      previousResult.awayScore!
-    );
-    const awayStats = calculateTeamStats(
-      previousResult.awayScore!,
-      previousResult.homeScore!
-    );
-
-    await Promise.all([
-      applyStatsToTeam(previousResult.homeTeamId, negateStats(homeStats), previousResult.tournamentPhaseId),
-      applyStatsToTeam(previousResult.awayTeamId, negateStats(awayStats), previousResult.tournamentPhaseId),
-    ]);
-    return;
-  }
-
-  // Caso 3: El partido no era contable pero ahora sí → sumar estadísticas
-  if (!wasCounted && shouldCount) {
-    const homeStats = calculateTeamStats(
-      newResult.homeScore!,
-      newResult.awayScore!
-    );
-    const awayStats = calculateTeamStats(
-      newResult.awayScore!,
-      newResult.homeScore!
-    );
-
-    await Promise.all([
-      applyStatsToTeam(newResult.homeTeamId, homeStats, newResult.tournamentPhaseId),
-      applyStatsToTeam(newResult.awayTeamId, awayStats, newResult.tournamentPhaseId),
-    ]);
-    return;
-  }
-
-  // Caso 4: El partido era y sigue siendo contable
-  if (wasCounted && shouldCount && previousResult) {
-    const oldHomeStats = calculateTeamStats(
-      previousResult.homeScore!,
-      previousResult.awayScore!
-    );
-    const oldAwayStats = calculateTeamStats(
-      previousResult.awayScore!,
-      previousResult.homeScore!
-    );
-
-    const newHomeStats = calculateTeamStats(
-      newResult.homeScore!,
-      newResult.awayScore!
-    );
-    const newAwayStats = calculateTeamStats(
-      newResult.awayScore!,
-      newResult.homeScore!
-    );
-
-    // Si la fase cambió, debemos restar de la vieja y sumar a la nueva por separado
-    if (previousResult.tournamentPhaseId !== newResult.tournamentPhaseId) {
-        await Promise.all([
-            // Restar de la fase anterior
-            applyStatsToTeam(previousResult.homeTeamId, negateStats(oldHomeStats), previousResult.tournamentPhaseId),
-            applyStatsToTeam(previousResult.awayTeamId, negateStats(oldAwayStats), previousResult.tournamentPhaseId),
-            // Sumar a la fase nueva
-            applyStatsToTeam(newResult.homeTeamId, newHomeStats, newResult.tournamentPhaseId),
-            applyStatsToTeam(newResult.awayTeamId, newAwayStats, newResult.tournamentPhaseId),
-        ]);
-    } else {
-        // Misma fase: aplicar delta (optimizado) se hace restando y sumando o calculando diferencia
-        // applyStatsToTeam acumula, asi que enviamos (negate(old) + new)
-        // NOTA: applyStatsToTeam hace "increment", así que podemos llamar dos veces o calcular delta manual.
-        // Llamar dos veces es seguro y reutiliza la lógica negate.
-        
-        await Promise.all([
-          applyStatsToTeam(previousResult.homeTeamId, negateStats(oldHomeStats), previousResult.tournamentPhaseId),
-          applyStatsToTeam(previousResult.awayTeamId, negateStats(oldAwayStats), previousResult.tournamentPhaseId),
-          applyStatsToTeam(newResult.homeTeamId, newHomeStats, newResult.tournamentPhaseId),
-          applyStatsToTeam(newResult.awayTeamId, newAwayStats, newResult.tournamentPhaseId),
-        ]);
-    }
-    return;
+  if (isCountableResult(newResult)) {
+    await applyResultDelta(tx, newResult, 1);
   }
 }
 
 /**
- * Recalcula completamente las estadísticas de un torneo desde cero
- * Útil para corregir datos corruptos o inconsistentes
- * 
+ * Recalcula completamente las estadísticas de un torneo desde cero.
+ * Corre en una única transacción: resetea TournamentTeam y TeamPhaseStats
+ * (conservando `bonusPoints` manuales) y reaplica todos los partidos contables.
+ *
  * @param tournamentId - ID del torneo a recalcular
  */
 export async function recalculateTournamentStandings(
-  tournamentId: string
+  tournamentId: string,
 ): Promise<void> {
-  // 1. Resetear todas las estadísticas del torneo a cero
-  await db.tournamentTeam.updateMany({
-    where: { tournamentId },
-    data: {
-      matchesPlayed: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      goalDifference: 0,
-      points: 0,
-    },
-  });
+  await db.$transaction(
+    async (tx) => {
+      const resetStats = {
+        matchesPlayed: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        points: 0,
+      };
 
-  // 2. Obtener todos los partidos finalizados del torneo
-  const matches = await db.match.findMany({
-    where: {
-      tournamentId,
-      status: MatchStatus.FINALIZADO,
-      homeScore: { not: null },
-      awayScore: { not: null },
-    },
-    select: {
-      homeTeamId: true,
-      awayTeamId: true,
-      homeScore: true,
-      awayScore: true,
-      status: true,
-    },
-  });
+      // 1. Resetear estadísticas globales del torneo
+      await tx.tournamentTeam.updateMany({
+        where: { tournamentId },
+        data: resetStats,
+      });
 
-  // 3. Aplicar cada partido
-  for (const match of matches) {
-    await applyMatchResult(null, extractMatchResult(match));
-  }
+      // 2. Resetear estadísticas por fase (updateMany y no deleteMany,
+      // para conservar los bonusPoints cargados manualmente)
+      await tx.teamPhaseStats.updateMany({
+        where: { tournamentTeam: { tournamentId } },
+        data: resetStats,
+      });
+
+      // 3. Obtener todos los partidos contables del torneo
+      const matches = await tx.match.findMany({
+        where: {
+          tournamentId,
+          status: { in: [MatchStatus.FINALIZADO, MatchStatus.WALKOVER] },
+          homeScore: { not: null },
+          awayScore: { not: null },
+        },
+        select: {
+          homeTeamId: true,
+          awayTeamId: true,
+          homeScore: true,
+          awayScore: true,
+          status: true,
+          tournamentPhaseId: true,
+        },
+      });
+
+      // 4. Aplicar cada partido
+      for (const match of matches) {
+        await applyMatchResult(tx, null, extractMatchResult(match));
+      }
+    },
+    { timeout: 30000 },
+  );
 }
-

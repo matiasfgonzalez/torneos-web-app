@@ -36,6 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         homeScore: true,
         awayScore: true,
         status: true,
+        tournamentPhaseId: true,
       },
     });
 
@@ -53,17 +54,46 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       return validationErrorResponse(parsed.error);
     }
 
-    // 📌 Actualizar el partido
-    const updatedMatch = await db.match.update({
-      where: { id },
-      data: parsed.data,
+    // Regla WALKOVER: computa como partido finalizado, requiere marcador
+    // cargado (ej. 3-0 al ganador según decisión de negocio)
+    const effectiveStatus = parsed.data.status ?? previousMatch.status;
+    const effectiveHomeScore =
+      parsed.data.homeScore === undefined
+        ? previousMatch.homeScore
+        : parsed.data.homeScore;
+    const effectiveAwayScore =
+      parsed.data.awayScore === undefined
+        ? previousMatch.awayScore
+        : parsed.data.awayScore;
+
+    if (
+      effectiveStatus === "WALKOVER" &&
+      (effectiveHomeScore === null || effectiveAwayScore === null)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Un WALKOVER requiere marcador cargado (ej. 3-0 a favor del equipo ganador)",
+        },
+        { status: 400 },
+      );
+    }
+
+    // 📌 Actualizar partido + tabla de posiciones en una única transacción
+    const updatedMatch = await db.$transaction(async (tx) => {
+      const updated = await tx.match.update({
+        where: { id },
+        data: parsed.data,
+      });
+
+      await applyMatchResult(
+        tx,
+        extractMatchResult(previousMatch),
+        extractMatchResult(updated),
+      );
+
+      return updated;
     });
-
-    // 📌 Aplicar cambios a la tabla de posiciones usando cálculo de deltas
-    const previousResult = extractMatchResult(previousMatch);
-    const newResult = extractMatchResult(updatedMatch);
-
-    await applyMatchResult(previousResult, newResult);
 
     return NextResponse.json(updatedMatch, { status: 200 });
   } catch (error) {

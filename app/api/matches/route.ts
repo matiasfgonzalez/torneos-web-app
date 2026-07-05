@@ -52,15 +52,31 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse(parsed.error);
     }
 
-    const match = await db.match.create({
-      data: parsed.data,
-    });
-
-    // 📌 Si el partido se crea ya FINALIZADO, calcular estadísticas
-    if (match.status === MatchStatus.FINALIZADO) {
-      const newResult = extractMatchResult(match);
-      await applyMatchResult(null, newResult);
+    // Regla WALKOVER: requiere marcador cargado (ej. 3-0 al ganador)
+    if (
+      parsed.data.status === MatchStatus.WALKOVER &&
+      (parsed.data.homeScore == null || parsed.data.awayScore == null)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Un WALKOVER requiere marcador cargado (ej. 3-0 a favor del equipo ganador)",
+        },
+        { status: 400 },
+      );
     }
+
+    // 📌 Crear partido + tabla de posiciones en una única transacción
+    // (applyMatchResult no hace nada si el partido no es contable)
+    const match = await db.$transaction(async (tx) => {
+      const created = await tx.match.create({
+        data: parsed.data,
+      });
+
+      await applyMatchResult(tx, null, extractMatchResult(created));
+
+      return created;
+    });
 
     return NextResponse.json(match, { status: 201 });
   } catch (error) {

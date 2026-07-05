@@ -85,7 +85,7 @@
 
 ### C6. Integridad de standings: sin transacciones + bugs de fase
 
-- [ ] **Problema (4 bugs verificados en [lib/standings/calculate-standings.ts](lib/standings/calculate-standings.ts) y [app/api/matches/[id]/route.ts](app/api/matches/[id]/route.ts)):**
+- [x] **Problema (4 bugs verificados en [lib/standings/calculate-standings.ts](lib/standings/calculate-standings.ts) y [app/api/matches/[id]/route.ts](app/api/matches/[id]/route.ts)):**
   1. Ninguna operación de standings corre en `db.$transaction`; si falla a mitad, la tabla queda desincronizada para siempre.
   2. El PATCH de partido selecciona el estado previo **sin `tournamentPhaseId`** (`select` en línea ~31), por lo que `applyMatchResult` compara `undefined !== nuevaFase` y suma/resta en la fase equivocada → `TeamPhaseStats` se corrompe al editar resultados.
   3. `recalculateTournamentStandings` resetea `TournamentTeam` pero **no** `TeamPhaseStats`, y su `findMany` tampoco selecciona `tournamentPhaseId` → cada recálculo duplica acumulados de fase.
@@ -101,6 +101,8 @@
   ```
   (pasar `tx` a `applyStatsToTeam` en lugar de `db`).
 - **Esfuerzo:** E:Medio · **Beneficio:** La tabla de posiciones —el corazón del producto— pasa a ser confiable.
+- **Implementado (2026-07-04):** `applyMatchResult(tx, prev, new)` ahora exige cliente de transacción; match POST/PATCH y goles (add/delete) corren mutación+standings en `db.$transaction`. Selects incluyen `tournamentPhaseId`. Recálculo en transacción única (timeout 30s): resetea `TournamentTeam` **y** `TeamPhaseStats` vía `updateMany` (conserva `bonusPoints` manuales) e incluye WALKOVER. Fases KNOCKOUT ya no suman a la tabla general (`phaseTypeCountsPoints`), solo a `TeamPhaseStats`. WALKOVER computa como finalizado; el server exige marcador cargado (400 si falta) — el selector de ganador con 3-0 automático en UI queda para el rediseño admin (F3/M12).
+- **Pendiente del ítem 5 (stats manuales vía tournament-teams):** sin cambios, sigue abierto.
 
 ### C7. Autorización sin ownership + borrado físico en cascada
 
@@ -129,6 +131,18 @@
 - [ ] **Problema:** [next.config.ts](next.config.ts) no define `headers()` (falta CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy). Ninguna API tiene rate limiting (login/uploads/recalculate incluidos).
 - **Solución:** Bloque `headers()` en next.config + rate limiting con `@upstash/ratelimit` (o Arcjet) en middleware para `/api/*`.
 - **Esfuerzo:** E:Medio · **Beneficio:** Hardening base de producción; mitiga fuerza bruta, clickjacking y abuso.
+
+### C10. Server actions de mutación sin autenticación ni rol (hallazgo C6, 2026-07-04)
+
+- [ ] **Problema:** 4 archivos de server actions mutan la BD sin ningún check de auth/rol (verificado: solo `modules/usuarios/actions/user-profile.ts` valida sesión):
+  - [modules/partidos/actions/goals.ts](modules/partidos/actions/goals.ts) — `addGoal`/`deleteGoal` (además tocan standings).
+  - [modules/partidos/actions/cards.ts](modules/partidos/actions/cards.ts) — tarjetas.
+  - [modules/partidos/actions/referees.ts](modules/partidos/actions/referees.ts) — árbitros de partido.
+  - [modules/arbitros/actions/actions.ts](modules/arbitros/actions/actions.ts) — CRUD árbitros.
+- **Explicación:** Las server actions son endpoints HTTP públicos (POST con action-id); cualquier visitante puede invocarlas sin sesión y modificar goles, marcadores y standings.
+- **Impacto/Riesgo:** Equivalente a C1/C4 pero en la capa de actions. OWASP A01.
+- **Solución:** Guard compartido tipo `requireRole(["ADMINISTRADOR","EDITOR","ORGANIZADOR"])` (versión para actions de `validateApiRole`) al inicio de cada action de mutación.
+- **Esfuerzo:** E:Bajo · **Beneficio:** Cierra mutaciones anónimas de datos de partido.
 
 ---
 
