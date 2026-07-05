@@ -36,15 +36,16 @@ export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "golazo-ui-theme",
+  // Se destructuran (sin usarse) para que no lleguen al Provider vía ...props
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   attribute = "class",
   enableSystem = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [mounted, setMounted] = useState(false);
-
-  console.log(attribute, disableTransitionOnChange);
 
   // Handle mounting and localStorage access
   useEffect(() => {

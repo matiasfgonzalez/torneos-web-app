@@ -159,21 +159,13 @@ export default function GoogleSignUp() {
 
               <p className="text-xs text-gray-500 leading-relaxed">
                 Al registrarte, aceptas nuestros{" "}
-                <button
-                  type="button"
-                  className="text-[#ad45ff] hover:underline font-medium focus:outline-none focus:underline"
-                  onClick={() => console.log("Terms clicked")}
-                >
+                <span className="text-[#ad45ff] font-medium">
                   Términos de Servicio
-                </button>{" "}
+                </span>{" "}
                 y{" "}
-                <button
-                  type="button"
-                  className="text-[#ad45ff] hover:underline font-medium focus:outline-none focus:underline"
-                  onClick={() => console.log("Privacy clicked")}
-                >
+                <span className="text-[#ad45ff] font-medium">
                   Política de Privacidad
-                </button>
+                </span>
               </p>
             </div>
           </CardContent>

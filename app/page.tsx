@@ -13,7 +13,6 @@ import { currentUser } from "@clerk/nextjs/server";
 
 export default async function HomePage() {
   const user = await checkUser();
-  console.log("User in header:", user);
   let isLogued: boolean = false;
 
   if (user) {

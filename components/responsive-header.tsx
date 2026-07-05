@@ -12,8 +12,8 @@ interface ResponsiveHeaderProps {
 export default async function ResponsiveHeader({
   currentPage = "",
 }: Readonly<ResponsiveHeaderProps>) {
-  const user = await checkUser();
-  console.log("User in header:", user);
+  // checkUser tiene efecto secundario: crea el usuario en BD en el primer login
+  await checkUser();
 
   const userLogued = await currentUser();
 

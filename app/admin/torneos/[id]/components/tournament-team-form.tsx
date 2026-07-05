@@ -81,7 +81,6 @@ export function TournamentTeamForm({
   usedTeamIds = [],
   onCancel,
 }: Readonly<PropsTournamentTeamForm>) {
-  console.log(tournamentTeam);
   const isEdit = mode === "edit";
 
   const router = useRouter();

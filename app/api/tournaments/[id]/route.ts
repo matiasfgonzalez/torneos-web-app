@@ -11,7 +11,6 @@ export async function DELETE(
   { params }: { params: tParams },
 ) {
   try {
-    console.log("Eliminando torneo con params:", params);
     const { id } = await params;
 
     if (!id) {

@@ -12,8 +12,6 @@ export default async function AdminLayout({
 }>) {
   const userLogued = await checkUser();
 
-  console.log("User in admin layout:", userLogued);
-
   if (!userLogued) {
     // Redirige si no está autenticado (aunque Clerk ya lo hace desde el middleware)
     redirect("/sign-in");

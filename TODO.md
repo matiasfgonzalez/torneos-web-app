@@ -233,8 +233,12 @@
 
 ### A10. `console.log` con datos de usuario en server
 
-- [ ] **Problema:** 20 `console.log` incluyendo el objeto usuario completo en [app/admin/layout.tsx](app/admin/layout.tsx) y [app/page.tsx](app/page.tsx) (PII en logs de hosting).
+- [x] **Problema:** 20 `console.log` incluyendo el objeto usuario completo en [app/admin/layout.tsx](app/admin/layout.tsx) y [app/page.tsx](app/page.tsx) (PII en logs de hosting).
 - **Solución:** Eliminarlos; introducir logger mínimo (`lib/logger.ts` con niveles y no-op en prod) para lo que valga la pena conservar.
+- **Implementado (2026-07-05):** eliminados TODOS los `console.log/info/debug` de código (quedan solo 2 en comentarios de docs). PII fuera de logs: usuario completo en home/header/admin-layout. Errores reales pasados a `console.error`; cancelación de `navigator.share` silenciada. El logger `lib/logger.ts` queda opcional para cuando haga falta (hoy no hay nada que loguear).
+- **Hallazgos (2026-07-05):**
+  - Los links "Términos de Servicio" y "Política de Privacidad" en sign-in/sign-up eran botones muertos (solo hacían console.log) → convertidos a texto plano. **Falta crear las páginas legales** `/terminos` y `/privacidad` — obligatorias antes de cobrar planes (N4/N5). Agregar a N6 (onboarding) o F2.
+  - El botón "Eliminar" de noticias en [app/admin/noticias/[id]/page.tsx](app/admin/noticias/[id]/page.tsx) no está implementado (handler vacío); la API DELETE existe — conectarla.
 - **Esfuerzo:** E:Bajo · **Beneficio:** Sin PII en logs; ruido cero.
 
 ### A11. Endpoints referenciados por la UI que no existen (hallazgo C3, 2026-07-04)

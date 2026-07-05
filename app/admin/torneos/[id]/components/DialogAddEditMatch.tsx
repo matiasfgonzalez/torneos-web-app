@@ -117,7 +117,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
         const data: Phase[] = await res.json();
         setPhases(data);
       } catch (err) {
-        console.log(err || "Error desconocido");
+        console.error(err || "Error desconocido");
       } finally {
         setIsLoading(false);
       }
@@ -191,9 +191,6 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
       setIsLoading(false);
       setOpen(false);
     }
-
-    // Lógica para manejar el envío del formulario
-    console.log(values);
   };
 
   return (

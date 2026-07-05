@@ -93,7 +93,6 @@ const DialogAddEditTeamPlayer = (
         if (!res.ok) throw new Error("Error al obtener los jugadores");
 
         const data: IPlayer[] = await res.json();
-        console.log(data);
         setPlayers(data);
       } catch (err) {
         if (err instanceof Error) {
@@ -173,7 +172,6 @@ const DialogAddEditTeamPlayer = (
   };
 
   const update = (field: string, newValue: number | string | boolean) => {
-    console.log(newValue);
     setValues((prev: TeamPlayerFormValues) => ({ ...prev, [field]: newValue }));
   };
 
@@ -225,7 +223,6 @@ const DialogAddEditTeamPlayer = (
 
   if (error) return <div>{error}</div>;
 
-  console.log("playersAs: ", playersAs);
   const arrayPlayersAs = playersAs.map((p) => p.player);
 
   const merged = [...players, ...arrayPlayersAs];

@@ -150,8 +150,7 @@ export default function AdminNoticiaDetail({
   };
 
   const handleDelete = () => {
-    // Aquí iría la lógica para eliminar el artículo
-    console.log("Eliminar artículo:", article.id);
+    // TODO: eliminar noticia no implementado (documentado en TODO.md, hallazgo A10)
   };
 
   const togglePublishStatus = () => {

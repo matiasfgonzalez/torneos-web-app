@@ -94,8 +94,8 @@ export default function NoticiaIndividualPage({
           text: noticia.summary ?? "",
           url: globalThis.location.href,
         });
-      } catch (err) {
-        console.log("Error sharing:", err);
+      } catch {
+        // Usuario canceló el share nativo — no es un error
       }
     } else {
       handleCopyLink();
