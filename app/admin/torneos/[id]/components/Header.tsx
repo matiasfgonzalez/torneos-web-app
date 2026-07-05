@@ -17,14 +17,10 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import {
   TOURNAMENT_STATUS_LABELS,
-  TOURNAMENT_CATEGORY_LABELS,
+  formatTournamentCategory,
   TOURNAMENT_FORMAT_LABELS,
 } from "@/lib/constants";
-import {
-  TournamentStatus,
-  TournamentCategory,
-  TournamentFormat,
-} from "@prisma/client";
+import { TournamentStatus, TournamentFormat } from "@prisma/client";
 
 interface PropsHeader {
   readonly tournamentData: ITorneo;
@@ -60,11 +56,6 @@ const Header = ({ tournamentData }: PropsHeader) => {
     return TOURNAMENT_STATUS_LABELS[status as TournamentStatus] || status;
   };
 
-  const getCategoryLabel = (category: string) => {
-    return (
-      TOURNAMENT_CATEGORY_LABELS[category as TournamentCategory] || category
-    );
-  };
 
   const getFormatLabel = (format: string) => {
     return TOURNAMENT_FORMAT_LABELS[format as TournamentFormat] || format;
@@ -135,7 +126,7 @@ const Header = ({ tournamentData }: PropsHeader) => {
                     <div className="flex items-center gap-2 bg-[#ad45ff]/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#ad45ff]/20 dark:border-white/10">
                       <Trophy className="w-4 h-4 text-[#ad45ff]" />
                       <span className="text-gray-700 dark:text-white/90 text-sm font-medium">
-                        {getCategoryLabel(tournamentData.category)}
+                        {formatTournamentCategory(tournamentData)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 bg-[#c77dff]/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#c77dff]/20 dark:border-white/10">

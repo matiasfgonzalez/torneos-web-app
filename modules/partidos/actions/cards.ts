@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { CardType } from "@prisma/client";
-import { requireActionRole } from "@/lib/actionRoleValidation";
+import { getMatchOrgId, requireActionOrgAccess } from "@/lib/orgAuth";
 
 export async function addCard(data: {
   matchId: string;
@@ -12,7 +12,11 @@ export async function addCard(data: {
   minute?: number;
   reason?: string;
 }): Promise<{ success: boolean; error?: string; doubleYellow?: boolean }> {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const orgId = await getMatchOrgId(data.matchId);
+  if (!orgId) return { success: false, error: "Partido no encontrado" };
+
+  // Carga de resultados: COLABORADOR también puede
+  const auth = await requireActionOrgAccess(orgId, { allowCollaborator: true });
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -93,9 +97,6 @@ export async function addCard(data: {
 }
 
 export async function deleteCard(cardId: string) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-  if (auth.error) return { success: false, error: auth.error };
-
   try {
     const card = await db.card.findUnique({
       where: { id: cardId },
@@ -105,6 +106,14 @@ export async function deleteCard(cardId: string) {
     if (!card) {
       return { success: false, error: "Tarjeta no encontrada" };
     }
+
+    const orgId = await getMatchOrgId(card.matchId);
+    if (!orgId) return { success: false, error: "Partido no encontrado" };
+
+    const auth = await requireActionOrgAccess(orgId, {
+      allowCollaborator: true,
+    });
+    if (auth.error) return { success: false, error: auth.error };
 
     await db.card.delete({
       where: { id: cardId },

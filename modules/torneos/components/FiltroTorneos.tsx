@@ -30,9 +30,10 @@ import { ITorneo } from "@modules/torneos/types";
 import {
   TOURNAMENT_STATUS_OPTIONS,
   TOURNAMENT_STATUS_LABELS,
-  TOURNAMENT_CATEGORIES_OPTIONS,
-  TOURNAMENT_CATEGORY_LABELS,
+  AGE_GROUP_OPTIONS,
+  AGE_GROUP_LABELS,
   TOURNAMENT_FORMAT_LABELS,
+  formatTournamentCategory,
 } from "@/lib/constants";
 import { formatDate } from "@/lib/formatDate";
 
@@ -67,7 +68,7 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
       tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tournament.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "Todas" || tournament.category === selectedCategory;
+      selectedCategory === "Todas" || tournament.ageGroup === selectedCategory;
     const matchesStatus =
       selectedStatus === "Todos" || tournament.status === selectedStatus;
 
@@ -147,7 +148,7 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                   <SelectItem value="Todas" className="rounded-lg">
                     Todas las categorías
                   </SelectItem>
-                  {TOURNAMENT_CATEGORIES_OPTIONS.map((category) => (
+                  {AGE_GROUP_OPTIONS.map((category) => (
                     <SelectItem
                       key={category.value}
                       value={category.value}
@@ -218,8 +219,8 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                 variant="secondary"
                 className="bg-[#ad45ff]/10 text-[#ad45ff] border-[#ad45ff]/20"
               >
-                {TOURNAMENT_CATEGORY_LABELS[
-                  selectedCategory as keyof typeof TOURNAMENT_CATEGORY_LABELS
+                {AGE_GROUP_LABELS[
+                  selectedCategory as keyof typeof AGE_GROUP_LABELS
                 ] || selectedCategory}
               </Badge>
             )}
@@ -294,9 +295,7 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                   variant="outline"
                   className="border-2 border-[#ad45ff]/30 text-[#ad45ff] font-medium"
                 >
-                  {TOURNAMENT_CATEGORY_LABELS[
-                    tournament.category as keyof typeof TOURNAMENT_CATEGORY_LABELS
-                  ] || tournament.category}
+                  {formatTournamentCategory(tournament)}
                 </Badge>
                 <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                   <MapPin className="h-3.5 w-3.5" />

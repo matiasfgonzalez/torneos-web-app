@@ -24,7 +24,7 @@ export async function GET(_req: Request, { params }: { params: tParams }) {
             team: true,
           },
         },
-        phase: true,
+        tournamentPhase: true,
         goals: {
           include: {
             teamPlayer: {

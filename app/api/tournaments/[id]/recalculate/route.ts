@@ -1,15 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { recalculateTournamentStandings } from "@/lib/standings/calculate-standings";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 
 type tParams = Promise<{ id: string }>;
 
 /**
  * POST /api/tournaments/[id]/recalculate
  * Recalcula completamente la tabla de posiciones de un torneo desde cero.
- * Útil para corregir datos corruptos o inconsistentes.
- * Solo accesible por administradores.
+ * Solo gestores de la organización dueña (o admin).
  */
 export async function POST(req: NextRequest, { params }: { params: tParams }) {
   try {
@@ -22,39 +21,9 @@ export async function POST(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // Verificar autenticación
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no registrado en la base de datos" },
-        { status: 404 },
-      );
-    }
-
-    // Solo administradores pueden recalcular
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para recalcular la tabla" },
-        { status: 403 },
-      );
-    }
-
-    // Verificar que el torneo existe
     const tournament = await db.tournament.findFirst({
       where: { id: tournamentId, deletedAt: null },
-      select: { id: true, name: true },
+      select: { id: true, name: true, organizationId: true },
     });
 
     if (!tournament) {
@@ -64,7 +33,11 @@ export async function POST(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // Recalcular estadísticas
+    const auth = await requireApiOrgAccess(tournament.organizationId);
+    if (auth.error) {
+      return auth.error;
+    }
+
     await recalculateTournamentStandings(tournamentId);
 
     return NextResponse.json(

@@ -55,8 +55,8 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // Validate that only ADMINISTRADOR or EDITOR can update news
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR"]);
+    // Noticias globales de la plataforma: solo ADMINISTRADOR (decisión D5)
+    const authResult = await validateApiRole(["ADMINISTRADOR"]);
     if (authResult.error) {
       return authResult.error;
     }
@@ -98,8 +98,8 @@ export async function DELETE(
       );
     }
 
-    // Validate that only ADMINISTRADOR or EDITOR can delete news
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR"]);
+    // Noticias globales de la plataforma: solo ADMINISTRADOR (decisión D5)
+    const authResult = await validateApiRole(["ADMINISTRADOR"]);
     if (authResult.error) {
       return authResult.error;
     }

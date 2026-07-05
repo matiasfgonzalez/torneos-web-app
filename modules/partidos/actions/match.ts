@@ -29,7 +29,7 @@ export async function getMatches(id: string) {
             },
           },
         },
-        phase: true,
+        tournamentPhase: true,
       },
       orderBy: {
         dateTime: "asc",

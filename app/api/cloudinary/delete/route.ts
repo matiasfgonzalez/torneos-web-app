@@ -12,18 +12,14 @@
 import { NextResponse } from "next/server";
 import { deleteImage } from "@/lib/cloudinary";
 import { deleteRequestSchema } from "@/types/cloudinary";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgContext } from "@/lib/orgAuth";
 
 export async function DELETE(request: Request) {
   try {
-    // Solo roles con gestión de contenido pueden borrar imágenes
-    const authResult = await validateApiRole([
-      "ADMINISTRADOR",
-      "EDITOR",
-      "ORGANIZADOR",
-    ]);
-    if (authResult.error) {
-      return authResult.error;
+    // Solo gestores de una organización (o admin) pueden borrar imágenes
+    const auth = await requireApiOrgContext();
+    if (auth.error) {
+      return auth.error;
     }
 
     // Parsear y validar el body

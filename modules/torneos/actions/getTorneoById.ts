@@ -8,7 +8,6 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
     const torneo = await db.tournament.findFirst({
       where: { id, deletedAt: null },
       include: {
-        user: true, // Incluye datos del usuario creador, si es necesario
         tournamentTeams: {
           include: {
             team: true, // 👈 trae los datos del equipo
@@ -40,7 +39,6 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
                 team: true,
               },
             },
-            phase: true,
             tournamentPhase: true, // 👈 incluye la fase del partido
             goals: {
               include: {

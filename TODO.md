@@ -106,13 +106,13 @@
 
 ### C7. Autorización sin ownership + borrado físico en cascada
 
-- [~] **Problema:** Cualquier `ORGANIZADOR`/`EDITOR` puede editar o **eliminar físicamente** torneos de otros usuarios ([app/api/tournaments/[id]/route.ts](app/api/tournaments/[id]/route.ts) hace `db.tournament.delete` → cascade borra partidos, goles, tarjetas, stats e historia). Existe `deletedAt` en el modelo pero no se usa.
+- [x] **Problema:** Cualquier `ORGANIZADOR`/`EDITOR` puede editar o **eliminar físicamente** torneos de otros usuarios ([app/api/tournaments/[id]/route.ts](app/api/tournaments/[id]/route.ts) hace `db.tournament.delete` → cascade borra partidos, goles, tarjetas, stats e historia). Existe `deletedAt` en el modelo pero no se usa.
 - **Solución (regla confirmada ✅):**
   1. ADMINISTRADOR y MODERADOR gestionan todo; ORGANIZADOR/EDITOR solo ven y editan recursos propios (`userId === user.id`), tanto en listados del admin como en mutaciones.
   2. DELETE → soft delete (`deletedAt: new Date()`) + filtrar `deletedAt: null` en todos los listados.
   3. Helper único `assertCanManage(user, resource)` en `lib/`, preparado para recibir `organizationId` cuando llegue S2.
 - **Implementado parcial (2026-07-05) — punto 2:** DELETE de torneo es soft delete (`deletedAt + enabled:false`), PATCH y recalculate rechazan torneos eliminados (404), y todos los listados/lecturas filtran `deletedAt: null` (`GET /api/tournaments`, `getTorneos`, `getTorneoById`, historial de perfil). Los datos quedan recuperables (restaurar = `deletedAt: null`; UI de papelera pendiente, va con F3).
-- **Pendiente — puntos 1 y 3 (ownership fino):** NO implementar con `userId`; N1/N2 lo redefinen por organización (`requireOrgRole`). Hacerlo dos veces es trabajo tirado — se resuelve en la migración del Sprint 3.
+- **Completado (2026-07-05) — puntos 1 y 3 vía N1/N2:** ownership por organización con `requireApiOrgAccess`/`canManageOrg` en [lib/orgAuth.ts](lib/orgAuth.ts), aplicado a todas las mutaciones. C7 cerrado (los listados del panel por org quedan en N3/N10).
 - **Esfuerzo:** E:Medio · **Beneficio:** Aislamiento entre organizadores (pre-requisito para multi-tenancy) y datos recuperables.
 
 ### C8. Middleware sin protección de rutas (defensa en profundidad)
@@ -207,13 +207,14 @@
 
 ### A6. Prisma: índices ausentes y modelo legacy conviviendo
 
-- [ ] **Problema:**
+- [~] **Problema:**
   - Sin índices en: `Match(tournamentId, dateTime)`, `Match(status)`, `Goal(matchId)`, `Card(matchId)`, `TeamPlayer(tournamentTeamId)`, `Tournament(status, deletedAt)`, `News(published, publishedAt)`, `User(role, status)`.
   - `Phase`/`phaseId` (legacy) convive con `TournamentPhase` en Tournament y Match — dos caminos para lo mismo.
   - `News.publishedAt` tiene `@default(now())` aunque sea borrador (orden de publicación falso).
   - `Team.yearFounded` es `String` (sin validación ni orden).
   - `Tournament.nextMatch` es un dato derivable (denormalización manual propensa a quedar vieja).
 - **Solución:** Migración única: agregar `@@index`, migrar datos de `Phase`→`TournamentPhase` y eliminar el modelo legacy, `publishedAt DateTime?` (se setea al publicar), `yearFounded Int?`, y calcular `nextMatch` con query en lugar de campo.
+- **Implementado (2026-07-05, migración `nueva_estructura`):** todos los índices ✅ (más `organizationId` en las 4 entidades, `homeTeamId/awayTeamId/tournamentPhaseId` en Match, `AuditLog(entity, entityId)`), `Phase` legacy eliminado ✅, `yearFounded Int?` ✅. **Pendiente:** `publishedAt` nullable y eliminar `nextMatch` derivable (quedaron como estaban para no tocar más UI en esta pasada).
 - **Esfuerzo:** E:Medio-Alto · **Beneficio:** Queries rápidas y un solo modelo mental de fases.
 
 ### A7. Formato de respuesta de API inconsistente
@@ -331,7 +332,7 @@
 
 ### M13. Revisión de enums sobredimensionados (decisión tomada ✅)
 
-- [ ] Reemplazar `TournamentCategory` por 3 campos: `ageGroup` (enum: LIBRE, SUB_17, SUB_20, JUVENIL, INFANTIL, VETERANO, M30, ...), `gender` (enum: MASCULINO, FEMENINO, MIXTO) y `division` (String opcional: "A", "Primera", ...). Actualizar formularios, filtros públicos y badges. Ejecutar en la misma migración que A6.
+- [x] Reemplazar `TournamentCategory` por 3 campos: `ageGroup` + `gender` + `division`. **Implementado (2026-07-05):** enums nuevos, validators, form de torneo con los 3 campos, filtros públicos por `ageGroup`, y helper `formatTournamentCategory()` en [lib/constants.ts](lib/constants.ts) usado por todos los badges/labels ("Sub-17 Femenino A").
 - [ ] `TournamentFormat` tiene 14 valores pero la lógica solo distingue table/bracket/mixed: reducirlo a los formatos realmente soportados (LIGA, ELIMINACION_DIRECTA, GRUPOS_MAS_PLAYOFFS, etc.) y mapear el resto. **E:Medio** (ahora es gratis, sin datos en producción)
 
 ---
@@ -440,7 +441,9 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N1. 🔴 Redefinir roles: plataforma vs. organización (E:Medio)
 
-- [ ] **Qué:** separar rol de plataforma y rol dentro de una organización.
+> ✅ **Implementado (2026-07-05):** `UserRole` = ADMINISTRADOR | USUARIO; `OrgRole` = OWNER | ORGANIZADOR | COLABORADOR. Registro nace ACTIVO. Bootstrap de admin vía env `ADMIN_EMAIL` en `checkUser`. Guards nuevos en [lib/orgAuth.ts](lib/orgAuth.ts) (`requireApiOrgContext`, `requireApiOrgAccess`, `requireActionOrgAccess`, con `allowCollaborator` para carga de resultados) aplicados a TODAS las rutas y actions de mutación. Panel: [lib/roleValidation.ts](lib/roleValidation.ts) → `validatePanelAccess` (admin o miembro de org). Noticias/usuarios/stats = solo admin.
+
+- [x] **Qué:** separar rol de plataforma y rol dentro de una organización.
   - `UserRole` global queda en 2: `ADMINISTRADOR` (vos) y `USUARIO` (todo registrado; el "cliente/visitante").
   - Rol de trabajo pasa a `OrganizationMember.role`: `OWNER` (creó la liga, gestiona plan y miembros), `ORGANIZADOR` (gestión completa de torneos/equipos/jugadores/partidos), `COLABORADOR` (solo carga resultados/eventos en vivo; ideal planilleros).
   - Migración de datos existentes: EDITOR/MODERADOR/ORGANIZADOR actuales → `USUARIO` global + membresía en una organización creada para ellos.
@@ -458,7 +461,9 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N2. 🔴 Modelo `Organization` + membresías — concreta S2 (E:Alto)
 
-- [ ] **Qué:** la tabla central del SaaS. Schema propuesto:
+> ✅ **Implementado (2026-07-05):** `Organization` + `OrganizationMember` en el schema (con slug único, status ACTIVA/SUSPENDIDA); `organizationId` **obligatorio** en Tournament/Team/Player/Referee; News quedó global. BD reseteada (aprobado por el owner) y migración inicial limpia `20260705_nueva_estructura`. La org personal se auto-crea en el primer uso (`getOrCreateOwnOrg`, freemium D7). **Pendiente:** UI de gestión de miembros/invitaciones (va con N6/N10).
+
+- [x] **Qué:** la tabla central del SaaS. Schema propuesto:
   ```prisma
   model Organization {
     id          String   @id @default(uuid())
@@ -498,7 +503,9 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N3. 🔴 Visibilidad de datos entre organizaciones (E:Bajo, es política + queries)
 
-- [ ] **Qué:** definir y aplicar la regla de qué ve cada organizador.
+> ✅ **Implementado en mutaciones (2026-07-05):** toda mutación valida pertenencia a la org dueña del recurso (directo o vía torneo/partido). **Pendiente:** filtrar por org los LISTADOS del panel admin (hoy un organizador vería datos de otras orgs en las tablas del panel — no puede tocarlos, pero los ve; se resuelve con el dashboard por organización de N10).
+
+- [x] **Qué:** definir y aplicar la regla de qué ve cada organizador.
   - **Privado por organización (gestión):** equipos, jugadores, árbitros y torneos se crean, ven y editan SOLO dentro de la organización dueña. Otro organizador NO los ve en sus paneles ni los puede reutilizar. Razones: (a) integridad — nadie quiere que otra liga edite a sus jugadores; (b) privacidad — datos personales (DNI, fecha de nacimiento, fotos de menores); (c) simplicidad de permisos.
   - **Público read-only (difusión):** las páginas públicas de torneo/equipo/jugador son visibles para todos (es el marketing del organizador y de GOLAZO).
   - **Reutilización dentro de la org:** el mismo `Team`/`Player` participa en todos los torneos de su organización (Apertura, Clausura, Copa) — el modelo actual ya lo soporta vía `TournamentTeam`/`TeamPlayer`.
@@ -601,15 +608,16 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N11. 🟡 Limpieza y completitud del schema (E:Medio, misma migración que N2/A6/M13)
 
-- [ ] Eliminar el modelo legacy `Phase` + `Match.phaseId` + `Tournament.phaseId` (migrar datos existentes a `TournamentPhase`).
-- [ ] `TournamentPhase.type`: String → enum `PhaseType (LEAGUE|GROUP|KNOCKOUT)`.
-- [ ] `Team.yearFounded`: String? → Int?.
-- [ ] `Player.nationalId String?` (DNI) con `@@unique([organizationId, nationalId])` — evita duplicados dentro de la liga y prepara N12 e inscripciones (S3).
-- [ ] `Goal.assistTeamPlayerId String?` (asistencias — stat muy pedida y barata).
-- [ ] `TeamPlayer.isCaptain Boolean @default(false)`.
-- [ ] `TournamentTeam.registrationStatus` enum (`INSCRIPTO` default | `PENDIENTE` | `RECHAZADO`) — base para inscripción online (S3).
-- [ ] `deletedAt` consistente: hoy existe en Tournament/Team/Referee pero no en Player/News; unificar y filtrar `deletedAt: null` en TODOS los listados (relacionado C7).
+- [x] Eliminar el modelo legacy `Phase` + `Match.phaseId` + `Tournament.phaseId` (BD reseteada; ruta `/api/phases`, seed y selects de fase legacy eliminados; los dialogs de partido usan `tournamentPhaseId` con las fases del torneo).
+- [x] `TournamentPhase.type`: String → enum `PhaseType (LEAGUE|GROUP|KNOCKOUT)`.
+- [x] `Team.yearFounded`: String? → Int?.
+- [x] `Player.nationalId String?` (DNI) con `@@unique([organizationId, nationalId])`.
+- [x] `Goal.assistTeamPlayerId String?` (asistencias — falta UI de carga).
+- [x] `TeamPlayer.isCaptain Boolean @default(false)` (falta UI).
+- [x] `TournamentTeam.registrationStatus` enum (`INSCRIPTO` default | `PENDIENTE` | `RECHAZADO`).
+- [x] `deletedAt` agregado a Player y News (falta aplicar soft delete + filtros en sus rutas, hoy solo torneos/árbitros lo usan).
 - [ ] Revisar `TournamentFormat`: marcar qué formatos soporta realmente el generador de fixture (S1) y ocultar el resto en la UI (evita torneos "SUIZO" que nada implementa).
+- ⚠️ (Hallazgo 2026-07-05) No existe UI para crear/gestionar `TournamentPhase`: el selector de fase en partidos solo aparece si el torneo tiene fases. Agregar CRUD de fases del torneo (va con F3 o S1).
 
 #### N12. 🟢 Identidad global de jugador cross-liga (E:Alto, post-N2, diferenciador futuro)
 

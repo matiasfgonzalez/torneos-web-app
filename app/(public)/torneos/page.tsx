@@ -1,8 +1,8 @@
 import { getTorneos } from "@modules/torneos/actions/getTorneos";
 import FiltroTorneos from "@modules/torneos/components/FiltroTorneos";
 import { Badge } from "@/components/ui/badge";
-import { TOURNAMENT_CATEGORY_LABELS } from "@/lib/constants";
-import { TournamentCategory } from "@prisma/client";
+import { AGE_GROUP_LABELS } from "@/lib/constants";
+import { AgeGroup } from "@prisma/client";
 import {
   Trophy,
   Users,
@@ -168,20 +168,14 @@ export default async function TorneosPage() {
               Categorías populares:
             </span>
             {(
-              [
-                "LIBRE",
-                "VETERANO",
-                "PRIMERA",
-                "RESERVA",
-                "FEMENINO",
-              ] as TournamentCategory[]
+              ["LIBRE", "VETERANO", "SENIOR", "JUVENIL", "SUB_17"] as AgeGroup[]
             ).map((cat) => (
               <Badge
                 key={cat}
                 variant="outline"
                 className="px-4 py-2 text-sm font-medium border-2 border-[#ad45ff]/30 text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white transition-all cursor-pointer"
               >
-                {TOURNAMENT_CATEGORY_LABELS[cat]}
+                {AGE_GROUP_LABELS[cat]}
               </Badge>
             ))}
           </div>

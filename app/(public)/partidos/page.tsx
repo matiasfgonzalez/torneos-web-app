@@ -534,7 +534,7 @@ export default function PartidosPage() {
                       <div className="flex items-center gap-2 text-slate-600 dark:text-gray-400">
                         <TrendingUp className="h-4 w-4" />
                         <span>
-                          {match.phase?.name || "Sin fase"}
+                          {match.tournamentPhase?.name || "Sin fase"}
                           {match.roundNumber && ` - ${match.roundNumber}`}
                         </span>
                       </div>

@@ -12,9 +12,6 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "prisma": {
-    "seed": "node prisma/seeds/phase-seed.js"
-  },
   "type": "module",
   "dependencies": {
     "@clerk/localizations": "^3.35.1",

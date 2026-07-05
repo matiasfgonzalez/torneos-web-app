@@ -28,6 +28,12 @@ export const checkUser = cache(async () => {
 
   const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null;
 
+  // Bootstrap del administrador: el email configurado en ADMIN_EMAIL
+  // recibe rol ADMINISTRADOR al crearse (post-reset de BD no hay admin)
+  const isAdmin =
+    !!process.env.ADMIN_EMAIL &&
+    email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase();
+
   try {
     return await db.user.upsert({
       where: { clerkUserId: user.id },
@@ -38,6 +44,7 @@ export const checkUser = cache(async () => {
         imageUrl: user.imageUrl,
         email,
         status: "ACTIVO",
+        role: isAdmin ? "ADMINISTRADOR" : "USUARIO",
       },
     });
   } catch (error) {

@@ -1,7 +1,7 @@
 // app/api/players/route.ts
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgContext } from "@/lib/orgAuth";
 import { apiError } from "@/lib/apiResponse";
 import { playerCreateSchema } from "@/lib/validators/player";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -10,10 +10,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create players
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
+    const auth = await requireApiOrgContext();
+    if (auth.error) {
+      return auth.error;
     }
 
     const parsed = playerCreateSchema.safeParse(body);
@@ -22,7 +21,10 @@ export async function POST(req: Request) {
     }
 
     const newPlayer = await db.player.create({
-      data: parsed.data,
+      data: {
+        ...parsed.data,
+        organizationId: auth.org.id,
+      },
     });
 
     return NextResponse.json(newPlayer, { status: 201 });

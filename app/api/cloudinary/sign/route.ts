@@ -13,18 +13,14 @@
 import { NextResponse } from "next/server";
 import { generateSignature } from "@/lib/cloudinary";
 import { signatureRequestSchema } from "@/types/cloudinary";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgContext } from "@/lib/orgAuth";
 
 export async function POST(request: Request) {
   try {
-    // Solo roles con gestión de contenido pueden obtener firmas de subida
-    const authResult = await validateApiRole([
-      "ADMINISTRADOR",
-      "EDITOR",
-      "ORGANIZADOR",
-    ]);
-    if (authResult.error) {
-      return authResult.error;
+    // Solo gestores de una organización (o admin) obtienen firmas de subida
+    const auth = await requireApiOrgContext();
+    if (auth.error) {
+      return auth.error;
     }
 
     // Parsear y validar el body

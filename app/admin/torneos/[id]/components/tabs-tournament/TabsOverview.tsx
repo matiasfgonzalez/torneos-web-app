@@ -13,7 +13,7 @@ import { formatDate } from "@/lib/formatDate";
 import { ITorneo } from "@modules/torneos/types";
 import {
   TOURNAMENT_FORMAT_LABELS,
-  TOURNAMENT_CATEGORY_LABELS,
+  formatTournamentCategory,
 } from "@/lib/constants";
 
 interface PropsTabsOverview {
@@ -158,9 +158,7 @@ const TabsOverview = (props: PropsTabsOverview) => {
                     Categoría
                   </span>
                   <Badge className="bg-gradient-to-r from-[#c77dff] to-[#a3b3ff] text-white border-0 shadow-lg shadow-[#c77dff]/25">
-                    {TOURNAMENT_CATEGORY_LABELS[
-                      tournamentData.category as keyof typeof TOURNAMENT_CATEGORY_LABELS
-                    ] || tournamentData.category}
+                    {formatTournamentCategory(tournamentData)}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">

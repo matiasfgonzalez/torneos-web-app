@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
-  TournamentCategory,
+  AgeGroup,
+  Gender,
   TournamentFormat,
   TournamentStatus,
 } from "@prisma/client";
@@ -33,7 +34,10 @@ const nullableLocalDate = z.preprocess(
 const tournamentBase = z.object({
   name: z.string().trim().min(1).max(150),
   description: nullableString(2000),
-  category: z.enum(TournamentCategory),
+  // Categoría en 3 campos (M13): ageGroup + gender + division
+  ageGroup: z.enum(AgeGroup),
+  gender: z.enum(Gender),
+  division: nullableString(30),
   locality: z.string().trim().min(1).max(120),
   logoUrl: nullableString(500),
   logoPublicId: nullableString(255),
@@ -49,11 +53,15 @@ const tournamentBase = z.object({
   trophy: nullableString(500),
 });
 
-// status/enabled se fijan server-side al crear
+// status/enabled se fijan server-side al crear; ageGroup/gender tienen
+// default en Prisma (LIBRE/MASCULINO)
 export const tournamentCreateSchema = tournamentBase
   .omit({ status: true, enabled: true })
   .partial({
     description: true,
+    ageGroup: true,
+    gender: true,
+    division: true,
     logoUrl: true,
     logoPublicId: true,
     liga: true,

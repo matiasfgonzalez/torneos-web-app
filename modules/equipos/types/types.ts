@@ -3,7 +3,7 @@ export interface ITeam {
   name: string;
   createdAt: Date;
   updatedAt: Date;
-  userId: string | null;
+  organizationId: string;
   description: string | null;
   logoUrl: string | null;
   enabled: boolean;
@@ -12,7 +12,7 @@ export interface ITeam {
   history: string | null;
   coach: string;
   homeCity: string;
-  yearFounded: string | null;
+  yearFounded: number | null;
   homeColor: string;
   awayColor: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

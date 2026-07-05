@@ -19,10 +19,8 @@ export async function GET() {
       suspendedUsers,
       pendingUsers,
       adminCount,
-      moderatorCount,
-      editorCount,
-      organizerCount,
       userCount,
+      organizerMembers,
     ] = await Promise.all([
       // Total de usuarios
       db.user.count({
@@ -56,7 +54,7 @@ export async function GET() {
           status: UserStatus.PENDIENTE,
         },
       }),
-      // Conteo por roles
+      // Conteo por roles de plataforma (N1: solo ADMINISTRADOR y USUARIO)
       db.user.count({
         where: {
           isActive: true,
@@ -66,26 +64,12 @@ export async function GET() {
       db.user.count({
         where: {
           isActive: true,
-          role: UserRole.MODERADOR,
-        },
-      }),
-      db.user.count({
-        where: {
-          isActive: true,
-          role: UserRole.EDITOR,
-        },
-      }),
-      db.user.count({
-        where: {
-          isActive: true,
-          role: UserRole.ORGANIZADOR,
-        },
-      }),
-      db.user.count({
-        where: {
-          isActive: true,
           role: UserRole.USUARIO,
         },
+      }),
+      // Usuarios con membresía en alguna organización ("organizadores")
+      db.organizationMember.groupBy({
+        by: ["userId"],
       }),
     ]);
 
@@ -186,9 +170,8 @@ export async function GET() {
       },
       roleDistribution: {
         admin: adminCount,
-        moderator: moderatorCount,
-        editor: editorCount,
-        organizer: organizerCount,
+        // Usuarios con membresía en alguna organización
+        organizer: organizerMembers.length,
         user: userCount,
       },
       statusDistribution: {

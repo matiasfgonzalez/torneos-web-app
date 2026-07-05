@@ -11,6 +11,7 @@ import {
 const playerBase = z
   .object({
     name: z.string().trim().min(1).max(120),
+    nationalId: nullableString(20),
     birthDate: nullableDate(),
     birthPlace: nullableString(120),
     nationality: nullableString(80),

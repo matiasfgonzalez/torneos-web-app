@@ -5,7 +5,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { getTournamentOrgId, requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchCreateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -21,7 +21,7 @@ export async function GET() {
         awayTeam: {
           include: { team: true },
         },
-        phase: true,
+        tournamentPhase: true,
         goals: true,
       },
       orderBy: { dateTime: "asc" },
@@ -38,18 +38,26 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create matches
-  const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-  if (authResult.error) {
-    return authResult.error;
-  }
-
   try {
     const body = await req.json();
 
     const parsed = matchCreateSchema.safeParse(body);
     if (!parsed.success) {
       return validationErrorResponse(parsed.error);
+    }
+
+    // El partido pertenece al torneo → solo gestores de esa organización
+    const orgId = await getTournamentOrgId(parsed.data.tournamentId);
+    if (!orgId) {
+      return NextResponse.json(
+        { error: "Torneo no encontrado" },
+        { status: 404 },
+      );
+    }
+
+    const auth = await requireApiOrgAccess(orgId);
+    if (auth.error) {
+      return auth.error;
     }
 
     // Regla WALKOVER: requiere marcador cargado (ej. 3-0 al ganador)

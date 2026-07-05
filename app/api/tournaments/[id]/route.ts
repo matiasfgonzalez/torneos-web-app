@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { tournamentUpdateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -20,15 +20,9 @@ export async function DELETE(
       );
     }
 
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can delete tournaments
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
     const existing = await db.tournament.findUnique({
       where: { id },
-      select: { id: true, deletedAt: true },
+      select: { id: true, deletedAt: true, organizationId: true },
     });
 
     if (!existing || existing.deletedAt) {
@@ -36,6 +30,12 @@ export async function DELETE(
         { error: "Torneo no encontrado" },
         { status: 404 },
       );
+    }
+
+    // Solo gestores de la organización dueña (o admin) pueden eliminar
+    const auth = await requireApiOrgAccess(existing.organizationId);
+    if (auth.error) {
+      return auth.error;
     }
 
     // Soft delete: conserva partidos, goles, tarjetas y standings (recuperable)
@@ -73,12 +73,6 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const body = await req.json();
 
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update tournaments
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
     const parsed = tournamentUpdateSchema.safeParse(body);
     if (!parsed.success) {
       return validationErrorResponse(parsed.error);
@@ -86,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const existing = await db.tournament.findUnique({
       where: { id },
-      select: { deletedAt: true },
+      select: { deletedAt: true, organizationId: true },
     });
 
     if (!existing || existing.deletedAt) {
@@ -94,6 +88,12 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         { error: "Torneo no encontrado" },
         { status: 404 },
       );
+    }
+
+    // Solo gestores de la organización dueña (o admin) pueden editar
+    const auth = await requireApiOrgAccess(existing.organizationId);
+    if (auth.error) {
+      return auth.error;
     }
 
     const updatedTournament = await db.tournament.update({

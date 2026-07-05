@@ -158,13 +158,13 @@ export interface IPartidos {
   penaltyScoreHome?: number | null;
   penaltyScoreAway?: number | null;
   roundNumber: number;
-  phaseId: string;
+  tournamentPhaseId?: string | null;
   createdAt: string;
   updatedAt: string;
   tournament: ITournament;
   homeTeam: ITournamentTeam;
   awayTeam: ITournamentTeam;
-  phase: IPhase;
+  tournamentPhase?: IPhase | null;
   goals: IGoal[];
   cards: ICard[];
   referees: IMatchReferee[];

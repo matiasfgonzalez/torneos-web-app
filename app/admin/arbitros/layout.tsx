@@ -1,12 +1,12 @@
-import { validateAdminAccess } from "@/lib/roleValidation";
+import { validatePanelAccess } from "@/lib/roleValidation";
 
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // ADMINISTRADOR, EDITOR y ORGANIZADOR pueden acceder a arbitros
-  await validateAdminAccess(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  // ADMINISTRADOR o cualquier miembro de una organización
+  await validatePanelAccess();
 
   return <>{children}</>;
 }

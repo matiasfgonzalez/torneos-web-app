@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
+import { formatTournamentCategory } from "@/lib/constants";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -192,7 +193,8 @@ export default function TabsTeam(props: PropsTabsTeam) {
                         {tt.tournament.name}
                       </CardTitle>
                       <CardDescription className="text-xs line-clamp-1">
-                        {tt.tournament.category} • {tt.tournament.locality}
+                        {formatTournamentCategory(tt.tournament)} •{" "}
+                        {tt.tournament.locality}
                       </CardDescription>
                     </div>
                     <Link href={`/admin/torneos/${tt.tournament.id}`}>

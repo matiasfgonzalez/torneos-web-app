@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { refereeUpdateSchema } from "@/lib/validators/referee";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -100,13 +100,6 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
   const { id } = await params;
 
   try {
-    // Verificar autenticación
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update referees
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
     // Verificar que el árbitro existe y no está eliminado
     const existingReferee = await db.referee.findUnique({
       where: { id },
@@ -117,6 +110,11 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
         { error: "Árbitro no encontrado" },
         { status: 404 },
       );
+    }
+
+    const auth = await requireApiOrgAccess(existingReferee.organizationId);
+    if (auth.error) {
+      return auth.error;
     }
 
     if (existingReferee.deletedAt) {
@@ -207,13 +205,6 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
   const { id } = await params;
 
   try {
-    // Verificar autenticación
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can delete referees
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
     // Verificar que el árbitro existe
     const referee = await db.referee.findUnique({
       where: { id },
@@ -223,6 +214,13 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
         },
       },
     });
+
+    if (referee) {
+      const auth = await requireApiOrgAccess(referee.organizationId);
+      if (auth.error) {
+        return auth.error;
+      }
+    }
 
     if (!referee) {
       return NextResponse.json(

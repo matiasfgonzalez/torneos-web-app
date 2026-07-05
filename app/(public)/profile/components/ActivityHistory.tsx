@@ -12,7 +12,10 @@ interface ActivityHistoryProps {
 export default async function ActivityHistory({ user }: ActivityHistoryProps) {
   // Fetch tournaments created by user (if admin/organizer)
   const tournaments = await db.tournament.findMany({
-    where: { userId: user.id, deletedAt: null },
+    where: {
+      deletedAt: null,
+      organization: { members: { some: { userId: user.id } } },
+    },
     orderBy: { startDate: "desc" },
     take: 5,
   });

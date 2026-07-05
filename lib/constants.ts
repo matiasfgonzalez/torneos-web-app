@@ -1,5 +1,6 @@
 import {
-  TournamentCategory,
+  AgeGroup,
+  Gender,
   TournamentStatus,
   TournamentFormat,
   PlayerStatus,
@@ -8,42 +9,58 @@ import {
 } from "@prisma/client";
 
 // ============================================
-// CATEGORÍAS DE TORNEO
+// CATEGORÍA DE TORNEO (M13: ageGroup + gender + division)
 // ============================================
 
-// Mapeo de categorías a etiquetas en español
-export const TOURNAMENT_CATEGORY_LABELS: Record<TournamentCategory, string> = {
+export const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
   LIBRE: "Libre",
-  SENIOR: "Senior",
+  ESCUELITA: "Escuelita",
+  MINI: "Mini",
+  INFANTIL: "Infantil",
+  JUVENIL: "Juvenil",
   SUB_17: "Sub-17",
   SUB_20: "Sub-20",
-  RESERVA: "Reserva",
-  PRIMERA: "Primera",
-  SEGUNDA: "Segunda",
+  SENIOR: "Senior",
+  M30: "Mayores de 30",
   VETERANO: "Veterano",
   PREVETERANO: "Pre-Veterano",
   SUPERVETERANO: "Super Veterano",
-  FEMENINO: "Femenino",
-  MASCULINO: "Masculino",
-  INFANTIL: "Infantil",
-  MINI: "Mini",
-  ESCUELITA: "Escuelita",
-  MIXTO: "Mixto",
   MASTER: "Master",
-  JUVENIL: "Juvenil",
-  M30: "Mayores de 30",
 };
 
-// Lista de todas las categorías (del enum de Prisma)
-export const TOURNAMENT_CATEGORIES = Object.values(TournamentCategory);
+export const AGE_GROUP_OPTIONS = Object.entries(AGE_GROUP_LABELS).map(
+  ([value, label]) => ({
+    value: value as AgeGroup,
+    label,
+  }),
+);
 
-// Array con label y value para selects
-export const TOURNAMENT_CATEGORIES_OPTIONS = Object.entries(
-  TOURNAMENT_CATEGORY_LABELS,
-).map(([value, label]) => ({
-  value: value as TournamentCategory,
-  label,
-}));
+export const GENDER_LABELS: Record<Gender, string> = {
+  MASCULINO: "Masculino",
+  FEMENINO: "Femenino",
+  MIXTO: "Mixto",
+};
+
+export const GENDER_OPTIONS = Object.entries(GENDER_LABELS).map(
+  ([value, label]) => ({
+    value: value as Gender,
+    label,
+  }),
+);
+
+/**
+ * Etiqueta legible de la categoría de un torneo a partir de sus 3 campos.
+ * Ej: "Sub-17 Femenino A" · "Libre Masculino" · "Veterano Mixto Primera"
+ */
+export function formatTournamentCategory(t: {
+  ageGroup: string;
+  gender: string;
+  division?: string | null;
+}): string {
+  const age = AGE_GROUP_LABELS[t.ageGroup as AgeGroup] ?? t.ageGroup;
+  const gender = GENDER_LABELS[t.gender as Gender] ?? t.gender;
+  return [age, gender, t.division].filter(Boolean).join(" ");
+}
 
 // ============================================
 // ESTADOS DE TORNEO
@@ -104,19 +121,6 @@ export const TOURNAMENT_FORMAT_OPTIONS = Object.entries(
   value: value as TournamentFormat,
   label,
 }));
-
-// ============================================
-// CONSTANTES LEGACY (para compatibilidad)
-// ============================================
-
-// @deprecated - Usar TOURNAMENT_CATEGORIES
-export const TOURNAMENT_CATEGORIES_DESC = TOURNAMENT_CATEGORIES;
-
-// @deprecated - Usar TOURNAMENT_FORMATS
-export const TOURNAMENT_FORMATS_DESC = TOURNAMENT_FORMATS;
-
-// @deprecated - Usar TOURNAMENT_STATUSES
-export const TORNAMENT_STATUS_DESC = TOURNAMENT_STATUSES;
 
 // ============================================
 // ESTADOS DE JUGADOR

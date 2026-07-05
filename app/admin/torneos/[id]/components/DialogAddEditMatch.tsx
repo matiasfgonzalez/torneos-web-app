@@ -38,20 +38,6 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { IPartidos, MATCH_STATUS } from "@modules/partidos/types";
 import { formatDateTimeLocal } from "@/lib/formatDate";
-import { PhaseName } from "@prisma/client";
-import { PHASE_NAME } from "@modules/torneos/types/fases.types";
-
-// Función helper para obtener el label en español de PhaseName
-const getPhaseLabel = (phaseName: PhaseName): string => {
-  const phase = PHASE_NAME.find((p) => p.value === phaseName);
-  return phase?.label || phaseName;
-};
-
-interface Phase {
-  id: string;
-  name: PhaseName;
-  order: number;
-}
 
 interface MatchFormValues {
   dateTime: string;
@@ -62,7 +48,7 @@ interface MatchFormValues {
   tournamentId: string;
   homeTeamId: string;
   awayTeamId: string;
-  phaseId: string;
+  tournamentPhaseId: string;
   homeScore: number | null;
   awayScore: number | null;
   penaltyWinnerTeamId: string | null;
@@ -86,7 +72,8 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
-  const [phases, setPhases] = useState<Phase[]>([]);
+  // Fases del torneo (TournamentPhase) — vienen con los datos del torneo
+  const phases = tournamentData.tournamentPhases ?? [];
   const [isLoading, setIsLoading] = useState(false);
   const [values, setValues] = useState<MatchFormValues>({
     dateTime: isEdit
@@ -99,7 +86,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
     tournamentId: tournamentData.id,
     homeTeamId: isEdit ? (matchData?.homeTeamId ?? "") : "",
     awayTeamId: isEdit ? (matchData?.awayTeamId ?? "") : "",
-    phaseId: isEdit ? (matchData?.phaseId ?? "") : "",
+    tournamentPhaseId: isEdit ? (matchData?.tournamentPhaseId ?? "") : "",
     homeScore: isEdit ? (matchData?.homeScore ?? null) : null,
     awayScore: isEdit ? (matchData?.awayScore ?? null) : null,
     penaltyWinnerTeamId: isEdit ? (matchData?.penaltyWinnerTeamId ?? "") : "",
@@ -107,24 +94,6 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
     penaltyScoreAway: isEdit ? (matchData?.penaltyScoreAway ?? null) : null,
     roundNumber: isEdit ? (matchData?.roundNumber ?? null) : null,
   });
-
-  useEffect(() => {
-    async function fetchPhases() {
-      try {
-        const res = await fetch("/api/phases");
-        if (!res.ok) throw new Error("Error al obtener las fases");
-
-        const data: Phase[] = await res.json();
-        setPhases(data);
-      } catch (err) {
-        console.error(err || "Error desconocido");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPhases();
-  }, []); // Solo se ejecuta una vez al montar el componente
 
   const update = (field: string, newValue: number | string | boolean) => {
     setValues((prev: MatchFormValues) => ({ ...prev, [field]: newValue }));
@@ -529,39 +498,41 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                 </Select>
               </div>
 
-              {/* Fase */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="phaseId"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Fase
-                </Label>
-                <Select
-                  value={values.phaseId}
-                  onValueChange={(v) => update("phaseId", v)}
-                  disabled={isLoading}
-                  name="phaseId"
-                >
-                  <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl h-12">
-                    <SelectValue placeholder="Seleccione fase" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-0 shadow-xl">
-                    {phases.map((phase) => (
-                      <SelectItem
-                        key={phase.id}
-                        value={phase.id}
-                        className="rounded-lg"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-3 h-3 text-[#ad45ff]" />
-                          {getPhaseLabel(phase.name)}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Fase del torneo (opcional; sin fase suma a la tabla general) */}
+              {phases.length > 0 && (
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="tournamentPhaseId"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Fase
+                  </Label>
+                  <Select
+                    value={values.tournamentPhaseId}
+                    onValueChange={(v) => update("tournamentPhaseId", v)}
+                    disabled={isLoading}
+                    name="tournamentPhaseId"
+                  >
+                    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl h-12">
+                      <SelectValue placeholder="Seleccione fase" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-0 shadow-xl">
+                      {phases.map((phase) => (
+                        <SelectItem
+                          key={phase.id}
+                          value={phase.id}
+                          className="rounded-lg"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-3 h-3 text-[#ad45ff]" />
+                            {phase.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Número de Ronda */}
               <div className="space-y-2">

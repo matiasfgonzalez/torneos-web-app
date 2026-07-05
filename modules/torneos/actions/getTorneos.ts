@@ -12,7 +12,6 @@ export async function getTorneos(): Promise<ITorneo[]> {
         deletedAt: null, // Excluir eliminados lógicamente
       },
       include: {
-        user: true,
         tournamentTeams: true,
         matches: true, // Incluir partidos para contar programados
       },

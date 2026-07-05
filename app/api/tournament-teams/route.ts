@@ -1,7 +1,7 @@
 // /app/api/tournament-teams/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { getTournamentOrgId, requireApiOrgAccess } from "@/lib/orgAuth";
 import { tournamentTeamCreateSchema } from "@/lib/validators/tournament-team";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -9,38 +9,22 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
+    const parsed = tournamentTeamCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
     }
 
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    // Check if user exists
-    if (!user) {
+    const orgId = await getTournamentOrgId(parsed.data.tournamentId);
+    if (!orgId) {
       return NextResponse.json(
-        { error: "Usuario no encontrado" },
+        { error: "Torneo no encontrado" },
         { status: 404 },
       );
     }
 
-    // Validar que el user sea admin
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para gestionar equipos en torneos" },
-        { status: 403 },
-      );
-    }
-
-    const parsed = tournamentTeamCreateSchema.safeParse(body);
-    if (!parsed.success) {
-      return validationErrorResponse(parsed.error);
+    const auth = await requireApiOrgAccess(orgId);
+    if (auth.error) {
+      return auth.error;
     }
 
     // Crear la relación equipo-torneo

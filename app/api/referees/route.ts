@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { RefereeStatus } from "@prisma/client";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgContext } from "@/lib/orgAuth";
 import { refereeCreateSchema } from "@/lib/validators/referee";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -80,11 +80,9 @@ export async function GET(req: Request) {
  */
 export async function POST(req: Request) {
   try {
-    // Verificar autenticación
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can create referees
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
+    const auth = await requireApiOrgContext();
+    if (auth.error) {
+      return auth.error;
     }
 
     const body = await req.json();
@@ -125,6 +123,7 @@ export async function POST(req: Request) {
     const referee = await db.referee.create({
       data: {
         ...parsed.data,
+        organizationId: auth.org.id,
         status: "ACTIVO",
         enabled: true,
       },

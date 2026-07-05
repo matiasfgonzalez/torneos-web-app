@@ -4,7 +4,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -21,12 +21,6 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update matches
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
     // 📌 Obtener estado anterior del partido ANTES de actualizar
     const previousMatch = await db.match.findUnique({
       where: { id },
@@ -37,6 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         awayScore: true,
         status: true,
         tournamentPhaseId: true,
+        tournament: { select: { organizationId: true } },
       },
     });
 
@@ -45,6 +40,15 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         { error: "Partido no encontrado" },
         { status: 404 },
       );
+    }
+
+    // Carga de resultados: COLABORADOR también puede
+    const auth = await requireApiOrgAccess(
+      previousMatch.tournament.organizationId,
+      { allowCollaborator: true },
+    );
+    if (auth.error) {
+      return auth.error;
     }
 
     const body = await req.json();

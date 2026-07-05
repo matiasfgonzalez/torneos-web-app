@@ -57,7 +57,7 @@ export interface Team {
   history: string;
   coach: string;
   homeCity: string;
-  yearFounded: string;
+  yearFounded: number | null;
   homeColor: string;
   awayColor: string;
   logoUrl: string;
@@ -70,7 +70,10 @@ export interface Tournament {
   id: string;
   name: string;
   description: string;
-  category: string;
+  // Categoría en 3 campos (M13)
+  ageGroup: string;
+  gender: string;
+  division?: string | null;
   locality: string;
   logoUrl: string;
   liga: string;
@@ -81,7 +84,7 @@ export interface Tournament {
   enabled: boolean;
   startDate: string | Date;
   endDate: string | Date;
-  userId: string;
+  organizationId: string;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

@@ -6,7 +6,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
-import { requireActionRole } from "@/lib/actionRoleValidation";
+import { getMatchOrgId, requireActionOrgAccess } from "@/lib/orgAuth";
 
 export async function addGoal(data: {
   matchId: string;
@@ -16,7 +16,11 @@ export async function addGoal(data: {
   isOwnGoal: boolean;
   isPenalty: boolean;
 }) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const orgId = await getMatchOrgId(data.matchId);
+  if (!orgId) return { success: false, error: "Partido no encontrado" };
+
+  // Carga de resultados: COLABORADOR también puede
+  const auth = await requireActionOrgAccess(orgId, { allowCollaborator: true });
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -79,9 +83,6 @@ export async function addGoal(data: {
 }
 
 export async function deleteGoal(goalId: string) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-  if (auth.error) return { success: false, error: auth.error };
-
   try {
     // 1. Obtener el gol y el partido asociado
     const goal = await db.goal.findUnique({
@@ -93,6 +94,14 @@ export async function deleteGoal(goalId: string) {
     });
 
     if (!goal) throw new Error("Gol no encontrado");
+
+    const orgId = await getMatchOrgId(goal.matchId);
+    if (!orgId) return { success: false, error: "Partido no encontrado" };
+
+    const auth = await requireActionOrgAccess(orgId, {
+      allowCollaborator: true,
+    });
+    if (auth.error) return { success: false, error: auth.error };
 
     const previousMatch = await db.match.findUnique({
       where: { id: goal.matchId },

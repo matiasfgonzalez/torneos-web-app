@@ -1,4 +1,4 @@
-// app/api/noticias/route.ts
+﻿// app/api/noticias/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 import { validateApiRole } from "@/lib/apiRoleValidation";
@@ -38,8 +38,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Validate that only ADMINISTRADOR or EDITOR can create news
-  const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR"]);
+  // Noticias globales de la plataforma: solo ADMINISTRADOR (decisión D5)
+  const authResult = await validateApiRole(["ADMINISTRADOR"]);
   if (authResult.error) {
     return authResult.error;
   }

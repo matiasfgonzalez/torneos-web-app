@@ -7,7 +7,8 @@ import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  TOURNAMENT_CATEGORIES_OPTIONS,
+  AGE_GROUP_OPTIONS,
+  GENDER_OPTIONS,
   TOURNAMENT_FORMAT_OPTIONS,
   TOURNAMENT_STATUS_OPTIONS,
 } from "@/lib/constants";
@@ -56,7 +57,13 @@ const tournamentSchema = z
       .string()
       .max(500, "La descripción no puede superar los 500 caracteres")
       .optional(),
-    category: z.string().min(1, "La categoría es obligatoria"),
+    // Categoría en 3 campos (M13)
+    ageGroup: z.string().min(1, "La categoría es obligatoria"),
+    gender: z.string().min(1, "El género es obligatorio"),
+    division: z
+      .string()
+      .max(30, "La división no puede superar los 30 caracteres")
+      .optional(),
     locality: z
       .string()
       .min(3, "La localidad debe tener al menos 3 caracteres")
@@ -197,9 +204,13 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
     defaultValues: {
       name: isEditMode && tournament?.name ? tournament.name : "",
       description: isEditMode ? tournament?.description || "" : "",
-      category: isEditMode
-        ? tournament?.category || TOURNAMENT_CATEGORIES_OPTIONS[0].value
-        : TOURNAMENT_CATEGORIES_OPTIONS[0].value,
+      ageGroup: isEditMode
+        ? tournament?.ageGroup || AGE_GROUP_OPTIONS[0].value
+        : AGE_GROUP_OPTIONS[0].value,
+      gender: isEditMode
+        ? tournament?.gender || GENDER_OPTIONS[0].value
+        : GENDER_OPTIONS[0].value,
+      division: isEditMode ? tournament?.division || "" : "",
       locality: isEditMode ? tournament?.locality || "" : "",
       startDate:
         isEditMode && tournament?.startDate
@@ -344,40 +355,98 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               )}
             />
 
-            {/* Campo: Categoría (Select) */}
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Categoría
-                    </FormLabel>
-                  </div>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoading}
-                  >
+            {/* Categoría (M13): edad + género + división */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="ageGroup"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Categoría
+                      </FormLabel>
+                    </div>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                          <SelectValue placeholder="Categoría" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        {AGE_GROUP_OPTIONS.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Género
+                      </FormLabel>
+                    </div>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                          <SelectValue placeholder="Género" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        {GENDER_OPTIONS.map((g) => (
+                          <SelectItem key={g.value} value={g.value}>
+                            {g.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="division"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        División (opcional)
+                      </FormLabel>
+                    </div>
                     <FormControl>
-                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
-                        <SelectValue placeholder="Selecciona una categoría" />
-                      </SelectTrigger>
+                      <Input
+                        placeholder='Ej: "A", "Primera"'
+                        disabled={isLoading}
+                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl"
+                        {...field}
+                      />
                     </FormControl>
-                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      {TOURNAMENT_CATEGORIES_OPTIONS.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Campos de Fecha (Inicio y Fin) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

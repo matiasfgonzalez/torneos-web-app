@@ -3,13 +3,7 @@ import { nullableString } from "./common";
 
 const currentYear = new Date().getFullYear();
 
-// El modelo guarda yearFounded como String?; se valida como año y se normaliza
-const yearFounded = z.coerce
-  .number()
-  .int()
-  .min(1900)
-  .max(currentYear)
-  .transform((value) => String(value));
+const yearFounded = z.coerce.number().int().min(1900).max(currentYear);
 
 const teamBase = z.object({
   name: z.string().trim().min(1).max(120),

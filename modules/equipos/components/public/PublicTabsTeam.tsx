@@ -12,6 +12,7 @@ import { Users, Trophy, Calendar, Play, TrendingUp, Goal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
+import { formatTournamentCategory } from "@/lib/constants";
 import { PLAYER_POSITION_LABELS } from "@/lib/constants";
 import { PlayerPosition } from "@prisma/client";
 import MatchCard from "./MatchCard";
@@ -243,7 +244,7 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
                           variant="secondary"
                           className="text-xs bg-[#ad45ff]/10 text-[#ad45ff] border-0"
                         >
-                          {tt.tournament.category}
+                          {formatTournamentCategory(tt.tournament)}
                         </Badge>
                         <span className="text-gray-400 dark:text-gray-500">
                           •

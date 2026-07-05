@@ -95,7 +95,7 @@ const PartidoDetalle = (props: PartidoDetalleProps) => {
                 {statusConfig.label}
               </span>
               <div className="text-xs text-slate-400 dark:text-gray-400">
-                {match.phase.name} {match.roundNumber}
+                {match.tournamentPhase?.name ?? "Sin fase"} {match.roundNumber}
               </div>
             </div>
           </div>

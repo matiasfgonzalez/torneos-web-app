@@ -4,7 +4,20 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { RefereeStatus } from "@prisma/client";
 import { IRefereeCreate, IRefereeUpdate } from "../types";
-import { requireActionRole } from "@/lib/actionRoleValidation";
+import {
+  requireActionOrgAccess,
+  requireActionOrgContext,
+} from "@/lib/orgAuth";
+
+/** Valida acceso a la organización dueña de un árbitro existente */
+async function authForReferee(refereeId: string) {
+  const referee = await db.referee.findUnique({
+    where: { id: refereeId },
+    select: { organizationId: true },
+  });
+  if (!referee) return { error: "Árbitro no encontrado" as string };
+  return requireActionOrgAccess(referee.organizationId);
+}
 
 /**
  * Crea un nuevo árbitro
@@ -14,8 +27,8 @@ import { requireActionRole } from "@/lib/actionRoleValidation";
  * - Email y DNI deben ser únicos si se proporcionan
  */
 export async function createReferee(data: IRefereeCreate) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-  if (auth.error) return { success: false, error: auth.error };
+  const auth = await requireActionOrgContext();
+  if (auth.error !== undefined) return { success: false, error: auth.error };
 
   try {
     const {
@@ -65,6 +78,7 @@ export async function createReferee(data: IRefereeCreate) {
         certificationLevel: certificationLevel?.trim() || null,
         status: "ACTIVO",
         enabled: true,
+        organizationId: auth.org.id,
       },
     });
 
@@ -173,7 +187,7 @@ export async function getRefereeById(id: string) {
  * - No se puede actualizar un árbitro eliminado lógicamente
  */
 export async function updateReferee(id: string, data: IRefereeUpdate) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const auth = await authForReferee(id);
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -261,7 +275,7 @@ export async function updateReferee(id: string, data: IRefereeUpdate) {
  * Alterna el estado habilitado/deshabilitado de un árbitro
  */
 export async function toggleRefereeEnabled(id: string) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const auth = await authForReferee(id);
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -307,7 +321,7 @@ export async function toggleRefereeEnabled(id: string) {
  * Cambia el estado de un árbitro
  */
 export async function updateRefereeStatus(id: string, status: RefereeStatus) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const auth = await authForReferee(id);
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -347,7 +361,7 @@ export async function updateRefereeStatus(id: string, status: RefereeStatus) {
  * - La eliminación física solo es posible si no tiene partidos asignados
  */
 export async function deleteReferee(id: string, permanent = false) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const auth = await authForReferee(id);
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -401,7 +415,7 @@ export async function deleteReferee(id: string, permanent = false) {
  * Restaura un árbitro eliminado lógicamente
  */
 export async function restoreReferee(id: string) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const auth = await authForReferee(id);
   if (auth.error) return { success: false, error: auth.error };
 
   try {

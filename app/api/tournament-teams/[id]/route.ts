@@ -1,8 +1,7 @@
 // /app/api/tournament-teams/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { checkUser } from "@/lib/checkUser";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { tournamentTeamUpdateSchema } from "@/lib/validators/tournament-team";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -21,35 +20,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const body = await req.json();
 
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 400 },
-      );
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 },
-      );
-    }
-
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para actualizar esta asociación" },
-        { status: 403 },
-      );
-    }
-
     // Verificar si existe la asociación
     const association = await db.tournamentTeam.findUnique({
       where: { id },
+      include: { tournament: { select: { organizationId: true } } },
     });
 
     if (!association) {
@@ -57,6 +31,13 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         { error: "Asociación equipo-torneo no encontrada" },
         { status: 404 },
       );
+    }
+
+    const auth = await requireApiOrgAccess(
+      association.tournament.organizationId,
+    );
+    if (auth.error) {
+      return auth.error;
     }
 
     const parsed = tournamentTeamUpdateSchema.safeParse(body);
@@ -84,12 +65,23 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
   try {
     const { id } = await params;
 
-    const user = await checkUser();
-    if (!user || user.role !== "ADMINISTRADOR") {
+    const association = await db.tournamentTeam.findUnique({
+      where: { id },
+      include: { tournament: { select: { organizationId: true } } },
+    });
+
+    if (!association) {
       return NextResponse.json(
-        { error: "No tienes permisos para eliminar esta asociación" },
-        { status: 403 },
+        { error: "Asociación equipo-torneo no encontrada" },
+        { status: 404 },
       );
+    }
+
+    const auth = await requireApiOrgAccess(
+      association.tournament.organizationId,
+    );
+    if (auth.error) {
+      return auth.error;
     }
 
     const deleted = await db.tournamentTeam.delete({

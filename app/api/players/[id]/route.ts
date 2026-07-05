@@ -1,7 +1,7 @@
 // app/api/teams/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { validateApiRole } from "@/lib/apiRoleValidation";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { playerUpdateSchema } from "@/lib/validators/player";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -18,10 +18,21 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    // Validate that only ADMINISTRADOR, EDITOR or ORGANIZADOR can update players
-    const authResult = await validateApiRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
-    if (authResult.error) {
-      return authResult.error;
+    const existing = await db.player.findUnique({
+      where: { id },
+      select: { organizationId: true, deletedAt: true },
+    });
+
+    if (!existing || existing.deletedAt) {
+      return NextResponse.json(
+        { error: "Jugador no encontrado" },
+        { status: 404 },
+      );
+    }
+
+    const auth = await requireApiOrgAccess(existing.organizationId);
+    if (auth.error) {
+      return auth.error;
     }
 
     const body = await req.json();

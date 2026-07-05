@@ -15,7 +15,7 @@ import {
 import { ITorneo } from "@modules/torneos/types";
 import { formatDate } from "@/lib/formatDate";
 import {
-  TOURNAMENT_CATEGORY_LABELS,
+  formatTournamentCategory,
   TOURNAMENT_FORMAT_LABELS,
   TOURNAMENT_STATUS_LABELS,
 } from "@/lib/constants";
@@ -51,10 +51,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
       )
     : null;
 
-  const categoryLabel =
-    TOURNAMENT_CATEGORY_LABELS[
-      tournamentData.category as keyof typeof TOURNAMENT_CATEGORY_LABELS
-    ] || tournamentData.category;
+  const categoryLabel = formatTournamentCategory(tournamentData);
 
   const formatLabel =
     TOURNAMENT_FORMAT_LABELS[

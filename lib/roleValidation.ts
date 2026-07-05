@@ -1,81 +1,42 @@
 import { UserRole } from "@prisma/client";
 import { checkUser } from "./checkUser";
+import { db } from "./db";
 import { redirect } from "next/navigation";
 
 /**
- * Role hierarchy for permission checking
- * Higher number = more permissions
+ * Jerarquía de roles de PLATAFORMA (reducidos a 2 en N1).
+ * El rol de trabajo (OWNER/ORGANIZADOR/COLABORADOR) vive en
+ * OrganizationMember — ver lib/orgAuth.ts.
  */
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   USUARIO: 1,
-  EDITOR: 2,
-  ORGANIZADOR: 3,
-  MODERADOR: 4,
-  ADMINISTRADOR: 5,
+  ADMINISTRADOR: 2,
 };
 
-/**
- * Defines which roles can access which admin routes
- */
-export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
-  "/admin/dashboard": ["ADMINISTRADOR", "MODERADOR", "EDITOR", "ORGANIZADOR", "USUARIO"],
-  "/admin/noticias": ["ADMINISTRADOR", "EDITOR"],
-  "/admin/torneos": ["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"],
-  "/admin/equipos": ["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"],
-  "/admin/jugadores": ["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"],
-  "/admin/arbitros": ["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"],
-  "/admin/usuarios": ["ADMINISTRADOR"],
-  "/admin/partidos": ["ADMINISTRADOR", "ORGANIZADOR"],
-  "/admin/estadisticas": ["ADMINISTRADOR"],
-  "/admin/configuracion": ["ADMINISTRADOR"],
-};
-
-/**
- * Check if a user has the minimum required role
- */
-export function hasMinimumRole(userRole: UserRole, requiredRole: UserRole): boolean {
-  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole];
-}
-
-/**
- * Check if a user can access a specific route
- */
-export function canAccessRoute(userRole: UserRole, route: string): boolean {
-  // Find the matching route pattern
-  const routePattern = Object.keys(ROUTE_PERMISSIONS).find((pattern) => {
-    // Exact match or starts with pattern
-    return route === pattern || route.startsWith(pattern + "/");
-  });
-
-  if (!routePattern) {
-    // Default: only ADMINISTRADOR can access undefined routes
-    return userRole === "ADMINISTRADOR";
-  }
-
-  return ROUTE_PERMISSIONS[routePattern].includes(userRole);
-}
-
-/**
- * Check if a user can manage another user based on role hierarchy
- */
-export function canManageUser(currentUserRole: UserRole, targetUserRole: UserRole): boolean {
+export function canManageUser(
+  currentUserRole: UserRole,
+  targetUserRole: UserRole,
+): boolean {
   return ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole];
 }
 
-/**
- * Check if a user can assign a specific role
- */
-export function canAssignRole(currentUserRole: UserRole, targetRole: UserRole): boolean {
+export function canAssignRole(
+  currentUserRole: UserRole,
+  targetRole: UserRole,
+): boolean {
   return ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetRole];
 }
 
 /**
- * Server-side role guard for admin pages
- * Use in page.tsx to validate access
+ * Guard server-side para páginas del panel.
+ *
+ * - `adminOnly: true` → solo ADMINISTRADOR (usuarios, noticias, config, stats)
+ * - default → ADMINISTRADOR o cualquier miembro de una organización
+ *   (OWNER/ORGANIZADOR/COLABORADOR)
  */
-export async function validateAdminAccess(
-  requiredRoles: UserRole[],
-  redirectPath: string = "/admin/dashboard"
+export async function validatePanelAccess(
+  opts: { adminOnly?: boolean } = {},
+  redirectPath: string = "/",
 ) {
   const user = await checkUser();
 
@@ -83,20 +44,22 @@ export async function validateAdminAccess(
     redirect("/sign-in");
   }
 
-  if (!requiredRoles.includes(user.role)) {
+  if (user.role === "ADMINISTRADOR") {
+    return user;
+  }
+
+  if (opts.adminOnly) {
+    redirect(redirectPath);
+  }
+
+  const membership = await db.organizationMember.findFirst({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+
+  if (!membership) {
     redirect(redirectPath);
   }
 
   return user;
-}
-
-/**
- * Get allowed roles for a route 
- */
-export function getAllowedRoles(route: string): UserRole[] {
-  const routePattern = Object.keys(ROUTE_PERMISSIONS).find((pattern) => {
-    return route === pattern || route.startsWith(pattern + "/");
-  });
-
-  return routePattern ? ROUTE_PERMISSIONS[routePattern] : ["ADMINISTRADOR"];
 }

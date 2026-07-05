@@ -22,6 +22,7 @@ import { Search, Eye, Filter, Calendar, MapPin, Trophy } from "lucide-react";
 import { useState } from "react";
 import { ITorneo } from "@modules/torneos/types";
 import { formatDate } from "@/lib/formatDate";
+import { formatTournamentCategory } from "@/lib/constants";
 import Link from "next/link";
 import { DeleteTournamentButton } from "./DeleteTournamentButton";
 import DialogAddTournaments from "./DialogAddTournaments";
@@ -39,7 +40,9 @@ const ListTournaments = (props: PropsListTournaments) => {
   const filteredTournaments = tournaments.filter((tournament) => {
     const matchesSearch =
       tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tournament.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      formatTournamentCategory(tournament)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       tournament.locality?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
@@ -225,7 +228,7 @@ const ListTournaments = (props: PropsListTournaments) => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-medium">
-                        {tournament.category}
+                        {formatTournamentCategory(tournament)}
                       </Badge>
                     </TableCell>
                     <TableCell>{getStatusBadge(tournament.status)}</TableCell>

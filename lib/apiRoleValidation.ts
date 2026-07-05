@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { checkUser } from "@/lib/checkUser";
 import { UserRole } from "@prisma/client";
 
@@ -42,13 +42,12 @@ export async function validateApiRole(
 
 /**
  * Role hierarchy for API permission checking
+ * (roles de plataforma reducidos a 2 en N1; los roles de trabajo
+ * viven en OrganizationMember — ver lib/orgAuth.ts)
  */
 const ROLE_HIERARCHY: Record<UserRole, number> = {
   USUARIO: 1,
-  EDITOR: 2,
-  ORGANIZADOR: 3,
-  MODERADOR: 4,
-  ADMINISTRADOR: 5,
+  ADMINISTRADOR: 2,
 };
 
 /**

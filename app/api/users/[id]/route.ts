@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole, canManageUserApi } from "@/lib/apiRoleValidation";
+import { formatTournamentCategory } from "@/lib/constants";
 import { userUpdateSchema } from "@/lib/validators/user";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -48,8 +49,6 @@ export async function GET(
         _count: {
           select: {
             news: true,
-            tournaments: true,
-            teams: true,
             auditLogs: true,
           },
         },
@@ -67,32 +66,15 @@ export async function GET(
           },
           take: 5,
         },
-        // Incluir los últimos torneos
-        tournaments: {
+        // Membresías de organización (reemplaza tournaments/teams directos)
+        memberships: {
           select: {
-            id: true,
-            name: true,
-            status: true,
-            startDate: true,
-            category: true,
+            role: true,
+            organizationId: true,
+            organization: {
+              select: { id: true, name: true, slug: true },
+            },
           },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 5,
-        },
-        // Incluir los últimos equipos
-        teams: {
-          select: {
-            id: true,
-            name: true,
-            shortName: true,
-            enabled: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 5,
         },
         // Incluir los últimos logs de auditoría
         auditLogs: {
@@ -121,11 +103,21 @@ export async function GET(
       );
     }
 
-    // Calcular estadísticas adicionales
+    // Calcular estadísticas adicionales (torneos/equipos vía organizaciones)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const [recentNews, recentTournaments, recentActivity] = await Promise.all([
+    const orgIds = user.memberships.map((m) => m.organizationId);
+    const orgFilter = { organizationId: { in: orgIds }, deletedAt: null };
+
+    const [
+      recentNews,
+      recentTournaments,
+      recentActivity,
+      tournaments,
+      tournamentsTotal,
+      teamsTotal,
+    ] = await Promise.all([
       db.news.count({
         where: {
           userId: id,
@@ -133,10 +125,7 @@ export async function GET(
         },
       }),
       db.tournament.count({
-        where: {
-          userId: id,
-          createdAt: { gte: thirtyDaysAgo },
-        },
+        where: { ...orgFilter, createdAt: { gte: thirtyDaysAgo } },
       }),
       db.auditLog.count({
         where: {
@@ -144,11 +133,32 @@ export async function GET(
           createdAt: { gte: thirtyDaysAgo },
         },
       }),
+      db.tournament.findMany({
+        where: orgFilter,
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          startDate: true,
+          ageGroup: true,
+          gender: true,
+          division: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      db.tournament.count({ where: orgFilter }),
+      db.team.count({ where: orgFilter }),
     ]);
 
     // Formatear la respuesta con estadísticas adicionales
     const userWithStats = {
       ...user,
+      tournaments: tournaments.map((t) => ({
+        ...t,
+        category: formatTournamentCategory(t),
+      })),
+      teams: [] as { id: string; name: string }[],
       stats: {
         recent: {
           news: recentNews,
@@ -157,8 +167,8 @@ export async function GET(
         },
         total: {
           news: user._count.news,
-          tournaments: user._count.tournaments,
-          teams: user._count.teams,
+          tournaments: tournamentsTotal,
+          teams: teamsTotal,
           auditLogs: user._count.auditLogs,
         },
       },

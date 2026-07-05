@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 
 type tParams = Promise<{ id: string }>;
 
@@ -41,36 +41,6 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
   const { id } = await params; // id es el ID del registro TeamPlayer
 
   try {
-    // Verificar autenticación
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 },
-      );
-    }
-
-    // Verificar usuario en la base de datos
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no registrado en la base de datos" },
-        { status: 404 },
-      );
-    }
-
-    // Verificar permisos de administrador
-    if (user.role !== "ADMINISTRADOR") {
-      return NextResponse.json(
-        { error: "No tienes permisos para desasociar jugadores" },
-        { status: 403 },
-      );
-    }
-
     // Verificar que el registro existe
     const teamPlayer = await db.teamPlayer.findUnique({
       where: { id },
@@ -90,6 +60,13 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
         { error: "La asociación jugador-equipo no existe" },
         { status: 404 },
       );
+    }
+
+    const auth = await requireApiOrgAccess(
+      teamPlayer.tournamentTeam.tournament.organizationId,
+    );
+    if (auth.error) {
+      return auth.error;
     }
 
     // Eliminar la asociación (los goles y tarjetas se eliminan por cascade)

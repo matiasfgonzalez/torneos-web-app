@@ -96,8 +96,7 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               news: true,
-              tournaments: true,
-              teams: true,
+              memberships: true,
             },
           },
         },

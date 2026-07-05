@@ -144,7 +144,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
       history: isEditMode ? team?.history || "" : "",
       coach: isEditMode ? team?.coach || "" : "",
       homeCity: isEditMode ? team?.homeCity || "" : "",
-      yearFounded: isEditMode ? team?.yearFounded || "" : "",
+      yearFounded: isEditMode ? team?.yearFounded?.toString() || "" : "",
       homeColor: isEditMode ? team?.homeColor || "#FFFFFF" : "#FFFFFF",
       awayColor: isEditMode ? team?.awayColor || "#000000" : "#000000",
       logoUrl: isEditMode ? team?.logoUrl || null : null,

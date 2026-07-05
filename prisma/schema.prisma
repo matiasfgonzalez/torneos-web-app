@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Schema GOLAZO — nueva estructura (2026-07-05)
+// Decisiones D1-D9 en TODO.md: multi-tenancy por Organization, roles de
+// plataforma mínimos + roles por organización, categorías en 3 campos.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,12 +11,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// USUARIOS Y ORGANIZACIONES
+// ============================================================
+
+// Rol de PLATAFORMA. El rol de trabajo (organizador/colaborador)
+// vive en OrganizationMember.role (decisión D5).
 enum UserRole {
-  ADMINISTRADOR
-  MODERADOR
-  EDITOR
-  ORGANIZADOR
-  USUARIO
+  ADMINISTRADOR // product owner: gestiona todo
+  USUARIO       // todo registrado (cliente/visitante)
 }
 
 enum UserStatus {
@@ -29,179 +30,251 @@ enum UserStatus {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  clerkUserId   String      @unique
-  email         String      @unique
+  id            String     @id @default(uuid())
+  clerkUserId   String     @unique
+  email         String     @unique
   name          String?
   imageUrl      String?
-  phone         String?     // Teléfono del usuario
-  location      String?     // Ubicación/ciudad
-  bio           String?     // Biografía
-  role          UserRole    @default(USUARIO)
-  status        UserStatus  @default(PENDIENTE)
-  lastLoginAt   DateTime?   // Última vez que se conectó
-  emailVerified Boolean     @default(false)
-  isActive      Boolean     @default(true)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  
-  // Relaciones existentes
-  news          News[]
-  tournaments   Tournament[] // Relación con torneos creados por el usuario
-  teams         Team[]       // Relación con equipos creados por el usuario
-  auditLogs     AuditLog[]  // Relación con los registros de auditoría
-  referees      Referee[]   // Árbitros gestionados por este usuario (opcional)
+  phone         String?
+  location      String?
+  bio           String?
+  role          UserRole   @default(USUARIO)
+  status        UserStatus @default(ACTIVO)
+  lastLoginAt   DateTime?
+  emailVerified Boolean    @default(false)
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  news               News[]
+  auditLogs          AuditLog[]
+  ownedOrganizations Organization[]       @relation("OwnedOrganizations")
+  memberships        OrganizationMember[]
+
+  @@index([role, status])
 }
 
-model News {
-  id            String    @id @default(uuid())
-  title         String
-  summary       String?   // Resumen corto para vistas previas
-  content       String
-  coverImageUrl String?   // Imagen destacada (opcional)
-  coverImagePublicId String? // Public ID de Cloudinary para eliminar la imagen
-  published     Boolean   @default(false) // Para controlar si ya está visible o en borrador
-  publishedAt   DateTime  @default(now()) // Fecha de publicación  
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+enum OrgStatus {
+  ACTIVA
+  SUSPENDIDA // por falta de pago o abuso
+}
 
+// Rol DENTRO de una organización (decisión D5)
+enum OrgRole {
+  OWNER       // creó la liga; gestiona plan, pagos y miembros
+  ORGANIZADOR // gestión completa de torneos/equipos/jugadores/partidos
+  COLABORADOR // solo carga de resultados/eventos (planilleros)
+}
+
+model Organization {
+  id           String    @id @default(uuid())
+  name         String // "Liga Municipal de Rafaela"
+  slug         String    @unique // /liga/[slug]
+  logoUrl      String?
+  logoPublicId String?
+  description  String?
+  locality     String?
+  phone        String? // contacto público (WhatsApp)
+  status       OrgStatus @default(ACTIVA)
+
+  ownerId String
+  owner   User   @relation("OwnedOrganizations", fields: [ownerId], references: [id])
+
+  members     OrganizationMember[]
+  tournaments Tournament[]
+  teams       Team[]
+  players     Player[]
+  referees    Referee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role        OrgRole
+  invitedById String?
+  createdAt   DateTime @default(now())
+
+  @@unique([organizationId, userId])
   @@index([userId])
 }
 
-// Nuevos modelos para empezar a implementar torneos y partidos 27/07/2025
+// ============================================================
+// NOTICIAS (globales de la plataforma — solo ADMINISTRADOR)
+// ============================================================
 
-enum TournamentStatus {
-  BORRADOR      // Configurando, no visible al público
-  INSCRIPCION   // Inscripción abierta
-  PENDIENTE     // Aún no empieza
-  ACTIVO        // En curso
-  SUSPENDIDO    // Pausado temporalmente
-  FINALIZADO    // Ya terminó
-  CANCELADO     // No se va a realizar
-  ARCHIVADO     // Guardado como histórico
+model News {
+  id                 String    @id @default(uuid())
+  title              String
+  summary            String?
+  content            String
+  coverImageUrl      String?
+  coverImagePublicId String?
+  published          Boolean   @default(false)
+  publishedAt        DateTime  @default(now())
+  deletedAt          DateTime?
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([published, publishedAt])
 }
 
-enum TournamentCategory {
+// ============================================================
+// TORNEOS
+// ============================================================
+
+enum TournamentStatus {
+  BORRADOR
+  INSCRIPCION
+  PENDIENTE
+  ACTIVO
+  SUSPENDIDO
+  FINALIZADO
+  CANCELADO
+  ARCHIVADO
+}
+
+// Categoría separada en 3 campos (decisión M13):
+// ageGroup + gender + division ("Sub-17 Femenino A")
+enum AgeGroup {
   LIBRE
-  SENIOR
+  ESCUELITA
+  MINI
+  INFANTIL
+  JUVENIL
   SUB_17
   SUB_20
-  RESERVA
-  PRIMERA
-  SEGUNDA         // o categorías por divisiones A, B, C...
+  SENIOR
+  M30
   VETERANO
   PREVETERANO
-  SUPERVETERANO   // mayores de 50/55
-  FEMENINO
+  SUPERVETERANO
+  MASTER
+}
+
+enum Gender {
   MASCULINO
-  INFANTIL
-  MINI            // los más pequeños
-  ESCUELITA       // formativo
-  MIXTO           // hombres y mujeres juntos
-  MASTER          // categoría especial para mayores
-  JUVENIL         // genérico, por ej. 13 a 18 años
-  M30
+  FEMENINO
+  MIXTO
 }
 
 enum TournamentFormat {
-  LIGA                 // Todos contra todos
-  COPA                 // Similar a eliminación pero con rondas
-  ELIMINACION_DIRECTA  // Knockout
-  DOBLE_ELIMINACION    // Pierde dos veces y queda afuera
-  GRUPOS               // Fase de grupos
-  IDA_Y_VUELTA         // Partido de ida y vuelta
-  ROUND_ROBIN          // Todos contra todos, puede repetirse varias vueltas
-  SUIZO                // Emparejamientos según rendimiento
-  MIXTO                // Combina grupos + eliminación
-  PLAYOFFS             // Serie final tipo cuartos, semi, final
-  LIGUILLA             // Mini liga entre clasificados
-  TODOS_CONTRA_TODOS   // Variante explícita de liga
-  PUNTOS_ACUMULADOS    // Por sumatoria de puntos en distintas fechas
-  AMISTOSO              // Partidos sin eliminación ni liga fija
+  LIGA
+  COPA
+  ELIMINACION_DIRECTA
+  DOBLE_ELIMINACION
+  GRUPOS
+  IDA_Y_VUELTA
+  ROUND_ROBIN
+  SUIZO
+  MIXTO
+  PLAYOFFS
+  LIGUILLA
+  TODOS_CONTRA_TODOS
+  PUNTOS_ACUMULADOS
+  AMISTOSO
 }
 
-
 model Tournament {
-  id          String           @id @default(uuid())
-  name        String
-  description String?
-  category    TournamentCategory
-  locality    String
-  logoUrl     String?    // URL del escudo/logo
-  logoPublicId String?   // Public ID de Cloudinary para eliminar la imagen
-  liga        String?    // Nombre de la liga o asociación organizadora
-  status      TournamentStatus @default(PENDIENTE)
-  format      TournamentFormat @default(LIGA)
-  nextMatch   DateTime?
-  homeAndAway Boolean @default(false) // Si el torneo es de ida y vuelta o solo un partido
-  enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
-  rules       String?   // Guardar un reglamento, reglas especiales o configuraciones personalizadas del torneo
-  trophy      String?   // descripción del premio
-  deletedAt   DateTime?   // Fecha de eliminación lógica (si aplica)
+  id           String             @id @default(uuid())
+  name         String
+  description  String?
+  ageGroup     AgeGroup           @default(LIBRE)
+  gender       Gender             @default(MASCULINO)
+  division     String? // "A", "Primera", etc.
+  locality     String
+  logoUrl      String?
+  logoPublicId String?
+  liga         String? // nombre de liga/asociación (texto libre)
+  status       TournamentStatus   @default(PENDIENTE)
+  format       TournamentFormat   @default(LIGA)
+  nextMatch    DateTime?
+  homeAndAway  Boolean            @default(false)
+  enabled      Boolean            @default(true)
+  rules        String?
+  trophy       String?
+  deletedAt    DateTime?
 
+  startDate DateTime
+  endDate   DateTime?
 
-  startDate   DateTime
-  endDate     DateTime?
-  
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  matches     Match[] // Relación con partidos  
-  tournamentTeams TournamentTeam[] // 🔁 Relación M:N con torneos
-  
-  // Relacion deprecada, usar tournamentPhases
-  phaseId     String?
-  phase       Phase?    @relation(fields: [phaseId], references: [id])
-
-  // Nuevas relaciones escalables
+  matches          Match[]
+  tournamentTeams  TournamentTeam[]
   tournamentPhases TournamentPhase[]
+
+  @@index([organizationId])
+  @@index([status, deletedAt])
+}
+
+enum PhaseType {
+  LEAGUE   // liga/todos contra todos (suma puntos)
+  GROUP    // fase de grupos (suma puntos)
+  KNOCKOUT // eliminación directa (NO suma puntos a la tabla general)
 }
 
 model TournamentPhase {
-  id            String   @id @default(uuid())
-  tournamentId  String
-  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  
-  name          String     // Ej: "Fase de Grupos", "Playoffs", "Apertura"
-  order         Int        // 1, 2, 3...
-  type          String     // "LEAGUE", "KNOCKOUT", "GROUP"
-  
-  matches       Match[]
-  teamStats     TeamPhaseStats[]
+  id           String     @id @default(uuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  name  String // "Fase de Grupos", "Playoffs", "Apertura"
+  order Int
+  type  PhaseType
+
+  matches   Match[]
+  teamStats TeamPhaseStats[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tournamentId])
 }
 
+// ============================================================
+// EQUIPOS Y JUGADORES
+// ============================================================
+
 model Team {
-  id          String     @id @default(uuid())
-  name        String
-  shortName   String?    // Nombre corto para mostrar en tablas
-  description String?
-  history     String?    // Breve historia del equipo  
-  coach       String?    // Nombre del entrenador
-  homeCity    String?    // Ciudad base del equipo
-  yearFounded String?       // Año de fundación
-  homeColor   String?    // Color principal del equipo
-  awayColor   String?    // Color secundario del equipo
-  logoUrl     String?    // URL del escudo/logo
-  logoPublicId String?   // Public ID de Cloudinary para eliminar la imagen
-  enabled     Boolean    @default(true) // ⬅️ Campo nuevo para indicar si está habilitado
-  deletedAt   DateTime?   // Fecha de eliminación lógica (si aplica)
+  id           String    @id @default(uuid())
+  name         String
+  shortName    String?
+  description  String?
+  history      String?
+  coach        String?
+  homeCity     String?
+  yearFounded  Int?
+  homeColor    String?
+  awayColor    String?
+  logoUrl      String?
+  logoPublicId String?
+  enabled      Boolean   @default(true)
+  deletedAt    DateTime?
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  tournamentTeams TournamentTeam[] // 🔁 Relación M:N con equipos
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  userId String?
-  user   User? @relation(fields: [userId], references: [id])
+  tournamentTeams TournamentTeam[]
 
+  @@index([organizationId])
 }
 
 enum Foot {
@@ -222,17 +295,12 @@ enum PlayerStatus {
 }
 
 enum PlayerPosition {
-  // Arquero
   ARQUERO
-
-  // Defensas
   DEFENSOR_CENTRAL
   LATERAL_DERECHO
   LATERAL_IZQUIERDO
   CARRILERO_DERECHO
   CARRILERO_IZQUIERDO
-
-  // Mediocampistas
   VOLANTE_DEFENSIVO
   PIVOTE
   VOLANTE_CENTRAL
@@ -240,8 +308,6 @@ enum PlayerPosition {
   INTERIOR_DERECHO
   INTERIOR_IZQUIERDO
   ENGANCHE
-
-  // Delanteros
   EXTREMO_DERECHO
   EXTREMO_IZQUIERDO
   DELANTERO_CENTRO
@@ -249,250 +315,258 @@ enum PlayerPosition {
   FALSO_9
 }
 
-
 model Player {
-  id           String   @id @default(uuid())
-  name         String
-  birthDate    DateTime?  // Fecha de nacimiento
-  birthPlace   String?    // Lugar de nacimiento
-  nationality  String?
-  height       Float?       // cm
-  weight       Float?       // kg
-  dominantFoot Foot?         // Pie dominante
-  position     PlayerPosition?
-  number       Int?
-  imageUrl     String?
-  imagePublicId String?   // Public ID para foto cuerpo entero
-  imageUrlFace     String?
-  imageFacePublicId String? // Public ID para foto rostro
-  description  String?
-  bio          String?
-  status       PlayerStatus @default(ACTIVO)
-  joinedAt     DateTime?
+  id                String          @id @default(uuid())
+  name              String
+  nationalId        String? // DNI — identidad y anti-duplicados dentro de la liga
+  birthDate         DateTime?
+  birthPlace        String?
+  nationality       String?
+  height            Float?
+  weight            Float?
+  dominantFoot      Foot?
+  position          PlayerPosition?
+  number            Int?
+  imageUrl          String?
+  imagePublicId     String?
+  imageUrlFace      String?
+  imageFacePublicId String?
+  description       String?
+  bio               String?
+  status            PlayerStatus    @default(ACTIVO)
+  joinedAt          DateTime?
+  deletedAt         DateTime?
 
   instagramUrl String?
   twitterUrl   String?
 
-  teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-}
-
-enum MatchStatus {
-  PROGRAMADO      // Programado
-  EN_JUEGO        // En curso
-  ENTRETIEMPO     // Pausa entre tiempos
-  FINALIZADO      // Terminado
-  SUSPENDIDO      // Suspendido temporalmente (clima, incidentes, etc.)
-  POSTERGADO      // Reprogramado para otra fecha
-  CANCELADO       // Anulado, no se jugará
-  WALKOVER        // Ganado por incomparecencia del rival
-}
-
-model Match {
-  id            String       @id @default(uuid())
-  dateTime      DateTime
-  stadium       String?
-  city          String?
-  description   String?
-  status        MatchStatus  @default(PROGRAMADO)
-
-  homeScore     Int?
-  awayScore     Int?
-
-  tournament    Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  tournamentId  String
-
-  homeTeamId   String
-  homeTeam     TournamentTeam  @relation("HomeMatches", fields: [homeTeamId], references: [id])
-
-  awayTeamId   String
-  awayTeam     TournamentTeam  @relation("AwayMatches", fields: [awayTeamId], references: [id])
-
-  goals         Goal[]
-  cards         Card[]  // Tarjetas del partido
-  referees      MatchReferee[] // Árbitros del partido
-
-  // Si el partido termino por penales
-  penaltyWinnerTeamId String?
-  penaltyWinnerTeam   TournamentTeam? @relation("PenaltyWinner", fields: [penaltyWinnerTeamId], references: [id])
-
-  penaltyScoreHome    Int?
-  penaltyScoreAway    Int?
-
-  roundNumber Int?   // útil para fases tipo ligas o grupos
-
-  // Legacy Phase relation (mantener opcional para compatibilidad o deprecación suave)
-  phaseId String?
-  phase   Phase? @relation(fields: [phaseId], references: [id])
-  
-  // Nueva relación de Fase específica
-  tournamentPhaseId String?
-  tournamentPhase   TournamentPhase? @relation(fields: [tournamentPhaseId], references: [id])
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model Goal {
-  id        String   @id @default(uuid())
-  minute    Int?     // minuto en que se hizo el gol
-  isOwnGoal Boolean  @default(false)  // Si es un autogol
-  isPenalty Boolean  @default(false)  // Si es un penal
-
-  matchId   String
-  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-
-  teamPlayerId  String
-  teamPlayer    TeamPlayer   @relation(fields: [teamPlayerId], references: [id], onDelete: Cascade)
+  teamPlayer TeamPlayer[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, nationalId])
+  @@index([organizationId])
 }
 
-// NUEVO: Tarjetas y Sanciones
+// ============================================================
+// PARTIDOS
+// ============================================================
+
+enum MatchStatus {
+  PROGRAMADO
+  EN_JUEGO
+  ENTRETIEMPO
+  FINALIZADO
+  SUSPENDIDO
+  POSTERGADO
+  CANCELADO
+  WALKOVER
+}
+
+model Match {
+  id          String      @id @default(uuid())
+  dateTime    DateTime
+  stadium     String?
+  city        String?
+  description String?
+  status      MatchStatus @default(PROGRAMADO)
+
+  homeScore Int?
+  awayScore Int?
+
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  homeTeamId String
+  homeTeam   TournamentTeam @relation("HomeMatches", fields: [homeTeamId], references: [id])
+
+  awayTeamId String
+  awayTeam   TournamentTeam @relation("AwayMatches", fields: [awayTeamId], references: [id])
+
+  goals    Goal[]
+  cards    Card[]
+  referees MatchReferee[]
+
+  penaltyWinnerTeamId String?
+  penaltyWinnerTeam   TournamentTeam? @relation("PenaltyWinner", fields: [penaltyWinnerTeamId], references: [id])
+  penaltyScoreHome    Int?
+  penaltyScoreAway    Int?
+
+  roundNumber Int?
+
+  tournamentPhaseId String?
+  tournamentPhase   TournamentPhase? @relation(fields: [tournamentPhaseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tournamentId, dateTime])
+  @@index([status])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@index([tournamentPhaseId])
+}
+
+model Goal {
+  id        String  @id @default(uuid())
+  minute    Int?
+  isOwnGoal Boolean @default(false)
+  isPenalty Boolean @default(false)
+
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  teamPlayerId String
+  teamPlayer   TeamPlayer @relation(fields: [teamPlayerId], references: [id], onDelete: Cascade)
+
+  // Asistencia (opcional)
+  assistTeamPlayerId String?
+  assistTeamPlayer   TeamPlayer? @relation("Assists", fields: [assistTeamPlayerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([matchId])
+  @@index([teamPlayerId])
+}
+
 enum CardType {
   AMARILLA
   ROJA
 }
 
 model Card {
-  id            String   @id @default(uuid())
-  matchId       String
-  match         Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  
-  teamPlayerId  String
-  teamPlayer    TeamPlayer @relation(fields: [teamPlayerId], references: [id], onDelete: Cascade)
-  
-  type          CardType
-  minute        Int?
-  reason        String?  // Motivo (ej: "Mano", "Agresión")
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id      String @id @default(uuid())
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  teamPlayerId String
+  teamPlayer   TeamPlayer @relation(fields: [teamPlayerId], references: [id], onDelete: Cascade)
+
+  type   CardType
+  minute Int?
+  reason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([matchId])
+  @@index([teamPlayerId])
+}
+
+// ============================================================
+// EQUIPO-EN-TORNEO Y PLANTELES
+// ============================================================
+
+enum RegistrationStatus {
+  INSCRIPTO // default: cargado por el organizador
+  PENDIENTE // inscripción online esperando aprobación (S3)
+  RECHAZADO
 }
 
 model TournamentTeam {
-  id           String   @id @default(uuid()) // ID único del registro
+  id String @id @default(uuid())
 
-  tournamentId String                         // FK al torneo
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade) // Relación al torneo (si se elimina el torneo, se elimina esta relación)
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
-  teamId       String                         // FK al equipo
-  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)       // Relación al equipo (si se elimina el equipo, se elimina esta relación)
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
-  group        String?   // Grupo al que pertenece el equipo en el torneo (ej: "A", "B", etc.)
-  isEliminated Boolean?  // Indica si el equipo fue eliminado del torneo
-  notes        String?   // Notas adicionales (observaciones, comentarios)
+  group              String?
+  isEliminated       Boolean?
+  notes              String?
+  registrationStatus RegistrationStatus @default(INSCRIPTO)
 
-  // Stats Globales (Acumuladas) - Mantenemos esto para visualización rápida
-  matchesPlayed Int     @default(0) 
-  wins          Int     @default(0) 
-  draws         Int     @default(0) 
-  losses        Int     @default(0) 
-  goalsFor      Int     @default(0) 
-  goalsAgainst  Int     @default(0) 
-  goalDifference Int    @default(0) 
-  points        Int     @default(0) 
+  // Stats globales acumuladas (tabla de posiciones)
+  matchesPlayed  Int @default(0)
+  wins           Int @default(0)
+  draws          Int @default(0)
+  losses         Int @default(0)
+  goalsFor       Int @default(0)
+  goalsAgainst   Int @default(0)
+  goalDifference Int @default(0)
+  points         Int @default(0)
 
-  createdAt    DateTime @default(now()) // Fecha de creación del registro
-  updatedAt    DateTime @updatedAt      // Fecha de última actualización
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // 🔹 Relaciones inversas
   homeMatches Match[] @relation("HomeMatches")
   awayMatches Match[] @relation("AwayMatches")
-
   penaltyWins Match[] @relation("PenaltyWinner")
 
-  teamPlayer    TeamPlayer[]  // 🔁 Relación M:N
-  
-  // Relación con stats por fase
-  phaseStats    TeamPhaseStats[]
+  teamPlayer TeamPlayer[]
+  phaseStats TeamPhaseStats[]
 
-  @@unique([tournamentId, teamId]) // Un equipo no puede repetirse en el mismo torneo
+  @@unique([tournamentId, teamId])
+  @@index([teamId])
 }
 
-// NUEVO: Estadísticas por Fase (para separar grupos, segunda fase, etc.)
 model TeamPhaseStats {
-  id                String   @id @default(uuid())
-  
-  tournamentTeamId  String
-  tournamentTeam    TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(uuid())
+
+  tournamentTeamId String
+  tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
+
   tournamentPhaseId String
   tournamentPhase   TournamentPhase @relation(fields: [tournamentPhaseId], references: [id], onDelete: Cascade)
-  
-  groupId           String?   // Grupo específico dentro de esta fase (ej: "A", "B")
 
-  matchesPlayed Int     @default(0)
-  wins          Int     @default(0)
-  draws         Int     @default(0)
-  losses        Int     @default(0)
-  goalsFor      Int     @default(0)
-  goalsAgainst  Int     @default(0)
-  goalDifference Int    @default(0)
-  points        Int     @default(0)
+  groupId String?
 
-  // Desempates manuales o puntos extra/sanción
-  bonusPoints   Int     @default(0) 
-  
-  updatedAt     DateTime @updatedAt
-  
+  matchesPlayed  Int @default(0)
+  wins           Int @default(0)
+  draws          Int @default(0)
+  losses         Int @default(0)
+  goalsFor       Int @default(0)
+  goalsAgainst   Int @default(0)
+  goalDifference Int @default(0)
+  points         Int @default(0)
+
+  bonusPoints Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
   @@unique([tournamentTeamId, tournamentPhaseId])
+  @@index([tournamentPhaseId])
 }
-
 
 model TeamPlayer {
-  id        String   @id @default(uuid()) // ID único del registro
+  id String @id @default(uuid())
 
-  tournamentTeamId   String
-  tournamentTeam     TournamentTeam   @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade) // Relación al equipo dentro del torneo
+  tournamentTeamId String
+  tournamentTeam   TournamentTeam @relation(fields: [tournamentTeamId], references: [id], onDelete: Cascade)
 
-  playerId  String                          // FK al jugador
-  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade) // Relación al jugador
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  joinedAt  DateTime @default(now()) // Fecha en la que el jugador se unió al equipo
-  leftAt    DateTime?               // Fecha en la que dejó el equipo (si aplica)
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
 
-  position     String?              // Posición que ocupa en el equipo (ej: "delantero", "defensor", etc.)
-  number       Int?                 // Número de camiseta
-  status       PlayerStatus @default(ACTIVO) // Estado del jugador (activo, lesionado, suspendido, etc.)
+  position  String?
+  number    Int?
+  isCaptain Boolean      @default(false)
+  status    PlayerStatus @default(ACTIVO)
 
-  goals       Goal[]
-  cards       Card[]
+  goals   Goal[]
+  assists Goal[] @relation("Assists")
+  cards   Card[]
 
-  createdAt DateTime @default(now()) // Fecha de creación del registro
-  updatedAt DateTime @updatedAt      // Fecha de última actualización
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([playerId, tournamentTeamId]) // Evita que un jugador esté duplicado en el mismo equipo
+  @@unique([playerId, tournamentTeamId])
+  @@index([tournamentTeamId])
+  @@index([playerId])
 }
 
+// ============================================================
+// ÁRBITROS
+// ============================================================
 
-enum PhaseName {
-  FECHA
-  CRUCES
-  FASES_DE_GRUPOS
-  DIECISAVOS_DE_FINAL
-  OCTAVOS_DE_FINAL
-  CUARTOS_DE_FINAL
-  SEMIFINAL
-  FINAL
-}
-
-// NOTE: Este modelo será gradualmente reemplazado por TournamentPhase
-model Phase {
-  id           String    @id @default(uuid())
-  name         PhaseName @default(DIECISAVOS_DE_FINAL)
-  order        Int
-
-  tournaments   Tournament[]
-  matches      Match[]
-
-  @@unique([name, order])
-}
-
-// NUEVO: Árbitros
 enum RefereeStatus {
   ACTIVO
   INACTIVO
@@ -505,36 +579,42 @@ model Referee {
   name               String
   email              String?
   phone              String?
-  nationalId         String?       // DNI o documento de identidad
-  birthDate          DateTime?     // Fecha de nacimiento
-  nationality        String?       // Nacionalidad
-  imageUrl           String?       // Foto del árbitro
-  certificationLevel String?       // Nivel de certificación
+  nationalId         String?
+  birthDate          DateTime?
+  nationality        String?
+  imageUrl           String?
+  certificationLevel String?
   status             RefereeStatus @default(ACTIVO)
-  enabled            Boolean       @default(true)  // Para habilitar/deshabilitar
-  deletedAt          DateTime?     // Eliminación lógica
-  
-  userId    String?  // Opcional: si el árbitro tiene usuario en el sistema
-  user      User?    @relation(fields: [userId], references: [id])
-  
-  matches   MatchReferee[] 
-  
+  enabled            Boolean       @default(true)
+  deletedAt          DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  matches MatchReferee[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
 }
 
 model MatchReferee {
-  id        String   @id @default(uuid())
-  matchId   String
-  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(uuid())
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
   refereeId String
-  referee   Referee  @relation(fields: [refereeId], references: [id], onDelete: Cascade)
-  
-  role      String   // "Principal", "Juez de Línea", "VAR", "Cuarto Árbitro"
-  
+  referee   Referee @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+
+  role String // "Principal", "Juez de Línea", "VAR", "Cuarto Árbitro"
+
   @@unique([matchId, refereeId])
 }
+
+// ============================================================
+// AUDITORÍA
+// ============================================================
 
 model AuditLog {
   id        String   @id @default(uuid())
@@ -545,4 +625,7 @@ model AuditLog {
   entityId  String
   payload   Json?
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
 }

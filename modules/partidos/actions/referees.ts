@@ -2,14 +2,17 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/actionRoleValidation";
+import { getMatchOrgId, requireActionOrgAccess } from "@/lib/orgAuth";
 
 export async function assignRefereeToMatch(data: {
   matchId: string;
   refereeId: string;
   role: string;
 }) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const orgId = await getMatchOrgId(data.matchId);
+  if (!orgId) return { success: false, error: "Partido no encontrado" };
+
+  const auth = await requireActionOrgAccess(orgId);
   if (auth.error) return { success: false, error: auth.error };
 
   try {
@@ -55,7 +58,10 @@ export async function assignRefereeToMatch(data: {
 }
 
 export async function removeRefereeFromMatch(matchId: string, refereeId: string) {
-  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  const orgId = await getMatchOrgId(matchId);
+  if (!orgId) return { success: false, error: "Partido no encontrado" };
+
+  const auth = await requireActionOrgAccess(orgId);
   if (auth.error) return { success: false, error: auth.error };
 
   try {
