@@ -70,6 +70,12 @@ export async function POST(req: NextRequest) {
           break;
         }
 
+        // Mismo bootstrap de admin que checkUser (ADMIN_EMAIL)
+        const isAdmin =
+          !!process.env.ADMIN_EMAIL &&
+          fields.email.toLowerCase() ===
+            process.env.ADMIN_EMAIL.toLowerCase();
+
         await db.user.upsert({
           where: { clerkUserId: data.id },
           update: {
@@ -77,6 +83,7 @@ export async function POST(req: NextRequest) {
             emailVerified: fields.emailVerified,
             name: fields.name,
             imageUrl: fields.imageUrl,
+            ...(isAdmin ? { role: "ADMINISTRADOR" as const } : {}),
           },
           create: {
             clerkUserId: data.id,
@@ -85,6 +92,7 @@ export async function POST(req: NextRequest) {
             name: fields.name,
             imageUrl: fields.imageUrl,
             status: "ACTIVO",
+            role: isAdmin ? "ADMINISTRADOR" : "USUARIO",
           },
         });
         break;

@@ -29,13 +29,14 @@ export const checkUser = cache(async () => {
   const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null;
 
   // Bootstrap del administrador: el email configurado en ADMIN_EMAIL
-  // recibe rol ADMINISTRADOR al crearse (post-reset de BD no hay admin)
+  // recibe rol ADMINISTRADOR (al crearse Y si ya existía sin el rol —
+  // cubre el caso de configurar la env después del primer login)
   const isAdmin =
     !!process.env.ADMIN_EMAIL &&
     email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase();
 
   try {
-    return await db.user.upsert({
+    const dbUser = await db.user.upsert({
       where: { clerkUserId: user.id },
       update: {},
       create: {
@@ -47,6 +48,15 @@ export const checkUser = cache(async () => {
         role: isAdmin ? "ADMINISTRADOR" : "USUARIO",
       },
     });
+
+    if (isAdmin && dbUser.role !== "ADMINISTRADOR") {
+      return await db.user.update({
+        where: { id: dbUser.id },
+        data: { role: "ADMINISTRADOR" },
+      });
+    }
+
+    return dbUser;
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
