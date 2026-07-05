@@ -189,8 +189,13 @@
 
 ### A4. Sincronización de usuarios Clerk↔BD incompleta
 
-- [ ] **Problema:** No existe webhook de Clerk (verificado: 0 referencias a svix/webhook). Consecuencias: `lastLoginAt` y `emailVerified` **nunca se actualizan** (la UI de usuarios muestra "Nunca"); si un usuario cambia email/foto o se elimina en Clerk, la BD queda desincronizada; `checkUser()` hace find+create sin manejar la race (dos requests simultáneas → error P2002) y corre una query por cada request de página. Además (hallazgo C3, 2026-07-04) `POST /api/users` crea usuarios con `clerkUserId: temp_${Date.now()}` — usuarios que jamás podrán loguearse ni vincularse a Clerk.
+- [~] **Problema:** No existe webhook de Clerk (verificado: 0 referencias a svix/webhook). Consecuencias: `lastLoginAt` y `emailVerified` **nunca se actualizan** (la UI de usuarios muestra "Nunca"); si un usuario cambia email/foto o se elimina en Clerk, la BD queda desincronizada; `checkUser()` hace find+create sin manejar la race (dos requests simultáneas → error P2002) y corre una query por cada request de página. Además (hallazgo C3, 2026-07-04) `POST /api/users` crea usuarios con `clerkUserId: temp_${Date.now()}` — usuarios que jamás podrán loguearse ni vincularse a Clerk.
 - **Solución:** Crear `app/api/webhooks/clerk/route.ts` (svix) para `user.created/updated/deleted` + `session.created` (actualiza `lastLoginAt`); en `checkUser` usar `upsert` y cachear con `React.cache()` por request.
+- **Implementado (2026-07-05):**
+  - [app/api/webhooks/clerk/route.ts](app/api/webhooks/clerk/route.ts) con `verifyWebhook` de `@clerk/nextjs/webhooks` (secret: env `CLERK_WEBHOOK_SECRET`, ya configurado en Clerk apuntando a `https://torneos-web-app.vercel.app/api/webhooks/clerk`). Maneja `user.created` (upsert, status ACTIVO), `user.updated` (solo campos de Clerk, no pisa role/status/phone/bio), `user.deleted` (baja lógica) y `session.created` (`lastLoginAt`). Firma inválida → 400 (verificado); error de BD → 500 (Clerk reintenta); conflicto P2002 → 200 con log (reintentar no lo arregla).
+  - [lib/checkUser.ts](lib/checkUser.ts): `React.cache()` (1 query por request), `upsert` con `update: {}` (no pisa datos del admin), race del primer login (P2002) manejada. Usuarios nuevos nacen con `status: ACTIVO` (decisión D5).
+  - ⚠️ En el dashboard de Clerk deben estar suscriptos los eventos: `user.created`, `user.updated`, `user.deleted`, `session.created`.
+- **Pendiente:** eliminar el `clerkUserId: temp_` de `POST /api/users` (decidir si ese endpoint de alta manual sobrevive o se reemplaza por invitaciones de Clerk — probablemente muera con N1/N2).
 - **Esfuerzo:** E:Medio · **Beneficio:** Datos de usuarios reales y confiables; menos queries.
 
 ### A5. Sin manejo global de errores ni estados de carga

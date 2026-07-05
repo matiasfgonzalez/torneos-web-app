@@ -1,44 +1,53 @@
+import { cache } from "react";
 import { currentUser } from "@clerk/nextjs/server";
+import { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 
-export const checkUser = async () => {
-    const user = await currentUser();
+/**
+ * Devuelve el usuario de BD correspondiente a la sesión de Clerk actual,
+ * creándolo si es su primer acceso.
+ *
+ * - `cache()`: una sola query por request aunque se llame desde layout + page + componentes.
+ * - `upsert` con `update: {}`: crea si no existe, devuelve el existente sin
+ *   pisar datos gestionados por el admin/webhook (role, status, phone, bio).
+ * - Maneja la race de dos requests simultáneas del primer login (P2002).
+ */
+export const checkUser = cache(async () => {
+  const user = await currentUser();
 
-    // Check for current logged in clerk user
+  if (!user) {
+    return null;
+  }
 
-    if (!user) {
-        return null;
-    }
+  const email = user.emailAddresses[0]?.emailAddress;
+  if (!email) {
+    // Sin email no se puede crear el usuario (campo unique/requerido)
+    return null;
+  }
 
-    // Check if the user is already in the database
+  const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null;
 
-    const loggedInUser = await db.user.findUnique({
-        where: {
-            clerkUserId: user.id
-        }
+  try {
+    return await db.user.upsert({
+      where: { clerkUserId: user.id },
+      update: {},
+      create: {
+        clerkUserId: user.id,
+        name,
+        imageUrl: user.imageUrl,
+        email,
+        status: "ACTIVO",
+      },
     });
-
-    // If user is in database, return user
-
-    if (loggedInUser) {
-        return loggedInUser;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      // Otra request creó el usuario en simultáneo: leerlo y devolverlo
+      return db.user.findUnique({ where: { clerkUserId: user.id } });
     }
-
-    // If not in database, create new user
-
-    const newUser = await db.user.create({
-        data: {
-            clerkUserId: user.id,
-
-            name: `${user.firstName} ${user.lastName}`,
-
-            imageUrl: user.imageUrl,
-
-            email: user.emailAddresses[0].emailAddress
-        }
-    });
-
-    return newUser;
-};
-
+    throw error;
+  }
+});
