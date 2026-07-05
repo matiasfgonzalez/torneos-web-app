@@ -4,11 +4,10 @@ import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTou
 import { getTorneos } from "@modules/torneos/actions/getTorneos";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { TournamentStatus } from "@prisma/client";
 
 export default async function AdminTorneos() {
   const tournaments = await getTorneos();
-
-  console.log("Torneos obtenidos:", tournaments);
 
   return (
     <div className="min-h-screen">
@@ -52,8 +51,9 @@ export default async function AdminTorneos() {
                       <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                         {
-                          tournaments.filter((t) => t.status === "En curso")
-                            .length
+                          tournaments.filter(
+                            (t) => t.status === TournamentStatus.ACTIVO,
+                          ).length
                         }{" "}
                         activos
                       </span>
@@ -63,7 +63,7 @@ export default async function AdminTorneos() {
                       <span className="text-sm font-medium text-green-700 dark:text-green-300">
                         {
                           tournaments.filter(
-                            (t) => t.status === "Inscripciones",
+                            (t) => t.status === TournamentStatus.INSCRIPCION,
                           ).length
                         }{" "}
                         inscribiendo

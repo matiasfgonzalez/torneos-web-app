@@ -175,8 +175,10 @@
 
 ### A2. Dashboard admin de torneos con contadores rotos
 
-- [ ] **Problema:** Compara `t.status === "En curso"` y `"Inscripciones"` (labels de UI) contra el enum real (`ACTIVO`, `INSCRIPCION`) → esos KPIs siempre muestran 0. Verificado en [app/admin/torneos/page.tsx:55](app/admin/torneos/page.tsx#L55) y [:66](app/admin/torneos/page.tsx#L66).
+- [x] **Problema:** Compara `t.status === "En curso"` y `"Inscripciones"` (labels de UI) contra el enum real (`ACTIVO`, `INSCRIPCION`) → esos KPIs siempre muestran 0. Verificado en [app/admin/torneos/page.tsx:55](app/admin/torneos/page.tsx#L55) y [:66](app/admin/torneos/page.tsx#L66).
 - **Solución:** Comparar contra `TournamentStatus.ACTIVO` / `INSCRIPCION` y mapear labels solo para mostrar (usar `lib/constants.ts`).
+- **Implementado (2026-07-05):** los 5 filtros rotos comparan ahora contra `TournamentStatus.ACTIVO/INSCRIPCION/FINALIZADO` (página admin + `StatsCards` de torneos). De paso se eliminó el `console.log` que imprimía torneos con el objeto `user` completo (email/teléfono) en logs del server — parte de A10.
+- (Hallazgo 2026-07-05) `modules/torneos/components/ListTorneos.tsx` es código muerto: datos mock hardcodeados y 0 imports. Borrarlo en la limpieza de A5/M-cleanup.
 - **Esfuerzo:** E:Bajo · **Beneficio:** Métricas correctas para el admin.
 
 ### A3. Consultas pesadas y sin paginación (N+1 / payload gigante)

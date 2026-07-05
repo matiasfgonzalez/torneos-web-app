@@ -1,6 +1,7 @@
 import { ITorneo } from "@modules/torneos/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Clock, UserPlus, CheckCircle, TrendingUp } from "lucide-react";
+import { TournamentStatus } from "@prisma/client";
 
 interface PropsStatsCards {
   tournaments: ITorneo[];
@@ -20,7 +21,8 @@ const StatsCards = (props: PropsStatsCards) => {
     },
     {
       title: "En Curso",
-      value: tournaments.filter((t) => t.status === "En curso").length,
+      value: tournaments.filter((t) => t.status === TournamentStatus.ACTIVO)
+        .length,
       icon: Clock,
       color: "from-blue-500 to-cyan-500",
       bgColor:
@@ -29,7 +31,9 @@ const StatsCards = (props: PropsStatsCards) => {
     },
     {
       title: "Inscripciones",
-      value: tournaments.filter((t) => t.status === "Inscripciones").length,
+      value: tournaments.filter(
+        (t) => t.status === TournamentStatus.INSCRIPCION,
+      ).length,
       icon: UserPlus,
       color: "from-green-500 to-emerald-500",
       bgColor:
@@ -38,7 +42,9 @@ const StatsCards = (props: PropsStatsCards) => {
     },
     {
       title: "Finalizados",
-      value: tournaments.filter((t) => t.status === "Finalizado").length,
+      value: tournaments.filter(
+        (t) => t.status === TournamentStatus.FINALIZADO,
+      ).length,
       icon: CheckCircle,
       color: "from-gray-500 to-slate-500",
       bgColor:
