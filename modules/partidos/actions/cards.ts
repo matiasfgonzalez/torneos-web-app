@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { CardType } from "@prisma/client";
+import { requireActionRole } from "@/lib/actionRoleValidation";
 
 export async function addCard(data: {
   matchId: string;
@@ -11,6 +12,9 @@ export async function addCard(data: {
   minute?: number;
   reason?: string;
 }): Promise<{ success: boolean; error?: string; doubleYellow?: boolean }> {
+  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     const { matchId, teamPlayerId, type, minute, reason } = data;
 
@@ -89,6 +93,9 @@ export async function addCard(data: {
 }
 
 export async function deleteCard(cardId: string) {
+  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     const card = await db.card.findUnique({
       where: { id: cardId },

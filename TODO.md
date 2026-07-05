@@ -134,7 +134,7 @@
 
 ### C10. Server actions de mutación sin autenticación ni rol (hallazgo C6, 2026-07-04)
 
-- [ ] **Problema:** 4 archivos de server actions mutan la BD sin ningún check de auth/rol (verificado: solo `modules/usuarios/actions/user-profile.ts` valida sesión):
+- [x] **Problema:** 4 archivos de server actions mutan la BD sin ningún check de auth/rol (verificado: solo `modules/usuarios/actions/user-profile.ts` valida sesión):
   - [modules/partidos/actions/goals.ts](modules/partidos/actions/goals.ts) — `addGoal`/`deleteGoal` (además tocan standings).
   - [modules/partidos/actions/cards.ts](modules/partidos/actions/cards.ts) — tarjetas.
   - [modules/partidos/actions/referees.ts](modules/partidos/actions/referees.ts) — árbitros de partido.
@@ -142,6 +142,7 @@
 - **Explicación:** Las server actions son endpoints HTTP públicos (POST con action-id); cualquier visitante puede invocarlas sin sesión y modificar goles, marcadores y standings.
 - **Impacto/Riesgo:** Equivalente a C1/C4 pero en la capa de actions. OWASP A01.
 - **Solución:** Guard compartido tipo `requireRole(["ADMINISTRADOR","EDITOR","ORGANIZADOR"])` (versión para actions de `validateApiRole`) al inicio de cada action de mutación.
+- **Implementado (2026-07-05):** creado [lib/actionRoleValidation.ts](lib/actionRoleValidation.ts) (`requireActionRole`, devuelve objeto serializable) y aplicado a las 12 mutaciones: addGoal/deleteGoal, addCard/deleteCard, assignRefereeToMatch/removeRefereeFromMatch, createReferee/updateReferee/toggleRefereeEnabled/updateRefereeStatus/deleteReferee/restoreReferee. Con N1 estos guards migran a `requireOrgRole`.
 - **Esfuerzo:** E:Bajo · **Beneficio:** Cierra mutaciones anónimas de datos de partido.
 
 ---
@@ -232,6 +233,7 @@
 ### M1. Minimizar datos expuestos en APIs públicas
 
 - [ ] Noticias/torneos públicos incluyen el objeto `user` completo (email, phone, role del autor). Usar `select: { name, imageUrl }`. **E:Bajo**
+- [ ] (Hallazgo C10, 2026-07-05) Las lecturas de árbitros están abiertas y exponen PII: `GET /api/referees` (sin `validateApiRole`) y las actions `getReferees`/`getRefereeById` devuelven email, teléfono y DNI de árbitros a cualquiera. Restringir a roles de gestión o filtrar campos sensibles en respuestas públicas. **E:Bajo**
 
 ### M2. Migrar `<img>` → `next/image` (42 archivos)
 

@@ -2,12 +2,16 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireActionRole } from "@/lib/actionRoleValidation";
 
 export async function assignRefereeToMatch(data: {
   matchId: string;
   refereeId: string;
   role: string;
 }) {
+  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     const { matchId, refereeId, role } = data;
 
@@ -51,6 +55,9 @@ export async function assignRefereeToMatch(data: {
 }
 
 export async function removeRefereeFromMatch(matchId: string, refereeId: string) {
+  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     await db.matchReferee.delete({
       where: {

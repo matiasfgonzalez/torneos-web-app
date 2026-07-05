@@ -6,6 +6,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
+import { requireActionRole } from "@/lib/actionRoleValidation";
 
 export async function addGoal(data: {
   matchId: string;
@@ -15,6 +16,9 @@ export async function addGoal(data: {
   isOwnGoal: boolean;
   isPenalty: boolean;
 }) {
+  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     // 1. Obtener estado anterior del partido
     const previousMatch = await db.match.findUnique({
@@ -75,6 +79,9 @@ export async function addGoal(data: {
 }
 
 export async function deleteGoal(goalId: string) {
+  const auth = await requireActionRole(["ADMINISTRADOR", "EDITOR", "ORGANIZADOR"]);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     // 1. Obtener el gol y el partido asociado
     const goal = await db.goal.findUnique({
