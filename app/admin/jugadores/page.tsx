@@ -1,6 +1,6 @@
-import StatsCards from "./components/StatsCards";
-import PlayersTable from "./components/PlayersTable";
-import PlayerForm from "./components/player-form";
+import StatsCards from "@modules/jugadores/components/admin/StatsCards";
+import PlayersTable from "@modules/jugadores/components/admin/PlayersTable";
+import PlayerForm from "@modules/jugadores/components/admin/player-form";
 import { getJugadores } from "@modules/jugadores/actions/getJugadores";
 import { Users, Activity, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";

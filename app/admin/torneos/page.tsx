@@ -1,6 +1,6 @@
-import StatsCards from "./components/StatsCards";
-import ListTournaments from "./components/ListTournaments";
-import DialogAddTournaments from "./components/DialogAddTournaments";
+import StatsCards from "@modules/torneos/components/admin/StatsCards";
+import ListTournaments from "@modules/torneos/components/admin/ListTournaments";
+import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
 import { getTorneos } from "@modules/torneos/actions/getTorneos";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";

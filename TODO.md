@@ -158,10 +158,20 @@
 
 ### A1. Código duplicado masivo: `app/admin/*` vs `modules/*`
 
-- [ ] **Problema:** Árboles de componentes **idénticos byte a byte** (verificado con diff): `app/admin/jugadores/components/PlayersTable.tsx` == `modules/jugadores/components/admin/PlayersTable.tsx`; ídem `StatsCards`, `ListTournaments`, `DialogAddTournaments`, `player-form`, y `lib/calcularEdad.ts` == `modules/shared/utils/calcularEdad.ts`. También hay dobles: `lib/formatDate.ts` vs `modules/shared/utils/formatDate.ts` (difieren), `components/admin/match-dialog.tsx` vs `DialogAddEditMatch.tsx`.
+- [~] **Problema:** Árboles de componentes **idénticos byte a byte** (verificado con diff): `app/admin/jugadores/components/PlayersTable.tsx` == `modules/jugadores/components/admin/PlayersTable.tsx`; ídem `StatsCards`, `ListTournaments`, `DialogAddTournaments`, `player-form`, y `lib/calcularEdad.ts` == `modules/shared/utils/calcularEdad.ts`. También hay dobles: `lib/formatDate.ts` vs `modules/shared/utils/formatDate.ts` (difieren), `components/admin/match-dialog.tsx` vs `DialogAddEditMatch.tsx`.
 - **Impacto:** Cada fix hay que hacerlo dos veces; ya hay divergencias silenciosas.
 - **Solución:** Elegir `modules/` como única fuente (coincide con docs/ARQUITECTURA.md), borrar duplicados de `app/` y `lib/`, y actualizar imports. Agregar regla ESLint `no-restricted-imports` para prevenir regresiones.
+- **Implementado (2026-07-05):**
+  - Componentes: `modules/` es la fuente única. Borrados `app/admin/jugadores/components/*` y `app/admin/torneos/components/*`; páginas importan de `@modules/...`. La divergencia era **bidireccional** (confirmada): `player-form` bueno estaba en `app/` (CloudinaryUpload + publicIds → copiado a modules) y `DialogAddTournaments` bueno en `modules/` (enabled/rules/trophy).
+  - Utils: canónico queda en `lib/` (convención ShadCN `@/lib/utils` + ~80 imports existentes; desviación deliberada de la solución original). Borrados los muertos `modules/shared/utils/{utils,calcularEdad,formatDate}.ts` (0 imports los usaban; el `formatDate` de modules era además una versión vieja con bug de timezone).
+  - Verificado con `next build` completo en verde (31 páginas).
+- **Pendiente:** unificar `components/admin/match-dialog.tsx` (usado por /admin/partidos) con `DialogAddEditMatch.tsx` (usado por /admin/torneos/[id]) — no son idénticos, ambos vivos con features distintas; unificarlos es rediseño de F3. Regla ESLint `no-restricted-imports` también pendiente.
 - **Esfuerzo:** E:Medio · **Beneficio:** −30% superficie de mantenimiento.
+
+### A1b. Migrar `middleware.ts` → `proxy.ts` (hallazgo A1, 2026-07-05)
+
+- [ ] **Problema:** Next 16 avisa en cada build: `The "middleware" file convention is deprecated. Please use "proxy" instead.` Además el `config.matcher` debe ser string literal estáticamente analizable (usar `String.raw` rompe el build con "Invalid segment configuration export" — ya documentado en comentario del archivo).
+- **Solución:** Renombrar a `proxy.ts` siguiendo la guía oficial cuando se toque el middleware de nuevo (C8/C9 ya implementados ahí). **E:Bajo**
 
 ### A2. Dashboard admin de torneos con contadores rotos
 

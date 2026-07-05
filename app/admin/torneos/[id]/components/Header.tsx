@@ -11,8 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import { ITorneo } from "@modules/torneos/types";
-import DialogAddTournaments from "../../components/DialogAddTournaments";
-import { DeleteTournamentButton } from "../../components/DeleteTournamentButton";
+import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
+import { DeleteTournamentButton } from "@modules/torneos/components/admin/DeleteTournamentButton";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import {
