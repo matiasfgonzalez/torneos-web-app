@@ -226,17 +226,22 @@
 
 ### A8. Testing inexistente + sin CI
 
-- [ ] **Problema:** 0 tests, no hay `.github/workflows`, ni scripts de test. `npm run lint` es la única verificación.
+- [~] **Problema:** 0 tests, no hay `.github/workflows`, ni scripts de test. `npm run lint` es la única verificación.
 - **Solución (mínimo viable):**
   1. Vitest + unit tests de `lib/standings/*` y validadores Zod (la lógica más crítica y más testeable).
   2. Playwright con 3 flujos E2E: crear torneo → agregar equipos → cargar resultado → verificar tabla.
   3. GitHub Actions: `lint + tsc --noEmit + vitest + build` en cada PR.
+- **Implementado (2026-07-05) — punto 1 parcial + punto 3:**
+  - Vitest instalado ([vitest.config.ts](vitest.config.ts), scripts `test`/`test:watch`). 21 tests verdes en `tests/standings/`: `applyMatchResult` con TransactionClient falso (creación, empate, WALKOVER, no-contables, edición 2-1→2-2, reversión, delta neto cero, fase GROUP, fase KNOCKOUT sin puntos globales, cambio de fase, fase inexistente) + `phase-utils` puros. Red de seguridad lista ANTES de la migración N1/N2.
+  - [.github/workflows/ci.yml](.github/workflows/ci.yml): job bloqueante `tsc + vitest` (con `prisma generate` y DATABASE_URL dummy) + job de lint **no bloqueante** (hay ~26 errores preexistentes: unused imports en partidos/usuarios, `any` en match-dialog/MatchDetailModal/StandingsTable — limpiarlos y volver el lint bloqueante).
+- **Pendiente:** tests de validadores Zod, Playwright E2E, `next build` en CI (tarda; evaluar), lint bloqueante.
 - **Esfuerzo:** E:Alto · **Beneficio:** Red de seguridad para refactors (especialmente C6/A6).
 
 ### A9. Dependencias: mismatch y sobrepeso
 
 - [ ] **Problema:** `eslint-config-next@15.3.5` con `next@16.1.5` (reglas desactualizadas); **tres** librerías de animación (framer-motion + gsap + ogl) — verificar si gsap/ogl se usan más allá de `Particles.tsx`; `ts-node` innecesario con seeds en JS.
 - **Solución:** Alinear `eslint-config-next@16`, consolidar animaciones en framer-motion (o CSS), eliminar deps sin uso (`npx depcheck`).
+- (Hallazgo 2026-07-05) `npm install` reporta **18 vulnerabilidades (4 moderate, 12 high, 2 critical)** — correr `npm audit` y evaluar `npm audit fix` al hacer esta tarea.
 - **Esfuerzo:** E:Bajo · **Beneficio:** Bundle menor, lint correcto para Next 16.
 
 ### A10. `console.log` con datos de usuario en server
