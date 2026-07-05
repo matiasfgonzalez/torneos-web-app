@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Páginas que requieren sesión (la validación fina de rol vive en layouts/handlers)
 const isProtectedPage = createRouteMatcher(["/admin(.*)", "/profile(.*)"]);
@@ -11,6 +12,16 @@ const isApi = createRouteMatcher(["/api(.*)"]);
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+// Límites por IP y ventana de 1 minuto
+const READ_LIMIT = 120;
+const WRITE_LIMIT = 30;
+const WINDOW_MS = 60_000;
+
+function clientIp(req: Request): string {
+    const forwarded = req.headers.get("x-forwarded-for");
+    return forwarded?.split(",")[0].trim() || "127.0.0.1";
+}
+
 export default clerkMiddleware(async (auth, req) => {
     if (isWebhook(req)) return;
 
@@ -19,15 +30,40 @@ export default clerkMiddleware(async (auth, req) => {
         return;
     }
 
-    // Defensa en profundidad: toda mutación de API exige sesión,
-    // aunque el handler olvide validar. Los GET públicos siguen abiertos.
-    if (isApi(req) && !SAFE_METHODS.has(req.method.toUpperCase())) {
-        const { userId } = await auth();
-        if (!userId) {
+    if (isApi(req)) {
+        const isWrite = !SAFE_METHODS.has(req.method.toUpperCase());
+
+        // Rate limiting por IP (lecturas y escrituras con límites separados)
+        const limit = isWrite ? WRITE_LIMIT : READ_LIMIT;
+        const result = rateLimit(
+            `${clientIp(req)}:${isWrite ? "w" : "r"}`,
+            limit,
+            WINDOW_MS,
+        );
+        if (!result.ok) {
             return NextResponse.json(
-                { error: "No autorizado. Debes iniciar sesión." },
-                { status: 401 },
+                { error: "Demasiadas solicitudes. Intentá de nuevo en unos segundos." },
+                {
+                    status: 429,
+                    headers: {
+                        "Retry-After": String(
+                            Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000)),
+                        ),
+                    },
+                },
             );
+        }
+
+        // Defensa en profundidad: toda mutación de API exige sesión,
+        // aunque el handler olvide validar. Los GET públicos siguen abiertos.
+        if (isWrite) {
+            const { userId } = await auth();
+            if (!userId) {
+                return NextResponse.json(
+                    { error: "No autorizado. Debes iniciar sesión." },
+                    { status: 401 },
+                );
+            }
         }
     }
 });

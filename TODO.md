@@ -129,8 +129,12 @@
 
 ### C9. Sin headers de seguridad ni rate limiting
 
-- [ ] **Problema:** [next.config.ts](next.config.ts) no define `headers()` (falta CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy). Ninguna API tiene rate limiting (login/uploads/recalculate incluidos).
+- [x] **Problema:** [next.config.ts](next.config.ts) no define `headers()` (falta CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy). Ninguna API tiene rate limiting (login/uploads/recalculate incluidos).
 - **Solución:** Bloque `headers()` en next.config + rate limiting con `@upstash/ratelimit` (o Arcjet) en middleware para `/api/*`.
+- **Implementado (2026-07-05):**
+  - Headers en [next.config.ts](next.config.ts): CSP (permite Clerk dev, Turnstile, Cloudinary; `unsafe-inline/eval` quedan hasta endurecer con nonces en F0), HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy. ⚠️ Al pasar Clerk a dominio de producción, agregar ese dominio a la CSP.
+  - Rate limiting por IP en [middleware.ts](middleware.ts) con [lib/rate-limit.ts](lib/rate-limit.ts) (en memoria, ventana fija 1 min): 120 lecturas / 30 escrituras por IP → 429 con `Retry-After`. Verificado: 30 POST pasan, del 31 en adelante 429; GETs no afectados.
+  - ⚠️ Limitación documentada: contadores por instancia; si el deploy final es serverless multi-instancia, reemplazar por `@upstash/ratelimit` manteniendo la firma de `rateLimit()`.
 - **Esfuerzo:** E:Medio · **Beneficio:** Hardening base de producción; mitiga fuerza bruta, clickjacking y abuso.
 
 ### C10. Server actions de mutación sin autenticación ni rol (hallazgo C6, 2026-07-04)
