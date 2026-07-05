@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { apiError } from "@/lib/apiResponse";
 import { playerCreateSchema } from "@/lib/validators/player";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json(newPlayer, { status: 201 });
   } catch (error) {
     console.error(error);
-    return new NextResponse("Error al crear el jugador", { status: 500 });
+    return apiError(500, "Error al crear el jugador");
   }
 }
 
@@ -37,6 +38,6 @@ export async function GET() {
     return NextResponse.json(players);
   } catch (error) {
     console.error(error);
-    return new NextResponse("Error obteniendo jugadores", { status: 500 });
+    return apiError(500, "Error obteniendo jugadores");
   }
 }

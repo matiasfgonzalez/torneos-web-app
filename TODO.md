@@ -218,8 +218,10 @@
 
 ### A7. Formato de respuesta de API inconsistente
 
-- [ ] **Problema:** Mezcla de formas: `NextResponse.json(match)`, `{ success, error, message }`, `new NextResponse("texto")`, y `GET /api/tournaments` devuelve **200 con `{message}`** cuando no hay resultados (el cliente espera array → runtime error).
+- [~] **Problema:** Mezcla de formas: `NextResponse.json(match)`, `{ success, error, message }`, `new NextResponse("texto")`, y `GET /api/tournaments` devuelve **200 con `{message}`** cuando no hay resultados (el cliente espera array → runtime error).
 - **Solución:** Helper `apiResponse.ts` (`ok(data, meta?)` / `fail(status, code, message)`) y usarlo en el 100% de las rutas. Listas vacías devuelven `[]`, no mensajes.
+- **Implementado (2026-07-05):** creado [lib/apiResponse.ts](lib/apiResponse.ts) (`apiOk`/`apiError`) con la convención documentada: éxito = datos directos, listas vacías = `[]`, error = `{ error, details? }` JSON con status correcto. Corregido el bug de `GET /api/tournaments` (`{message}` con 200 → `[]`) y eliminados los 5 `new NextResponse("texto")` (players ×2, tournaments ×2, teams).
+- **Pendiente (deliberado):** migrar los éxitos de todas las rutas al envelope `{ success, data }` se hace en el rewrite de rutas de N1/N2 — cambiarlo hoy obliga a tocar cada `fetch` del frontend dos veces. `users/*` conserva su envelope histórico hasta entonces.
 - **Esfuerzo:** E:Medio · **Beneficio:** Frontend predecible, menos `any` defensivos.
 
 ### A8. Testing inexistente + sin CI

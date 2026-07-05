@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { apiError } from "@/lib/apiResponse";
 import { teamCreateSchema } from "@/lib/validators/team";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -27,6 +28,6 @@ export async function POST(req: Request) {
     return NextResponse.json(newTournament, { status: 201 });
   } catch (error) {
     console.error(error);
-    return new NextResponse("Error al crear el torneo", { status: 500 });
+    return apiError(500, "Error al crear el equipo");
   }
 }

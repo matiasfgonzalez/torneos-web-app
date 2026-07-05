@@ -3,6 +3,7 @@ import { Prisma, TournamentCategory } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { apiError } from "@/lib/apiResponse";
 import { tournamentCreateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json(newTournament, { status: 201 });
   } catch (error) {
     console.error(error);
-    return new NextResponse("Error al crear el torneo", { status: 500 });
+    return apiError(500, "Error al crear el torneo");
   }
 }
 
@@ -61,17 +62,10 @@ export async function GET(req: Request) {
       where: query,
     });
 
-    if (!tournaments || tournaments.length === 0) {
-      return NextResponse.json(
-        { message: "No se encontraron torneos." },
-        { status: 200 }, // Devuelve un 200 OK incluso si no hay resultados
-      );
-    }
-
-    // Devolver la lista de torneos con un estado 200
+    // Lista vacía devuelve [] (convención A7): el cliente siempre recibe array
     return NextResponse.json(tournaments, { status: 200 });
   } catch (error) {
     console.error(error);
-    return new NextResponse("Error al obtener los torneos", { status: 500 });
+    return apiError(500, "Error al obtener los torneos");
   }
 }
