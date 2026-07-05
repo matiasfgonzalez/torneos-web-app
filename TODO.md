@@ -200,8 +200,9 @@
 
 ### A5. Sin manejo global de errores ni estados de carga
 
-- [ ] **Problema:** 0 archivos `error.tsx`/`global-error.tsx` en todo `app/`; solo 2 `loading.tsx` (noticias y usuarios admin). Un throw en un server component muestra la pantalla de error cruda de Next.
+- [x] **Problema:** 0 archivos `error.tsx`/`global-error.tsx` en todo `app/`; solo 2 `loading.tsx` (noticias y usuarios admin). Un throw en un server component muestra la pantalla de error cruda de Next.
 - **Solución:** `app/error.tsx` + `app/global-error.tsx` con diseño Premium Golazo (reutilizar estilo del NotFound ya rediseñado) y `loading.tsx` por sección con skeletons.
+- **Implementado (2026-07-05):** [app/error.tsx](app/error.tsx) (estilo premium del 404, botón Reintentar con `reset()` + digest visible), [app/global-error.tsx](app/global-error.tsx) (último recurso con `<html>/<body>` y estilos inline — Tailwind puede no estar si falló el root layout), [app/loading.tsx](app/loading.tsx) y [app/admin/loading.tsx](app/admin/loading.tsx) con `FullscreenLoading`. Build completo en verde. Los skeletons por sección quedan en M10 (ya documentado ahí).
 - **Esfuerzo:** E:Medio · **Beneficio:** Resiliencia percibida de nivel producto.
 
 ### A6. Prisma: índices ausentes y modelo legacy conviviendo
