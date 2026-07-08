@@ -81,6 +81,7 @@ model Organization {
   owner   User   @relation("OwnedOrganizations", fields: [ownerId], references: [id])
 
   members      OrganizationMember[]
+  invites      OrganizationInvite[]
   tournaments  Tournament[]
   teams        Team[]
   players      Player[]
@@ -189,6 +190,32 @@ model OrganizationMember {
 
   @@unique([organizationId, userId])
   @@index([userId])
+}
+
+enum InviteStatus {
+  PENDIENTE
+  ACEPTADA
+  CANCELADA
+}
+
+// Invitación a una organización por email (N6). Si el email ya tiene
+// cuenta se crea la membresía directo; si no, queda PENDIENTE y se
+// acepta automáticamente cuando esa persona se registra e ingresa.
+model OrganizationInvite {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  email       String // normalizado a minúsculas
+  role        OrgRole // ORGANIZADOR | COLABORADOR (nunca OWNER)
+  status      InviteStatus @default(PENDIENTE)
+  invitedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, email])
+  @@index([email, status])
 }
 
 // ============================================================

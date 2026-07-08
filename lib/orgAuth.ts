@@ -30,17 +30,64 @@ function slugify(input: string): string {
   );
 }
 
-async function uniqueSlug(base: string): Promise<string> {
+export async function uniqueSlug(
+  base: string,
+  excludeOrgId?: string,
+): Promise<string> {
   const slug = slugify(base);
   const existing = await db.organization.findUnique({ where: { slug } });
-  if (!existing) return slug;
+  if (!existing || existing.id === excludeOrgId) return slug;
   return `${slug}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 /**
+ * Acepta las invitaciones PENDIENTES que apunten al email del usuario (N6):
+ * crea la membresía con el rol invitado y marca la invitación como ACEPTADA.
+ * Devuelve cuántas aceptó. Idempotente (la membresía duplicada se ignora).
+ */
+export async function acceptPendingInvites(user: AppUser): Promise<number> {
+  const invites = await db.organizationInvite.findMany({
+    where: { email: user.email.toLowerCase(), status: "PENDIENTE" },
+  });
+  if (invites.length === 0) return 0;
+
+  let accepted = 0;
+  for (const invite of invites) {
+    await db.$transaction(async (tx) => {
+      const existing = await tx.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: invite.organizationId,
+            userId: user.id,
+          },
+        },
+      });
+      if (!existing) {
+        await tx.organizationMember.create({
+          data: {
+            organizationId: invite.organizationId,
+            userId: user.id,
+            role: invite.role,
+            invitedById: invite.invitedById,
+          },
+        });
+        accepted += 1;
+      }
+      await tx.organizationInvite.update({
+        where: { id: invite.id },
+        data: { status: "ACEPTADA" },
+      });
+    });
+  }
+  return accepted;
+}
+
+/**
  * Organización "activa" del usuario: su primera membresía.
- * Si no tiene ninguna, se crea su organización personal (freemium
- * self-service, decisión D7) con él como OWNER.
+ * Antes de crear una organización personal se aceptan las invitaciones
+ * pendientes a su email (si fue invitado, entra a esa liga en lugar de
+ * crear una propia). Si no tiene ninguna, se crea su organización
+ * personal (freemium self-service, decisión D7) con él como OWNER.
  */
 export async function getOrCreateOwnOrg(user: AppUser): Promise<Organization> {
   const membership = await db.organizationMember.findFirst({
@@ -49,6 +96,17 @@ export async function getOrCreateOwnOrg(user: AppUser): Promise<Organization> {
     orderBy: { createdAt: "asc" },
   });
   if (membership) return membership.organization;
+
+  // ¿Fue invitado a una liga existente? Aceptar y usar esa organización.
+  const accepted = await acceptPendingInvites(user);
+  if (accepted > 0) {
+    const invitedMembership = await db.organizationMember.findFirst({
+      where: { userId: user.id },
+      include: { organization: true },
+      orderBy: { createdAt: "asc" },
+    });
+    if (invitedMembership) return invitedMembership.organization;
+  }
 
   const slug = await uniqueSlug(user.name ?? "mi-liga");
   return db.organization.create({
@@ -61,6 +119,23 @@ export async function getOrCreateOwnOrg(user: AppUser): Promise<Organization> {
       },
     },
   });
+}
+
+/**
+ * ¿Es el usuario OWNER de la organización? (gestión de plan, pagos y
+ * miembros — tabla de permisos N1). ADMINISTRADOR siempre pasa.
+ */
+export async function isOrgOwner(
+  user: AppUser,
+  organizationId: string,
+): Promise<boolean> {
+  if (user.role === "ADMINISTRADOR") return true;
+  const membership = await db.organizationMember.findUnique({
+    where: {
+      organizationId_userId: { organizationId, userId: user.id },
+    },
+  });
+  return membership?.role === "OWNER";
 }
 
 /**

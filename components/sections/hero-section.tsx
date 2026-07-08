@@ -1,7 +1,7 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { GradientButton } from "@/components/ui-dev/gradient-button";
 import { GradientText } from "@/components/ui-dev/gradient-text";
-import { Play, ArrowRight, Sparkles } from "lucide-react";
+import { Trophy, ArrowRight, Sparkles } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -72,21 +72,20 @@ export function HeroSection() {
 
             {/* CTAs con mejor diseño */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <GradientButton
-                size="lg"
-                className="text-lg px-8 py-4 shadow-xl shadow-[#ad45ff]/25 hover:shadow-2xl hover:shadow-[#ad45ff]/30 transition-all duration-300 hover:-translate-y-0.5"
+              <Link
+                href="/crear-liga"
+                className="inline-flex items-center justify-center text-lg px-8 py-4 rounded-lg font-semibold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white shadow-xl shadow-[#ad45ff]/25 hover:shadow-2xl hover:shadow-[#ad45ff]/30 transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ad45ff]/50"
               >
-                <Play className="w-5 h-5 mr-2" />
-                Ver Demo en Vivo
-              </GradientButton>
-              <GradientButton
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 py-4 hover:-translate-y-0.5 transition-all duration-300"
+                <Trophy className="w-5 h-5 mr-2" />
+                Creá tu liga gratis
+              </Link>
+              <Link
+                href="/torneos"
+                className="inline-flex items-center justify-center text-lg px-8 py-4 rounded-lg font-semibold border border-[#ad45ff] text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white bg-transparent transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ad45ff]/50"
               >
-                Registrarse Gratis
+                Ver torneos
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </GradientButton>
+              </Link>
             </div>
 
             {/* Stats con diseño premium - responsive grid */}

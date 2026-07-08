@@ -27,6 +27,7 @@ import {
   Info,
   CreditCard,
   Wallet,
+  UsersRound,
 } from "lucide-react";
 
 // Roles de PLATAFORMA (N1): ADMINISTRADOR | USUARIO.
@@ -79,6 +80,13 @@ const menuItems = [
     title: "Partidos",
     href: "/admin/partidos",
     icon: Calendar,
+    enabled: true,
+    roles: ["ADMINISTRADOR", "USUARIO"],
+  },
+  {
+    title: "Miembros",
+    href: "/admin/miembros",
+    icon: UsersRound,
     enabled: true,
     roles: ["ADMINISTRADOR", "USUARIO"],
   },

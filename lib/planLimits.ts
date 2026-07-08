@@ -127,9 +127,15 @@ export async function assertPlanLimit(
     }
 
     case "addMember": {
-      const count = await db.organizationMember.count({
-        where: { organizationId },
-      });
+      // Los invitados pendientes también cuentan: si no, se podría
+      // invitar de más antes de que acepten
+      const [members, pendingInvites] = await Promise.all([
+        db.organizationMember.count({ where: { organizationId } }),
+        db.organizationInvite.count({
+          where: { organizationId, status: "PENDIENTE" },
+        }),
+      ]);
+      const count = members + pendingInvites;
       if (count >= plan.maxMembers) {
         return {
           ok: false,

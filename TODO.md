@@ -461,7 +461,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N2. 🔴 Modelo `Organization` + membresías — concreta S2 (E:Alto)
 
-> ✅ **Implementado (2026-07-05):** `Organization` + `OrganizationMember` en el schema (con slug único, status ACTIVA/SUSPENDIDA); `organizationId` **obligatorio** en Tournament/Team/Player/Referee; News quedó global. BD reseteada (aprobado por el owner) y migración inicial limpia `20260705_nueva_estructura`. La org personal se auto-crea en el primer uso (`getOrCreateOwnOrg`, freemium D7). **Pendiente:** UI de gestión de miembros/invitaciones (va con N6/N10).
+> ✅ **Implementado (2026-07-05):** `Organization` + `OrganizationMember` en el schema (con slug único, status ACTIVA/SUSPENDIDA); `organizationId` **obligatorio** en Tournament/Team/Player/Referee; News quedó global. BD reseteada (aprobado por el owner) y migración inicial limpia `20260705_nueva_estructura`. La org personal se auto-crea en el primer uso (`getOrCreateOwnOrg`, freemium D7). **UI de gestión de miembros/invitaciones ✅ (N6):** `/admin/miembros` + APIs `/api/org/members`.
 
 - [x] **Qué:** la tabla central del SaaS. Schema propuesto:
   ```prisma
@@ -513,7 +513,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N4. 🟠 Planes y límites — schema + enforcement (E:Medio)
 
-> ✅ **Implementado (2026-07-05):** modelos `Plan`/`Subscription` (migración `planes_y_pagos`), seed idempotente con FREE/PRO/PREMIUM ([prisma/seed.js](prisma/seed.js) — **precios placeholder: $0/$15.000/$25.000 ARS, editarlos ahí o en BD**). [lib/planLimits.ts](lib/planLimits.ts): suscripción FREE auto-creada, plan efectivo (vencida → límites FREE sin ocultar datos), `assertPlanLimit` aplicado en crear torneo (402) y agregar equipo a torneo (402), `hasFeature()` listo para exportPdf/branding/liveMatch. **Pendiente:** enforcement de `maxMembers` (no hay endpoint de invitaciones aún — va con N6) y UI de upsell linda ante el 402 (hoy toast con el mensaje).
+> ✅ **Implementado (2026-07-05):** modelos `Plan`/`Subscription` (migración `planes_y_pagos`), seed idempotente con FREE/PRO/PREMIUM ([prisma/seed.js](prisma/seed.js) — **precios placeholder: $0/$15.000/$25.000 ARS, editarlos ahí o en BD**). [lib/planLimits.ts](lib/planLimits.ts): suscripción FREE auto-creada, plan efectivo (vencida → límites FREE sin ocultar datos), `assertPlanLimit` aplicado en crear torneo (402) y agregar equipo a torneo (402), `hasFeature()` listo para exportPdf/branding/liveMatch. **Enforcement de `maxMembers` ✅ (N6):** aplicado en `POST /api/org/members`, cuenta miembros + invitaciones pendientes → 402. **Pendiente:** UI de upsell linda ante el 402 (hoy toast/aviso con el mensaje; el wizard y `/admin/miembros` ya muestran un banner con link a planes).
 
 - [x] **Qué:** modelo de planes con límites, sin pasarela todavía.
   ```prisma
@@ -578,11 +578,14 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N6. 🟠 Onboarding de organizador — "Creá tu liga" (E:Medio)
 
-- [ ] **Qué:** el camino USUARIO → OWNER con la menor fricción posible.
-  - **Recomendación fuerte (freemium):** cualquier USUARIO crea su organización GRATIS (plan FREE) self-service, sin aprobación manual. Prueba el producto con 1 torneo real y paga cuando choca con los límites. Pedir pago antes de probar mata la conversión en este mercado.
-  - Wizard: nombre de la liga → localidad/logo → primer torneo (nombre, formato, fecha) → invitar co-organizadores (opcional) → listo, panel.
-  - CTAs en landing: "Creá tu torneo gratis" (hero) + pricing con los 3 planes + FAQ.
-  - El registro común queda como está (USUARIO): puede seguir torneos y ver todo lo público; el upsell a crear liga está siempre visible en su home.
+> ✅ **Implementado (2026-07-08):** modelo `OrganizationInvite` (email + rol + estado PENDIENTE/ACEPTADA/CANCELADA, `@@unique([organizationId, email])`, migración `20260706120000_organization_invites`). **APIs:** `GET/PATCH /api/org` (perfil de la liga, PATCH solo OWNER, regenera slug al cambiar nombre); `GET/POST /api/org/members` (invitar por email — si ya tiene cuenta se suma directo, si no queda invitación pendiente); `PATCH/DELETE /api/org/members/[id]` (cambiar rol / quitar, nunca al OWNER); `DELETE /api/org/invites/[id]` (cancelar). **Guards nuevos en [lib/orgAuth.ts](lib/orgAuth.ts):** `isOrgOwner`, `acceptPendingInvites` (auto-acepta invitaciones al entrar), `uniqueSlug` exportado. **Enforcement `maxMembers`:** `assertPlanLimit(org, "addMember")` cuenta miembros + invitaciones pendientes → 402 con upsell (cierra el pendiente de N4). **Wizard [/crear-liga](app/crear-liga/CrearLigaWizard.tsx)** de 3 pasos (liga → primer torneo opcional → invitar equipo) con pantalla de éxito; `validatePanelAccess` redirige a `/crear-liga` a quien no tiene liga; sign-up ahora aterriza ahí directo. **Panel [/admin/miembros](app/admin/miembros/MembersClient.tsx)** (lista, invitar, cambiar rol, quitar, cancelar invitaciones) + link en sidebar. **Landing:** CTAs reales `→ /crear-liga` (hero "Creá tu liga gratis", CTA final), pricing dinámico con los **3 planes reales leídos de la BD** ([pricing-section.tsx](components/sections/pricing-section.tsx)) + **FAQ**; corregido el copy falso "14 días de prueba" → "Plan gratis para siempre" (coherente con freemium). Carpeta `organizaciones/logos` agregada a `ALLOWED_UPLOAD_FOLDERS`. Build ✅, 21 tests ✅, lint ✅.
+> **Pendientes/siguientes:** (1) email real de invitación (hoy la invitación existe pero no se envía email — llega con S5/Resend); (2) reenviar invitación y ver fecha de expiración; (3) el `myRole` del OWNER se usa en `/api/org` pero falta exponerlo en la UI del panel para ocultar acciones a no-OWNER del lado cliente (hoy el server ya las bloquea con 403); (4) transferir propiedad de la liga a otro miembro.
+
+- [x] **Qué:** el camino USUARIO → OWNER con la menor fricción posible.
+  - **Freemium self-service (D7):** cualquier USUARIO crea su organización GRATIS (plan FREE) sin aprobación manual. La org se auto-crea en el primer uso (`getOrCreateOwnOrg`) y el wizard la completa. Prueba con 1 torneo real y paga al chocar con los límites.
+  - Wizard: nombre de la liga (+ localidad/logo/contacto) → primer torneo (nombre, formato, fecha — omitible) → invitar co-organizadores/colaboradores (omitible) → panel.
+  - CTAs en landing: "Creá tu liga gratis" (hero + CTA final) + pricing con los 3 planes reales + FAQ.
+  - El registro común queda como está (USUARIO): puede seguir torneos y ver todo lo público; el upsell a crear liga está en la landing y en `/crear-liga`.
 
 #### N7. 🟠 Configuración deportiva por torneo (E:Medio)
 
@@ -637,7 +640,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 | 1 | C1–C10 completos | Producto seguro; datos íntegros |
 | 2 | A1, A2, A4, A5, A7, A10 | Base de código única y honesta |
 | 3 | A3, A6 + M13 + **N1 + N2 + N3 + N11** en una sola migración, A8 (tests de standings + CI) | Multi-tenant real: roles correctos, organizaciones, datos privados por liga |
-| 4 | **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + N9 | Modelo de negocio operativo: se puede cobrar |
+| 4 | ✅ **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + N9 | Modelo de negocio operativo: se puede cobrar |
 | 5 | F0 + M6 + M10 (design system) + **N7** | Fundaciones visuales + reglas deportivas configurables |
 | 6 | F2 + F3 (rediseño público y admin) + M2, M7 + **N10** | UI nivel SaaS con las vistas por rol completas |
 | 7 | M3, M4, M8, M9, M11, M12 + F4 + **N8** | Pulido enterprise + sanciones automáticas |

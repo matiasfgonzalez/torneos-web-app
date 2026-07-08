@@ -93,6 +93,7 @@ export const ALLOWED_UPLOAD_FOLDERS = [
   "jugadores/cuerpo",
   "jugadores/rostro",
   "pagos/comprobantes",
+  "organizaciones/logos",
 ] as const;
 
 /** Prefijos raíz gestionados por la app (derivados de las carpetas permitidas) */

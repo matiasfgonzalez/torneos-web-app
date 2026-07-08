@@ -27,10 +27,11 @@ export default function GoogleSignUp() {
   const router = useRouter();
   const { isSignedIn, isLoaded } = useUser();
 
-  // Si el usuario ya está logueado, lo redirigimos automáticamente
+  // Si el usuario ya está logueado, lo llevamos al onboarding "Creá tu liga"
+  // (si ya tiene liga, /crear-liga lo reenvía solo al panel)
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      router.push("/admin/dashboard"); // Redirigir al dashboard
+      router.push("/crear-liga");
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -118,8 +119,8 @@ export default function GoogleSignUp() {
             {/* Botón de Google mejorado */}
             <SignUpButton
               mode="redirect"
-              forceRedirectUrl="/admin/dashboard"
-              fallbackRedirectUrl="/admin/dashboard"
+              forceRedirectUrl="/crear-liga"
+              fallbackRedirectUrl="/crear-liga"
             >
               <Button
                 size="lg"

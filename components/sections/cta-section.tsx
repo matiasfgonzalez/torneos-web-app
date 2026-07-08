@@ -1,5 +1,5 @@
-import { GradientButton } from "@/components/ui-dev/gradient-button";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Trophy, Sparkles } from "lucide-react";
 
 export function CTASection() {
   return (
@@ -59,16 +59,21 @@ export function CTASection() {
 
         {/* CTAs con diseño premium */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <GradientButton className="bg-white text-[#ad45ff] hover:bg-gray-50 border-0 shadow-2xl hover:shadow-3xl px-8 py-4 text-lg font-semibold hover:-translate-y-1 transition-all duration-300">
-            Registrarse Gratis
+          <Link
+            href="/crear-liga"
+            className="inline-flex items-center justify-center bg-white text-[#ad45ff] hover:bg-gray-50 shadow-2xl px-8 py-4 text-lg font-semibold rounded-xl hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/70"
+          >
+            <Trophy className="w-5 h-5 mr-2" />
+            Creá tu liga gratis
             <ArrowRight className="w-5 h-5 ml-2" />
-          </GradientButton>
-          <button className="group flex items-center justify-center gap-3 px-8 py-4 text-white border-2 border-white/30 rounded-xl hover:bg-white/10 backdrop-blur-sm transition-all duration-300 font-semibold text-lg hover:-translate-y-1">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-              <Play className="w-5 h-5 fill-white text-white ml-0.5" />
-            </div>
-            Ver Demo
-          </button>
+          </Link>
+          <Link
+            href="/torneos"
+            className="group flex items-center justify-center gap-3 px-8 py-4 text-white border-2 border-white/30 rounded-xl hover:bg-white/10 backdrop-blur-sm transition-all duration-300 font-semibold text-lg hover:-translate-y-1"
+          >
+            Ver torneos
+            <ArrowRight className="w-5 h-5" />
+          </Link>
         </div>
 
         {/* Garantías */}
@@ -82,7 +87,7 @@ export function CTASection() {
               />
             </svg>
             <span className="text-sm font-medium">
-              14 días de prueba gratis
+              Plan gratis para siempre
             </span>
           </div>
           <div className="flex items-center gap-2 text-white/80">

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(npm install *)",
+      "Bash(npx vitest *)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"EXIT: $?\")"
+    ]
+  }
+}

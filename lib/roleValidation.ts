@@ -1,6 +1,7 @@
 import { UserRole } from "@prisma/client";
 import { checkUser } from "./checkUser";
 import { db } from "./db";
+import { acceptPendingInvites } from "./orgAuth";
 import { redirect } from "next/navigation";
 
 /**
@@ -58,7 +59,12 @@ export async function validatePanelAccess(
   });
 
   if (!membership) {
-    redirect(redirectPath);
+    // ¿Fue invitado a una liga? Aceptar la invitación y dejarlo entrar (N6)
+    const accepted = await acceptPendingInvites(user);
+    if (accepted === 0) {
+      // Sin liga todavía → funnel de onboarding "Creá tu liga"
+      redirect("/crear-liga");
+    }
   }
 
   return user;
