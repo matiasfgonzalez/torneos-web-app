@@ -30,6 +30,9 @@ export interface ITorneo {
   pointsLoss?: number;
   walkoverScore?: number;
   tiebreakers?: unknown; // array de criterios: PTS, DIF, GF, GA, WINS
+  // Sanciones automáticas (N8)
+  yellowsForSuspension?: number;
+  matchesPerRedCard?: number;
   tournamentTeams?: ITournamentTeam[]; // Equipos que participan en el torneo
   tournamentPhases?: {
     id: string;

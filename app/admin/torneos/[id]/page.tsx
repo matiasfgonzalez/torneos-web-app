@@ -4,6 +4,7 @@ import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
 import TabsTournament from "./components/TabsTournament";
 import { getEquipos } from "@modules/equipos/actions/getEquipos";
 import { getTournamentTeams } from "@modules/torneos/actions/getTournamentTeams";
+import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
 import { AlertTriangle, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,7 @@ export default async function AdminTournamentDetail({
   const torneo = await getTorneoById(id);
   const equipos = await getEquipos();
   const associations = await getTournamentTeams(id);
+  const suspensions = await getTournamentSuspensions(id);
 
   if (torneo) {
     return (
@@ -55,6 +57,7 @@ export default async function AdminTournamentDetail({
             tournamentData={torneo}
             equipos={equipos}
             associations={associations}
+            suspensions={suspensions}
           />
         </div>
       </div>

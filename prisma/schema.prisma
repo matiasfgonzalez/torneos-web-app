@@ -327,6 +327,10 @@ model Tournament {
   // Orden de criterios de desempate. Array de códigos: PTS, DIF, GF, GA, WINS.
   // null = orden por defecto ["PTS","DIF","GF","WINS"].
   tiebreakers   Json?
+  // Sanciones automáticas (N8): amarillas acumuladas que gatillan una fecha
+  // de suspensión, y fechas de suspensión por cada roja. 0 = desactivado.
+  yellowsForSuspension Int @default(5)
+  matchesPerRedCard    Int @default(1)
 
   startDate DateTime
   endDate   DateTime?
@@ -340,6 +344,7 @@ model Tournament {
   matches          Match[]
   tournamentTeams  TournamentTeam[]
   tournamentPhases TournamentPhase[]
+  suspensions      Suspension[]
 
   @@index([organizationId])
   @@index([status, deletedAt])
@@ -680,9 +685,10 @@ model TeamPlayer {
   isCaptain Boolean      @default(false)
   status    PlayerStatus @default(ACTIVO)
 
-  goals   Goal[]
-  assists Goal[] @relation("Assists")
-  cards   Card[]
+  goals       Goal[]
+  assists     Goal[]       @relation("Assists")
+  cards       Card[]
+  suspensions Suspension[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -690,6 +696,49 @@ model TeamPlayer {
   @@unique([playerId, tournamentTeamId])
   @@index([tournamentTeamId])
   @@index([playerId])
+}
+
+// ============================================================
+// SANCIONES / SUSPENSIONES (N8)
+// ============================================================
+
+enum SuspensionReason {
+  ACUMULACION // amarillas acumuladas (múltiplo de yellowsForSuspension)
+  ROJA        // roja directa o doble amarilla
+  MANUAL      // impuesta por el organizador
+}
+
+// Suspensión de un jugador en un torneo. Las de tipo ACUMULACION/ROJA las
+// genera y reconcilia el motor (idempotente, ver lib/suspensions); las MANUAL
+// las crea el organizador y nunca se borran automáticamente.
+model Suspension {
+  id String @id @default(uuid())
+
+  teamPlayerId String
+  teamPlayer   TeamPlayer @relation(fields: [teamPlayerId], references: [id], onDelete: Cascade)
+
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  reason        SuspensionReason
+  totalMatches  Int // cuántas fechas dura
+  servedMatches Int              @default(0) // derivado: fechas ya cumplidas
+  isActive      Boolean          @default(true)
+
+  // Fecha del evento que la originó; se cumplen los partidos posteriores del equipo
+  triggerDate DateTime
+  notes       String?
+
+  // Claves de deduplicación del motor (null en MANUAL):
+  sourceCardId      String? @unique // ROJA: tarjeta origen (1:1)
+  accumulationIndex Int? // ACUMULACION: 1=primer múltiplo, 2=segundo...
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamPlayerId, accumulationIndex])
+  @@index([tournamentId, isActive])
+  @@index([teamPlayerId])
 }
 
 // ============================================================

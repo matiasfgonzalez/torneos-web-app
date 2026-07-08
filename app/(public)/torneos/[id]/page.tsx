@@ -27,6 +27,8 @@ import {
 
 import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
 import { getTournamentStats } from "@modules/torneos/actions/getTournamentStats";
+import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
+import { SuspensionsList } from "@modules/torneos/components/SuspensionsList";
 import { notFound } from "next/navigation";
 import HeaderTorneo from "@modules/torneos/components/HeaderTorneo";
 import TeamsCarousel from "@modules/equipos/components/TeamsCarousel";
@@ -115,9 +117,10 @@ export default async function TournamentDetailPage({
   params: Promise<{ id: string }>;
 }>) {
   const { id } = await params;
-  const [tournamentData, stats] = await Promise.all([
+  const [tournamentData, stats, suspensions] = await Promise.all([
     getTorneoById(id),
     getTournamentStats(id),
+    getTournamentSuspensions(id),
   ]);
 
   if (!tournamentData) return notFound();
@@ -925,6 +928,27 @@ export default async function TournamentDetailPage({
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              {/* Sancionados (N8) */}
+              <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm md:col-span-2">
+                <div className="h-1.5 bg-gradient-to-r from-red-500 via-[#ad45ff] to-[#a3b3ff]" />
+                <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gradient-to-br from-red-500 to-[#ad45ff] rounded-xl shadow-lg shadow-red-500/25">
+                      <ShieldAlert className="h-5 w-5 text-white" />
+                    </div>
+                    <CardTitle className="text-gray-900 dark:text-white text-xl">
+                      Sancionados
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <SuspensionsList
+                    suspensions={suspensions}
+                    emptyLabel="No hay jugadores sancionados actualmente"
+                  />
                 </CardContent>
               </Card>
             </div>

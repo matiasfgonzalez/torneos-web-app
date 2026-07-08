@@ -7,6 +7,7 @@ import {
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
 import { getMatchOrgId, requireActionOrgAccess } from "@/lib/orgAuth";
+import { hasActiveSuspension } from "@/lib/suspensions/engine";
 
 export async function addGoal(data: {
   matchId: string;
@@ -15,7 +16,7 @@ export async function addGoal(data: {
   minute: number;
   isOwnGoal: boolean;
   isPenalty: boolean;
-}) {
+}): Promise<{ success: boolean; error?: string; suspendedWarning?: boolean }> {
   const orgId = await getMatchOrgId(data.matchId);
   if (!orgId) return { success: false, error: "Partido no encontrado" };
 
@@ -33,6 +34,9 @@ export async function addGoal(data: {
     });
 
     if (!previousMatch) throw new Error("Partido no encontrado");
+
+    // ¿Se le carga un gol a un jugador suspendido? (N8) → avisar sin bloquear
+    const suspendedWarning = await hasActiveSuspension(data.teamPlayerId);
 
     // 2. Determinar a quién sumar el gol en el marcador
     // Si es autogol, se suma al equipo contrario
@@ -75,7 +79,7 @@ export async function addGoal(data: {
     });
 
     revalidatePath(`/admin/torneos/${previousMatch.tournamentId}`);
-    return { success: true };
+    return { success: true, suspendedWarning };
   } catch (error) {
     console.error("Error adding goal:", error);
     return { success: false, error: "Error al agregar gol" };

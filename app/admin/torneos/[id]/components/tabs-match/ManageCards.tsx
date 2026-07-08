@@ -214,6 +214,12 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
         } else {
           toast.success("Tarjeta amarilla registrada");
         }
+        // Aviso N8: el jugador ya arrastraba una suspensión activa
+        if (res.suspendedWarning) {
+          toast.warning(
+            "Atención: este jugador tenía una suspensión activa y no debería estar jugando",
+          );
+        }
         setMinute("");
         setReason("");
         setSelectedPlayerId("");

@@ -105,6 +105,12 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
 
       if (res.success) {
         toast.success("Gol agregado");
+        // Aviso N8: el jugador tiene una suspensión activa
+        if (res.suspendedWarning) {
+          toast.warning(
+            "Atención: este jugador tiene una suspensión activa y no debería estar jugando",
+          );
+        }
         setMinute("");
         setIsOwnGoal(false);
         setIsPenalty(false);

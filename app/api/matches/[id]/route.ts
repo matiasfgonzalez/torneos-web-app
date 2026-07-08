@@ -5,6 +5,7 @@ import {
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
 import { resolveWalkover } from "@/lib/standings/walkover";
+import { recomputeTournamentSuspensions } from "@/lib/suspensions/engine";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -111,6 +112,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
       return updated;
     });
+
+    // Recalcular sanciones si el partido entra o sale de FINALIZADO, o si se
+    // edita uno finalizado (cambia las fechas cumplidas, N8)
+    const wasFinalized = previousMatch.status === "FINALIZADO";
+    const isFinalized = updatedMatch.status === "FINALIZADO";
+    if (wasFinalized || isFinalized) {
+      await recomputeTournamentSuspensions(updatedMatch.tournamentId);
+    }
 
     return NextResponse.json(updatedMatch, { status: 200 });
   } catch (error) {

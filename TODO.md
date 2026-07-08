@@ -600,11 +600,8 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N8. 🟡 Sanciones automáticas (E:Medio)
 
-- [ ] **Qué:** el organizador no debería llevar la cuenta de amarillas a mano.
-  - `Tournament`: `yellowsForSuspension Int @default(5)`, `matchesPerRedCard Int @default(1)`.
-  - Modelo `Suspension { teamPlayerId, tournamentId, reason (ACUMULACION|ROJA|MANUAL), totalMatches, servedMatches, isActive }`.
-  - Al cargar una Card: recalcular; si corresponde, crear suspensión y notificar. Al finalizar cada partido: descontar `servedMatches` de los suspendidos que no jugaron.
-  - Vista pública "Sancionados" por torneo + warning al organizador si alinea (carga gol/tarjeta de) un jugador suspendido.
+> ✅ **Implementado (2026-07-08):** **Schema** (migración `20260708150000_sanciones_automaticas`, aplicada a la BD): `Tournament.yellowsForSuspension` (5 default), `matchesPerRedCard` (1 default) — 0 desactiva; modelo `Suspension` (reason ACUMULACION/ROJA/MANUAL, totalMatches/servedMatches/isActive, triggerDate, `sourceCardId @unique` + `accumulationIndex` como claves de dedupe). **Motor idempotente** (mismo patrón que el recálculo de standings): [lib/suspensions/rules.ts](lib/suspensions/rules.ts) reglas puras testeadas (amarillas de acumulación excluyendo las de un partido con roja para evitar triple castigo; suspensión por cada roja; fechas cumplidas = partidos FINALIZADOS del equipo posteriores al evento) y [lib/suspensions/engine.ts](lib/suspensions/engine.ts) `recomputeTournamentSuspensions` (reconcilia automáticas desde las tarjetas + recalcula servedMatches/isActive de TODAS, preservando las MANUAL). **Hooks:** recompute al cargar/borrar tarjeta ([cards.ts](modules/partidos/actions/cards.ts)) y al crear/editar partido que entra o sale de FINALIZADO (POST/PATCH de `/api/matches`). **Query + acciones:** `getTournamentSuspensions` y `createManualSuspension`/`cancelManualSuspension` (roles gestores) en [suspensions.ts](modules/torneos/actions/suspensions.ts). **UI config:** amarillas/roja en la sección "Configuración deportiva" del form de torneo. **Vista pública "Sancionados"** en el tab Estadísticas del torneo + sección admin con alta/cancelación manual ([AdminSuspensionsSection](modules/torneos/components/admin/AdminSuspensionsSection.tsx)). **Warning al organizador:** `addGoal`/`addCard` devuelven `suspendedWarning` y la UI avisa (toast, no bloquea) si se alinea a un suspendido. **Tests:** +13 (motor de reglas), 48 en total ✅. Build ✅, tsc ✅, lint ✅. **Aporta el criterio FairPlay que N7 dejó pendiente** (ya hay tarjetas por jugador para desempatar).
+> **Pendientes/siguientes:** (1) "cumplida" asume que el suspendido no juega los partidos posteriores del equipo (no hay planilla de asistencia); si el club lo alinea igual, el warning avisa pero no se detecta como violación. (2) Cancelar/perdonar una suspensión **automática** requiere un flag `pardoned` que el recompute respete (hoy solo se quitan borrando la tarjeta origen; sí se cancelan las MANUAL). (3) Notificación al jugador/organizador (llega con S5). (4) FairPlay como criterio de desempate en la tabla aún no está cableado en el comparador (N7).
 
 #### N9. 🟡 Slugs y URLs públicas compartibles (E:Bajo)
 
@@ -646,7 +643,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 | 4 | ✅ **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + N9 | Modelo de negocio operativo: se puede cobrar |
 | 5 | F0 + M6 + M10 (design system) + ✅ **N7** | Fundaciones visuales + reglas deportivas configurables |
 | 6 | F2 + F3 (rediseño público y admin) + M2, M7 + **N10** | UI nivel SaaS con las vistas por rol completas |
-| 7 | M3, M4, M8, M9, M11, M12 + F4 + **N8** | Pulido enterprise + sanciones automáticas |
+| 7 | M3, M4, M8, M9, M11, M12 + F4 + ✅ **N8** | Pulido enterprise + sanciones automáticas |
 | 8+ | S1 (fixture) → S3 (inscripciones) → S4/S5 → Mercado Pago → **N12** | Diferenciación de producto |
 
 ## ✅ Decisiones de negocio definidas (2026-07-03)

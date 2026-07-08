@@ -33,17 +33,21 @@ import TabsOverview from "./tabs-tournament/TabsOverview";
 import TabsTeams from "./tabs-tournament/TabsTeams";
 import TabsMatches from "./tabs-tournament/TabsMatches";
 import AdminStandingsSection from "@modules/torneos/components/admin/AdminStandingsSection";
+import { AdminSuspensionsSection } from "@modules/torneos/components/admin/AdminSuspensionsSection";
+import type { SuspensionView } from "@modules/torneos/actions/suspensions";
 
 interface TabsTournamentProps {
   tournamentData: ITorneo;
   equipos: ITeam[];
   associations: ITournamentTeam[];
+  suspensions: SuspensionView[];
 }
 
 export default function TabsTournament({
   tournamentData,
   equipos,
   associations,
+  suspensions,
 }: Readonly<TabsTournamentProps>) {
   const teamMap = useMemo(() => {
     const m = new Map<string, ITeam>();
@@ -164,6 +168,20 @@ export default function TabsTournament({
             tournamentFormat={tournamentData.format}
             tiebreakers={tournamentData.tiebreakers}
           />
+
+          {/* Sancionados (N8) */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+            <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
+              <div className="h-1.5 bg-gradient-to-r from-red-500 via-[#ad45ff] to-[#a3b3ff]" />
+              <CardContent className="p-6">
+                <AdminSuspensionsSection
+                  suspensions={suspensions}
+                  tournamentTeams={associations}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Settings */}

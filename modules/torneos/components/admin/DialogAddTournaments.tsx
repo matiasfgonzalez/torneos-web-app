@@ -96,6 +96,9 @@ const tournamentSchema = z
     pointsLoss: z.number().int().min(-10).max(10),
     walkoverScore: z.number().int().min(0).max(20),
     tiebreakerPreset: z.string(),
+    // Sanciones automáticas (N8): 0 desactiva
+    yellowsForSuspension: z.number().int().min(0).max(50),
+    matchesPerRedCard: z.number().int().min(0).max(20),
   })
   .refine(
     (data) => {
@@ -289,6 +292,11 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       tiebreakerPreset: isEditMode
         ? presetFromTiebreakers(tournament?.tiebreakers)
         : "DIF_FIRST",
+      // Sanciones automáticas (N8)
+      yellowsForSuspension: isEditMode
+        ? (tournament?.yellowsForSuspension ?? 5)
+        : 5,
+      matchesPerRedCard: isEditMode ? (tournament?.matchesPerRedCard ?? 1) : 1,
     },
   });
 
@@ -813,6 +821,65 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* Sanciones automáticas (N8) */}
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
+                  Sanciones automáticas (0 = desactivado)
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="yellowsForSuspension"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Amarillas para suspender 1 fecha
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={50}
+                            value={field.value}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                            disabled={isLoading}
+                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="matchesPerRedCard"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Fechas de suspensión por roja
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={20}
+                            value={field.value}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                            disabled={isLoading}
+                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 

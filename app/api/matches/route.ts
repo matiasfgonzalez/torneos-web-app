@@ -6,6 +6,7 @@ import {
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
 import { resolveWalkover } from "@/lib/standings/walkover";
+import { recomputeTournamentSuspensions } from "@/lib/suspensions/engine";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchCreateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -105,6 +106,11 @@ export async function POST(req: NextRequest) {
 
       return created;
     });
+
+    // Recalcular sanciones si nace finalizado (afecta fechas cumplidas, N8)
+    if (match.status === MatchStatus.FINALIZADO) {
+      await recomputeTournamentSuspensions(match.tournamentId);
+    }
 
     return NextResponse.json(match, { status: 201 });
   } catch (error) {

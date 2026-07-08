@@ -58,6 +58,9 @@ const tournamentBase = z.object({
   pointsLoss: z.coerce.number().int().min(-10).max(10),
   walkoverScore: z.coerce.number().int().min(0).max(20),
   tiebreakers: z.array(z.enum(TIEBREAKER_CRITERIA)).min(1).max(5),
+  // Sanciones automáticas (N8): 0 desactiva
+  yellowsForSuspension: z.coerce.number().int().min(0).max(50),
+  matchesPerRedCard: z.coerce.number().int().min(0).max(20),
 });
 
 // status/enabled se fijan server-side al crear; ageGroup/gender y la config
@@ -82,6 +85,8 @@ export const tournamentCreateSchema = tournamentBase
     pointsLoss: true,
     walkoverScore: true,
     tiebreakers: true,
+    yellowsForSuspension: true,
+    matchesPerRedCard: true,
   });
 
 export const tournamentUpdateSchema = tournamentBase.partial();

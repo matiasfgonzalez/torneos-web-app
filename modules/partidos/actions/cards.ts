@@ -4,6 +4,10 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { CardType } from "@prisma/client";
 import { getMatchOrgId, requireActionOrgAccess } from "@/lib/orgAuth";
+import {
+  hasActiveSuspension,
+  recomputeTournamentSuspensions,
+} from "@/lib/suspensions/engine";
 
 export async function addCard(data: {
   matchId: string;
@@ -11,7 +15,12 @@ export async function addCard(data: {
   type: CardType;
   minute?: number;
   reason?: string;
-}): Promise<{ success: boolean; error?: string; doubleYellow?: boolean }> {
+}): Promise<{
+  success: boolean;
+  error?: string;
+  doubleYellow?: boolean;
+  suspendedWarning?: boolean;
+}> {
   const orgId = await getMatchOrgId(data.matchId);
   if (!orgId) return { success: false, error: "Partido no encontrado" };
 
@@ -30,6 +39,9 @@ export async function addCard(data: {
     if (!match) {
       return { success: false, error: "Partido no encontrado" };
     }
+
+    // ¿El jugador ya arrastraba una suspensión activa? (N8) → avisar al final
+    const suspendedWarning = await hasActiveSuspension(teamPlayerId);
 
     // Obtener las tarjetas existentes del jugador en este partido
     const existingCards = await db.card.findMany({
@@ -73,8 +85,11 @@ export async function addCard(data: {
         },
       });
 
+      // Recalcular sanciones automáticas del torneo (N8)
+      await recomputeTournamentSuspensions(match.tournamentId);
+
       revalidatePath(`/admin/torneos/${match.tournamentId}`);
-      return { success: true, doubleYellow: true };
+      return { success: true, doubleYellow: true, suspendedWarning };
     }
 
     // Crear la tarjeta normal
@@ -88,8 +103,11 @@ export async function addCard(data: {
       },
     });
 
+    // Recalcular sanciones automáticas del torneo (N8)
+    await recomputeTournamentSuspensions(match.tournamentId);
+
     revalidatePath(`/admin/torneos/${match.tournamentId}`);
-    return { success: true };
+    return { success: true, suspendedWarning };
   } catch (error) {
     console.error("Error adding card:", error);
     return { success: false, error: "Error al registrar tarjeta" };
@@ -118,6 +136,9 @@ export async function deleteCard(cardId: string) {
     await db.card.delete({
       where: { id: cardId },
     });
+
+    // Recalcular sanciones automáticas del torneo (N8)
+    await recomputeTournamentSuspensions(card.match.tournamentId);
 
     revalidatePath(`/admin/torneos/${card.match.tournamentId}`);
     return { success: true };
