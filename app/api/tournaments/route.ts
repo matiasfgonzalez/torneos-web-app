@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireApiOrgContext } from "@/lib/orgAuth";
 import { assertPlanLimit } from "@/lib/planLimits";
 import { apiError } from "@/lib/apiResponse";
+import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentCreateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -30,9 +31,13 @@ export async function POST(req: Request) {
       return apiError(402, check.error);
     }
 
+    // Slug público único por organización (N9)
+    const slug = await uniqueTournamentSlug(parsed.data.name, auth.org.id);
+
     const newTournament = await db.tournament.create({
       data: {
         ...parsed.data,
+        slug,
         status: "PENDIENTE",
         organizationId: auth.org.id,
       },

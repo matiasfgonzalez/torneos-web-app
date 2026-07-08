@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
+import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentUpdateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -80,7 +81,12 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     const existing = await db.tournament.findUnique({
       where: { id },
-      select: { deletedAt: true, organizationId: true },
+      select: {
+        deletedAt: true,
+        organizationId: true,
+        name: true,
+        slug: true,
+      },
     });
 
     if (!existing || existing.deletedAt) {
@@ -96,9 +102,20 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       return auth.error;
     }
 
+    // El slug se genera una sola vez y NO cambia al renombrar, para mantener
+    // estables las URLs compartidas (WhatsApp/QR). Solo se completa si falta (N9).
+    const data: Record<string, unknown> = { ...parsed.data };
+    if (!existing.slug) {
+      data.slug = await uniqueTournamentSlug(
+        parsed.data.name ?? existing.name,
+        existing.organizationId,
+        id,
+      );
+    }
+
     const updatedTournament = await db.tournament.update({
       where: { id },
-      data: parsed.data,
+      data,
     });
 
     return NextResponse.json(

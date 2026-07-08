@@ -605,7 +605,8 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 
 #### N9. 🟡 Slugs y URLs públicas compartibles (E:Bajo)
 
-- [ ] **Qué:** `slug @unique` en `Organization` y `Tournament` (único por org), rutas `/liga/[slug]` y `/liga/[slug]/[torneo]`, redirect de las rutas por UUID. Es prerequisito de S4 (QR + OG images + compartir por WhatsApp). Generación automática desde el nombre con desambiguación (`-2`).
+> ✅ **Implementado (2026-07-08):** **Util compartido [lib/slug.ts](lib/slug.ts):** `slugify` (minúsculas, sin acentos, ≤60), `uniqueOrganizationSlug` y `uniqueTournamentSlug` con desambiguación real `-2`/`-3`… (ya no sufijo aleatorio); `orgAuth` refactorizado para reusarlo (elimina la duplicación de N6). **Schema** (migración `20260708170000_tournament_slug`, aplicada + backfill): `Tournament.slug` con `@@unique([organizationId, slug])` (único por org); [prisma/backfill-tournament-slugs.js](prisma/backfill-tournament-slugs.js) completó los existentes (1 torneo → `categoria-a`). **Generación:** POST de torneo setea slug; PATCH lo completa si falta pero **no lo cambia al renombrar** (mantiene estables los links compartidos). **Rutas:** `/liga/[slug]` (página de liga: perfil + botón WhatsApp + grilla de torneos) y `/liga/[slug]/[torneo]` (URL canónica del torneo), ambas con `generateMetadata` OG/Twitter (prep S4). **Redirect:** `/torneos/[id]` (UUID legacy) redirige a la URL canónica si el torneo tiene slug. **Refactor sin duplicar:** el detalle de torneo (~950 líneas) se extrajo a [TournamentDetailView](modules/torneos/components/TournamentDetailView.tsx) que ambas rutas renderizan. **Resolvers:** `getTorneoBySlug`/`getTournamentMetaBySlug`/`getTournamentCanonicalPath` y `getOrganizationBySlug`. **Tests:** +6 (slugify), 54 en total ✅. Build ✅, tsc ✅, lint ✅.
+> **Pendientes/siguientes:** (1) el listado `/torneos` (FiltroTorneos) aún enlaza por `/torneos/[id]` y llega a la canónica **vía redirect** — enlazar directo requiere sumar el org slug a `getTorneos`/`ITorneo` (se hará con N10/M2). (2) Falta redirigir `/torneos/[id]` con **301 permanente** explícito (hoy `redirect()` de Next = 307); evaluar `permanentRedirect`. (3) Slug editable a mano por el organizador (hoy solo automático). (4) La página de liga no distingue estado SUSPENDIDA de la org (muestra igual, por política de retención). Habilita S4: QR + compartir por WhatsApp + OG image dinámica.
 
 #### N10. 🟡 Vistas y páginas faltantes por rol (E:Alto, iterativo)
 
@@ -640,7 +641,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 | 1 | C1–C10 completos | Producto seguro; datos íntegros |
 | 2 | A1, A2, A4, A5, A7, A10 | Base de código única y honesta |
 | 3 | A3, A6 + M13 + **N1 + N2 + N3 + N11** en una sola migración, A8 (tests de standings + CI) | Multi-tenant real: roles correctos, organizaciones, datos privados por liga |
-| 4 | ✅ **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + N9 | Modelo de negocio operativo: se puede cobrar |
+| 4 | ✅ **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + ✅ **N9** | Modelo de negocio operativo: se puede cobrar |
 | 5 | F0 + M6 + M10 (design system) + ✅ **N7** | Fundaciones visuales + reglas deportivas configurables |
 | 6 | F2 + F3 (rediseño público y admin) + M2, M7 + **N10** | UI nivel SaaS con las vistas por rol completas |
 | 7 | M3, M4, M8, M9, M11, M12 + F4 + ✅ **N8** | Pulido enterprise + sanciones automáticas |

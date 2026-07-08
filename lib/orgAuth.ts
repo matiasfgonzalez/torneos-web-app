@@ -18,27 +18,10 @@ type AppUser = NonNullable<Awaited<ReturnType<typeof checkUser>>>;
 const MANAGER_ROLES: OrgRole[] = ["OWNER", "ORGANIZADOR"];
 const LOADER_ROLES: OrgRole[] = ["OWNER", "ORGANIZADOR", "COLABORADOR"];
 
-function slugify(input: string): string {
-  return (
-    input
-      .toLowerCase()
-      .normalize("NFD")
-      .replaceAll(/[̀-ͯ]/g, "") // sacar diacríticos (á→a)
-      .replaceAll(/[^a-z0-9]+/g, "-")
-      .replaceAll(/(^-|-$)/g, "")
-      .slice(0, 50) || "liga"
-  );
-}
-
-export async function uniqueSlug(
-  base: string,
-  excludeOrgId?: string,
-): Promise<string> {
-  const slug = slugify(base);
-  const existing = await db.organization.findUnique({ where: { slug } });
-  if (!existing || existing.id === excludeOrgId) return slug;
-  return `${slug}-${Math.random().toString(36).slice(2, 6)}`;
-}
+// Slug de organización: vive en lib/slug.ts (N9). Se reexporta con el nombre
+// `uniqueSlug` por compatibilidad con los consumidores existentes.
+import { uniqueOrganizationSlug } from "@/lib/slug";
+export { uniqueOrganizationSlug as uniqueSlug };
 
 /**
  * Acepta las invitaciones PENDIENTES que apunten al email del usuario (N6):
@@ -108,7 +91,7 @@ export async function getOrCreateOwnOrg(user: AppUser): Promise<Organization> {
     if (invitedMembership) return invitedMembership.organization;
   }
 
-  const slug = await uniqueSlug(user.name ?? "mi-liga");
+  const slug = await uniqueOrganizationSlug(user.name ?? "mi-liga");
   return db.organization.create({
     data: {
       name: user.name ? `Liga de ${user.name}` : "Mi Liga",

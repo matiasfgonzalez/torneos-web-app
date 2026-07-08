@@ -300,6 +300,7 @@ enum TournamentFormat {
 model Tournament {
   id           String             @id @default(uuid())
   name         String
+  slug         String? // URL pública /liga/[orgSlug]/[slug] (N9); único por organización
   description  String?
   ageGroup     AgeGroup           @default(LIBRE)
   gender       Gender             @default(MASCULINO)
@@ -346,6 +347,7 @@ model Tournament {
   tournamentPhases TournamentPhase[]
   suspensions      Suspension[]
 
+  @@unique([organizationId, slug])
   @@index([organizationId])
   @@index([status, deletedAt])
 }
