@@ -20,6 +20,8 @@ interface AdminStandingsSectionProps {
   tournamentTeams: ITournamentTeam[];
   matches: IMatch[];
   tournamentFormat: string;
+  /** Orden de desempate del torneo (N7) */
+  tiebreakers?: unknown;
 }
 
 interface PhaseInfo {
@@ -36,6 +38,7 @@ export function AdminStandingsSection({
   tournamentTeams,
   matches,
   tournamentFormat,
+  tiebreakers,
 }: Readonly<AdminStandingsSectionProps>) {
   const [viewMode, setViewMode] = useState<"table" | "bracket" | "all">("all");
 
@@ -136,6 +139,7 @@ export function AdminStandingsSection({
             <StandingsTable
               tournamentTeams={tournamentTeams}
               variant="admin"
+              tiebreakers={tiebreakers}
               title={
                 hasGroups ? "Clasificación por Grupo" : "Clasificación General"
               }

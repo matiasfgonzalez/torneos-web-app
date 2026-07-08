@@ -5,7 +5,8 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
-import { getTournamentOrgId, requireApiOrgAccess } from "@/lib/orgAuth";
+import { resolveWalkover } from "@/lib/standings/walkover";
+import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchCreateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -47,41 +48,60 @@ export async function POST(req: NextRequest) {
     }
 
     // El partido pertenece al torneo → solo gestores de esa organización
-    const orgId = await getTournamentOrgId(parsed.data.tournamentId);
-    if (!orgId) {
+    // (traemos la config deportiva del torneo: puntos + walkoverScore, N7)
+    const tournament = await db.tournament.findUnique({
+      where: { id: parsed.data.tournamentId },
+      select: {
+        organizationId: true,
+        pointsWin: true,
+        pointsDraw: true,
+        pointsLoss: true,
+        walkoverScore: true,
+      },
+    });
+    if (!tournament) {
       return NextResponse.json(
         { error: "Torneo no encontrado" },
         { status: 404 },
       );
     }
 
-    const auth = await requireApiOrgAccess(orgId);
+    const auth = await requireApiOrgAccess(tournament.organizationId);
     if (auth.error) {
       return auth.error;
     }
 
-    // Regla WALKOVER: requiere marcador cargado (ej. 3-0 al ganador)
-    if (
-      parsed.data.status === MatchStatus.WALKOVER &&
-      (parsed.data.homeScore == null || parsed.data.awayScore == null)
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Un WALKOVER requiere marcador cargado (ej. 3-0 a favor del equipo ganador)",
-        },
-        { status: 400 },
-      );
+    const data = { ...parsed.data };
+
+    // Regla WALKOVER (N7): el organizador marca el ganador y el server fija
+    // el marcador (walkoverScore-0). Ya no se carga el 3-0 a mano.
+    if (data.status === MatchStatus.WALKOVER) {
+      const wo = resolveWalkover({
+        status: data.status,
+        walkoverWinnerTeamId: data.walkoverWinnerTeamId,
+        homeTeamId: data.homeTeamId,
+        awayTeamId: data.awayTeamId,
+        walkoverScore: tournament.walkoverScore,
+      });
+      if (!wo.ok) {
+        return NextResponse.json({ error: wo.error }, { status: 400 });
+      }
+      data.homeScore = wo.homeScore;
+      data.awayScore = wo.awayScore;
     }
 
     // 📌 Crear partido + tabla de posiciones en una única transacción
     // (applyMatchResult no hace nada si el partido no es contable)
     const match = await db.$transaction(async (tx) => {
       const created = await tx.match.create({
-        data: parsed.data,
+        data,
       });
 
-      await applyMatchResult(tx, null, extractMatchResult(created));
+      await applyMatchResult(tx, null, extractMatchResult(created), {
+        pointsWin: tournament.pointsWin,
+        pointsDraw: tournament.pointsDraw,
+        pointsLoss: tournament.pointsLoss,
+      });
 
       return created;
     });

@@ -17,6 +17,8 @@ interface PublicStandingsSectionProps {
   tournamentTeams: ITournamentTeam[];
   matches: IMatch[];
   tournamentFormat: string;
+  /** Orden de desempate del torneo (N7) */
+  tiebreakers?: unknown;
 }
 
 /**
@@ -27,6 +29,7 @@ export function PublicStandingsSection({
   tournamentTeams,
   matches,
   tournamentFormat,
+  tiebreakers,
 }: Readonly<PublicStandingsSectionProps>) {
   const displayType = useMemo(
     () => getTournamentDisplayType(tournamentFormat),
@@ -64,6 +67,7 @@ export function PublicStandingsSection({
         <StandingsTable
           tournamentTeams={tournamentTeams}
           variant="public"
+          tiebreakers={tiebreakers}
           title={
             hasGroups ? "Tabla de Posiciones por Grupo" : "Tabla de Posiciones"
           }
@@ -91,6 +95,7 @@ export function PublicStandingsSection({
     <StandingsTable
       tournamentTeams={tournamentTeams}
       variant="public"
+      tiebreakers={tiebreakers}
       title="Tabla de Posiciones"
       description="Clasificación actual del torneo"
     />

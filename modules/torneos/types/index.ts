@@ -24,6 +24,12 @@ export interface ITorneo {
   format: string; // Formato del torneo (Liga, Eliminación directa, etc.)
   homeAndAway: boolean; // Si el torneo es de ida y vuelta o solo un partido
   liga: string; // Liga a la que pertenece el torneo
+  // Configuración deportiva (N7)
+  pointsWin?: number;
+  pointsDraw?: number;
+  pointsLoss?: number;
+  walkoverScore?: number;
+  tiebreakers?: unknown; // array de criterios: PTS, DIF, GF, GA, WINS
   tournamentTeams?: ITournamentTeam[]; // Equipos que participan en el torneo
   tournamentPhases?: {
     id: string;

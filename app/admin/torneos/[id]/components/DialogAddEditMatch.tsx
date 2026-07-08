@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -54,6 +54,7 @@ interface MatchFormValues {
   penaltyWinnerTeamId: string | null;
   penaltyScoreHome: number | null;
   penaltyScoreAway: number | null;
+  walkoverWinnerTeamId: string | null;
   roundNumber: number | null;
 }
 
@@ -92,8 +93,15 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
     penaltyWinnerTeamId: isEdit ? (matchData?.penaltyWinnerTeamId ?? "") : "",
     penaltyScoreHome: isEdit ? (matchData?.penaltyScoreHome ?? null) : null,
     penaltyScoreAway: isEdit ? (matchData?.penaltyScoreAway ?? null) : null,
+    walkoverWinnerTeamId: isEdit
+      ? (matchData?.walkoverWinnerTeamId ?? "")
+      : "",
     roundNumber: isEdit ? (matchData?.roundNumber ?? null) : null,
   });
+
+  // Walkover (N7): el marcador lo fija el server (walkoverScore-0)
+  const isWalkover = values.status === "WALKOVER";
+  const walkoverScore = tournamentData.walkoverScore ?? 3;
 
   const update = (field: string, newValue: number | string | boolean) => {
     setValues((prev: MatchFormValues) => ({ ...prev, [field]: newValue }));
@@ -115,6 +123,17 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
 
     if (!values.awayTeamId) {
       toast.warning("Debe de cargar el equipo visitante");
+      return;
+    }
+
+    if (values.homeTeamId === values.awayTeamId) {
+      toast.warning("Un equipo no puede jugar contra sí mismo");
+      return;
+    }
+
+    // Walkover (N7): el organizador solo marca el ganador; el server fija el 3-0
+    if (isWalkover && !values.walkoverWinnerTeamId) {
+      toast.warning("Indicá el equipo ganador del walkover");
       return;
     }
 
@@ -555,6 +574,50 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                 />
               </div>
             </div>
+
+            {/* Walkover (N7): aparece al elegir estado WALKOVER */}
+            {isWalkover && (
+              <div className="mt-4 space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Label
+                  htmlFor="walkoverWinnerTeamId"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
+                >
+                  <Trophy className="w-4 h-4 text-[#ad45ff]" />
+                  Equipo ganador del walkover *
+                </Label>
+                <Select
+                  value={values.walkoverWinnerTeamId || ""}
+                  onValueChange={(v) => update("walkoverWinnerTeamId", v)}
+                  disabled={isLoading}
+                  name="walkoverWinnerTeamId"
+                >
+                  <SelectTrigger className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl h-12">
+                    <SelectValue placeholder="Selecciona el equipo que se presentó" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-0 shadow-xl">
+                    {tournamentData.tournamentTeams
+                      ?.filter(
+                        (t) =>
+                          t.id === values.homeTeamId ||
+                          t.id === values.awayTeamId,
+                      )
+                      .map((t) => (
+                        <SelectItem
+                          key={t.id}
+                          value={t.id}
+                          className="rounded-lg"
+                        >
+                          <span className="font-medium">{t?.team?.name}</span>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  El marcador se fija automáticamente a {walkoverScore}-0 a favor
+                  del ganador. No hace falta cargar goles.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sección: Resultado (solo en modo edición) */}
@@ -572,49 +635,61 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                 </Badge>
               </div>
 
-              {/* Marcador Normal */}
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="homeScore"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    Goles Local
-                  </Label>
-                  <Input
-                    type="number"
-                    id="homeScore"
-                    name="homeScore"
-                    placeholder="0"
-                    value={values.homeScore ?? ""}
-                    onChange={(e) =>
-                      update("homeScore", Number(e.target.value))
-                    }
-                    className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold"
-                  />
+              {/* Marcador Normal (oculto en walkover: lo fija el server) */}
+              {isWalkover ? (
+                <div className="mb-4 rounded-xl bg-white dark:bg-gray-800 border border-[#ad45ff]/30 p-4 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Walkover: el marcador se registra automáticamente como{" "}
+                    <span className="font-bold text-[#ad45ff]">
+                      {walkoverScore}-0
+                    </span>{" "}
+                    para el equipo ganador seleccionado arriba.
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="awayScore"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    Goles Visitante
-                  </Label>
-                  <Input
-                    type="number"
-                    id="awayScore"
-                    name="awayScore"
-                    placeholder="0"
-                    value={values.awayScore ?? ""}
-                    onChange={(e) =>
-                      update("awayScore", Number(e.target.value))
-                    }
-                    className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold"
-                  />
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="homeScore"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      Goles Local
+                    </Label>
+                    <Input
+                      type="number"
+                      id="homeScore"
+                      name="homeScore"
+                      placeholder="0"
+                      value={values.homeScore ?? ""}
+                      onChange={(e) =>
+                        update("homeScore", Number(e.target.value))
+                      }
+                      className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="awayScore"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      Goles Visitante
+                    </Label>
+                    <Input
+                      type="number"
+                      id="awayScore"
+                      name="awayScore"
+                      placeholder="0"
+                      value={values.awayScore ?? ""}
+                      onChange={(e) =>
+                        update("awayScore", Number(e.target.value))
+                      }
+                      className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Penales */}
               <div className="pt-4 border-t border-[#ad45ff]/20">

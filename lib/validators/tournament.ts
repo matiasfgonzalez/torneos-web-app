@@ -6,6 +6,7 @@ import {
   TournamentStatus,
 } from "@prisma/client";
 import { nullableString } from "./common";
+import { TIEBREAKER_CRITERIA } from "@/lib/standings/config";
 
 // Fechas date-only ("2025-07-01") se interpretan en hora local, no UTC,
 // para no correr el día por zona horaria
@@ -51,10 +52,16 @@ const tournamentBase = z.object({
   enabled: z.boolean(),
   rules: nullableString(20000),
   trophy: nullableString(500),
+  // Configuración deportiva (N7): puntaje, walkover y desempates
+  pointsWin: z.coerce.number().int().min(0).max(10),
+  pointsDraw: z.coerce.number().int().min(0).max(10),
+  pointsLoss: z.coerce.number().int().min(-10).max(10),
+  walkoverScore: z.coerce.number().int().min(0).max(20),
+  tiebreakers: z.array(z.enum(TIEBREAKER_CRITERIA)).min(1).max(5),
 });
 
-// status/enabled se fijan server-side al crear; ageGroup/gender tienen
-// default en Prisma (LIBRE/MASCULINO)
+// status/enabled se fijan server-side al crear; ageGroup/gender y la config
+// deportiva tienen default en Prisma (LIBRE/MASCULINO/3-1-0)
 export const tournamentCreateSchema = tournamentBase
   .omit({ status: true, enabled: true })
   .partial({
@@ -70,6 +77,11 @@ export const tournamentCreateSchema = tournamentBase
     endDate: true,
     rules: true,
     trophy: true,
+    pointsWin: true,
+    pointsDraw: true,
+    pointsLoss: true,
+    walkoverScore: true,
+    tiebreakers: true,
   });
 
 export const tournamentUpdateSchema = tournamentBase.partial();

@@ -162,6 +162,7 @@ export default function TabsTournament({
             tournamentTeams={associations}
             matches={(tournamentData.matches || []) as IMatch[]}
             tournamentFormat={tournamentData.format}
+            tiebreakers={tournamentData.tiebreakers}
           />
         </TabsContent>
 

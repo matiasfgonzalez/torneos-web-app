@@ -32,6 +32,7 @@ import {
   hasMultipleGroups,
   getPhaseTypeName,
 } from "@/lib/standings/phase-utils";
+import { makeStandingsComparator } from "@/lib/standings/config";
 
 interface TeamStandingRow {
   id: string;
@@ -63,6 +64,8 @@ interface StandingsTableProps {
   variant?: "public" | "admin";
   title?: string;
   description?: string;
+  /** Orden de desempate del torneo (N7). undefined → orden por defecto. */
+  tiebreakers?: unknown;
 }
 
 /**
@@ -79,6 +82,7 @@ export function StandingsTable({
   variant = "public",
   title = "Tabla de Posiciones",
   description = "Clasificación actual del torneo",
+  tiebreakers,
 }: Readonly<StandingsTableProps>) {
   const [selectedPhase, setSelectedPhase] = useState<string>("all");
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
@@ -178,21 +182,15 @@ export function StandingsTable({
       data = data.filter((team) => team.group === selectedGroup);
     }
 
-    // Ordenar
-    return data.sort((a, b) => {
-      if (a.points !== b.points) return b.points - a.points;
-      if (a.goalDifference !== b.goalDifference)
-        return b.goalDifference - a.goalDifference;
-      if (a.wins !== b.wins) return b.wins - a.wins;
-      return b.goalsFor - a.goalsFor;
-    });
-  }, [tournamentTeams, selectedPhase, selectedGroup]);
+    // Ordenar según los criterios de desempate del torneo (N7)
+    return data.sort(makeStandingsComparator(tiebreakers));
+  }, [tournamentTeams, selectedPhase, selectedGroup, tiebreakers]);
 
   // Agrupar standings por grupo para visualización separada
   const standingsByGroup = useMemo(() => {
     if (!multipleGroups || selectedGroup !== "all") return null;
-    return groupTeamsByGroup(standings);
-  }, [standings, multipleGroups, selectedGroup]);
+    return groupTeamsByGroup(standings, tiebreakers);
+  }, [standings, multipleGroups, selectedGroup, tiebreakers]);
 
   // Componente de tabla reutilizable
   const renderTable = (rows: TeamStandingRow[], showGroupColumn = false) => (

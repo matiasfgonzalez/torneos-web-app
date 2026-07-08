@@ -4,6 +4,7 @@ import {
   applyMatchResult,
   extractMatchResult,
 } from "@/lib/standings/calculate-standings";
+import { resolveWalkover } from "@/lib/standings/walkover";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -22,6 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     }
 
     // 📌 Obtener estado anterior del partido ANTES de actualizar
+    // (incluye la config deportiva del torneo: puntos + walkoverScore, N7)
     const previousMatch = await db.match.findUnique({
       where: { id },
       select: {
@@ -31,7 +33,16 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         awayScore: true,
         status: true,
         tournamentPhaseId: true,
-        tournament: { select: { organizationId: true } },
+        walkoverWinnerTeamId: true,
+        tournament: {
+          select: {
+            organizationId: true,
+            pointsWin: true,
+            pointsDraw: true,
+            pointsLoss: true,
+            walkoverScore: true,
+          },
+        },
       },
     });
 
@@ -58,42 +69,44 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       return validationErrorResponse(parsed.error);
     }
 
-    // Regla WALKOVER: computa como partido finalizado, requiere marcador
-    // cargado (ej. 3-0 al ganador según decisión de negocio)
-    const effectiveStatus = parsed.data.status ?? previousMatch.status;
-    const effectiveHomeScore =
-      parsed.data.homeScore === undefined
-        ? previousMatch.homeScore
-        : parsed.data.homeScore;
-    const effectiveAwayScore =
-      parsed.data.awayScore === undefined
-        ? previousMatch.awayScore
-        : parsed.data.awayScore;
+    const data = { ...parsed.data };
 
-    if (
-      effectiveStatus === "WALKOVER" &&
-      (effectiveHomeScore === null || effectiveAwayScore === null)
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Un WALKOVER requiere marcador cargado (ej. 3-0 a favor del equipo ganador)",
-        },
-        { status: 400 },
-      );
+    // Regla WALKOVER (N7): el organizador marca el ganador y el server fija
+    // el marcador (walkoverScore-0). Se usan los valores efectivos porque el
+    // update puede no reenviar equipos ni ganador.
+    const effectiveStatus = data.status ?? previousMatch.status;
+    if (effectiveStatus === "WALKOVER") {
+      const wo = resolveWalkover({
+        status: effectiveStatus,
+        walkoverWinnerTeamId:
+          data.walkoverWinnerTeamId ?? previousMatch.walkoverWinnerTeamId,
+        homeTeamId: data.homeTeamId ?? previousMatch.homeTeamId,
+        awayTeamId: data.awayTeamId ?? previousMatch.awayTeamId,
+        walkoverScore: previousMatch.tournament.walkoverScore,
+      });
+      if (!wo.ok) {
+        return NextResponse.json({ error: wo.error }, { status: 400 });
+      }
+      data.homeScore = wo.homeScore;
+      data.awayScore = wo.awayScore;
     }
 
     // 📌 Actualizar partido + tabla de posiciones en una única transacción
     const updatedMatch = await db.$transaction(async (tx) => {
       const updated = await tx.match.update({
         where: { id },
-        data: parsed.data,
+        data,
       });
 
       await applyMatchResult(
         tx,
         extractMatchResult(previousMatch),
         extractMatchResult(updated),
+        {
+          pointsWin: previousMatch.tournament.pointsWin,
+          pointsDraw: previousMatch.tournament.pointsDraw,
+          pointsLoss: previousMatch.tournament.pointsLoss,
+        },
       );
 
       return updated;

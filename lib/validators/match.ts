@@ -17,6 +17,8 @@ const matchBase = z.object({
   penaltyWinnerTeamId: nullableString(64),
   penaltyScoreHome: nullableInt(0, 99),
   penaltyScoreAway: nullableInt(0, 99),
+  // WALKOVER (N7): el organizador marca el ganador; el server fija el marcador
+  walkoverWinnerTeamId: nullableString(64),
   roundNumber: nullableInt(1, 999),
 });
 
@@ -31,6 +33,7 @@ export const matchCreateSchema = matchBase.partial({
   penaltyWinnerTeamId: true,
   penaltyScoreHome: true,
   penaltyScoreAway: true,
+  walkoverWinnerTeamId: true,
   roundNumber: true,
 });
 

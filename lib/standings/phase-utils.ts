@@ -2,6 +2,8 @@
  * Utilidades para determinar tipos de fases y si suman puntos
  */
 
+import { makeStandingsComparator } from "./config";
+
 /**
  * Tipos de fase del modelo TournamentPhase
  * - GROUP: Fase de grupos (suma puntos)
@@ -148,9 +150,16 @@ export function getTournamentDisplayType(
 /**
  * Agrupa equipos por su grupo asignado
  */
-export function groupTeamsByGroup<T extends { group?: string | null }>(
-  teams: T[],
-): Map<string, T[]> {
+export function groupTeamsByGroup<
+  T extends {
+    group?: string | null;
+    points: number;
+    goalDifference: number;
+    goalsFor: number;
+    goalsAgainst: number;
+    wins: number;
+  },
+>(teams: T[], tiebreakers?: unknown): Map<string, T[]> {
   const groups = new Map<string, T[]>();
 
   teams.forEach((team) => {
@@ -160,16 +169,10 @@ export function groupTeamsByGroup<T extends { group?: string | null }>(
     groups.set(groupName, groupTeams);
   });
 
-  // Ordenar cada grupo internamente (asumiendo que tienen stats)
+  // Ordenar cada grupo con los criterios de desempate del torneo (N7)
+  const comparator = makeStandingsComparator<T>(tiebreakers);
   groups.forEach((groupTeams, groupName) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sortedTeams = [...groupTeams].sort((a: any, b: any) => {
-      if (a.points !== b.points) return (b.points || 0) - (a.points || 0);
-      if (a.goalDifference !== b.goalDifference)
-        return (b.goalDifference || 0) - (a.goalDifference || 0);
-      return (b.goalsFor || 0) - (a.goalsFor || 0);
-    });
-    groups.set(groupName, sortedTeams);
+    groups.set(groupName, [...groupTeams].sort(comparator));
   });
 
   return groups;

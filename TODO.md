@@ -101,7 +101,7 @@
   ```
   (pasar `tx` a `applyStatsToTeam` en lugar de `db`).
 - **Esfuerzo:** E:Medio · **Beneficio:** La tabla de posiciones —el corazón del producto— pasa a ser confiable.
-- **Implementado (2026-07-04):** `applyMatchResult(tx, prev, new)` ahora exige cliente de transacción; match POST/PATCH y goles (add/delete) corren mutación+standings en `db.$transaction`. Selects incluyen `tournamentPhaseId`. Recálculo en transacción única (timeout 30s): resetea `TournamentTeam` **y** `TeamPhaseStats` vía `updateMany` (conserva `bonusPoints` manuales) e incluye WALKOVER. Fases KNOCKOUT ya no suman a la tabla general (`phaseTypeCountsPoints`), solo a `TeamPhaseStats`. WALKOVER computa como finalizado; el server exige marcador cargado (400 si falta) — el selector de ganador con 3-0 automático en UI queda para el rediseño admin (F3/M12).
+- **Implementado (2026-07-04):** `applyMatchResult(tx, prev, new)` ahora exige cliente de transacción; match POST/PATCH y goles (add/delete) corren mutación+standings en `db.$transaction`. Selects incluyen `tournamentPhaseId`. Recálculo en transacción única (timeout 30s): resetea `TournamentTeam` **y** `TeamPhaseStats` vía `updateMany` (conserva `bonusPoints` manuales) e incluye WALKOVER. Fases KNOCKOUT ya no suman a la tabla general (`phaseTypeCountsPoints`), solo a `TeamPhaseStats`. WALKOVER computa como finalizado. **✅ Cerrado del todo en N7 (2026-07-08):** el server ya no exige marcador manual — el organizador marca el equipo ganador y `resolveWalkover` fija `walkoverScore`-0 automáticamente; el diálogo de partido muestra el selector de ganador al elegir estado WALKOVER.
 - **Pendiente del ítem 5 (stats manuales vía tournament-teams):** sin cambios, sigue abierto.
 
 ### C7. Autorización sin ownership + borrado físico en cascada
@@ -587,11 +587,14 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
   - CTAs en landing: "Creá tu liga gratis" (hero + CTA final) + pricing con los 3 planes reales + FAQ.
   - El registro común queda como está (USUARIO): puede seguir torneos y ver todo lo público; el upsell a crear liga está en la landing y en `/crear-liga`.
 
-#### N7. 🟠 Configuración deportiva por torneo (E:Medio)
+#### N7. 🟠 Configuración deportiva por torneo (E:Medio) — cierra WALKOVER de C6
 
-- [ ] **Qué:** sacar las reglas hardcodeadas del código y llevarlas al torneo.
-  - `Tournament`: `pointsWin Int @default(3)`, `pointsDraw Int @default(1)`, `pointsLoss Int @default(0)`, `tiebreakers Json` (orden de criterios: PTS, DIF, GF, H2H, FairPlay, Sorteo), `walkoverScore Int @default(3)`.
-  - `Match`: `walkoverWinnerTeamId String?` — el organizador marca el ganador y el server fija el marcador automáticamente (cierra el pendiente de C6; la UI deja de exigir cargar 3-0 a mano).
+> ✅ **Implementado (2026-07-08):** **Schema** (migración `20260708120000_configuracion_deportiva`, aplicada a la BD): `Tournament.pointsWin/pointsDraw/pointsLoss` (3-1-0 default), `walkoverScore` (3 default), `tiebreakers Json?`; `Match.walkoverWinnerTeamId` con relación a TournamentTeam. **Módulo nuevo [lib/standings/config.ts](lib/standings/config.ts):** `PointsConfig`, criterios de desempate `PTS/DIF/GF/GA/WINS`, `normalizeTiebreakers` (PTS siempre primero, filtra basura) y `makeStandingsComparator` (comparador único de tabla). **Standings:** `calculateTeamStats` recibe los puntos del torneo en vez de 3-1-0 fijo; `applyMatchResult`/`recalculateTournamentStandings` propagan la config (recálculo lee los puntos del torneo). **Sort unificado:** `StandingsTable` y `groupTeamsByGroup` usan el comparador con los `tiebreakers` del torneo, enhebrados desde las páginas pública y admin. **WALKOVER (cierra C6):** [lib/standings/walkover.ts](lib/standings/walkover.ts) `resolveWalkover` — el organizador solo marca el ganador y el server fija `walkoverScore`-0 (POST y PATCH de `/api/matches`); ya no se carga el 3-0 a mano. **UI:** sección "Configuración deportiva" en el form de torneo (puntos, walkoverScore, preset de desempate) y en el diálogo de partido un selector de ganador que aparece al elegir estado WALKOVER (oculta el marcador manual y explica el auto 3-0); validación extra "un equipo no puede jugar contra sí mismo". **Tests:** +14 (config + walkover), 35 en total ✅. Build ✅, tsc ✅, lint ✅.
+> **Pendientes/siguientes:** (1) H2H (head-to-head) y FairPlay como criterios de desempate — el vocabulario los contempla pero requieren cruzar partidos/tarjetas; FairPlay llega con N8. (2) UI de tiebreakers hoy es un preset de 3 opciones; un reordenamiento libre (drag) queda para F3. (3) el marcador de walkover no distingue ida/vuelta.
+
+- [x] **Qué:** sacar las reglas hardcodeadas del código y llevarlas al torneo.
+  - `Tournament`: `pointsWin`/`pointsDraw`/`pointsLoss`, `tiebreakers Json` (orden de criterios: PTS, DIF, GF, GA, WINS; H2H/FairPlay pendientes), `walkoverScore`.
+  - `Match.walkoverWinnerTeamId`: el organizador marca el ganador y el server fija el marcador automáticamente (cierra el pendiente de C6; la UI deja de exigir cargar 3-0 a mano).
   - `calculateTeamStats` recibe la config del torneo en vez de 3-1-0 fijo; el orden de la tabla usa `tiebreakers`.
   - Esto habilita multi-deporte después (S10): básquet/vóley solo cambian puntos y desempates.
 
@@ -641,7 +644,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 | 2 | A1, A2, A4, A5, A7, A10 | Base de código única y honesta |
 | 3 | A3, A6 + M13 + **N1 + N2 + N3 + N11** en una sola migración, A8 (tests de standings + CI) | Multi-tenant real: roles correctos, organizaciones, datos privados por liga |
 | 4 | ✅ **N4 + N5 + N6** (planes, pagos manuales, onboarding "Creá tu liga") + N9 | Modelo de negocio operativo: se puede cobrar |
-| 5 | F0 + M6 + M10 (design system) + **N7** | Fundaciones visuales + reglas deportivas configurables |
+| 5 | F0 + M6 + M10 (design system) + ✅ **N7** | Fundaciones visuales + reglas deportivas configurables |
 | 6 | F2 + F3 (rediseño público y admin) + M2, M7 + **N10** | UI nivel SaaS con las vistas por rol completas |
 | 7 | M3, M4, M8, M9, M11, M12 + F4 + **N8** | Pulido enterprise + sanciones automáticas |
 | 8+ | S1 (fixture) → S3 (inscripciones) → S4/S5 → Mercado Pago → **N12** | Diferenciación de producto |

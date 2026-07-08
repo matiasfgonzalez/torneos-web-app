@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { MatchStatus, Prisma } from "@prisma/client";
 import { MatchResult, extractMatchResult } from "./utils";
 import { phaseTypeCountsPoints } from "./phase-utils";
+import { DEFAULT_POINTS, PointsConfig } from "./config";
 
 // Re-exportar para compatibilidad con código existente que importa desde aquí
 export { extractMatchResult };
@@ -28,14 +29,16 @@ interface TeamStatsUpdate {
 }
 
 /**
- * Calcula las estadísticas de un equipo basado en un resultado
+ * Calcula las estadísticas de un equipo basado en un resultado.
  * @param teamScore - Goles del equipo
  * @param opponentScore - Goles del oponente
+ * @param points - Puntos por victoria/empate/derrota del torneo (N7)
  * @returns Estadísticas calculadas
  */
 function calculateTeamStats(
   teamScore: number,
   opponentScore: number,
+  points: PointsConfig,
 ): TeamStatsUpdate {
   const isWin = teamScore > opponentScore;
   const isDraw = teamScore === opponentScore;
@@ -49,7 +52,11 @@ function calculateTeamStats(
     goalsFor: teamScore,
     goalsAgainst: opponentScore,
     goalDifference: teamScore - opponentScore,
-    points: isWin ? 3 : isDraw ? 1 : 0,
+    points: isWin
+      ? points.pointsWin
+      : isDraw
+        ? points.pointsDraw
+        : points.pointsLoss,
   };
 }
 
@@ -171,6 +178,7 @@ async function applyResultDelta(
   tx: DbClient,
   result: MatchResult,
   sign: 1 | -1,
+  points: PointsConfig,
 ): Promise<void> {
   const countsForGlobal = await phaseCountsForGlobal(
     tx,
@@ -178,11 +186,11 @@ async function applyResultDelta(
   );
 
   const homeStats = scaleStats(
-    calculateTeamStats(result.homeScore!, result.awayScore!),
+    calculateTeamStats(result.homeScore!, result.awayScore!, points),
     sign,
   );
   const awayStats = scaleStats(
-    calculateTeamStats(result.awayScore!, result.homeScore!),
+    calculateTeamStats(result.awayScore!, result.homeScore!, points),
     sign,
   );
 
@@ -212,18 +220,20 @@ async function applyResultDelta(
  * @param tx - Cliente de transacción de Prisma
  * @param previousResult - Estado anterior del partido (null si es nuevo)
  * @param newResult - Nuevo estado del partido
+ * @param points - Puntos por resultado del torneo (N7). Por defecto 3-1-0.
  */
 export async function applyMatchResult(
   tx: DbClient,
   previousResult: MatchResult | null,
   newResult: MatchResult,
+  points: PointsConfig = DEFAULT_POINTS,
 ): Promise<void> {
   if (previousResult && isCountableResult(previousResult)) {
-    await applyResultDelta(tx, previousResult, -1);
+    await applyResultDelta(tx, previousResult, -1, points);
   }
 
   if (isCountableResult(newResult)) {
-    await applyResultDelta(tx, newResult, 1);
+    await applyResultDelta(tx, newResult, 1, points);
   }
 }
 
@@ -239,6 +249,13 @@ export async function recalculateTournamentStandings(
 ): Promise<void> {
   await db.$transaction(
     async (tx) => {
+      // 0. Leer la configuración de puntos del torneo (N7)
+      const tournament = await tx.tournament.findUnique({
+        where: { id: tournamentId },
+        select: { pointsWin: true, pointsDraw: true, pointsLoss: true },
+      });
+      const points: PointsConfig = tournament ?? DEFAULT_POINTS;
+
       const resetStats = {
         matchesPlayed: 0,
         wins: 0,
@@ -281,9 +298,9 @@ export async function recalculateTournamentStandings(
         },
       });
 
-      // 4. Aplicar cada partido
+      // 4. Aplicar cada partido con los puntos configurados del torneo
       for (const match of matches) {
-        await applyMatchResult(tx, null, extractMatchResult(match));
+        await applyMatchResult(tx, null, extractMatchResult(match), points);
       }
     },
     { timeout: 30000 },

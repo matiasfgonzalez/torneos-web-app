@@ -157,6 +157,7 @@ export interface IPartidos {
   penaltyWinnerTeamId?: string | null;
   penaltyScoreHome?: number | null;
   penaltyScoreAway?: number | null;
+  walkoverWinnerTeamId?: string | null;
   roundNumber: number;
   tournamentPhaseId?: string | null;
   createdAt: string;

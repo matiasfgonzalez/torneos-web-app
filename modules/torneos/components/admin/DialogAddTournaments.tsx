@@ -90,6 +90,12 @@ const tournamentSchema = z
       .string()
       .max(500, "La descripción del premio no puede superar los 500 caracteres")
       .optional(),
+    // Configuración deportiva (N7)
+    pointsWin: z.number().int().min(0).max(10),
+    pointsDraw: z.number().int().min(0).max(10),
+    pointsLoss: z.number().int().min(-10).max(10),
+    walkoverScore: z.number().int().min(0).max(20),
+    tiebreakerPreset: z.string(),
   })
   .refine(
     (data) => {
@@ -122,6 +128,38 @@ interface PropsDialogAddTournaments {
   tournament?: ITorneo;
 }
 
+// Presets de desempate (N7). El orden de criterios se guarda como array en
+// Tournament.tiebreakers; acá se expone como opciones legibles.
+const TIEBREAKER_PRESETS: Record<
+  string,
+  { label: string; value: ("PTS" | "DIF" | "GF" | "GA" | "WINS")[] }
+> = {
+  DIF_FIRST: {
+    label: "Diferencia de gol, luego goles a favor (estándar)",
+    value: ["PTS", "DIF", "GF", "WINS"],
+  },
+  GF_FIRST: {
+    label: "Goles a favor, luego diferencia",
+    value: ["PTS", "GF", "DIF", "WINS"],
+  },
+  WINS_FIRST: {
+    label: "Partidos ganados primero",
+    value: ["PTS", "WINS", "DIF", "GF"],
+  },
+};
+
+// Deriva el preset a partir del array guardado (o el default si no coincide)
+const presetFromTiebreakers = (tiebreakers: unknown): string => {
+  if (Array.isArray(tiebreakers)) {
+    const serialized = JSON.stringify(tiebreakers);
+    const match = Object.entries(TIEBREAKER_PRESETS).find(
+      ([, preset]) => JSON.stringify(preset.value) === serialized,
+    );
+    if (match) return match[0];
+  }
+  return "DIF_FIRST";
+};
+
 // Función helper para formatear fechas
 const formatDateForAPI = (date: Date | undefined): string | undefined => {
   return date ? date.toISOString().split("T")[0] : undefined;
@@ -136,11 +174,16 @@ const useSubmitTournament = (isEditMode: boolean, tournament?: ITorneo) => {
     try {
       setIsLoading(true);
 
+      const { tiebreakerPreset, ...rest } = data;
       const payload = {
-        ...data,
+        ...rest,
         startDate: formatDateForAPI(data.startDate),
         endDate: formatDateForAPI(data.endDate),
         nextMatch: data.nextMatch ? data.nextMatch.toISOString() : undefined,
+        // Preset → array de criterios de desempate (N7)
+        tiebreakers: (
+          TIEBREAKER_PRESETS[tiebreakerPreset] ?? TIEBREAKER_PRESETS.DIF_FIRST
+        ).value,
       };
 
       const method = isEditMode ? "PATCH" : "POST";
@@ -238,6 +281,14 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       enabled: isEditMode ? (tournament?.enabled ?? true) : true,
       rules: isEditMode ? tournament?.rules || "" : "",
       trophy: isEditMode ? tournament?.trophy || "" : "",
+      // Configuración deportiva (N7)
+      pointsWin: isEditMode ? (tournament?.pointsWin ?? 3) : 3,
+      pointsDraw: isEditMode ? (tournament?.pointsDraw ?? 1) : 1,
+      pointsLoss: isEditMode ? (tournament?.pointsLoss ?? 0) : 0,
+      walkoverScore: isEditMode ? (tournament?.walkoverScore ?? 3) : 3,
+      tiebreakerPreset: isEditMode
+        ? presetFromTiebreakers(tournament?.tiebreakers)
+        : "DIF_FIRST",
     },
   });
 
@@ -609,6 +660,161 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 </FormItem>
               )}
             />
+
+            {/* Sección: Configuración deportiva (N7) */}
+            <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Configuración deportiva
+                </FormLabel>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
+                Puntaje y desempates de la tabla de posiciones.
+              </p>
+
+              {/* Puntos por resultado */}
+              <div className="grid grid-cols-3 gap-3">
+                <FormField
+                  control={form.control}
+                  name="pointsWin"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Puntos por victoria
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={10}
+                          value={field.value}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                          disabled={isLoading}
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pointsDraw"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Puntos por empate
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={10}
+                          value={field.value}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                          disabled={isLoading}
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pointsLoss"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Puntos por derrota
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={-10}
+                          max={10}
+                          value={field.value}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                          disabled={isLoading}
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Marcador de walkover */}
+                <FormField
+                  control={form.control}
+                  name="walkoverScore"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Goles en walkover (al ganador)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={20}
+                          value={field.value}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                          disabled={isLoading}
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Preset de desempate */}
+                <FormField
+                  control={form.control}
+                  name="tiebreakerPreset"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Criterio de desempate
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={isLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl">
+                            <SelectValue placeholder="Criterio de desempate" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                          {Object.entries(TIEBREAKER_PRESETS).map(
+                            ([key, preset]) => (
+                              <SelectItem key={key} value={key}>
+                                {preset.label}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             {/* Campo: Estado del Torneo (Select) */}
             <FormField

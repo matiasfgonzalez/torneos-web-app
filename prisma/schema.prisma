@@ -317,6 +317,17 @@ model Tournament {
   trophy       String?
   deletedAt    DateTime?
 
+  // Configuración deportiva (N7): reglas de puntaje y desempate por torneo.
+  // Habilita multi-deporte a futuro (básquet/vóley solo cambian estos valores).
+  pointsWin     Int  @default(3)
+  pointsDraw    Int  @default(1)
+  pointsLoss    Int  @default(0)
+  // Marcador que se asigna al ganador en un WALKOVER (perdedor 0)
+  walkoverScore Int  @default(3)
+  // Orden de criterios de desempate. Array de códigos: PTS, DIF, GF, GA, WINS.
+  // null = orden por defecto ["PTS","DIF","GF","WINS"].
+  tiebreakers   Json?
+
   startDate DateTime
   endDate   DateTime?
 
@@ -508,6 +519,11 @@ model Match {
   penaltyScoreHome    Int?
   penaltyScoreAway    Int?
 
+  // WALKOVER (N7): el organizador marca el ganador y el server fija el
+  // marcador (walkoverScore-0). status pasa a WALKOVER automáticamente.
+  walkoverWinnerTeamId String?
+  walkoverWinnerTeam   TournamentTeam? @relation("WalkoverWinner", fields: [walkoverWinnerTeamId], references: [id])
+
   roundNumber Int?
 
   tournamentPhaseId String?
@@ -607,9 +623,10 @@ model TournamentTeam {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  homeMatches Match[] @relation("HomeMatches")
-  awayMatches Match[] @relation("AwayMatches")
-  penaltyWins Match[] @relation("PenaltyWinner")
+  homeMatches  Match[] @relation("HomeMatches")
+  awayMatches  Match[] @relation("AwayMatches")
+  penaltyWins  Match[] @relation("PenaltyWinner")
+  walkoverWins Match[] @relation("WalkoverWinner")
 
   teamPlayer TeamPlayer[]
   phaseStats TeamPhaseStats[]

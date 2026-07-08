@@ -226,6 +226,7 @@ export default async function TournamentDetailPage({
               }
               matches={(tournamentData.matches || []) as IMatch[]}
               tournamentFormat={tournamentData.format}
+              tiebreakers={tournamentData.tiebreakers}
             />
           </TabsContent>
 
