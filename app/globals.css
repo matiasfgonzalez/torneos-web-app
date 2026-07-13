@@ -153,6 +153,23 @@
     scroll-behavior: smooth;
   }
 
+  /* Accesibilidad (F1): usuarios con prefers-reduced-motion no reciben
+     animaciones decorativas (pulse de blobs/badges, float de partículas,
+     transiciones largas) ni smooth scroll. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;

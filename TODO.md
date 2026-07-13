@@ -388,7 +388,14 @@
 
 ### F1. Landing (retoques menores, E:Bajo)
 
-- [ ] Ya es la referencia. Solo: reemplazar `<img>` por `next/image`, revisar contraste AA de textos sobre glow, `prefers-reduced-motion`, y comprimir imágenes hero. Lazy-load de secciones bajo el fold con `next/dynamic` si el bundle lo amerita.
+> ✅ **Completado (2026-07-13).** Hallazgo central: las 5 `<img>` de la landing eran **hotlinks a sitios de terceros** con logos de marcas/clubes reales (Nike, Adidas, McDonald's, AFA, escudos de la federación entrerriana) que la CSP de C9 (`img-src`) **ya bloqueaba** — se veían rotas en cualquier entorno además del problema legal y de fiabilidad. La solución no fue `next/image` sino eliminar las imágenes externas:
+> - **Hero:** los 3 escudos de la tabla de demostración → `next/image` con las copias **locales** que ya existían en [public/escudos/](public/escudos/) (`'self'` permitido por la CSP), data extraída a `DEMO_STANDINGS`; el emoji 🏆 del header de la card → ícono `Trophy` de Lucide (regla AGENT_RULES). [hero-section.tsx](components/sections/hero-section.tsx)
+> - **Sponsors:** marcas reales → **marcas ficticias** como logos tipográficos con el gradiente `color` que ya traía la data (sin imágenes); sponsor destacado → monograma "MS". Documentado en [lib/constants/sponsors.ts](lib/constants/sponsors.ts): cuando haya sponsors reales, subir assets a Cloudinary y volver a `next/image`. ⚠️ Decisión de contenido tomada por defecto razonable (las imágenes estaban rotas y eran marcas ajenas) — cambiar los nombres ficticios es editar solo ese archivo.
+> - **`prefers-reduced-motion`** global en [globals.css](app/globals.css): anula animaciones/transiciones/smooth-scroll para quienes lo piden (cubre pulse de blobs, float de partículas, etc. en toda la app, no solo landing); los `animate-pulse` decorativos de las secciones tocadas pasaron además a `motion-safe:animate-pulse`.
+> - **Contraste AA:** `text-white/80` en texto chico sobre gradiente de marca (garantías del CTA final, cite del sponsor) → blanco pleno; `text-green-600` sobre verde claro del badge "En Vivo" → `text-green-700` claro / `-400` oscuro.
+> - **Tokens:** las clases de marca de los archivos tocados (hero, sponsors, cta) migradas a `from-brand`/`text-brand`/`shadow-brand` (regla F0); el svg de subrayado usa `var(--brand)`.
+> - **No se hizo (justificado):** lazy-load con `next/dynamic` — las 8 secciones son server components sin JS de cliente propio, no hay bundle que diferir; "comprimir imágenes hero" — ya no quedan imágenes en la landing.
+> - Verificado: `tsc` limpio, lint sin errores nuevos, `next build` en verde, smoke en dev (`/` 200 sin `<img>` externas, avatares e iniciales renderizados).
 
 ### F2. Páginas públicas (E:Alto)
 

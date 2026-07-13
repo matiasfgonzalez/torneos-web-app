@@ -11,7 +11,7 @@ export function SponsorsSection() {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #ad45ff 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--brand) 1px, transparent 0)`,
             backgroundSize: "40px 40px",
           }}
         />
@@ -20,7 +20,7 @@ export function SponsorsSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#ad45ff] mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand mb-4">
             Nuestros partners
           </p>
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
@@ -32,20 +32,17 @@ export function SponsorsSection() {
           </p>
         </div>
 
-        {/* Grid de patrocinadores con diseño premium */}
+        {/* Grid de patrocinadores — logos tipográficos (F1): las marcas son
+            de demostración, sin imágenes externas (ver lib/constants/sponsors.ts) */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-20">
-          {SPONSORS.map((sponsor, index) => (
-            <div
-              key={sponsor.id}
-              className="group relative"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="relative flex items-center justify-center p-8 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/30 dark:hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:shadow-[#ad45ff]/5 hover:-translate-y-1">
-                <img
-                  src={sponsor.logo || "/placeholder.svg"}
-                  alt={sponsor.name}
-                  className="h-12 w-auto object-contain grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-300"
-                />
+          {SPONSORS.map((sponsor) => (
+            <div key={sponsor.id} className="group relative">
+              <div className="relative flex items-center justify-center h-28 p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-brand/30 dark:hover:border-brand/30 transition-all duration-300 hover:shadow-xl hover:shadow-brand/5 hover:-translate-y-1">
+                <span
+                  className={`text-lg font-extrabold tracking-tight bg-gradient-to-r ${sponsor.color} bg-clip-text text-transparent grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-300 text-center`}
+                >
+                  {sponsor.name}
+                </span>
               </div>
             </div>
           ))}
@@ -54,9 +51,9 @@ export function SponsorsSection() {
         {/* Patrocinador destacado con diseño premium */}
         <div className="relative mb-20">
           {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-3xl blur-2xl transform scale-95" />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand/20 to-brand-2/20 rounded-3xl blur-2xl transform scale-95" />
 
-          <div className="relative bg-gradient-to-br from-[#ad45ff] via-[#9a4dff] to-[#a3b3ff] rounded-3xl p-12 text-white overflow-hidden">
+          <div className="relative bg-gradient-to-br from-brand via-[#9a4dff] to-brand-2 rounded-3xl p-12 text-white overflow-hidden">
             {/* Patrón decorativo */}
             <div className="absolute inset-0 opacity-10">
               <div
@@ -68,21 +65,25 @@ export function SponsorsSection() {
             </div>
 
             <div className="relative flex flex-col lg:flex-row items-center gap-12">
-              {/* Logo del sponsor */}
+              {/* Monograma del sponsor (F1: sin imagen externa) */}
               <div className="flex-shrink-0">
-                <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center p-4">
-                  <img
-                    src={featuredSponsor.logo || "/placeholder.svg"}
-                    alt="Patrocinador Principal"
-                    className="w-full h-full object-contain"
-                  />
+                <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-4">
+                  <span
+                    aria-hidden="true"
+                    className="text-4xl font-extrabold text-white"
+                  >
+                    {featuredSponsor.initials}
+                  </span>
+                  <span className="text-xs font-semibold text-white uppercase tracking-widest mt-1">
+                    {featuredSponsor.name}
+                  </span>
                 </div>
               </div>
 
               {/* Contenido */}
               <div className="flex-1 text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1 text-sm font-medium mb-4">
-                  <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                  <span className="w-2 h-2 bg-white rounded-full motion-safe:animate-pulse"></span>
                   Patrocinador Principal
                 </div>
                 <blockquote className="text-2xl font-medium mb-6 leading-relaxed">
@@ -91,7 +92,7 @@ export function SponsorsSection() {
                   completa y nos ha ayudado a crear experiencias deportivas
                   excepcionales.&rdquo;
                 </blockquote>
-                <cite className="text-white/80 font-medium">
+                <cite className="text-white font-medium">
                   — María González, Directora de Marketing Deportivo
                 </cite>
               </div>
@@ -101,10 +102,10 @@ export function SponsorsSection() {
 
         {/* Become a Sponsor CTA */}
         <div className="relative">
-          <div className="relative bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed border-[#ad45ff]/30 p-12 text-center">
+          <div className="relative bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed border-brand/30 p-12 text-center">
             {/* Icono decorativo */}
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-2xl mb-6">
-              <Handshake className="w-8 h-8 text-[#ad45ff]" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-2xl mb-6">
+              <Handshake className="w-8 h-8 text-brand" />
             </div>
 
             <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -117,7 +118,7 @@ export function SponsorsSection() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <GradientButton
                 size="lg"
-                className="shadow-lg shadow-[#ad45ff]/25"
+                className="shadow-lg shadow-brand/25"
               >
                 Solicitar información
                 <ArrowRight className="w-5 h-5 ml-2" />

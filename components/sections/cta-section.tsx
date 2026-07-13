@@ -5,7 +5,7 @@ export function CTASection() {
   return (
     <section className="relative py-32 overflow-hidden">
       {/* Background con gradiente premium */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff] via-[#9a4dff] to-[#a3b3ff]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-brand via-[#9a4dff] to-brand-2" />
 
       {/* Patrón decorativo overlay */}
       <div className="absolute inset-0 opacity-10">
@@ -61,7 +61,7 @@ export function CTASection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/crear-liga"
-            className="inline-flex items-center justify-center bg-white text-[#ad45ff] hover:bg-gray-50 shadow-2xl px-8 py-4 text-lg font-semibold rounded-xl hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/70"
+            className="inline-flex items-center justify-center bg-white text-brand hover:bg-gray-50 shadow-2xl px-8 py-4 text-lg font-semibold rounded-xl hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/70"
           >
             <Trophy className="w-5 h-5 mr-2" />
             Creá tu liga gratis
@@ -78,38 +78,28 @@ export function CTASection() {
 
         {/* Garantías */}
         <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8 border-t border-white/20">
-          <div className="flex items-center gap-2 text-white/80">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-sm font-medium">
-              Plan gratis para siempre
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-white/80">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-sm font-medium">Sin tarjeta de crédito</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/80">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-sm font-medium">Cancela cuando quieras</span>
-          </div>
+          {/* texto chico sobre gradiente de marca: blanco pleno (AA), no white/80 */}
+          {[
+            "Plan gratis para siempre",
+            "Sin tarjeta de crédito",
+            "Cancela cuando quieras",
+          ].map((garantia) => (
+            <div key={garantia} className="flex items-center gap-2 text-white">
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-sm font-medium">{garantia}</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>
