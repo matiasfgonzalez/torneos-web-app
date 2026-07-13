@@ -2,38 +2,15 @@
 import Link from "next/link";
 import { ITorneo } from "@modules/torneos/types";
 import { TabsContent } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Search, Clock, MapPin, Target, Filter, Zap } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { Calendar, Clock, MapPin, Target, Filter, Zap } from "lucide-react";
+import { useEffect, useState, useCallback, useTransition } from "react";
 import DialogAddEditMatch from "../DialogAddEditMatch";
 import DialogMatchDetails from "../DialogMatchDetails";
 import { IPartidos, MatchStatus, MATCH_STATUS } from "@modules/partidos/types";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { formatDate } from "@/lib/formatDate";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface TabsTournamentProps {
   tournamentData: ITorneo;
@@ -41,39 +18,155 @@ interface TabsTournamentProps {
 
 const TabsMatches = (props: TabsTournamentProps) => {
   const { tournamentData } = props;
-  const [matches, setMatches] = useState<IPartidos[] | []>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [matches, setMatches] = useState<IPartidos[]>([]);
+  const [, startFetch] = useTransition();
 
-  const filteredMatches = matches
-    .filter(
-      (match) =>
-        (match.homeTeam.team.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        match.awayTeam.team.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        match.tournament.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (statusFilter === "ALL" || match.status === statusFilter)
-    )
-    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
-
-  const fetchMatches = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `/api/matches/tournament/${tournamentData.id}`,
-      );
-      const data: IPartidos[] = await response.json();
-      setMatches(data);
-    } catch (error) {
-      console.error("Error fetching matches:", error);
-    }
+  // El fetch va dentro de una transición: así el setState no queda en el cuerpo
+  // del effect (react-hooks/set-state-in-effect).
+  const fetchMatches = useCallback(() => {
+    startFetch(async () => {
+      try {
+        const response = await fetch(
+          `/api/matches/tournament/${tournamentData.id}`,
+        );
+        const data: IPartidos[] = await response.json();
+        setMatches(data);
+      } catch (error) {
+        console.error("Error fetching matches:", error);
+      }
+    });
   }, [tournamentData.id]);
 
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+
+  const renderScore = (match: IPartidos) => {
+    if (match.status === MatchStatus.FINALIZADO) {
+      return (
+        <span className="inline-flex items-center justify-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg font-bold text-lg text-gray-900 dark:text-white">
+          {match.homeScore ?? 0} - {match.awayScore ?? 0}
+        </span>
+      );
+    }
+    if (match.status === MatchStatus.EN_JUEGO) {
+      return (
+        <span className="inline-flex items-center justify-center px-3 py-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg font-bold text-lg text-green-700 dark:text-green-400 animate-pulse">
+          {match.homeScore ?? 0} - {match.awayScore ?? 0}
+        </span>
+      );
+    }
+    return <span className="text-gray-400">vs</span>;
+  };
+
+  // Función de render, no componente: un componente declarado dentro del render
+  // se remontaría en cada render (react-hooks/static-components).
+  const renderRowActions = (match: IPartidos) => (
+    <>
+      <Button
+        asChild
+        size="sm"
+        className="gap-1.5 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-md shadow-brand/20"
+      >
+        <Link href={`/admin/partidos/${match.id}/cargar`}>
+          <Zap className="h-3.5 w-3.5" />
+          Cargar
+        </Link>
+      </Button>
+      {(match.status === MatchStatus.EN_JUEGO ||
+        match.status === MatchStatus.FINALIZADO ||
+        match.status === MatchStatus.ENTRETIEMPO) && (
+        <DialogMatchDetails match={match} onUpdate={fetchMatches} />
+      )}
+      <DialogAddEditMatch
+        mode="edit"
+        tournamentData={tournamentData}
+        matchData={match}
+        onSuccess={fetchMatches}
+      />
+    </>
+  );
+
+  const columns: DataTableColumn<IPartidos>[] = [
+    {
+      id: "match",
+      header: "Partido",
+      sortValue: (m) => m.homeTeam.team.name,
+      cell: (match) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={match.homeTeam.team.logoUrl || "/placeholder.svg"}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <span className="font-semibold text-gray-900 dark:text-white text-sm">
+            {match.homeTeam.team.shortName} vs {match.awayTeam.team.shortName}
+          </span>
+          <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={match.awayTeam.team.logoUrl || "/placeholder.svg"}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "datetime",
+      header: "Fecha y Hora",
+      hideBelow: "lg",
+      cardLabel: "Fecha",
+      sortValue: (m) => new Date(m.dateTime).getTime(),
+      cell: (match) => (
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <Calendar className="h-4 w-4 text-brand shrink-0" />
+          <span>{formatDate(match.dateTime, "dd MMM yyyy")}</span>
+          <Clock className="h-4 w-4 text-brand-mid shrink-0" />
+          <span>{formatDate(match.dateTime, "HH:mm")}</span>
+        </div>
+      ),
+    },
+    {
+      id: "stadium",
+      header: "Estadio",
+      hideBelow: "xl",
+      sortValue: (m) => m.stadium ?? "",
+      cell: (match) => (
+        <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
+          <MapPin className="mr-1 h-4 w-4 text-brand-2 shrink-0" />
+          {match.stadium || "—"}
+        </div>
+      ),
+    },
+    {
+      id: "score",
+      header: "Resultado",
+      align: "center",
+      cell: renderScore,
+    },
+    {
+      id: "status",
+      header: "Estado",
+      sortValue: (m) => m.status,
+      cell: (match) => <StatusBadge entity="match" status={match.status} />,
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      align: "right",
+      hideOnCard: true,
+      cell: (match) => (
+        <div className="flex justify-end items-center gap-2">
+          {renderRowActions(match)}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <TabsContent value="matches" className="space-y-6">
@@ -87,7 +180,7 @@ const TabsMatches = (props: TabsTournamentProps) => {
               Gestión de Partidos
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {matches?.length} partidos programados
+              {matches.length} partidos programados
             </p>
           </div>
         </div>
@@ -98,225 +191,50 @@ const TabsMatches = (props: TabsTournamentProps) => {
         />
       </div>
 
-      {/* Lista de partidos */}
-      <div className="space-y-6">
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
-          <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
-                  <Calendar className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
-                    Lista de Partidos
-                  </CardTitle>
-                  <CardDescription className="text-gray-500 dark:text-gray-400">
-                    Gestiona todos los partidos programados y finalizados
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-                <div className="relative flex-1 w-full sm:max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar partidos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-brand focus:border-brand"
-                  />
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
-                      <SelectValue placeholder="Estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">Todos los estados</SelectItem>
-                      {MATCH_STATUS.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <Table>
-                  <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/80">
-                    <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-transparent">
-                      <TableHead className="font-bold text-gray-900 dark:text-white">
-                        Partido
-                      </TableHead>
-                      <TableHead className="font-bold text-gray-900 dark:text-white hidden md:table-cell">
-                        Torneo
-                      </TableHead>
-                      <TableHead className="font-bold text-gray-900 dark:text-white hidden lg:table-cell">
-                        Fecha y Hora
-                      </TableHead>
-                      <TableHead className="font-bold text-gray-900 dark:text-white hidden xl:table-cell">
-                        Estadio
-                      </TableHead>
-                      <TableHead className="font-bold text-center text-gray-900 dark:text-white">
-                        Resultado
-                      </TableHead>
-                      <TableHead className="font-bold text-gray-900 dark:text-white">
-                        Estado
-                      </TableHead>
-                      <TableHead className="text-right font-bold text-gray-900 dark:text-white">
-                        Acciones
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMatches.map((match) => (
-                      <TableRow
-                        key={match.id}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors duration-200"
-                      >
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md flex-shrink-0">
-                              <img
-                                src={
-                                  match.homeTeam.team.logoUrl ||
-                                  "/placeholder.svg"
-                                }
-                                alt={`Logo ${match.homeTeam.team.name}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                              {match.homeTeam.team.shortName} vs{" "}
-                              {match.awayTeam.team.shortName}
-                            </span>
-                            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md flex-shrink-0">
-                              <img
-                                src={
-                                  match.awayTeam.team.logoUrl ||
-                                  "/placeholder.svg"
-                                }
-                                alt={`Logo ${match.awayTeam.team.name}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <Badge className="bg-gradient-to-r from-brand/10 to-brand-mid/10 text-brand dark:text-brand-mid border-0">
-                            {match.tournament.name}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <Calendar className="h-4 w-4 text-brand" />
-                            <span>
-                              {formatDate(match.dateTime, "dd MMM yyyy")}
-                            </span>
-                            <Clock className="h-4 w-4 text-brand-mid" />
-                            <span>{formatDate(match.dateTime, "HH:mm")}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
-                            <MapPin className="mr-1 h-4 w-4 text-brand-2" />
-                            {match.stadium}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {match.status === "FINALIZADO" ? (
-                            <span className="inline-flex items-center justify-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg font-bold text-lg text-gray-900 dark:text-white">
-                              {match.homeScore ?? 0} - {match.awayScore ?? 0}
-                            </span>
-                          ) : match.status === "EN_JUEGO" ? (
-                            <span className="inline-flex items-center justify-center px-3 py-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg font-bold text-lg text-green-700 dark:text-green-400 animate-pulse">
-                              {match.homeScore ?? 0} - {match.awayScore ?? 0}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">vs</span>
-                          )}
-                        </TableCell>
-                        <TableCell><StatusBadge entity="match" status={match.status} /></TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end items-center gap-2">
-                            <Button
-                              asChild
-                              size="sm"
-                              className="gap-1.5 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-md shadow-brand/20"
-                            >
-                              <Link href={`/admin/partidos/${match.id}/cargar`}>
-                                <Zap className="h-3.5 w-3.5" />
-                                Cargar
-                              </Link>
-                            </Button>
-                            {(match.status === MatchStatus.EN_JUEGO ||
-                              match.status === MatchStatus.FINALIZADO ||
-                              match.status === MatchStatus.ENTRETIEMPO) && (
-                              <DialogMatchDetails
-                                match={match}
-                                onUpdate={fetchMatches}
-                              />
-                            )}
-                            <DialogAddEditMatch
-                              mode="edit"
-                              tournamentData={tournamentData}
-                              matchData={match}
-                              onSuccess={fetchMatches}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filteredMatches.length === 0 && matches.length > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-12">
-                          <div className="space-y-3">
-                            <Search className="w-10 h-10 text-gray-400 mx-auto" />
-                            <p className="text-gray-500 dark:text-gray-400">
-                              No se encontraron partidos con &ldquo;{searchTerm}
-                              &rdquo;
-                            </p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Estado vacío mejorado */}
-      {matches.length === 0 && (
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20" />
-          <div className="relative bg-white dark:bg-gray-900 rounded-2xl p-12 text-center border-0 shadow-2xl">
-            <div className="w-20 h-20 bg-gradient-to-br from-brand/10 to-brand-mid/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Calendar className="w-10 h-10 text-brand" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              No hay partidos programados
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              Comienza creando tu primer partido. Podrás programar encuentros,
-              registrar resultados y gestionar el fixture completo.
-            </p>
-            <button className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 inline-flex items-center gap-2 shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 hover:scale-105">
-              <Plus className="w-5 h-5" />
-              Programar primer partido
-            </button>
-          </div>
-        </div>
-      )}
+      <DataTable
+        rows={matches}
+        columns={columns}
+        getRowKey={(m) => m.id}
+        icon={Calendar}
+        title="Lista de Partidos"
+        description="Gestiona todos los partidos programados y finalizados"
+        searchable={{
+          placeholder: "Buscar por equipo...",
+          getText: (m) =>
+            `${m.homeTeam.team.name} ${m.awayTeam.team.name} ${m.homeTeam.team.shortName ?? ""} ${m.awayTeam.team.shortName ?? ""} ${m.stadium ?? ""}`,
+        }}
+        filters={[
+          {
+            id: "status",
+            label: "Estado",
+            icon: Filter,
+            defaultValue: "ALL",
+            options: [
+              { value: "ALL", label: "Todos" },
+              ...MATCH_STATUS.map((s) => ({ value: s.value, label: s.label })),
+            ],
+            test: (match, value) => match.status === value,
+          },
+        ]}
+        empty={{
+          icon: Calendar,
+          title: "No hay partidos programados",
+          description:
+            "Comenzá creando tu primer partido: vas a poder programar encuentros, registrar resultados y gestionar el fixture completo.",
+          filteredTitle: "No se encontraron partidos",
+          filteredDescription:
+            "Ningún partido coincide con los filtros aplicados.",
+          // El botón de la empty state anterior no tenía onClick: no hacía nada.
+          action: (
+            <DialogAddEditMatch
+              mode="create"
+              tournamentData={tournamentData}
+              onSuccess={fetchMatches}
+            />
+          ),
+        }}
+        rowActions={renderRowActions}
+      />
     </TabsContent>
   );
 };

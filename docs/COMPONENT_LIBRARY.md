@@ -42,6 +42,7 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 | `EntityCard` + `EntityCardAvatar` | `EntityCard.tsx` | Shell compartido de las cards públicas de listado (F2, patrón §1 de UI_PATTERNS): `Link` + esquinas + elevación en hover + barra de acento de marca. No lo uses solo — componelo con el contenido de cada entidad (ver `TournamentCard`/`TeamCard`/`PlayerCard` abajo) o copiá su estructura si aparece una entidad nueva con card pública. |
 | `FilterChipGroup` | `FilterChips.tsx` | Grupo de filtros como chips (F2, patrón §6 de UI_PATTERNS): scrollea en una fila en mobile, wrap en desktop; 44px de alto, `aria-pressed`/`role="group"`. Reemplazó a los `<Select>`/`<select>` de los 5 listados públicos. Va de la mano con `useUrlFilters` (`hooks/use-url-filters.ts`), que mantiene el estado de los filtros en la query de la URL. |
 | `SectionTitle` | `PageHeader.tsx` | Título de sección dentro de una página admin (F3): barra de acento de marca + `h2`, con `actions` opcionales. Se repetía a mano en casi todas las pantallas del panel. |
+| `DataTable` | `DataTable.tsx` | **Tabla del panel** (F3): orden por columna, búsqueda, filtros de chips, paginación, colapso a cards en mobile y estado vacío. Ver §4 — no armes una `<Table>` a mano. |
 
 ## 2c. Caparazón del panel admin (F3, 2026-07-13)
 
@@ -70,24 +71,41 @@ Historial — cada entidad resolvía su color de una de estas dos formas (legacy
 
 Si necesitás el color de un estado que no está en ningún mapa: agregalo al mapa centralizado más cercano (o creá uno nuevo siguiendo el formato REFEREE_STATUS_COLORS), no lo hardcodees inline en el JSX.
 
-## 4. Tablas admin (patrón)
+## 4. Tablas admin → `DataTable` (F3, 2026-07-13)
+
+**Toda tabla del panel usa `components/shared/DataTable.tsx`.** No armes una `<Table>` a mano: cada listado reimplementaba búsqueda, filtros y estado vacío por su cuenta, ninguno tenía orden ni paginación, y todos scrolleaban en horizontal en mobile.
 
 ```tsx
-<div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-  <Table>
-    <TableHeader>
-      <TableRow className="bg-gray-50 dark:bg-gray-900/50 ...">
-        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">...</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      <TableRow className="hover:bg-gray-50/80 dark:hover:bg-gray-800/50">...</TableRow>
-    </TableBody>
-  </Table>
-</div>
+const columns: DataTableColumn<ITeam>[] = [
+  { id: "team", header: "Equipo", sortValue: (t) => t.name, cell: (t) => <>…</> },
+  { id: "colors", header: "Colores", hideBelow: "xl", cell: (t) => <>…</> },
+  { id: "actions", header: "Acciones", align: "right", hideOnCard: true, cell: (t) => <>…</> },
+];
+
+<DataTable
+  rows={teams} columns={columns} getRowKey={(t) => t.id}
+  icon={Users} title="Lista de Equipos" description="…"
+  searchable={{ placeholder: "Buscar…", getText: (t) => `${t.name} ${t.homeCity ?? ""}` }}
+  filters={[{ id: "status", label: "Estado", icon: Filter, options: [...], test: (t, v) => … }]}
+  empty={{ icon: Users, title: "Todavía no hay equipos", filteredTitle: "No se encontraron equipos", … }}
+  rowActions={(t) => <RowActions team={t} />}
+/>
 ```
 
-Fila vacía: `<TableCell colSpan={N} className="text-center py-16">` con ícono grande en círculo + texto (ver patrón EmptyState en UI_PATTERNS.md).
+Lo que resuelve, y por qué no lo repitas a mano:
+
+- **Orden por columna**: alcanza con dar `sortValue`. Tres estados (asc → desc → sin orden), con `aria-sort` y flechas.
+- **Búsqueda + filtros de chips**: `searchable.getText` y `filters` (reusa `FilterChipGroup`). Los `options` de un filtro de estado **salen del enum real** (`TOURNAMENT_STATUS_OPTIONS`, `PLAYER_STATUS_OPTIONS`, `MATCH_STATUS`), nunca de labels de UI escritos a mano — ese fue exactamente el bug que tenían torneos y jugadores: comparaban `"En curso"`/`"ACTIVE"` contra `ACTIVO` y el filtro no matcheaba nunca.
+- **Paginación** (`pageSize`, default 10; `0` la desactiva). La página se **acota durante el render**, no con `useEffect` + `setState`.
+- **Colapso a cards en mobile**: la tabla es `hidden md:block` y por debajo se renderizan cards. Por defecto la card se arma sola con las columnas (la primera es el título, el resto van como `<dl>`); si eso queda ilegible (ej. las 11 columnas de estadísticas de `TabsTeams`), pasá `renderCard`. `hideOnCard` saca una columna de la card, `cardLabel` le cambia la etiqueta.
+- **`hideBelow: "lg" | "xl"`** oculta columnas secundarias en desktop chico. Sólo esos dos breakpoints: por debajo de `md` no hay tabla, hay cards.
+- **Estado vacío** con `EmptyState`, distinguiendo "no hay datos" (`title`) de "no hay resultados con estos filtros" (`filteredTitle`, + botón "Limpiar filtros").
+
+Ordenar/filtrar/paginar es **en cliente**; alcanza para los volúmenes actuales. La paginación server-side (M7) se enchufa acá con la misma API de columnas.
+
+Ya migradas: `TeamsTable`, `PlayersTable`, `ListTournaments`, `app/admin/arbitros`, `app/admin/noticias`, `TabsTeams` y `TabsMatches` (detalle de torneo). La única `<Table>` cruda que queda es `StandingsTable` (tabla de posiciones pública: es una tabla de datos semántica, sin filtros ni acciones — no es un listado de gestión).
+
+**Ojo con las acciones de fila**: definilas como *función de render* (`const renderRowActions = (row) => …`) o como componente **a nivel de módulo**. Un componente declarado dentro del render se remonta en cada render — lo rechaza `react-hooks/static-components`.
 
 ## 5. Sistemas de loading (dos, con roles distintos — no crear un tercero)
 

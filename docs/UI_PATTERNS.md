@@ -90,6 +90,18 @@ Referencia: `app/admin/plan/page.tsx`, `app/admin/pagos/page.tsx`, `app/admin/or
 
 **Cuál elegir:** Variante A para listados de gestión de alto volumen con acción de "crear" prominente y quick-stats operativos. Variante B para pantallas más acotadas (configuración, cuenta, aprobaciones). Es una decisión ya tomada implícitamente por el código existente — replicá la variante de la pantalla más parecida a la que estás construyendo, no mezcles ambas en una misma pantalla. Unificar en un único patrón queda pendiente (`TODO.md` F3).
 
+**El listado en sí va en `<DataTable>`** (`components/shared/DataTable.tsx`, F3) — ver §4 de COMPONENT_LIBRARY.md. La página aporta el `<PageHeader>` y los KPIs; el `DataTable` aporta la Card con búsqueda, filtros de chips, orden, paginación, cards de mobile y estado vacío. No armes una `<Table>` a mano ni reimplementes la búsqueda/los filtros por fuera: la Card del DataTable ya los trae.
+
+**Cargar/refrescar los datos:** si el listado es client-side (`app/admin/arbitros`, `app/admin/noticias`, `TabsMatches`), el fetch inicial va en un `useEffect` **sin `setState` síncrono en el cuerpo** — o el estado arranca ya en "cargando" (`useState(true)`), o el fetch va envuelto en `startTransition` y el pendiente de la transición hace de loading. `react-hooks/set-state-in-effect` rechaza lo otro. Mientras carga: `<SkeletonTable>`, no un spinner de pantalla completa.
+
+## 3b. Tabla admin en mobile
+
+Una tabla de 6-12 columnas es ilegible en 375px, y el `overflow-x-auto` que había en varias pantallas escondía las acciones fuera del viewport. `DataTable` colapsa **automáticamente** a cards por debajo de `md`:
+
+- Por defecto la card se arma con las columnas: la primera es el título, el resto van como pares etiqueta/valor. Sirve para tablas "de entidad" (equipos, jugadores, árbitros, noticias).
+- Si la tabla es de **estadísticas** (muchas columnas numéricas), la card automática queda como una lista de 11 pares — ilegible. Ahí pasá `renderCard` con una card a medida: identidad arriba, números en una grilla compacta de chips, acciones abajo. Referencia: `TabsTeams.tsx` (equipos de un torneo: PJ/G/E/P/GF/GC en `grid-cols-6`, puntos destacados en el header de la card).
+- Las acciones de fila se repiten en el footer de la card vía `rowActions` — nunca dejes una acción accesible sólo en la tabla de desktop.
+
 ## 4. Pantalla admin de detalle/edición de un recurso
 
 **Ejemplos:** `app/admin/torneos/[id]/page.tsx` (+ `Header.tsx`, `QuickStats.tsx`, `TabsTournament.tsx`), `app/admin/equipos/[id]/page.tsx`, `app/admin/usuarios/[id]/page.tsx`.
@@ -153,7 +165,11 @@ Usalo tanto para "sin resultados de búsqueda" (con botón "Limpiar filtros") co
 
 ## 9. Paginación
 
-Patrón numérico con máximo 5 números visibles + Anterior/Siguiente, en una `Card` propia debajo del listado. Referencia: `app/(public)/partidos/page.tsx`. Para tablas admin server-driven (pendiente, `TODO.md` M7) el patrón todavía no está definido — no inventar uno nuevo sin revisar ese ítem primero.
+**Listados públicos:** patrón numérico con máximo 5 números visibles + Anterior/Siguiente, en una `Card` propia debajo del listado. Referencia: `app/(public)/partidos/page.tsx`.
+
+**Tablas admin:** ya viene resuelta en `<DataTable>` (`pageSize`, default 10 — `0` la desactiva). Es en cliente; la página se acota **durante el render** cuando un filtro reduce el total, no con un `useEffect` + `setState`.
+
+La paginación server-driven (`TODO.md` M7) se enchufa dentro del propio `DataTable`, con la misma API de columnas — no inventes un componente nuevo cuando llegue ese ítem.
 
 ## 10. Auth (sign-in / sign-up)
 

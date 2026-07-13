@@ -6,20 +6,15 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Plus,
-  Search,
+  Filter,
   Edit,
   Trash2,
   Eye,
@@ -60,8 +55,10 @@ import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 
 export default function AdminNoticias() {
   const [noticias, setNoticias] = useState<INoticia[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  // Arranca en true: la carga inicial ya está en curso en el primer render, así
+  // no hace falta un setState en el cuerpo del effect (set-state-in-effect) ni
+  // se ve la tabla vacía un frame antes de que llegue la respuesta.
+  const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newArticle, setNewArticle] = useState({
     title: "",
@@ -73,25 +70,20 @@ export default function AdminNoticias() {
   });
 
   useEffect(() => {
-    setLoading(true); // ✅ activar loading al inicio
     fetch("/api/noticias")
       .then((res) => res.json())
       .then((data) => {
         setNoticias(data);
-        setLoading(false); // ✅ desactivar al terminar
+        setLoading(false);
       })
       .catch(() => {
-        setLoading(false); // también desactivar en caso de error
+        setLoading(false);
       });
   }, []);
 
-  const filteredNews = noticias.filter(
-    (article) =>
-      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.summary.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const sortedNews = [...filteredNews].sort(
+  // Orden por defecto: más recientes primero. El DataTable permite reordenar
+  // por columna encima de esto.
+  const sortedNews = [...noticias].sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
@@ -157,6 +149,145 @@ export default function AdminNoticias() {
       toast.error(`Error al eliminar la noticia: ${error}`);
     }
   };
+
+  // Funciones de render, no componentes: declarar un componente dentro del
+  // render lo remontaría en cada render (react-hooks/static-components).
+  const renderRowActions = (article: INoticia) => (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        asChild
+        title="Ver noticia"
+        className="border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+      >
+        <Link href={`/admin/noticias/${article.id}`}>
+          <Eye className="h-4 w-4" />
+          <span className="sr-only">Ver {article.title}</span>
+        </Link>
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        asChild
+        title="Editar noticia"
+        className="border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+      >
+        <Link href={`/admin/noticias/${article.id}/edit`}>
+          <Edit className="h-4 w-4" />
+          <span className="sr-only">Editar {article.title}</span>
+        </Link>
+      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Eliminar noticia"
+            className="border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Eliminar {article.title}</span>
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-900 dark:text-white">
+              ¿Estás seguro?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              la noticia{" "}
+              <strong className="text-gray-900 dark:text-white">
+                {article.title}
+              </strong>
+              .
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleDeleteArticle(article.id)}
+              className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+
+  const newsColumns: DataTableColumn<INoticia>[] = [
+    {
+      id: "article",
+      header: "Noticia",
+      sortValue: (a) => a.title,
+      cell: (article) => (
+        <div className="flex items-center space-x-3">
+          <div className="w-16 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600 shrink-0">
+            {article.coverImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={article.coverImageUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <ImageIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+            )}
+          </div>
+          <div className="max-w-xs">
+            <div className="font-medium line-clamp-1 text-gray-900 dark:text-white">
+              {article.title}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+              {article.summary}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "publishedAt",
+      header: "Fecha",
+      sortValue: (a) => (a.publishedAt ? new Date(a.publishedAt).getTime() : 0),
+      cell: (article) => (
+        <div className="flex items-center text-gray-700 dark:text-gray-300">
+          <Calendar className="mr-1 h-4 w-4 text-brand shrink-0" />
+          {article.publishedAt ? formatDate(article.publishedAt) : "Sin fecha"}
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      header: "Estado",
+      sortValue: (a) => (a.published ? 0 : 1),
+      cell: (article) => (
+        <button
+          type="button"
+          onClick={() => togglePublishStatus(article.id)}
+          className="cursor-pointer"
+          title={article.published ? "Pasar a borrador" : "Publicar"}
+        >
+          {getStatusBadge(article.published)}
+        </button>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      align: "right",
+      hideOnCard: true,
+      cell: (article) => (
+        <div className="flex justify-end space-x-2">
+          {renderRowActions(article)}
+        </div>
+      ),
+    },
+  ];
 
   const togglePublishStatus = async (id: string) => {
     const article = noticias.find((n) => n.id === id);
@@ -464,169 +595,42 @@ export default function AdminNoticias() {
           </Card>
         </div>
 
-        {/* News Table */}
-        <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
-          <CardHeader className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-brand to-brand-2 rounded-xl flex items-center justify-center">
-                <FileText className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                  Lista de Noticias
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Gestiona todas las noticias y artículos publicados
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <Input
-                  placeholder="Buscar noticias..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div className="rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden">
-              <Table>
-                <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
-                  <TableRow className="border-b dark:border-gray-700">
-                    <TableHead className="text-gray-900 dark:text-white font-semibold">
-                      Noticia
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white font-semibold">
-                      Fecha
-                    </TableHead>
-                    <TableHead className="text-gray-900 dark:text-white font-semibold">
-                      Estado
-                    </TableHead>
-                    <TableHead className="text-right text-gray-900 dark:text-white font-semibold">
-                      Acciones
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedNews.map((article) => (
-                    <TableRow
-                      key={article.id}
-                      className="border-b dark:border-gray-700 hover:bg-gray-50/80 dark:hover:bg-gray-700/50"
-                    >
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <div className="w-16 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600">
-                            {article.coverImageUrl ? (
-                              <img
-                                src={article.coverImageUrl}
-                                alt={article.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <ImageIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
-                            )}
-                          </div>
-                          <div className="max-w-xs">
-                            <div className="font-medium line-clamp-1 text-gray-900 dark:text-white">
-                              {article.title}
-                            </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                              {article.summary}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center text-gray-700 dark:text-gray-300">
-                          <Calendar className="mr-1 h-4 w-4 text-brand" />
-                          {article.publishedAt
-                            ? formatDate(article.publishedAt)
-                            : "Sin fecha"}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => togglePublishStatus(article.id)}
-                          className="cursor-pointer"
-                        >
-                          {getStatusBadge(article.published)}
-                        </button>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                          >
-                            <Link href={`/admin/noticias/${article.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-                          >
-                            <Link href={`/admin/noticias/${article.id}/edit`}>
-                              <Edit className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-gray-900 dark:text-white">
-                                  ¿Estás seguro?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
-                                  Esta acción no se puede deshacer. Esto
-                                  eliminará permanentemente la noticia{" "}
-                                  <strong className="text-gray-900 dark:text-white">
-                                    {article.title}
-                                  </strong>
-                                  .
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
-                                  Cancelar
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() =>
-                                    handleDeleteArticle(article.id)
-                                  }
-                                  className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white"
-                                >
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Lista de noticias — DataTable común (F3) */}
+        <DataTable
+          rows={sortedNews}
+          columns={newsColumns}
+          getRowKey={(a) => a.id}
+          icon={FileText}
+          title="Lista de Noticias"
+          description="Gestiona todas las noticias y artículos publicados"
+          searchable={{
+            placeholder: "Buscar noticias...",
+            getText: (a) => `${a.title} ${a.summary}`,
+          }}
+          filters={[
+            {
+              id: "published",
+              label: "Estado",
+              icon: Filter,
+              options: [
+                { value: "all", label: "Todas" },
+                { value: "published", label: "Publicadas" },
+                { value: "draft", label: "Borradores" },
+              ],
+              test: (a, value) =>
+                value === "published" ? a.published : !a.published,
+            },
+          ]}
+          empty={{
+            icon: FileText,
+            title: "Todavía no hay noticias",
+            description: "Creá tu primera noticia para comenzar.",
+            filteredTitle: "No se encontraron noticias",
+            filteredDescription:
+              "Ninguna noticia coincide con los filtros aplicados.",
+          }}
+          rowActions={renderRowActions}
+        />
       </div>
     </div>
   );
