@@ -7,14 +7,29 @@ import {
 } from "@/lib/standings/calculate-standings";
 import { resolveWalkover } from "@/lib/standings/walkover";
 import { recomputeTournamentSuspensions } from "@/lib/suspensions/engine";
-import { requireApiOrgAccess } from "@/lib/orgAuth";
+import {
+  getPanelOrgIds,
+  requireApiOrgAccess,
+} from "@/lib/orgAuth";
 import { matchCreateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 
 // GET /api/matches
-export async function GET() {
+// Público: todos los partidos (difusión).
+// ?scope=panel (N3): solo partidos de las organizaciones del usuario
+// (ADMINISTRADOR ve todos, salvo "ver como organización" activo).
+export async function GET(req: NextRequest) {
   try {
+    let where = {};
+    if (req.nextUrl.searchParams.get("scope") === "panel") {
+      const orgIds = await getPanelOrgIds();
+      if (orgIds !== null) {
+        where = { tournament: { organizationId: { in: orgIds } } };
+      }
+    }
+
     const matches = await db.match.findMany({
+      where,
       include: {
         tournament: true,
         homeTeam: {

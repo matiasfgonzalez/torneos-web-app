@@ -2,9 +2,10 @@ import Header from "./components/Header";
 import QuickStats from "./components/QuickStats";
 import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
 import TabsTournament from "./components/TabsTournament";
-import { getEquipos } from "@modules/equipos/actions/getEquipos";
+import { getAdminEquipos } from "@modules/equipos/actions/getEquipos";
 import { getTournamentTeams } from "@modules/torneos/actions/getTournamentTeams";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
+import { canViewInPanel, getPanelOrgIds } from "@/lib/orgAuth";
 import { AlertTriangle, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,53 +17,14 @@ export default async function AdminTournamentDetail({
   params: Promise<{ id: string }>;
 }>) {
   const { id } = await params;
-  const torneo = await getTorneoById(id);
-  const equipos = await getEquipos();
-  const associations = await getTournamentTeams(id);
-  const suspensions = await getTournamentSuspensions(id);
 
-  if (torneo) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        <div className="space-y-8 p-6 sm:p-8 max-w-7xl mx-auto">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <Link
-              href="/admin/dashboard"
-              className="hover:text-[#ad45ff] transition-colors"
-            >
-              Dashboard
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link
-              href="/admin/torneos"
-              className="hover:text-[#ad45ff] transition-colors"
-            >
-              Torneos
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 dark:text-white font-medium truncate max-w-[200px]">
-              {torneo.name}
-            </span>
-          </nav>
+  // N3: un organizador no ve torneos de otras organizaciones en el panel
+  const [torneo, orgIds] = await Promise.all([
+    getTorneoById(id),
+    getPanelOrgIds(),
+  ]);
 
-          {/* Header mejorado */}
-          <Header tournamentData={torneo} />
-
-          {/* Status and Quick Stats mejoradas */}
-          <QuickStats tournamentData={torneo} />
-
-          {/* Tabs con diseño mejorado */}
-          <TabsTournament
-            tournamentData={torneo}
-            equipos={equipos}
-            associations={associations}
-            suspensions={suspensions}
-          />
-        </div>
-      </div>
-    );
-  } else {
+  if (!torneo || !canViewInPanel(orgIds, torneo.organizationId)) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6">
         <Card className="max-w-md w-full border-0 shadow-2xl bg-white dark:bg-gray-900 rounded-2xl overflow-hidden">
@@ -97,4 +59,51 @@ export default async function AdminTournamentDetail({
       </div>
     );
   }
+
+  const [equipos, associations, suspensions] = await Promise.all([
+    getAdminEquipos(),
+    getTournamentTeams(id),
+    getTournamentSuspensions(id),
+  ]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="space-y-8 p-6 sm:p-8 max-w-7xl mx-auto">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <Link
+            href="/admin/dashboard"
+            className="hover:text-[#ad45ff] transition-colors"
+          >
+            Dashboard
+          </Link>
+          <ChevronRight className="w-4 h-4" />
+          <Link
+            href="/admin/torneos"
+            className="hover:text-[#ad45ff] transition-colors"
+          >
+            Torneos
+          </Link>
+          <ChevronRight className="w-4 h-4" />
+          <span className="text-gray-900 dark:text-white font-medium truncate max-w-[200px]">
+            {torneo.name}
+          </span>
+        </nav>
+
+        {/* Header mejorado */}
+        <Header tournamentData={torneo} />
+
+        {/* Status and Quick Stats mejoradas */}
+        <QuickStats tournamentData={torneo} />
+
+        {/* Tabs con diseño mejorado */}
+        <TabsTournament
+          tournamentData={torneo}
+          equipos={equipos}
+          associations={associations}
+          suspensions={suspensions}
+        />
+      </div>
+    </div>
+  );
 }

@@ -25,6 +25,7 @@ import {
 
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
+import { getPanelOrgIds } from "@/lib/orgAuth";
 import { formatDate } from "@/lib/formatDate";
 import {
   getOrgDashboardData,
@@ -85,14 +86,22 @@ export default async function AdminDashboard() {
   const user = await checkUser();
   if (!user) redirect("/sign-in");
 
-  const membership = await db.organizationMember.findFirst({
-    where: { userId: user.id },
-    orderBy: { createdAt: "asc" },
-    select: { organizationId: true },
-  });
+  // N3: la org del dashboard sale del scope del panel — para el
+  // ADMINISTRADOR con "ver como organización" activo es esa org; si no,
+  // su propia membresía (si tiene).
+  const orgIds = await getPanelOrgIds(user);
+  let organizationId: string | null = orgIds?.[0] ?? null;
+  if (orgIds === null) {
+    const membership = await db.organizationMember.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: "asc" },
+      select: { organizationId: true },
+    });
+    organizationId = membership?.organizationId ?? null;
+  }
 
-  const data = membership
-    ? await getOrgDashboardData(membership.organizationId)
+  const data = organizationId
+    ? await getOrgDashboardData(organizationId)
     : null;
 
   return (

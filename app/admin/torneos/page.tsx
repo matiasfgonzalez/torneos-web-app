@@ -1,13 +1,16 @@
 import StatsCards from "@modules/torneos/components/admin/StatsCards";
 import ListTournaments from "@modules/torneos/components/admin/ListTournaments";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
-import { getTorneos } from "@modules/torneos/actions/getTorneos";
+import { getAdminTorneos } from "@modules/torneos/actions/getTorneos";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TournamentStatus } from "@prisma/client";
 
+// Listado scopeado por sesión (N3) — siempre dinámico, nunca prerender
+export const dynamic = "force-dynamic";
+
 export default async function AdminTorneos() {
-  const tournaments = await getTorneos();
+  const tournaments = await getAdminTorneos();
 
   return (
     <div className="min-h-screen">

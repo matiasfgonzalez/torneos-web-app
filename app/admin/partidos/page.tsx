@@ -74,7 +74,8 @@ export default function PartidosPage() {
 
   const fetchMatches = async () => {
     try {
-      const res = await fetch("/api/matches");
+      // scope=panel (N3): solo partidos de las organizaciones del usuario
+      const res = await fetch("/api/matches?scope=panel");
       const data = await res.json();
       if (Array.isArray(data)) {
         setMatches(data);

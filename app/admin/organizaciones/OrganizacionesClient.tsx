@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Building2,
+  Eye,
   Loader2,
   MapPin,
   Search,
@@ -14,6 +16,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { setAdminOrgView } from "@modules/organizaciones/actions/adminOrgView";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,11 +80,30 @@ const SUB_STATUS_BADGE: Record<string, string> = {
 };
 
 export default function OrganizacionesClient() {
+  const router = useRouter();
   const [orgs, setOrgs] = useState<OrganizationRow[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [viewingAs, setViewingAs] = useState<string | null>(null);
+
+  // "Ver como organización" (N3/N10): scopea el panel a esa org
+  const viewAs = async (org: OrganizationRow) => {
+    setViewingAs(org.id);
+    try {
+      const res = await setAdminOrgView(org.id);
+      if (res.success) {
+        toast.success(`Viendo el panel como ${org.name}`);
+        router.push("/admin/dashboard");
+        router.refresh();
+      } else {
+        toast.error(res.error ?? "No se pudo activar el modo organización");
+      }
+    } finally {
+      setViewingAs(null);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -303,6 +325,22 @@ export default function OrganizacionesClient() {
                     </div>
                   </div>
 
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={viewingAs === org.id}
+                      onClick={() => viewAs(org)}
+                      className="gap-1.5 border-[#ad45ff]/40 text-[#ad45ff] hover:bg-[#ad45ff]/10 dark:border-[#ad45ff]/50 dark:text-[#c77dff] dark:hover:bg-[#ad45ff]/15"
+                    >
+                      {viewingAs === org.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
+                      Ver como
+                    </Button>
+
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -346,6 +384,7 @@ export default function OrganizacionesClient() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-sm">

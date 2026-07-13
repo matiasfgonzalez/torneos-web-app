@@ -1,12 +1,15 @@
 import TeamForm from "@modules/equipos/components/admin/team-form";
 import StatsCards from "@modules/equipos/components/admin/StatsCards";
 import TeamsTable from "@modules/equipos/components/admin/TeamsTable";
-import { getEquipos } from "@modules/equipos/actions/getEquipos";
+import { getAdminEquipos } from "@modules/equipos/actions/getEquipos";
 import { Trophy, Users, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Listado scopeado por sesión (N3) — siempre dinámico, nunca prerender
+export const dynamic = "force-dynamic";
+
 export default async function AdminEquipos() {
-  const teams = await getEquipos();
+  const teams = await getAdminEquipos();
 
   const activeTeams = teams.filter((t) => t.enabled === true).length;
   const disabledTeams = teams.filter((t) => t.enabled === false).length;

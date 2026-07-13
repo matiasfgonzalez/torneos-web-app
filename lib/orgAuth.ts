@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { OrgRole, Organization } from "@prisma/client";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
@@ -234,6 +235,73 @@ export async function requireActionOrgContext(): Promise<
     return { error: "La organización está suspendida" };
   }
   return { user, org };
+}
+
+// ============================================================
+// Visibilidad de datos en el panel (N3)
+// ============================================================
+
+/**
+ * Cookie que activa el modo "ver como organización" del ADMINISTRADOR:
+ * scopea los LISTADOS del panel a esa organización sin tocar permisos
+ * de mutación (el admin sigue pudiendo gestionar todo).
+ */
+export const ADMIN_ORG_VIEW_COOKIE = "golazo-admin-org-view";
+
+/**
+ * Organizaciones cuyos datos VE el usuario en los listados del panel (N3):
+ * - `null` → sin restricción (ADMINISTRADOR sin "ver como" activo)
+ * - ADMINISTRADOR con "ver como" activo → solo la organización elegida
+ * - miembro → sus organizaciones
+ * - sin sesión / sin membresías → `[]` (no ve ningún dato de gestión)
+ */
+export async function getPanelOrgIds(
+  user?: AppUser | null,
+): Promise<string[] | null> {
+  const current = user ?? (await checkUser());
+  if (!current) return [];
+
+  if (current.role === "ADMINISTRADOR") {
+    const store = await cookies();
+    const viewOrgId = store.get(ADMIN_ORG_VIEW_COOKIE)?.value;
+    return viewOrgId ? [viewOrgId] : null;
+  }
+
+  const memberships = await db.organizationMember.findMany({
+    where: { userId: current.id },
+    select: { organizationId: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return memberships.map((m) => m.organizationId);
+}
+
+/** Fragmento de `where` de Prisma para scopear listados del panel. */
+export function orgScopeWhere(orgIds: string[] | null) {
+  return orgIds === null ? {} : { organizationId: { in: orgIds } };
+}
+
+/** ¿El recurso (por su organizationId) es visible en el panel del usuario? */
+export function canViewInPanel(
+  orgIds: string[] | null,
+  organizationId: string,
+): boolean {
+  return orgIds === null || orgIds.includes(organizationId);
+}
+
+/**
+ * Organización del modo "ver como" activo (para el banner del panel).
+ * Devuelve null si no hay cookie o el usuario no es ADMINISTRADOR;
+ * `{ orgId, org: null }` si la cookie apunta a una org que ya no existe.
+ */
+export async function getAdminOrgView(
+  user: AppUser,
+): Promise<{ orgId: string; org: Organization | null } | null> {
+  if (user.role !== "ADMINISTRADOR") return null;
+  const store = await cookies();
+  const orgId = store.get(ADMIN_ORG_VIEW_COOKIE)?.value;
+  if (!orgId) return null;
+  const org = await db.organization.findUnique({ where: { id: orgId } });
+  return { orgId, org };
 }
 
 // ============================================================

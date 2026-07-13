@@ -1,4 +1,5 @@
 import { getEquipoById } from "@modules/equipos/actions/getEquipoById";
+import { canViewInPanel, getPanelOrgIds } from "@/lib/orgAuth";
 import Header from "@modules/equipos/components/admin/Header";
 import QuickStats from "@modules/equipos/components/admin/QuickStats";
 import TabsTeam from "@modules/equipos/components/admin/TabsTeam";
@@ -13,9 +14,14 @@ export default async function AdminTeamDetail({
   params: Promise<{ id: string }>;
 }>) {
   const { id } = await params;
-  const team = await getEquipoById(id);
 
-  if (team) {
+  // N3: un organizador no ve equipos de otras organizaciones en el panel
+  const [team, orgIds] = await Promise.all([
+    getEquipoById(id),
+    getPanelOrgIds(),
+  ]);
+
+  if (team && canViewInPanel(orgIds, team.organizationId)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900/50">
         <div className="space-y-8 p-6 sm:p-8">

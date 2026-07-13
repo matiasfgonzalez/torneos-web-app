@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { RefereeStatus } from "@prisma/client";
 import { IRefereeCreate, IRefereeUpdate } from "../types";
 import {
+  getPanelOrgIds,
+  orgScopeWhere,
   requireActionOrgAccess,
   requireActionOrgContext,
 } from "@/lib/orgAuth";
@@ -91,7 +93,9 @@ export async function createReferee(data: IRefereeCreate) {
 }
 
 /**
- * Obtiene todos los árbitros
+ * Obtiene los árbitros visibles en el panel del usuario (N3: solo los de
+ * sus organizaciones; ADMINISTRADOR ve todos salvo "ver como" activo).
+ * Sin sesión devuelve [] — el listado incluye PII (email, teléfono, DNI).
  *
  * @param includeDisabled - Si true, incluye árbitros deshabilitados
  * @param includeDeleted - Si true, incluye árbitros eliminados lógicamente
@@ -101,7 +105,10 @@ export async function getReferees(
   includeDeleted = false,
 ) {
   try {
-    const whereClause: Record<string, unknown> = {};
+    const orgIds = await getPanelOrgIds();
+    const whereClause: Record<string, unknown> = {
+      ...orgScopeWhere(orgIds),
+    };
 
     if (!includeDeleted) {
       whereClause.deletedAt = null;

@@ -5,6 +5,9 @@ import { getJugadores } from "@modules/jugadores/actions/getJugadores";
 import { Users, Activity, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Listado scopeado por sesión (N3) — siempre dinámico, nunca prerender
+export const dynamic = "force-dynamic";
+
 export default async function AdminJugadores() {
   const players = await getJugadores();
 

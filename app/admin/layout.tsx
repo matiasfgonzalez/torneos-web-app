@@ -1,7 +1,9 @@
 import type React from "react";
 import { Toaster } from "sonner";
 import { AdminSidebar } from "@/components/admin/sidebar";
+import { OrgViewBanner } from "@/components/admin/OrgViewBanner";
 import { checkUser } from "@/lib/checkUser";
+import { getAdminOrgView } from "@/lib/orgAuth";
 import { redirect } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -18,6 +20,9 @@ export default async function AdminLayout({
   }
 
   const role = userLogued.role;
+
+  // Modo "ver como organización" del ADMINISTRADOR (N3)
+  const orgView = await getAdminOrgView(userLogued);
 
   return (
     <div className="min-h-screen premium-gradient-bg">
@@ -52,6 +57,8 @@ export default async function AdminLayout({
             </h1>
           </div>
         </header>
+
+        {orgView && <OrgViewBanner orgName={orgView.org?.name ?? null} />}
 
         {/* Page content */}
         <main className="p-4 md:p-6">
