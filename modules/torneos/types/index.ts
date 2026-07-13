@@ -17,6 +17,10 @@ export interface ITorneo {
   startDate: string | Date;
   endDate: string | Date;
   organizationId: string;
+  /** Slug del torneo (N9) — junto con organization.slug arma la URL canónica */
+  slug?: string | null;
+  /** Slug de la organización dueña (solo cargado en listados públicos) */
+  organization?: { slug: string } | null;
   createdAt: string | Date;
   updatedAt: string | Date;
   logoUrl?: string; // URL del logo del torneo

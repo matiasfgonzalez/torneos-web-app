@@ -47,6 +47,8 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
     ? Math.max(
         0,
         Math.ceil(
+          // Countdown estático por render — la impureza es intencional
+          // eslint-disable-next-line react-hooks/purity
           (new Date(tournamentData.endDate).getTime() - Date.now()) /
             (1000 * 60 * 60 * 24),
         ),

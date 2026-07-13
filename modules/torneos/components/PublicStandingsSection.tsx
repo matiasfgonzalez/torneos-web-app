@@ -5,13 +5,53 @@ import {
   ITournamentTeam,
   IMatch,
 } from "@modules/torneos/types/tournament-teams.types";
-import { StandingsTable } from "@modules/torneos/components/StandingsTable";
+import {
+  StandingsTable,
+  type FormResult,
+} from "@modules/torneos/components/StandingsTable";
 import { KnockoutBracket } from "@modules/torneos/components/KnockoutBracket";
 import {
   hasMultipleGroups,
   getTournamentDisplayType,
   isKnockoutPhase,
 } from "@/lib/standings/phase-utils";
+
+/** Cuántos resultados recientes componen la "racha" de la tabla (F2) */
+const FORM_LENGTH = 5;
+
+/**
+ * Racha por TournamentTeam.id a partir de los partidos ya computables
+ * (FINALIZADO y WALKOVER — los mismos que suman a la tabla): últimos
+ * FORM_LENGTH resultados, del más viejo al más reciente.
+ */
+function computeForm(matches: IMatch[]): Record<string, FormResult[]> {
+  const form: Record<string, FormResult[]> = {};
+
+  const played = matches
+    .filter(
+      (m) =>
+        (m.status === "FINALIZADO" || m.status === "WALKOVER") &&
+        m.homeScore != null &&
+        m.awayScore != null,
+    )
+    .sort(
+      (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+    );
+
+  for (const m of played) {
+    const home = m.homeScore ?? 0;
+    const away = m.awayScore ?? 0;
+    const homeResult: FormResult = home > away ? "W" : home < away ? "L" : "D";
+    const awayResult: FormResult = home > away ? "L" : home < away ? "W" : "D";
+    (form[m.homeTeamId] ??= []).push(homeResult);
+    (form[m.awayTeamId] ??= []).push(awayResult);
+  }
+
+  for (const teamId of Object.keys(form)) {
+    form[teamId] = form[teamId].slice(-FORM_LENGTH);
+  }
+  return form;
+}
 
 interface PublicStandingsSectionProps {
   tournamentTeams: ITournamentTeam[];
@@ -46,6 +86,9 @@ export function PublicStandingsSection({
     [tournamentTeams],
   );
 
+  // Racha de cada equipo (F2) — se muestra como columna en la tabla
+  const formByTeamId = useMemo(() => computeForm(matches), [matches]);
+
   // Si es formato de solo bracket (eliminación directa pura)
   if (displayType === "bracket") {
     return (
@@ -68,6 +111,7 @@ export function PublicStandingsSection({
           tournamentTeams={tournamentTeams}
           variant="public"
           tiebreakers={tiebreakers}
+          formByTeamId={formByTeamId}
           title={
             hasGroups ? "Tabla de Posiciones por Grupo" : "Tabla de Posiciones"
           }
@@ -96,6 +140,7 @@ export function PublicStandingsSection({
       tournamentTeams={tournamentTeams}
       variant="public"
       tiebreakers={tiebreakers}
+      formByTeamId={formByTeamId}
       title="Tabla de Posiciones"
       description="Clasificación actual del torneo"
     />

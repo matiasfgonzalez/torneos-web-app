@@ -15,6 +15,8 @@ export async function getTorneos(): Promise<ITorneo[]> {
       include: {
         tournamentTeams: true,
         matches: true, // Incluir partidos para contar programados
+        // Slug de la org para linkear DIRECTO a la URL canónica (N9)
+        organization: { select: { slug: true } },
       },
       orderBy: {
         createdAt: "desc",

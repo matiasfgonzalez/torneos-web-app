@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Eye,
   Target,
-  ShieldAlert,
   Users,
   Trophy,
   Clock,
@@ -26,6 +25,16 @@ import { MatchStatus } from "@prisma/client";
 
 interface MatchDetailModalProps {
   match: IMatch;
+}
+
+/** Evento del partido para la cronología (F2): gol o tarjeta con minuto */
+interface TimelineEvent {
+  id: string;
+  minute: number | null;
+  isHome: boolean;
+  type: "goal" | "yellow" | "red";
+  playerName: string;
+  detail?: string;
 }
 
 // Función helper para formatear fecha
@@ -58,21 +67,30 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
   const cards = match.cards || [];
   const referees = match.referees || [];
 
-  // Separar goles por equipo
-  const homeGoals = goals.filter(
-    (g) => g.teamPlayer?.tournamentTeam?.id === match.homeTeamId,
-  );
-  const awayGoals = goals.filter(
-    (g) => g.teamPlayer?.tournamentTeam?.id === match.awayTeamId,
-  );
-
-  // Separar tarjetas por equipo
-  const homeCards = cards.filter(
-    (c: any) => c.teamPlayer?.tournamentTeam?.id === match.homeTeamId,
-  );
-  const awayCards = cards.filter(
-    (c: any) => c.teamPlayer?.tournamentTeam?.id === match.awayTeamId,
-  );
+  // Cronología unificada (F2): goles + tarjetas ordenados por minuto,
+  // local a la izquierda y visitante a la derecha
+  const timeline: TimelineEvent[] = [
+    ...goals.map(
+      (g): TimelineEvent => ({
+        id: `goal-${g.id}`,
+        minute: g.minute ?? null,
+        isHome: g.teamPlayer?.tournamentTeam?.id === match.homeTeamId,
+        type: "goal",
+        playerName: g.teamPlayer?.player?.name || "Desconocido",
+        detail: g.isPenalty ? "Penal" : g.isOwnGoal ? "Autogol" : undefined,
+      }),
+    ),
+    ...cards.map(
+      (c): TimelineEvent => ({
+        id: `card-${c.id}`,
+        minute: c.minute ?? null,
+        isHome: c.teamPlayer?.tournamentTeam?.id === match.homeTeamId,
+        type: c.type === "ROJA" ? "red" : "yellow",
+        playerName: c.teamPlayer?.player?.name || "Desconocido",
+        detail: c.reason || undefined,
+      }),
+    ),
+  ].sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999));
 
   const getRefereeRoleLabel = (role: string) => {
     const roles: Record<string, string> = {
@@ -90,7 +108,7 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="text-[#ad45ff] hover:text-[#ad45ff] hover:bg-[#ad45ff]/10"
+          className="text-brand hover:text-brand hover:bg-brand/10"
         >
           <Eye className="w-4 h-4 mr-1" />
           Ver detalle
@@ -173,7 +191,7 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
           {/* Penalty info */}
           {match.penaltyWinnerTeamId && (
             <div className="mt-4 text-center">
-              <Badge className="bg-[#ad45ff]/10 text-[#ad45ff]">
+              <Badge className="bg-brand/10 text-brand">
                 <Trophy className="w-3 h-3 mr-1" />
                 Penales: {match.penaltyScoreHome} - {match.penaltyScoreAway}
               </Badge>
@@ -192,21 +210,14 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
         </div>
 
         {/* Tabs for Details */}
-        <Tabs defaultValue="goals" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+        <Tabs defaultValue="timeline" className="mt-4">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
             <TabsTrigger
-              value="goals"
+              value="timeline"
               className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-lg"
             >
-              <Target className="w-4 h-4 mr-2" />
-              Goles ({goals.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="cards"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-lg"
-            >
-              <ShieldAlert className="w-4 h-4 mr-2" />
-              Tarjetas ({cards.length})
+              <Clock className="w-4 h-4 mr-2" />
+              Cronología ({timeline.length})
             </TabsTrigger>
             <TabsTrigger
               value="referees"
@@ -217,177 +228,93 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
             </TabsTrigger>
           </TabsList>
 
-          {/* Goals Tab */}
-          <TabsContent value="goals" className="mt-4">
-            {goals.length === 0 ? (
+          {/* Timeline Tab (F2): goles + tarjetas en orden cronológico,
+              local a la izquierda / visitante a la derecha */}
+          <TabsContent value="timeline" className="mt-4">
+            {timeline.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No hay goles registrados</p>
+                <p>No hay eventos registrados</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {/* Home Goals */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    {match.homeTeam?.team?.name}
-                  </h4>
-                  {homeGoals.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic">Sin goles</p>
-                  ) : (
-                    homeGoals.map((goal) => (
-                      <div
-                        key={goal.id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                      >
-                        <Badge
-                          variant="outline"
-                          className="w-12 justify-center"
-                        >
-                          {goal.minute}'
-                        </Badge>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">
-                            {goal.teamPlayer?.player?.name || "Desconocido"}
-                          </span>
-                          {(goal.isPenalty || goal.isOwnGoal) && (
-                            <span className="text-xs text-gray-500">
-                              {goal.isPenalty && "⚽ Penal"}
-                              {goal.isOwnGoal && "🔴 Autogol"}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
+              <div className="relative py-2">
+                {/* Encabezado de columnas */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  <span className="text-right truncate">
+                    {match.homeTeam?.team?.name || "Local"}
+                  </span>
+                  <span className="w-12" />
+                  <span className="truncate">
+                    {match.awayTeam?.team?.name || "Visitante"}
+                  </span>
                 </div>
 
-                {/* Away Goals */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    {match.awayTeam?.team?.name}
-                  </h4>
-                  {awayGoals.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic">Sin goles</p>
-                  ) : (
-                    awayGoals.map((goal) => (
-                      <div
-                        key={goal.id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                      >
-                        <Badge
-                          variant="outline"
-                          className="w-12 justify-center"
-                        >
-                          {goal.minute}'
-                        </Badge>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">
-                            {goal.teamPlayer?.player?.name || "Desconocido"}
-                          </span>
-                          {(goal.isPenalty || goal.isOwnGoal) && (
-                            <span className="text-xs text-gray-500">
-                              {goal.isPenalty && "⚽ Penal"}
-                              {goal.isOwnGoal && "🔴 Autogol"}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </TabsContent>
+                {/* Línea vertical central */}
+                <div
+                  aria-hidden="true"
+                  className="absolute left-1/2 -translate-x-1/2 top-10 bottom-2 w-px bg-gradient-to-b from-brand/40 via-brand-2/40 to-transparent"
+                />
 
-          {/* Cards Tab */}
-          <TabsContent value="cards" className="mt-4">
-            {cards.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <ShieldAlert className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No hay tarjetas registradas</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {/* Home Cards */}
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    {match.homeTeam?.team?.name}
-                  </h4>
-                  {homeCards.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic">Sin tarjetas</p>
-                  ) : (
-                    homeCards.map((card: any) => (
+                  {timeline.map((event) => {
+                    const eventBody = (
                       <div
-                        key={card.id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        className={`inline-flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 max-w-full ${
+                          event.isHome ? "flex-row-reverse text-right" : ""
+                        }`}
                       >
-                        <Badge
-                          variant="outline"
-                          className="w-12 justify-center"
-                        >
-                          {card.minute}'
-                        </Badge>
-                        <div
-                          className={`w-4 h-6 rounded-sm ${
-                            card.type === "ROJA"
-                              ? "bg-red-500"
-                              : "bg-yellow-400"
-                          } border border-black/10 shadow-sm`}
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">
-                            {card.teamPlayer?.player?.name || "Desconocido"}
+                        {event.type === "goal" ? (
+                          <Target
+                            className="w-4 h-4 shrink-0 text-green-600 dark:text-green-400"
+                            aria-label="Gol"
+                          />
+                        ) : (
+                          <span
+                            className={`w-3 h-4 rounded-sm shrink-0 border border-black/10 shadow-sm ${
+                              event.type === "red"
+                                ? "bg-red-500"
+                                : "bg-yellow-400"
+                            }`}
+                            aria-label={
+                              event.type === "red"
+                                ? "Tarjeta roja"
+                                : "Tarjeta amarilla"
+                            }
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <span className="font-medium text-sm text-gray-900 dark:text-white block truncate">
+                            {event.playerName}
                           </span>
-                          {card.reason && (
-                            <span className="text-xs text-gray-500">
-                              {card.reason}
+                          {event.detail && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400 block truncate">
+                              {event.detail}
                             </span>
                           )}
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    );
 
-                {/* Away Cards */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    {match.awayTeam?.team?.name}
-                  </h4>
-                  {awayCards.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic">Sin tarjetas</p>
-                  ) : (
-                    awayCards.map((card: any) => (
+                    return (
                       <div
-                        key={card.id}
-                        className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        key={event.id}
+                        className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-2"
                       >
+                        <div className="text-right min-w-0">
+                          {event.isHome && eventBody}
+                        </div>
                         <Badge
                           variant="outline"
-                          className="w-12 justify-center"
+                          className="w-12 justify-center bg-white dark:bg-gray-900 border-brand/30 text-brand font-bold shrink-0"
                         >
-                          {card.minute}'
+                          {event.minute != null ? `${event.minute}'` : "—"}
                         </Badge>
-                        <div
-                          className={`w-4 h-6 rounded-sm ${
-                            card.type === "ROJA"
-                              ? "bg-red-500"
-                              : "bg-yellow-400"
-                          } border border-black/10 shadow-sm`}
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">
-                            {card.teamPlayer?.player?.name || "Desconocido"}
-                          </span>
-                          {card.reason && (
-                            <span className="text-xs text-gray-500">
-                              {card.reason}
-                            </span>
-                          )}
+                        <div className="min-w-0">
+                          {!event.isHome && eventBody}
                         </div>
                       </div>
-                    ))
-                  )}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -402,13 +329,13 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
               </div>
             ) : (
               <div className="space-y-2">
-                {referees.map((ref: any) => (
+                {referees.map((ref) => (
                   <div
                     key={ref.id}
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ad45ff] to-[#c77dff] flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-mid flex items-center justify-center text-white font-bold">
                         {ref.referee?.name?.charAt(0) || "A"}
                       </div>
                       <div>
@@ -422,7 +349,7 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
                         )}
                       </div>
                     </div>
-                    <Badge className="bg-[#ad45ff]/10 text-[#ad45ff]">
+                    <Badge className="bg-brand/10 text-brand">
                       {getRefereeRoleLabel(ref.role)}
                     </Badge>
                   </div>

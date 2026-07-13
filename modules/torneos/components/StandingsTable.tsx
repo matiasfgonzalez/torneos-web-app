@@ -25,7 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Users, Layers } from "lucide-react";
+import {
+  Trophy,
+  Users,
+  Layers,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from "lucide-react";
 import { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
 import {
   groupTeamsByGroup,
@@ -56,6 +63,9 @@ interface PhaseInfo {
   type?: string;
 }
 
+/** Resultado de un partido desde la óptica de un equipo (racha, F2) */
+export type FormResult = "W" | "D" | "L";
+
 interface StandingsTableProps {
   tournamentTeams: ITournamentTeam[];
   className?: string;
@@ -66,6 +76,43 @@ interface StandingsTableProps {
   description?: string;
   /** Orden de desempate del torneo (N7). undefined → orden por defecto. */
   tiebreakers?: unknown;
+  /**
+   * Racha por TournamentTeam.id: últimos partidos (más reciente al FINAL del
+   * array). Es global del torneo — no cambia al filtrar por fase/grupo.
+   * Si falta, la columna "Racha" no se muestra.
+   */
+  formByTeamId?: Record<string, FormResult[]>;
+}
+
+const FORM_DOT: Record<FormResult, string> = {
+  W: "bg-green-500",
+  D: "bg-gray-400 dark:bg-gray-500",
+  L: "bg-red-500",
+};
+
+/** Flecha de tendencia según el último resultado de la racha */
+function FormTrend({ form }: { form: FormResult[] }) {
+  const last = form[form.length - 1];
+  if (last === "W")
+    return (
+      <TrendingUp
+        className="w-4 h-4 text-green-600 dark:text-green-400"
+        aria-label="Racha en alza (ganó el último partido)"
+      />
+    );
+  if (last === "L")
+    return (
+      <TrendingDown
+        className="w-4 h-4 text-red-600 dark:text-red-400"
+        aria-label="Racha en baja (perdió el último partido)"
+      />
+    );
+  return (
+    <Minus
+      className="w-4 h-4 text-gray-400"
+      aria-label="Racha estable (empató el último partido)"
+    />
+  );
 }
 
 /**
@@ -79,10 +126,10 @@ export function StandingsTable({
   className = "",
   showGroupFilter = true,
   showPhaseFilter = true,
-  variant = "public",
   title = "Tabla de Posiciones",
   description = "Clasificación actual del torneo",
   tiebreakers,
+  formByTeamId,
 }: Readonly<StandingsTableProps>) {
   const [selectedPhase, setSelectedPhase] = useState<string>("all");
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
@@ -101,9 +148,12 @@ export function StandingsTable({
     const phases = new Map<string, PhaseInfo>();
     tournamentTeams.forEach((team) => {
       team.phaseStats?.forEach((stat) => {
-        const phaseName =
-          (stat as any).tournamentPhase?.name || "Fase desconocida";
-        const phaseType = (stat as any).tournamentPhase?.type;
+        // El include de Prisma trae tournamentPhase pero el tipo local no lo declara
+        const phase = (
+          stat as { tournamentPhase?: { name?: string; type?: string } }
+        ).tournamentPhase;
+        const phaseName = phase?.name || "Fase desconocida";
+        const phaseType = phase?.type;
         if (!phases.has(stat.tournamentPhaseId)) {
           phases.set(stat.tournamentPhaseId, {
             id: stat.tournamentPhaseId,
@@ -192,6 +242,8 @@ export function StandingsTable({
     return groupTeamsByGroup(standings, tiebreakers);
   }, [standings, multipleGroups, selectedGroup, tiebreakers]);
 
+  const showForm = !!formByTeamId;
+
   // Componente de tabla reutilizable
   const renderTable = (rows: TeamStandingRow[], showGroupColumn = false) => (
     <div className="overflow-x-auto">
@@ -233,18 +285,23 @@ export function StandingsTable({
             <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300">
               Pts
             </TableHead>
+            {showForm && (
+              <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">
+                Racha
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={showGroupColumn ? 11 : 10}
+                colSpan={(showGroupColumn ? 11 : 10) + (showForm ? 1 : 0)}
                 className="text-center py-12"
               >
                 <div className="space-y-3">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#ad45ff]/10 to-[#c77dff]/10 rounded-2xl flex items-center justify-center mx-auto">
-                    <Trophy className="w-8 h-8 text-[#ad45ff]" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-brand/10 to-brand-mid/10 rounded-2xl flex items-center justify-center mx-auto">
+                    <Trophy className="w-8 h-8 text-brand" />
                   </div>
                   <p className="text-gray-500 dark:text-gray-400">
                     No hay equipos en esta selección
@@ -256,7 +313,15 @@ export function StandingsTable({
             rows.map((row, index) => (
               <TableRow
                 key={row.id}
-                className="group hover:bg-[#ad45ff]/5 dark:hover:bg-[#ad45ff]/10 transition-colors duration-200 border-b border-gray-100 dark:border-gray-800"
+                className={`group hover:bg-brand/5 dark:hover:bg-brand/10 transition-colors duration-200 border-b border-gray-100 dark:border-gray-800 ${
+                  index === 0
+                    ? // Líder destacado (F2): acento dorado + fondo sutil
+                      "bg-gradient-to-r from-amber-50/80 via-transparent to-transparent dark:from-amber-500/10 border-l-4 border-l-amber-400"
+                    : index % 2 === 1
+                      ? // Zebra (F2)
+                        "bg-gray-50/60 dark:bg-gray-800/30"
+                      : ""
+                }`}
               >
                 <TableCell className="font-medium text-center py-4">
                   <div
@@ -286,7 +351,7 @@ export function StandingsTable({
                         className="w-full h-full object-cover rounded-lg"
                       />
                     </div>
-                    <span className="truncate hidden sm:block text-gray-900 dark:text-white font-semibold group-hover:text-[#ad45ff] transition-colors">
+                    <span className="truncate hidden sm:block text-gray-900 dark:text-white font-semibold group-hover:text-brand transition-colors">
                       {row.teamName}
                     </span>
                   </div>
@@ -295,7 +360,7 @@ export function StandingsTable({
                   <TableCell className="text-center hidden sm:table-cell">
                     <Badge
                       variant="secondary"
-                      className="bg-[#ad45ff]/10 text-[#ad45ff] border-0"
+                      className="bg-brand/10 text-brand border-0"
                     >
                       {row.group || "-"}
                     </Badge>
@@ -335,10 +400,33 @@ export function StandingsTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center py-4">
-                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#ad45ff] to-[#c77dff] text-white font-bold shadow-lg shadow-[#ad45ff]/25">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-brand-mid text-white font-bold shadow-lg shadow-brand/25">
                     {row.points}
                   </div>
                 </TableCell>
+                {showForm && (
+                  <TableCell className="text-center hidden sm:table-cell">
+                    {formByTeamId?.[row.id]?.length ? (
+                      <div className="inline-flex items-center gap-2">
+                        <FormTrend form={formByTeamId[row.id]} />
+                        {/* Últimos 5: puntos W/D/L (solo lg+) */}
+                        <div
+                          className="hidden lg:flex items-center gap-1"
+                          title={`Últimos partidos: ${formByTeamId[row.id].join(" ")}`}
+                        >
+                          {formByTeamId[row.id].map((r, i) => (
+                            <span
+                              key={i}
+                              className={`w-2 h-2 rounded-full ${FORM_DOT[r]}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-300 dark:text-gray-600">—</span>
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             ))
           )}
@@ -352,12 +440,12 @@ export function StandingsTable({
       className={`relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm ${className}`}
     >
       {/* Gradient accent bar */}
-      <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+      <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
 
       <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+            <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
               <Trophy className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -378,7 +466,7 @@ export function StandingsTable({
                 <Select value={selectedPhase} onValueChange={setSelectedPhase}>
                   <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-[#ad45ff]" />
+                      <Layers className="w-4 h-4 text-brand" />
                       <SelectValue placeholder="Fase" />
                     </div>
                   </SelectTrigger>
@@ -405,7 +493,7 @@ export function StandingsTable({
                 <Select value={selectedGroup} onValueChange={setSelectedGroup}>
                   <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#ad45ff]" />
+                      <Users className="w-4 h-4 text-brand" />
                       <SelectValue placeholder="Grupo" />
                     </div>
                   </SelectTrigger>

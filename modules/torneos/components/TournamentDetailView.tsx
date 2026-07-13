@@ -153,13 +153,13 @@ export default async function TournamentDetailView({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <Link href="/" className="hover:text-[#ad45ff] transition-colors">
+          <Link href="/" className="hover:text-brand transition-colors">
             Inicio
           </Link>
           <ChevronRight className="w-4 h-4" />
           <Link
             href="/torneos"
-            className="hover:text-[#ad45ff] transition-colors"
+            className="hover:text-brand transition-colors"
           >
             Torneos
           </Link>
@@ -172,7 +172,7 @@ export default async function TournamentDetailView({
         {/* Back Button - Premium Style */}
         <Button
           variant="ghost"
-          className="mb-6 hover:bg-[#ad45ff]/10 hover:text-[#ad45ff] border border-gray-200 dark:border-gray-700"
+          className="mb-6 hover:bg-brand/10 hover:text-brand border border-gray-200 dark:border-gray-700"
           asChild
         >
           <Link href="/torneos">
@@ -205,34 +205,35 @@ export default async function TournamentDetailView({
 
         {/* Tournament Content Tabs - Premium Golazo Style */}
         <Tabs defaultValue="standings" className="space-y-8">
-          {/* Premium Tab List */}
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-2xl blur opacity-20" />
+          {/* Premium Tab List — sticky en mobile (F2): el header público mide
+              h-16 + barra de 4px, las tabs quedan pegadas debajo al scrollear */}
+          <div className="sticky top-[72px] z-30 lg:relative lg:top-auto">
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-2xl blur opacity-20" />
             <TabsList className="relative flex flex-wrap sm:grid sm:grid-cols-2 lg:grid-cols-4 w-full bg-white dark:bg-gray-900 p-2 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 gap-2 h-auto">
               <TabsTrigger
                 value="standings"
-                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
+                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
               >
                 <Trophy className="w-4 h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Posiciones</span>
               </TabsTrigger>
               <TabsTrigger
                 value="fixtures"
-                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
+                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
               >
                 <Calendar className="w-4 h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Calendario</span>
               </TabsTrigger>
               <TabsTrigger
                 value="results"
-                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
+                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
               >
                 <Swords className="w-4 h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Resultados</span>
               </TabsTrigger>
               <TabsTrigger
                 value="stats"
-                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
+                className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-3 font-medium transition-all duration-300 text-sm sm:text-base"
               >
                 <BarChart3 className="w-4 h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Estadísticas</span>
@@ -256,7 +257,7 @@ export default async function TournamentDetailView({
           <TabsContent value="fixtures">
             <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm">
               {/* Gradient accent bar */}
-              <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+              <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
               <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -273,7 +274,7 @@ export default async function TournamentDetailView({
                     </div>
                   </div>
                   {upcomingMatches.length > 0 && (
-                    <Badge className="bg-[#ad45ff]/10 text-[#ad45ff] border-[#ad45ff]/20 rounded-full px-3 py-1">
+                    <Badge className="bg-brand/10 text-brand border-brand/20 rounded-full px-3 py-1">
                       {upcomingMatches.length} partido
                       {upcomingMatches.length === 1 ? "" : "s"}
                     </Badge>
@@ -299,10 +300,10 @@ export default async function TournamentDetailView({
                     {upcomingMatches.map((match) => (
                       <div
                         key={match.id}
-                        className="group relative bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:shadow-xl hover:shadow-[#ad45ff]/10 transition-all duration-300"
+                        className="group relative bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 hover:border-brand/50 hover:shadow-xl hover:shadow-brand/10 transition-all duration-300"
                       >
                         {/* Subtle gradient overlay on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/0 via-[#ad45ff]/0 to-[#c77dff]/0 group-hover:from-[#ad45ff]/5 group-hover:via-[#ad45ff]/3 group-hover:to-[#c77dff]/5 rounded-2xl transition-all duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-brand/0 via-brand/0 to-brand-mid/0 group-hover:from-brand/5 group-hover:via-brand/3 group-hover:to-brand-mid/5 rounded-2xl transition-all duration-300" />
 
                         <div className="relative">
                           {/* Status & Phase badges */}
@@ -319,7 +320,7 @@ export default async function TournamentDetailView({
                                 : "Postergado"}
                             </Badge>
                             {match.phase && (
-                              <Badge className="bg-[#ad45ff]/10 text-[#ad45ff] border-0 rounded-full text-xs px-2.5 py-0.5">
+                              <Badge className="bg-brand/10 text-brand border-0 rounded-full text-xs px-2.5 py-0.5">
                                 {match.phase.name === "FECHA"
                                   ? "Fecha"
                                   : match.phase.name === "CRUCES"
@@ -355,7 +356,7 @@ export default async function TournamentDetailView({
                                   {formatMatchDate(match.dateTime)}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 font-bold text-lg text-[#ad45ff]">
+                              <div className="flex items-center gap-2 font-bold text-lg text-brand">
                                 <Clock className="w-4 h-4" />
                                 {formatMatchTime(match.dateTime)}
                               </div>
@@ -365,7 +366,7 @@ export default async function TournamentDetailView({
                             <div className="flex items-center gap-3 sm:gap-6 flex-1 justify-center py-2">
                               {/* Home Team */}
                               <div className="flex flex-col sm:flex-row items-center gap-3 flex-1 justify-end">
-                                <span className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg group-hover:text-[#ad45ff] transition-colors text-center sm:text-right order-2 sm:order-1">
+                                <span className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg group-hover:text-brand transition-colors text-center sm:text-right order-2 sm:order-1">
                                   {match.homeTeam?.team?.name || "Por definir"}
                                 </span>
                                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-0.5 shadow-md order-1 sm:order-2">
@@ -384,7 +385,7 @@ export default async function TournamentDetailView({
                               </div>
 
                               {/* VS Badge */}
-                              <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#ad45ff] to-[#c77dff] shadow-lg shadow-[#ad45ff]/25">
+                              <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-brand to-brand-mid shadow-lg shadow-brand/25">
                                 <span className="font-bold text-white text-sm">
                                   VS
                                 </span>
@@ -405,7 +406,7 @@ export default async function TournamentDetailView({
                                     className="w-full h-full object-cover rounded-lg"
                                   />
                                 </div>
-                                <span className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg group-hover:text-[#ad45ff] transition-colors text-center sm:text-left">
+                                <span className="font-semibold text-gray-900 dark:text-white text-base sm:text-lg group-hover:text-brand transition-colors text-center sm:text-left">
                                   {match.awayTeam?.team?.name || "Por definir"}
                                 </span>
                               </div>
@@ -415,7 +416,7 @@ export default async function TournamentDetailView({
                             <div className="flex flex-col items-center lg:items-end gap-1 min-w-[150px]">
                               {match.stadium && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                  <MapPin className="w-4 h-4 text-[#ad45ff]" />
+                                  <MapPin className="w-4 h-4 text-brand" />
                                   <span className="font-medium">
                                     {match.stadium}
                                   </span>
@@ -441,7 +442,7 @@ export default async function TournamentDetailView({
           <TabsContent value="results">
             <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm">
               {/* Gradient accent bar */}
-              <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+              <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
               <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -499,10 +500,10 @@ export default async function TournamentDetailView({
                             isLive
                               ? "border-green-400 dark:border-green-500 shadow-lg shadow-green-500/10"
                               : "border-gray-100 dark:border-gray-700"
-                          } hover:border-[#ad45ff]/50 hover:shadow-xl hover:shadow-[#ad45ff]/10 transition-all duration-300`}
+                          } hover:border-brand/50 hover:shadow-xl hover:shadow-brand/10 transition-all duration-300`}
                         >
                           {/* Subtle gradient overlay on hover */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/0 via-[#ad45ff]/0 to-[#c77dff]/0 group-hover:from-[#ad45ff]/5 group-hover:via-[#ad45ff]/3 group-hover:to-[#c77dff]/5 rounded-2xl transition-all duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-brand/0 via-brand/0 to-brand-mid/0 group-hover:from-brand/5 group-hover:via-brand/3 group-hover:to-brand-mid/5 rounded-2xl transition-all duration-300" />
 
                           {/* Live indicator pulse */}
                           {isLive && (
@@ -537,7 +538,7 @@ export default async function TournamentDetailView({
                                   className={`font-semibold text-base sm:text-lg transition-colors text-center sm:text-right order-2 sm:order-1 ${
                                     isHomeWinner
                                       ? "text-green-600 dark:text-green-400"
-                                      : "text-gray-900 dark:text-white group-hover:text-[#ad45ff]"
+                                      : "text-gray-900 dark:text-white group-hover:text-brand"
                                   }`}
                                 >
                                   {match.homeTeam?.team?.name || "Por definir"}
@@ -619,7 +620,7 @@ export default async function TournamentDetailView({
                                   className={`font-semibold text-base sm:text-lg transition-colors text-center sm:text-left ${
                                     isAwayWinner
                                       ? "text-green-600 dark:text-green-400"
-                                      : "text-gray-900 dark:text-white group-hover:text-[#ad45ff]"
+                                      : "text-gray-900 dark:text-white group-hover:text-brand"
                                   }`}
                                 >
                                   {match.awayTeam?.team?.name || "Por definir"}
@@ -631,7 +632,7 @@ export default async function TournamentDetailView({
                             {match.penaltyWinnerTeamId && (
                               <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                                 <div className="flex items-center justify-center gap-2 text-sm">
-                                  <Trophy className="w-4 h-4 text-[#ad45ff]" />
+                                  <Trophy className="w-4 h-4 text-brand" />
                                   <span className="text-gray-600 dark:text-gray-400">
                                     Penales: {match.penaltyScoreHome} -{" "}
                                     {match.penaltyScoreAway}
@@ -672,7 +673,7 @@ export default async function TournamentDetailView({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <Card className="bg-white dark:bg-gray-900/80 border border-gray-100 dark:border-gray-800 rounded-xl">
                 <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-[#ad45ff] to-[#c77dff] flex items-center justify-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-brand to-brand-mid flex items-center justify-center">
                     <Target className="w-6 h-6 text-white" />
                   </div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -728,10 +729,10 @@ export default async function TournamentDetailView({
               {/* Top Scorers */}
               <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm">
                 {/* Gradient accent bar */}
-                <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+                <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
                 <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+                    <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
                       <Target className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-gray-900 dark:text-white text-xl">
@@ -750,7 +751,7 @@ export default async function TournamentDetailView({
                       {stats.topScorers.map((scorer) => (
                         <div
                           key={scorer.playerId}
-                          className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:shadow-lg hover:shadow-[#ad45ff]/10 transition-all duration-300"
+                          className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 hover:border-brand/50 hover:shadow-lg hover:shadow-brand/10 transition-all duration-300"
                         >
                           <div className="flex items-center gap-4">
                             <div
@@ -761,7 +762,7 @@ export default async function TournamentDetailView({
                                     ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-gray-400/30"
                                     : scorer.position === 3
                                       ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-amber-600/30"
-                                      : "bg-gradient-to-br from-[#ad45ff] to-[#c77dff] text-white shadow-[#ad45ff]/30"
+                                      : "bg-gradient-to-br from-brand to-brand-mid text-white shadow-brand/30"
                               }`}
                             >
                               {scorer.position}
@@ -775,7 +776,7 @@ export default async function TournamentDetailView({
                                 />
                               )}
                               <div>
-                                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors">
+                                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-brand transition-colors">
                                   {scorer.playerName}
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -785,8 +786,8 @@ export default async function TournamentDetailView({
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Medal className="w-5 h-5 text-[#ad45ff]" />
-                            <span className="font-bold text-2xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] bg-clip-text text-transparent">
+                            <Medal className="w-5 h-5 text-brand" />
+                            <span className="font-bold text-2xl bg-gradient-to-r from-brand to-brand-mid bg-clip-text text-transparent">
                               {scorer.goals}
                             </span>
                           </div>
@@ -952,10 +953,10 @@ export default async function TournamentDetailView({
 
               {/* Sancionados (N8) */}
               <Card className="relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl backdrop-blur-sm md:col-span-2">
-                <div className="h-1.5 bg-gradient-to-r from-red-500 via-[#ad45ff] to-[#a3b3ff]" />
+                <div className="h-1.5 bg-gradient-to-r from-red-500 via-brand to-brand-2" />
                 <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800/50">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-gradient-to-br from-red-500 to-[#ad45ff] rounded-xl shadow-lg shadow-red-500/25">
+                    <div className="p-2.5 bg-gradient-to-br from-red-500 to-brand rounded-xl shadow-lg shadow-red-500/25">
                       <ShieldAlert className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-gray-900 dark:text-white text-xl">

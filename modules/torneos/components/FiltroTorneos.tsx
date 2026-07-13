@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { ITorneo } from "@modules/torneos/types";
+import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 import {
   TOURNAMENT_STATUS_OPTIONS,
   TOURNAMENT_STATUS_LABELS,
@@ -419,7 +420,7 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                   className="w-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white rounded-xl h-12 font-semibold shadow-lg shadow-[#ad45ff]/20 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all group/btn"
                   asChild
                 >
-                  <Link href={`/torneos/${tournament.id}`}>
+                  <Link href={tournamentPublicPath(tournament)}>
                     <Eye className="w-4 h-4 mr-2" />
                     Ver Torneo
                     <ChevronRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />

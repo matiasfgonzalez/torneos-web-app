@@ -62,9 +62,12 @@ export function AdminStandingsSection({
     const phases = new Map<string, PhaseInfo>();
     tournamentTeams.forEach((team) => {
       team.phaseStats?.forEach((stat) => {
-        const phaseName =
-          (stat as any).tournamentPhase?.name || "Fase desconocida";
-        const phaseType = (stat as any).tournamentPhase?.type;
+        // El include de Prisma trae tournamentPhase pero el tipo local no lo declara
+        const phase = (
+          stat as { tournamentPhase?: { name?: string; type?: string } }
+        ).tournamentPhase;
+        const phaseName = phase?.name || "Fase desconocida";
+        const phaseType = phase?.type;
         if (!phases.has(stat.tournamentPhaseId)) {
           phases.set(stat.tournamentPhaseId, {
             id: stat.tournamentPhaseId,
