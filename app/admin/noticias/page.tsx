@@ -192,7 +192,7 @@ export default function AdminNoticias() {
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <div className="w-1 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+              <div className="w-1 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                 Gestión de Noticias
               </h2>
@@ -206,18 +206,18 @@ export default function AdminNoticias() {
             onOpenChange={setIsCreateDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold">
+              <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold">
                 <Plus className="mr-2 h-5 w-5" />
                 Nueva Noticia
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
               {/* Header con gradiente */}
-              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff] rounded-t-2xl" />
+              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand via-brand-2 to-brand rounded-t-2xl" />
 
               <DialogHeader className="space-y-4 pt-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
                     <Plus className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -236,7 +236,7 @@ export default function AdminNoticias() {
                 {/* Título */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <Label
                       htmlFor="title"
                       className="text-sm font-semibold text-gray-700 dark:text-gray-300"
@@ -254,14 +254,14 @@ export default function AdminNoticias() {
                         title: e.target.value,
                       })
                     }
-                    className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                    className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                   />
                 </div>
 
                 {/* Resumen */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <Label
                       htmlFor="summary"
                       className="text-sm font-semibold text-gray-700 dark:text-gray-300"
@@ -280,14 +280,14 @@ export default function AdminNoticias() {
                         summary: e.target.value,
                       })
                     }
-                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                   />
                 </div>
 
                 {/* Contenido */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <Label
                       htmlFor="content"
                       className="text-sm font-semibold text-gray-700 dark:text-gray-300"
@@ -306,14 +306,14 @@ export default function AdminNoticias() {
                         content: e.target.value,
                       })
                     }
-                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                   />
                 </div>
 
                 {/* Imagen de portada */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <Label
                       htmlFor="coverImage"
                       className="text-sm font-semibold text-gray-700 dark:text-gray-300"
@@ -339,7 +339,7 @@ export default function AdminNoticias() {
                 {/* Estado de publicación */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Configuración de Publicación
                     </Label>
@@ -393,7 +393,7 @@ export default function AdminNoticias() {
                     disabled={
                       !newArticle.title.trim() || !newArticle.content.trim()
                     }
-                    className="px-8 py-2.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    className="px-8 py-2.5 bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     {newArticle.published
@@ -408,12 +408,12 @@ export default function AdminNoticias() {
 
         {/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="border-2 border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+          <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Total Noticias
               </CardTitle>
-              <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-brand to-brand-2 rounded-lg flex items-center justify-center">
                 <FileText className="h-4 w-4 text-white" />
               </div>
             </CardHeader>
@@ -465,10 +465,10 @@ export default function AdminNoticias() {
         </div>
 
         {/* News Table */}
-        <Card className="border-2 border-[#ad45ff]/20 dark:border-[#8b39cc]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+        <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
           <CardHeader className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-brand to-brand-2 rounded-xl flex items-center justify-center">
                 <FileText className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -543,7 +543,7 @@ export default function AdminNoticias() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center text-gray-700 dark:text-gray-300">
-                          <Calendar className="mr-1 h-4 w-4 text-[#ad45ff]" />
+                          <Calendar className="mr-1 h-4 w-4 text-brand" />
                           {article.publishedAt
                             ? formatDate(article.publishedAt)
                             : "Sin fecha"}

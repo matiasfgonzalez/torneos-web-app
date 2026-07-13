@@ -45,6 +45,7 @@ import {
   MapPin,
 } from "lucide-react";
 import DialogReferee from "./DialogReferee";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -138,76 +139,41 @@ export default function RefereesPage() {
 
   return (
     <div className="space-y-8 p-6 sm:p-8">
-      {/* Header mejorado */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 rounded-3xl -z-10" />
-
-        <Card className="border-2 border-[#ad45ff]/20 dark:border-[#ad45ff]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
-          <CardContent className="p-6 sm:p-8">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
-                    <Award className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-                      Panel de Árbitros
-                    </h1>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <p className="text-gray-600 dark:text-gray-300 font-medium">
-                        Sistema activo · {referees.length} árbitros
-                        registrados
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-                  Gestiona el cuerpo arbitral de tus torneos. Agrega, edita,
-                  habilita/deshabilita y administra los árbitros.
-                </p>
-
-                {/* Stats rápidos */}
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40 px-4 py-2 rounded-xl">
-                    <Power className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                      {activeReferees} activos
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600/40 px-4 py-2 rounded-xl">
-                    <PowerOff className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                      {inactiveReferees} inactivos
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 px-4 py-2 rounded-xl">
-                    <TrendingUp className="w-4 h-4 text-[#ad45ff]" />
-                    <span className="text-sm font-semibold text-[#ad45ff]">
-                      {totalMatches} partidos dirigidos
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="w-full lg:w-auto">
-                <DialogReferee mode="create" onSuccess={fetchReferees} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Header - componente compartido (patrón §3 variante A) */}
+      <PageHeader
+        icon={Award}
+        title="Panel de Árbitros"
+        statusText={`Sistema activo · ${referees.length} árbitros registrados`}
+        description="Gestiona el cuerpo arbitral de tus torneos. Agrega, edita, habilita/deshabilita y administra los árbitros."
+        quickStats={[
+          {
+            icon: Power,
+            text: `${activeReferees} activos`,
+            colorClass:
+              "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300",
+          },
+          {
+            icon: PowerOff,
+            text: `${inactiveReferees} inactivos`,
+            colorClass:
+              "bg-gray-50 dark:bg-gray-700/30 text-gray-600 dark:text-gray-300",
+          },
+          {
+            icon: TrendingUp,
+            text: `${totalMatches} partidos dirigidos`,
+          },
+        ]}
+        actions={<DialogReferee mode="create" onSuccess={fetchReferees} />}
+      />
 
       {/* Lista de árbitros */}
       <Card className="border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-xl overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff]" />
+        <div className="h-1 bg-gradient-to-r from-brand to-brand-mid" />
 
         <CardHeader className="space-y-4 p-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#ad45ff]/10 dark:bg-[#ad45ff]/20 rounded-lg">
-              <Users className="w-5 h-5 text-[#ad45ff]" />
+            <div className="p-2 bg-brand/10 dark:bg-brand/20 rounded-lg">
+              <Users className="w-5 h-5 text-brand" />
             </div>
             <div>
               <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
@@ -227,12 +193,12 @@ export default function RefereesPage() {
                 placeholder="Buscar por nombre, email o teléfono..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-11 bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 hover:border-[#ad45ff]/50 focus:border-[#ad45ff] rounded-xl transition-colors"
+                className="pl-10 h-11 bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 hover:border-brand/50 focus:border-brand rounded-xl transition-colors"
               />
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48 h-11 bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 hover:border-[#ad45ff]/50 rounded-xl">
+              <SelectTrigger className="w-full sm:w-48 h-11 bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 hover:border-brand/50 rounded-xl">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -269,7 +235,7 @@ export default function RefereesPage() {
         <CardContent className="p-6 pt-0">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <Loader2 className="h-10 w-10 animate-spin text-[#ad45ff] mb-4" />
+              <Loader2 className="h-10 w-10 animate-spin text-brand mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
                 Cargando árbitros...
               </p>
@@ -281,7 +247,7 @@ export default function RefereesPage() {
                   <TableRow className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                     <TableHead className="font-semibold text-gray-700 dark:text-gray-300">
                       <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-[#ad45ff]" />
+                        <Award className="w-4 h-4 text-brand" />
                         Árbitro
                       </div>
                     </TableHead>
@@ -384,7 +350,7 @@ export default function RefereesPage() {
                         </TableCell>
                         <TableCell>
                           {referee.certificationLevel ? (
-                            <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0">
+                            <Badge className="bg-gradient-to-r from-brand to-brand-mid text-white border-0">
                               {referee.certificationLevel}
                             </Badge>
                           ) : (

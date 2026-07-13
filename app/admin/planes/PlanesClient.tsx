@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -195,180 +196,175 @@ export default function PlanesClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#ad45ff]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
 
-  return (
-    <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
-            <Layers className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-              Planes
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Precio, límites y features de cada plan
-            </p>
-          </div>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={openCreate}
-              className="gap-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white"
-            >
-              <Plus className="w-4 h-4" />
-              Nuevo plan
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingId ? "Editar plan" : "Nuevo plan"}</DialogTitle>
-              <DialogDescription>
-                Los límites rigen al instante para todas las organizaciones con
-                este plan.
-              </DialogDescription>
-            </DialogHeader>
+  const planDialogContent = (
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Editar plan" : "Nuevo plan"}</DialogTitle>
+            <DialogDescription>
+              Los límites rigen al instante para todas las organizaciones con
+              este plan.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="space-y-4">
-              {!editingId && (
-                <div className="space-y-2">
-                  <Label htmlFor="code">Código</Label>
-                  <Input
-                    id="code"
-                    placeholder="Ej: PRO"
-                    value={form.code}
-                    onChange={(e) => update("code", e.target.value.toUpperCase())}
-                  />
-                </div>
-              )}
+          <div className="space-y-4">
+            {!editingId && (
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre</Label>
+                <Label htmlFor="code">Código</Label>
                 <Input
-                  id="name"
-                  placeholder="Ej: Plan Pro"
-                  value={form.name}
-                  onChange={(e) => update("name", e.target.value)}
+                  id="code"
+                  placeholder="Ej: PRO"
+                  value={form.code}
+                  onChange={(e) => update("code", e.target.value.toUpperCase())}
                 />
               </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                placeholder="Ej: Plan Pro"
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="priceMonthly">Precio mensual (ARS)</Label>
+              <Input
+                id="priceMonthly"
+                type="number"
+                min="0"
+                value={form.priceMonthly}
+                onChange={(e) => update("priceMonthly", e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="priceMonthly">Precio mensual (ARS)</Label>
+                <Label htmlFor="maxActiveTournaments">Torneos activos</Label>
                 <Input
-                  id="priceMonthly"
+                  id="maxActiveTournaments"
                   type="number"
                   min="0"
-                  value={form.priceMonthly}
-                  onChange={(e) => update("priceMonthly", e.target.value)}
+                  value={form.maxActiveTournaments}
+                  onChange={(e) =>
+                    update("maxActiveTournaments", e.target.value)
+                  }
                 />
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="maxActiveTournaments">Torneos activos</Label>
-                  <Input
-                    id="maxActiveTournaments"
-                    type="number"
-                    min="0"
-                    value={form.maxActiveTournaments}
-                    onChange={(e) =>
-                      update("maxActiveTournaments", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxTeamsPerTournament">Equipos/torneo</Label>
-                  <Input
-                    id="maxTeamsPerTournament"
-                    type="number"
-                    min="0"
-                    value={form.maxTeamsPerTournament}
-                    onChange={(e) =>
-                      update("maxTeamsPerTournament", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxMembers">Miembros</Label>
-                  <Input
-                    id="maxMembers"
-                    type="number"
-                    min="0"
-                    value={form.maxMembers}
-                    onChange={(e) => update("maxMembers", e.target.value)}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="maxTeamsPerTournament">Equipos/torneo</Label>
+                <Input
+                  id="maxTeamsPerTournament"
+                  type="number"
+                  min="0"
+                  value={form.maxTeamsPerTournament}
+                  onChange={(e) =>
+                    update("maxTeamsPerTournament", e.target.value)
+                  }
+                />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
-                Usá 999 para representar &quot;ilimitado&quot;.
-              </p>
-
-              <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="exportPdf" className="cursor-pointer">
-                    Exportar PDF
-                  </Label>
-                  <Switch
-                    id="exportPdf"
-                    checked={form.exportPdf}
-                    onCheckedChange={(c) => update("exportPdf", c)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="customBranding" className="cursor-pointer">
-                    Marca personalizada
-                  </Label>
-                  <Switch
-                    id="customBranding"
-                    checked={form.customBranding}
-                    onCheckedChange={(c) => update("customBranding", c)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="liveMatch" className="cursor-pointer">
-                    Partido en vivo
-                  </Label>
-                  <Switch
-                    id="liveMatch"
-                    checked={form.liveMatch}
-                    onCheckedChange={(c) => update("liveMatch", c)}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="maxMembers">Miembros</Label>
+                <Input
+                  id="maxMembers"
+                  type="number"
+                  min="0"
+                  value={form.maxMembers}
+                  onChange={(e) => update("maxMembers", e.target.value)}
+                />
               </div>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
+              Usá 999 para representar &quot;ilimitado&quot;.
+            </p>
 
-              <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
-                <Label htmlFor="isActive" className="cursor-pointer">
-                  Plan activo (visible para contratar)
+            <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="exportPdf" className="cursor-pointer">
+                  Exportar PDF
                 </Label>
                 <Switch
-                  id="isActive"
-                  checked={form.isActive}
-                  disabled={editingId !== null && form.code === "FREE"}
-                  onCheckedChange={(c) => update("isActive", c)}
+                  id="exportPdf"
+                  checked={form.exportPdf}
+                  onCheckedChange={(c) => update("exportPdf", c)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="customBranding" className="cursor-pointer">
+                  Marca personalizada
+                </Label>
+                <Switch
+                  id="customBranding"
+                  checked={form.customBranding}
+                  onCheckedChange={(c) => update("customBranding", c)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="liveMatch" className="cursor-pointer">
+                  Partido en vivo
+                </Label>
+                <Switch
+                  id="liveMatch"
+                  checked={form.liveMatch}
+                  onCheckedChange={(c) => update("liveMatch", c)}
                 />
               </div>
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancelar
+            <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+              <Label htmlFor="isActive" className="cursor-pointer">
+                Plan activo (visible para contratar)
+              </Label>
+              <Switch
+                id="isActive"
+                checked={form.isActive}
+                disabled={editingId !== null && form.code === "FREE"}
+                onCheckedChange={(c) => update("isActive", c)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-gradient-to-r from-brand to-brand-2 text-white"
+            >
+              {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+  );
+
+  return (
+    <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
+      {/* Header - componente compartido (patrón §3 variante B) */}
+      <PageHeader
+        variant="simple"
+        icon={Layers}
+        title="Planes"
+        description="Precio, límites y features de cada plan"
+        actions={
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="brand" onClick={openCreate} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Nuevo plan
               </Button>
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white"
-              >
-                {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Guardar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+            </DialogTrigger>
+            {planDialogContent}
+          </Dialog>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => (
@@ -395,7 +391,7 @@ export default function PlanesClient() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-2xl font-bold text-[#ad45ff]">
+              <p className="text-2xl font-bold text-brand">
                 ${Number(plan.priceMonthly).toLocaleString("es-AR")}
                 <span className="text-sm font-normal text-gray-400">/mes</span>
               </p>

@@ -170,7 +170,7 @@ export default function EditNoticia() {
             <Button
               variant="ghost"
               asChild
-              className="text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10"
+              className="text-brand dark:text-brand-2 hover:bg-brand/10"
             >
               <Link href="/admin/noticias">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -199,7 +199,7 @@ export default function EditNoticia() {
             <Button
               variant="ghost"
               asChild
-              className="text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10"
+              className="text-brand dark:text-brand-2 hover:bg-brand/10"
             >
               <Link href="/admin/noticias">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -231,7 +231,7 @@ export default function EditNoticia() {
             <Button
               variant="ghost"
               asChild
-              className="text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
+              className="text-brand dark:text-brand-2 hover:bg-brand/10 dark:hover:bg-brand/20"
             >
               <Link href="/admin/noticias">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -240,7 +240,7 @@ export default function EditNoticia() {
             </Button>
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
-                <div className="w-1 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                <div className="w-1 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                   Editar Noticia
                 </h2>
@@ -271,7 +271,7 @@ export default function EditNoticia() {
             <Button
               onClick={handleSave}
               disabled={isLoading || !hasChanges}
-              className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 disabled:opacity-50"
+              className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 disabled:opacity-50"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? "Guardando..." : "Guardar cambios"}
@@ -286,7 +286,7 @@ export default function EditNoticia() {
             <Card className="glass-card border-0 shadow-xl">
               <CardHeader className="space-y-4 pb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                  <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                   <div>
                     <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                       Información Principal
@@ -310,7 +310,7 @@ export default function EditNoticia() {
                     placeholder="Título de la noticia"
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
-                    className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl text-lg font-semibold"
+                    className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl text-lg font-semibold"
                   />
                 </div>
 
@@ -329,7 +329,7 @@ export default function EditNoticia() {
                     onChange={(e) =>
                       handleInputChange("summary", e.target.value)
                     }
-                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl resize-none"
+                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl resize-none"
                   />
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {formData.summary.length}/200 caracteres recomendados
@@ -351,7 +351,7 @@ export default function EditNoticia() {
                     onChange={(e) =>
                       handleInputChange("content", e.target.value)
                     }
-                    className="min-h-[400px] bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl resize-none"
+                    className="min-h-[400px] bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl resize-none"
                   />
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {formData.content.length} caracteres
@@ -367,7 +367,7 @@ export default function EditNoticia() {
             <Card className="glass-card border-0 shadow-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center space-x-3">
-                  <Edit className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                  <Edit className="h-5 w-5 text-brand dark:text-brand-2" />
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                     Configuración de Publicación
                   </CardTitle>
@@ -405,7 +405,7 @@ export default function EditNoticia() {
                     Fecha de Publicación
                   </Label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-brand dark:text-brand-2" />
                     <Input
                       id="date"
                       type="date"
@@ -413,7 +413,7 @@ export default function EditNoticia() {
                       onChange={(e) =>
                         handleInputChange("date", e.target.value)
                       }
-                      className="pl-10 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl"
+                      className="pl-10 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl"
                     />
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export default function EditNoticia() {
             <Card className="glass-card border-0 shadow-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center space-x-3">
-                  <Upload className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                  <Upload className="h-5 w-5 text-brand dark:text-brand-2" />
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                     Imagen de Portada
                   </CardTitle>
@@ -462,13 +462,13 @@ export default function EditNoticia() {
                     onChange={(e) =>
                       handleInputChange("coverImageUrl", e.target.value)
                     }
-                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl"
+                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl"
                   />
                 </div>
 
                 <Button
                   variant="outline"
-                  className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-[#ad45ff] hover:text-[#ad45ff] dark:hover:border-[#a3b3ff] dark:hover:text-[#a3b3ff] rounded-xl"
+                  className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-brand hover:text-brand dark:hover:border-brand-2 dark:hover:text-brand-2 rounded-xl"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Subir Imagen
@@ -480,7 +480,7 @@ export default function EditNoticia() {
             <Card className="glass-card border-0 shadow-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                  <User className="h-5 w-5 text-brand dark:text-brand-2" />
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                     Información del Artículo
                   </CardTitle>
@@ -585,7 +585,7 @@ export default function EditNoticia() {
                 size="sm"
                 onClick={handleSave}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9c3ee6] hover:to-[#92a6ff] text-white border-0 rounded-lg"
+                className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white border-0 rounded-lg"
               >
                 <Save className="h-3 w-3 mr-1" />
                 Guardar

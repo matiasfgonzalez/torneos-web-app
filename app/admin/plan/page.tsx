@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,12 +57,6 @@ interface PaymentRow {
   createdAt: string;
   reviewNotes?: string | null;
 }
-
-const STATUS_BADGE: Record<string, string> = {
-  PENDIENTE: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
-  APROBADO: "bg-green-500/15 text-green-600 border-green-500/30",
-  RECHAZADO: "bg-red-500/15 text-red-600 border-red-500/30",
-};
 
 export default function PlanPage() {
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
@@ -134,7 +130,7 @@ export default function PlanPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#ad45ff]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -143,28 +139,20 @@ export default function PlanPage() {
 
   return (
     <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
-          <Crown className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-            Plan y Facturación
-          </h1>
-          {info && (
-            <p className="text-gray-600 dark:text-gray-300">
-              {info.organization.name}
-            </p>
-          )}
-        </div>
-      </div>
+      {/* Header - componente compartido (patrón §3 variante B) */}
+      <PageHeader
+        variant="simple"
+        icon={Crown}
+        title="Plan y Facturación"
+        description={info?.organization.name}
+      />
 
       {/* Plan actual */}
       {info && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-[#ad45ff]" />
+              <CreditCard className="w-5 h-5 text-brand" />
               Plan actual: {info.effectivePlan.name}
               {info.subscription.status === "VENCIDA" && (
                 <Badge className="bg-red-500/15 text-red-600 border-red-500/30">
@@ -220,12 +208,12 @@ export default function PlanPage() {
                 onClick={() => setSelectedPlan(plan.code)}
                 className={`text-left p-5 rounded-2xl border-2 transition-all cursor-pointer ${
                   selectedPlan === plan.code
-                    ? "border-[#ad45ff] bg-[#ad45ff]/5 shadow-lg shadow-[#ad45ff]/10"
-                    : "border-gray-200 dark:border-gray-700 hover:border-[#ad45ff]/50"
+                    ? "border-brand bg-brand/5 shadow-lg shadow-brand/10"
+                    : "border-gray-200 dark:border-gray-700 hover:border-brand/50"
                 }`}
               >
                 <p className="font-bold text-lg">{plan.name}</p>
-                <p className="text-2xl font-bold text-[#ad45ff]">
+                <p className="text-2xl font-bold text-brand">
                   ${Number(plan.priceMonthly).toLocaleString("es-AR")}
                   <span className="text-sm font-normal text-gray-400">
                     /mes
@@ -272,7 +260,7 @@ export default function PlanPage() {
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Total a transferir</p>
-                  <p className="text-2xl font-bold text-[#ad45ff]">
+                  <p className="text-2xl font-bold text-brand">
                     $
                     {(
                       Number(
@@ -317,7 +305,7 @@ export default function PlanPage() {
               <Button
                 onClick={submitPayment}
                 disabled={submitting}
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white cursor-pointer"
+                className="bg-gradient-to-r from-brand to-brand-2 text-white cursor-pointer"
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -356,9 +344,7 @@ export default function PlanPage() {
                       {p.reviewNotes && ` — ${p.reviewNotes}`}
                     </p>
                   </div>
-                  <Badge className={STATUS_BADGE[p.status] ?? ""}>
-                    {p.status}
-                  </Badge>
+                  <StatusBadge entity="payment" status={p.status} />
                 </div>
               ))}
             </div>

@@ -66,6 +66,27 @@ function Breadcrumbs({ items }: { items: Breadcrumb[] }) {
   );
 }
 
+/**
+ * Título de sección dentro de una página admin (F3): barra de acento de
+ * marca + h2. Se repetía a mano en casi todas las pantallas del panel.
+ */
+export function SectionTitle({
+  children,
+  actions,
+}: Readonly<{ children: React.ReactNode; actions?: React.ReactNode }>) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-6 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          {children}
+        </h2>
+      </div>
+      {actions}
+    </div>
+  );
+}
+
 export function PageHeader({
   icon: Icon,
   title,

@@ -19,6 +19,7 @@ import {
 } from "@modules/partidos/actions/referees";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 interface ManageRefereesProps {
   match: IPartidos;
@@ -95,7 +96,6 @@ export default function ManageReferees({
   };
 
   const handleRemove = async (refereeId: string) => {
-    if (!confirm("¿Desasignar árbitro?")) return;
     setIsAssigning(true);
     try {
       const res = await removeRefereeFromMatch(match.id, refereeId);
@@ -199,15 +199,28 @@ export default function ManageReferees({
                     {mr.role}
                   </Badge>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                  onClick={() => handleRemove(mr.refereeId)}
-                  disabled={isAssigning}
-                >
-                  <UserMinus className="w-4 h-4" />
-                </Button>
+                <ConfirmDialog
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Desasignar árbitro"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      disabled={isAssigning}
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </Button>
+                  }
+                  title="¿Desasignar árbitro?"
+                  description={
+                    <>
+                      <b>{mr.referee?.name}</b> deja de estar designado como{" "}
+                      <b>{mr.role}</b> en este partido.
+                    </>
+                  }
+                  confirmLabel="Desasignar"
+                  onConfirm={() => handleRemove(mr.refereeId)}
+                />
               </div>
             ))}
           </div>

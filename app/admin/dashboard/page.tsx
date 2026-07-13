@@ -107,12 +107,12 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header con gradiente */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#ad45ff]/10 via-[#a3b3ff]/10 to-transparent p-6 border border-[#ad45ff]/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ad45ff]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand/10 via-brand-2/10 to-transparent p-6 border border-brand/20">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="w-6 h-6 text-[#ad45ff]" />
-            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+            <Sparkles className="w-6 h-6 text-brand" />
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
               {data ? data.organization.name : "Dashboard"}
             </h2>
           </div>
@@ -127,7 +127,7 @@ export default async function AdminDashboard() {
       {!data ? (
         <Card className="glass-card border-0">
           <CardContent className="p-10 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-brand to-brand-2 flex items-center justify-center">
               <Trophy className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -165,7 +165,7 @@ export default async function AdminDashboard() {
                 value: data.counts.activeTournaments,
                 sub: `de ${data.plan.maxActiveTournaments >= 999 ? "∞" : data.plan.maxActiveTournaments} en tu plan`,
                 icon: Trophy,
-                color: "from-[#ad45ff] to-[#a3b3ff]",
+                color: "from-brand to-brand-2",
               },
               {
                 title: "Equipos Registrados",
@@ -243,7 +243,7 @@ export default async function AdminDashboard() {
                           <Button
                             asChild
                             size="sm"
-                            className="gap-1.5 shrink-0 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-md shadow-[#ad45ff]/20"
+                            className="gap-1.5 shrink-0 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-md shadow-brand/20"
                           >
                             <Link href={`/admin/partidos/${match.id}/cargar`}>
                               <Zap className="h-3.5 w-3.5" />
@@ -262,7 +262,7 @@ export default async function AdminDashboard() {
             <Card className="glass-card border-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <CalendarClock className="w-4 h-4 text-[#ad45ff]" />
+                  <CalendarClock className="w-4 h-4 text-brand" />
                   Próximos partidos
                 </CardTitle>
                 <CardDescription className="text-gray-500">
@@ -290,7 +290,7 @@ export default async function AdminDashboard() {
             <Card className="glass-card border-0 lg:col-span-1">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Crown className="w-4 h-4 text-[#ad45ff]" />
+                  <Crown className="w-4 h-4 text-brand" />
                   Tu plan: {data.plan.name}
                   {data.plan.status === "VENCIDA" && (
                     <Badge className="bg-red-500/15 text-red-600 border-red-500/30 text-xs">
@@ -331,7 +331,7 @@ export default async function AdminDashboard() {
             </Card>
 
             <Card className="glass-card border-0 overflow-hidden lg:col-span-2 relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff]" />
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand via-brand-2 to-brand" />
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white">
                   Acciones Rápidas
@@ -343,8 +343,8 @@ export default async function AdminDashboard() {
               <CardContent>
                 <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
                   {[
-                    { title: "Cargar resultado", icon: Zap, href: "/admin/partidos", color: "from-[#ad45ff] to-[#c77dff]" },
-                    { title: "Crear Torneo", icon: Trophy, href: "/admin/torneos", color: "from-[#ad45ff] to-[#a3b3ff]" },
+                    { title: "Cargar resultado", icon: Zap, href: "/admin/partidos", color: "from-brand to-brand-mid" },
+                    { title: "Crear Torneo", icon: Trophy, href: "/admin/torneos", color: "from-brand to-brand-2" },
                     { title: "Programar Partido", icon: Calendar, href: "/admin/partidos", color: "from-green-500 to-emerald-400" },
                   ].map((action) => (
                     <Link key={action.title} href={action.href}>
@@ -358,7 +358,7 @@ export default async function AdminDashboard() {
                           >
                             <action.icon className="h-6 w-6 text-white" />
                           </div>
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#ad45ff] transition-colors text-center">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-brand transition-colors text-center">
                             {action.title}
                           </span>
                         </CardContent>

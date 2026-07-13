@@ -2,7 +2,7 @@ import StatsCards from "@modules/torneos/components/admin/StatsCards";
 import ListTournaments from "@modules/torneos/components/admin/ListTournaments";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
 import { getAdminTorneos } from "@modules/torneos/actions/getTorneos";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
 import { TournamentStatus } from "@prisma/client";
 
@@ -44,25 +44,13 @@ export default async function AdminTorneos() {
           actions={<DialogAddTournaments />}
         />
 
-        {/* Stats Cards mejoradas */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-1 h-6 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Estadísticas Generales
-            </h2>
-          </div>
+          <SectionTitle>Estadísticas Generales</SectionTitle>
           <StatsCards tournaments={tournaments} />
         </div>
 
-        {/* Lista de torneos mejorada */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-1 h-6 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Administración de Torneos
-            </h2>
-          </div>
+          <SectionTitle>Administración de Torneos</SectionTitle>
           <ListTournaments tournaments={tournaments} />
         </div>
       </div>

@@ -240,7 +240,7 @@ const DialogAddEditTeamPlayer = (
       <DialogTrigger asChild>
         {mode === "create" ? (
           <Button
-            className="cursor-pointer bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all duration-300"
+            className="cursor-pointer bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 transition-all duration-300"
             size="sm"
             title="Agregar jugador al equipo"
           >
@@ -251,7 +251,7 @@ const DialogAddEditTeamPlayer = (
             variant="ghost"
             size="sm"
             title="Editar asociación"
-            className="cursor-pointer hover:bg-[#ad45ff]/10 hover:text-[#ad45ff] transition-colors"
+            className="cursor-pointer hover:bg-brand/10 hover:text-brand transition-colors"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -267,11 +267,11 @@ const DialogAddEditTeamPlayer = (
         <div className="relative px-6 pt-6 pb-4">
           {/* Efectos de fondo decorativos */}
           <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-tr from-[#ad45ff]/20 to-[#c77dff]/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-tr from-brand/20 to-brand-mid/10 rounded-full blur-2xl pointer-events-none" />
 
           <DialogHeader className="space-y-3 relative z-10">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
+              <div className="p-3 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/30">
                 <UserPlus className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -379,12 +379,12 @@ const DialogAddEditTeamPlayer = (
           </Card>
 
           {/* Card: Seleccionar Jugador */}
-          <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-[#ad45ff]/20 rounded-xl overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff]" />
+          <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-brand/20 rounded-xl overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-brand to-brand-mid" />
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-3 text-[#ad45ff]">
-                <div className="p-2 bg-[#ad45ff]/20 rounded-lg">
-                  <Users className="h-5 w-5 text-[#ad45ff]" />
+              <CardTitle className="flex items-center gap-3 text-brand">
+                <div className="p-2 bg-brand/20 rounded-lg">
+                  <Users className="h-5 w-5 text-brand" />
                 </div>
                 <span className="text-lg font-bold">Seleccionar Jugador</span>
               </CardTitle>
@@ -400,7 +400,7 @@ const DialogAddEditTeamPlayer = (
                     disabled={isLoading}
                     name="playerId"
                   >
-                    <SelectTrigger className="w-full h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-[#ad45ff]/50 focus:border-[#ad45ff] rounded-xl text-white transition-colors">
+                    <SelectTrigger className="w-full h-12 bg-slate-800/50 border-2 border-slate-600 hover:border-brand/50 focus:border-brand rounded-xl text-white transition-colors">
                       <SelectValue placeholder="Seleccione un jugador..." />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
@@ -408,7 +408,7 @@ const DialogAddEditTeamPlayer = (
                         <SelectItem
                           key={p.id}
                           value={p.id}
-                          className="text-white hover:bg-[#ad45ff]/20 focus:bg-[#ad45ff]/20 cursor-pointer"
+                          className="text-white hover:bg-brand/20 focus:bg-brand/20 cursor-pointer"
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-700 border border-slate-600">
@@ -505,7 +505,7 @@ const DialogAddEditTeamPlayer = (
             <Button
               type="submit"
               disabled={isLoading || !values.playerId}
-              className="px-6 h-12 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 h-12 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

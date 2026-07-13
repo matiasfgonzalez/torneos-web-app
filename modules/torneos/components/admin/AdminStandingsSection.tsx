@@ -89,7 +89,7 @@ export function AdminStandingsSection({
       {/* Encabezado con selector de vista */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+          <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -167,11 +167,11 @@ export function AdminStandingsSection({
         {/* Estado vacío */}
         {tournamentTeams.length === 0 && (
           <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+            <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
             <CardContent className="py-16">
               <div className="text-center space-y-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#ad45ff]/10 to-[#c77dff]/10 rounded-2xl flex items-center justify-center mx-auto">
-                  <Trophy className="w-10 h-10 text-[#ad45ff]" />
+                <div className="w-20 h-20 bg-gradient-to-br from-brand/10 to-brand-mid/10 rounded-2xl flex items-center justify-center mx-auto">
+                  <Trophy className="w-10 h-10 text-brand" />
                 </div>
                 <div>
                   <p className="text-gray-900 dark:text-white font-semibold text-lg">
@@ -192,7 +192,7 @@ export function AdminStandingsSection({
       {availablePhases.length > 0 && (
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-2">
-            <Layers className="w-4 h-4 text-[#ad45ff]" />
+            <Layers className="w-4 h-4 text-brand" />
             <span className="text-sm font-medium text-gray-900 dark:text-white">
               Fases del torneo
             </span>

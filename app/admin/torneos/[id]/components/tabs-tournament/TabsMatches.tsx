@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatDate } from "@/lib/formatDate";
 import {
   Select,
@@ -58,37 +59,6 @@ const TabsMatches = (props: TabsTournamentProps) => {
     )
     .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
-  const getStatusBadge = (status: MatchStatus) => {
-    switch (status) {
-      case MatchStatus.PROGRAMADO:
-        return <Badge variant="outline">Programado</Badge>;
-
-      case MatchStatus.EN_JUEGO:
-        return <Badge variant="default">En curso</Badge>;
-
-      case MatchStatus.ENTRETIEMPO:
-        return <Badge variant="secondary">Entretiempo</Badge>;
-
-      case MatchStatus.FINALIZADO:
-        return <Badge variant="secondary">Finalizado</Badge>;
-
-      case MatchStatus.SUSPENDIDO:
-        return <Badge variant="destructive">Suspendido</Badge>;
-
-      case MatchStatus.POSTERGADO:
-        return <Badge variant="outline">Postergado</Badge>;
-
-      case MatchStatus.CANCELADO:
-        return <Badge variant="destructive">Cancelado</Badge>;
-
-      case MatchStatus.WALKOVER:
-        return <Badge variant="destructive">Walkover</Badge>;
-
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
   const fetchMatches = useCallback(async () => {
     try {
       const response = await fetch(
@@ -109,7 +79,7 @@ const TabsMatches = (props: TabsTournamentProps) => {
     <TabsContent value="matches" className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+          <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
             <Target className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -131,12 +101,12 @@ const TabsMatches = (props: TabsTournamentProps) => {
       {/* Lista de partidos */}
       <div className="space-y-6">
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
           <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+            <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+                <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
                   <Calendar className="w-4 h-4 text-white" />
                 </div>
                 <div>
@@ -157,7 +127,7 @@ const TabsMatches = (props: TabsTournamentProps) => {
                     placeholder="Buscar partidos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                    className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-brand focus:border-brand"
                   />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -240,23 +210,23 @@ const TabsMatches = (props: TabsTournamentProps) => {
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          <Badge className="bg-gradient-to-r from-[#ad45ff]/10 to-[#c77dff]/10 text-[#ad45ff] dark:text-[#c77dff] border-0">
+                          <Badge className="bg-gradient-to-r from-brand/10 to-brand-mid/10 text-brand dark:text-brand-mid border-0">
                             {match.tournament.name}
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
                           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <Calendar className="h-4 w-4 text-[#ad45ff]" />
+                            <Calendar className="h-4 w-4 text-brand" />
                             <span>
                               {formatDate(match.dateTime, "dd MMM yyyy")}
                             </span>
-                            <Clock className="h-4 w-4 text-[#c77dff]" />
+                            <Clock className="h-4 w-4 text-brand-mid" />
                             <span>{formatDate(match.dateTime, "HH:mm")}</span>
                           </div>
                         </TableCell>
                         <TableCell className="hidden xl:table-cell">
                           <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
-                            <MapPin className="mr-1 h-4 w-4 text-[#a3b3ff]" />
+                            <MapPin className="mr-1 h-4 w-4 text-brand-2" />
                             {match.stadium}
                           </div>
                         </TableCell>
@@ -273,13 +243,13 @@ const TabsMatches = (props: TabsTournamentProps) => {
                             <span className="text-gray-400">vs</span>
                           )}
                         </TableCell>
-                        <TableCell>{getStatusBadge(match.status)}</TableCell>
+                        <TableCell><StatusBadge entity="match" status={match.status} /></TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end items-center gap-2">
                             <Button
                               asChild
                               size="sm"
-                              className="gap-1.5 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-md shadow-[#ad45ff]/20"
+                              className="gap-1.5 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-md shadow-brand/20"
                             >
                               <Link href={`/admin/partidos/${match.id}/cargar`}>
                                 <Zap className="h-3.5 w-3.5" />
@@ -328,10 +298,10 @@ const TabsMatches = (props: TabsTournamentProps) => {
       {/* Estado vacío mejorado */}
       {matches.length === 0 && (
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20" />
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl p-12 text-center border-0 shadow-2xl">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#ad45ff]/10 to-[#c77dff]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Calendar className="w-10 h-10 text-[#ad45ff]" />
+            <div className="w-20 h-20 bg-gradient-to-br from-brand/10 to-brand-mid/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-10 h-10 text-brand" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               No hay partidos programados
@@ -340,7 +310,7 @@ const TabsMatches = (props: TabsTournamentProps) => {
               Comienza creando tu primer partido. Podrás programar encuentros,
               registrar resultados y gestionar el fixture completo.
             </p>
-            <button className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 inline-flex items-center gap-2 shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 hover:scale-105">
+            <button className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 inline-flex items-center gap-2 shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 hover:scale-105">
               <Plus className="w-5 h-5" />
               Programar primer partido
             </button>

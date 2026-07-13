@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Plus, Trash2, ShieldAlert } from "lucide-react";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { IPartidos } from "@modules/partidos/types";
 import { getTournamentTeamPlayers } from "@modules/equipos/actions/getTournamentTeamPlayers";
 import { addCard, deleteCard } from "@modules/partidos/actions/cards";
@@ -237,7 +238,6 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
   };
 
   const handleDeleteCard = async (cardId: string) => {
-    if (!confirm("¿Eliminar tarjeta?")) return;
     setIsLoading(true);
     try {
       const res = await deleteCard(cardId);
@@ -415,15 +415,29 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
                       )}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                    onClick={() => handleDeleteCard(card.id)}
-                    disabled={isLoading}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <ConfirmDialog
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Eliminar tarjeta"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        disabled={isLoading}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    }
+                    title="¿Eliminar tarjeta?"
+                    description={
+                      <>
+                        Se va a eliminar la tarjeta{" "}
+                        <b>{isRed ? "roja" : "amarilla"}</b> de <b>{p}</b>. Las
+                        sanciones del torneo se recalculan automáticamente.
+                      </>
+                    }
+                    confirmLabel="Eliminar"
+                    onConfirm={() => handleDeleteCard(card.id)}
+                  />
                 </div>
               );
             })}

@@ -327,7 +327,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
             </div>
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
+          <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
             <Plus className="mr-2 h-5 w-5" />
             Crear Torneo
           </Button>
@@ -335,11 +335,11 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[750px] max-w-[95vw] max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
         {/* Header con gradiente */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff] rounded-t-2xl" />
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand via-brand-2 to-brand rounded-t-2xl" />
 
         <DialogHeader className="space-y-4 pt-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
               {isEditMode ? (
                 <Edit className="h-6 w-6 text-white" />
               ) : (
@@ -371,7 +371,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Nombre del Torneo
                     </FormLabel>
@@ -381,7 +381,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Ej: Copa de Verano 2024"
                       {...field}
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -396,7 +396,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Localidad
                     </FormLabel>
@@ -406,7 +406,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Ej: Buenos Aires"
                       {...field}
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -422,7 +422,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Categoría
                       </FormLabel>
@@ -433,7 +433,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
                           <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                       </FormControl>
@@ -455,7 +455,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Género
                       </FormLabel>
@@ -466,7 +466,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
                           <SelectValue placeholder="Género" />
                         </SelectTrigger>
                       </FormControl>
@@ -488,7 +488,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         División (opcional)
                       </FormLabel>
@@ -497,7 +497,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       <Input
                         placeholder='Ej: "A", "Primera"'
                         disabled={isLoading}
-                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl"
+                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -515,7 +515,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Fecha de Inicio
                       </FormLabel>
@@ -532,7 +532,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           field.onChange(new Date(e.target.value))
                         }
                         disabled={isLoading}
-                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -546,7 +546,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Fecha de Fin
                       </FormLabel>
@@ -563,7 +563,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                           field.onChange(new Date(e.target.value))
                         }
                         disabled={isLoading}
-                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -579,7 +579,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Descripción
                     </FormLabel>
@@ -590,7 +590,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       {...field}
                       disabled={isLoading}
                       rows={3}
-                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -605,7 +605,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Formato
                     </FormLabel>
@@ -616,7 +616,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     disabled={isLoading}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
                         <SelectValue placeholder="Selecciona un formato" />
                       </SelectTrigger>
                     </FormControl>
@@ -644,7 +644,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       <input
                         type="checkbox"
                         id="homeAndAway"
-                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-[#ad45ff] focus:ring-[#ad45ff] dark:focus:ring-[#a3b3ff]"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:focus:ring-brand-2"
                         checked={field.value}
                         onChange={(e) => field.onChange(e.target.checked)}
                         disabled={isLoading}
@@ -672,7 +672,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
             {/* Sección: Configuración deportiva (N7) */}
             <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
               <div className="flex items-center space-x-2">
-                <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                 <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Configuración deportiva
                 </FormLabel>
@@ -701,7 +701,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                             field.onChange(e.target.valueAsNumber)
                           }
                           disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
                         />
                       </FormControl>
                       <FormMessage />
@@ -726,7 +726,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                             field.onChange(e.target.valueAsNumber)
                           }
                           disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
                         />
                       </FormControl>
                       <FormMessage />
@@ -751,7 +751,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                             field.onChange(e.target.valueAsNumber)
                           }
                           disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
                         />
                       </FormControl>
                       <FormMessage />
@@ -780,7 +780,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                             field.onChange(e.target.valueAsNumber)
                           }
                           disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
                         />
                       </FormControl>
                       <FormMessage />
@@ -803,7 +803,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                         disabled={isLoading}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl">
+                          <SelectTrigger className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl">
                             <SelectValue placeholder="Criterio de desempate" />
                           </SelectTrigger>
                         </FormControl>
@@ -847,7 +847,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                               field.onChange(e.target.valueAsNumber)
                             }
                             disabled={isLoading}
-                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
                           />
                         </FormControl>
                         <FormMessage />
@@ -872,7 +872,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                               field.onChange(e.target.valueAsNumber)
                             }
                             disabled={isLoading}
-                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] text-gray-900 dark:text-white rounded-xl"
+                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
                           />
                         </FormControl>
                         <FormMessage />
@@ -890,7 +890,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Estado del Torneo
                     </FormLabel>
@@ -901,7 +901,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                     disabled={isLoading}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl">
+                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
                         <SelectValue placeholder="Selecciona un estado" />
                       </SelectTrigger>
                     </FormControl>
@@ -929,7 +929,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       <input
                         type="checkbox"
                         id="enabled"
-                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-[#ad45ff] focus:ring-[#ad45ff] dark:focus:ring-[#a3b3ff]"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:focus:ring-brand-2"
                         checked={field.value}
                         onChange={(e) => field.onChange(e.target.checked)}
                         disabled={isLoading}
@@ -961,7 +961,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Liga o Asociación (Organizador)
                     </FormLabel>
@@ -971,7 +971,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       placeholder="Ej: AFA, Liga Cordobesa..."
                       {...field}
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -986,7 +986,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Logo del Torneo
                     </FormLabel>
@@ -1016,7 +1016,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Próximo partido (opcional)
                     </FormLabel>
@@ -1031,7 +1031,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       }
                       onChange={(e) => field.onChange(new Date(e.target.value))}
                       disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -1046,7 +1046,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Reglamento (opcional)
                     </FormLabel>
@@ -1057,7 +1057,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       {...field}
                       disabled={isLoading}
                       rows={4}
-                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -1072,7 +1072,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Premio / Trofeo (opcional)
                     </FormLabel>
@@ -1083,7 +1083,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
                       {...field}
                       disabled={isLoading}
                       rows={2}
-                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                     />
                   </FormControl>
                   <FormMessage />
@@ -1119,7 +1119,7 @@ const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
               ) : (
                 <Button
                   type="submit"
-                  className="px-8 py-2.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
+                  className="px-8 py-2.5 bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
                   disabled={isLoading}
                 >
                   {isLoading ? (

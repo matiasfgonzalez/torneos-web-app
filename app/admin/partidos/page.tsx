@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { MatchDialog } from "@/components/admin/match-dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -142,71 +143,43 @@ export default function PartidosPage() {
 
   return (
     <div className="space-y-8 p-6 sm:p-8">
-      {/* Header mejorado */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 rounded-3xl -z-10" />
-
-        <Card className="border-2 border-[#ad45ff]/20 dark:border-[#ad45ff]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
-          <CardContent className="p-6 sm:p-8">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
-                    <CalendarIcon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-                      Gestión de Partidos
-                    </h1>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <p className="text-gray-600 dark:text-gray-300 font-medium">
-                        Sistema activo - {matches.length} partidos registrados
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-                  Administra los encuentros, resultados y horarios de todos tus
-                  torneos.
-                </p>
-
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <div className="flex items-center space-x-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">
-                    <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                      {pendingCount} programados
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
-                    <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                      {liveCount} en juego
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-purple-50 dark:bg-purple-900/20 px-3 py-1 rounded-full">
-                    <Trophy className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                      {finishedCount} finalizados
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="w-full lg:w-auto">
-                <Button
-                  onClick={handleCreate}
-                  className="w-full lg:w-auto bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl px-6"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nuevo Partido
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Header - componente compartido (patrón §3 variante A) */}
+      <PageHeader
+        icon={CalendarIcon}
+        title="Gestión de Partidos"
+        statusText={`Sistema activo - ${matches.length} partidos registrados`}
+        description="Administra los encuentros, resultados y horarios de todos tus torneos."
+        quickStats={[
+          {
+            icon: Clock,
+            text: `${pendingCount} programados`,
+            colorClass:
+              "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
+          },
+          {
+            icon: Zap,
+            text: `${liveCount} en juego`,
+            colorClass:
+              "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300",
+          },
+          {
+            icon: Trophy,
+            text: `${finishedCount} finalizados`,
+            colorClass:
+              "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
+          },
+        ]}
+        actions={
+          <Button
+            variant="brand"
+            onClick={handleCreate}
+            className="w-full lg:w-auto px-6"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Partido
+          </Button>
+        }
+      />
 
       {/* Filters */}
       <Card className="border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
@@ -216,7 +189,7 @@ export default function PartidosPage() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Buscar por equipo o torneo..."
-                className="pl-9 bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 focus:border-[#ad45ff]/50 focus:ring-[#ad45ff]/20 transition-all"
+                className="pl-9 bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 focus:border-brand/50 focus:ring-brand/20 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -242,7 +215,7 @@ export default function PartidosPage() {
         {filteredMatches.map((match) => (
           <Card
             key={match.id}
-            className="group relative overflow-hidden border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl hover:bg-white dark:hover:bg-gray-800 transition-all hover:border-[#ad45ff]/50 hover:shadow-lg hover:shadow-[#ad45ff]/10"
+            className="group relative overflow-hidden border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl hover:bg-white dark:hover:bg-gray-800 transition-all hover:border-brand/50 hover:shadow-lg hover:shadow-brand/10"
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -343,7 +316,7 @@ export default function PartidosPage() {
               {/* Acción principal: pantalla única mobile-first (N10) */}
               <Button
                 asChild
-                className="mt-3 w-full gap-2 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-md shadow-[#ad45ff]/20"
+                className="mt-3 w-full gap-2 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-md shadow-brand/20"
               >
                 <Link href={`/admin/partidos/${match.id}/cargar`}>
                   <Zap className="h-4 w-4" />
@@ -353,7 +326,7 @@ export default function PartidosPage() {
             </CardContent>
 
             {/* Hover Gradient Effect */}
-            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] opacity-0 transition-opacity group-hover:opacity-100" />
+            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-brand to-brand-mid opacity-0 transition-opacity group-hover:opacity-100" />
           </Card>
         ))}
       </div>

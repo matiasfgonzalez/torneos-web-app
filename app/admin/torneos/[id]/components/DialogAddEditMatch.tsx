@@ -185,7 +185,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "create" ? (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl px-5 py-2.5 font-medium transition-all duration-300">
+          <Button className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 rounded-xl px-5 py-2.5 font-medium transition-all duration-300">
             <CalendarPlus className="mr-2 h-4 w-4" />
             Programar Partido
           </Button>
@@ -194,7 +194,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
             variant="ghost"
             size="sm"
             title="Editar partido"
-            className="hover:bg-[#ad45ff]/10 hover:text-[#ad45ff] rounded-lg transition-colors"
+            className="hover:bg-brand/10 hover:text-brand rounded-lg transition-colors"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -202,11 +202,11 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl p-0">
         {/* Barra de acento superior */}
-        <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-t-2xl" />
+        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-t-2xl" />
 
         <DialogHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
+            <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/30">
               <CalendarPlus className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -222,11 +222,11 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
           </div>
 
           {/* Badge del torneo */}
-          <div className="mt-4 flex items-center gap-2 p-3 bg-gradient-to-r from-[#ad45ff]/10 to-[#c77dff]/10 rounded-xl border border-[#ad45ff]/20">
-            <Trophy className="w-4 h-4 text-[#ad45ff]" />
+          <div className="mt-4 flex items-center gap-2 p-3 bg-gradient-to-r from-brand/10 to-brand-mid/10 rounded-xl border border-brand/20">
+            <Trophy className="w-4 h-4 text-brand" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Torneo:{" "}
-              <span className="text-[#ad45ff]">{tournamentData.name}</span>
+              <span className="text-brand">{tournamentData.name}</span>
             </span>
           </div>
         </DialogHeader>
@@ -235,7 +235,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
           {/* Sección: Fecha y Hora */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <Calendar className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -258,7 +258,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   name="dateTime"
                   value={values.dateTime}
                   onChange={(e) => update("dateTime", e.target.value)}
-                  className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12"
+                  className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12"
                   required
                 />
               </div>
@@ -268,7 +268,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
           {/* Sección: Equipos */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <Swords className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -329,7 +329,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
 
               {/* VS Indicator */}
               <div className="hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ad45ff] to-[#c77dff] flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-mid flex items-center justify-center text-white font-bold text-sm shadow-lg">
                   VS
                 </div>
               </div>
@@ -388,7 +388,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
           {/* Sección: Ubicación */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <MapPin className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -411,7 +411,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   placeholder="Nombre del estadio"
                   value={values.stadium}
                   onChange={(e) => update("stadium", e.target.value)}
-                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12"
+                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12"
                 />
               </div>
 
@@ -429,7 +429,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   placeholder="Ciudad del partido"
                   value={values.city}
                   onChange={(e) => update("city", e.target.value)}
-                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12"
+                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12"
                 />
               </div>
             </div>
@@ -448,7 +448,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                 value={values.description}
                 onChange={(e) => update("description", e.target.value)}
                 rows={3}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] px-4 py-3 resize-none text-sm"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand px-4 py-3 resize-none text-sm"
               />
             </div>
           </div>
@@ -456,7 +456,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
           {/* Sección: Configuración del Partido */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <Settings className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -543,7 +543,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                           className="rounded-lg"
                         >
                           <div className="flex items-center gap-2">
-                            <Shield className="w-3 h-3 text-[#ad45ff]" />
+                            <Shield className="w-3 h-3 text-brand" />
                             {phase.name}
                           </div>
                         </SelectItem>
@@ -570,7 +570,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   onChange={(e) =>
                     update("roundNumber", Number(e.target.value))
                   }
-                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12"
+                  className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12"
                 />
               </div>
             </div>
@@ -582,7 +582,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   htmlFor="walkoverWinnerTeamId"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
                 >
-                  <Trophy className="w-4 h-4 text-[#ad45ff]" />
+                  <Trophy className="w-4 h-4 text-brand" />
                   Equipo ganador del walkover *
                 </Label>
                 <Select
@@ -591,7 +591,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                   disabled={isLoading}
                   name="walkoverWinnerTeamId"
                 >
-                  <SelectTrigger className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl h-12">
+                  <SelectTrigger className="bg-white dark:bg-gray-800 border-brand/30 rounded-xl h-12">
                     <SelectValue placeholder="Selecciona el equipo que se presentó" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-0 shadow-xl">
@@ -622,25 +622,25 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
 
           {/* Sección: Resultado (solo en modo edición) */}
           {mode === "edit" && (
-            <div className="bg-gradient-to-br from-[#ad45ff]/5 to-[#c77dff]/5 dark:from-[#ad45ff]/10 dark:to-[#c77dff]/10 rounded-xl p-5 border border-[#ad45ff]/20">
+            <div className="bg-gradient-to-br from-brand/5 to-brand-mid/5 dark:from-brand/10 dark:to-brand-mid/10 rounded-xl p-5 border border-brand/20">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                   <Target className="h-4 w-4 text-white" />
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
                   Resultado
                 </h3>
-                <Badge className="bg-[#ad45ff]/20 text-[#ad45ff] border-0 rounded-full text-xs">
+                <Badge className="bg-brand/20 text-brand border-0 rounded-full text-xs">
                   Solo edición
                 </Badge>
               </div>
 
               {/* Marcador Normal (oculto en walkover: lo fija el server) */}
               {isWalkover ? (
-                <div className="mb-4 rounded-xl bg-white dark:bg-gray-800 border border-[#ad45ff]/30 p-4 text-center">
+                <div className="mb-4 rounded-xl bg-white dark:bg-gray-800 border border-brand/30 p-4 text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Walkover: el marcador se registra automáticamente como{" "}
-                    <span className="font-bold text-[#ad45ff]">
+                    <span className="font-bold text-brand">
                       {walkoverScore}-0
                     </span>{" "}
                     para el equipo ganador seleccionado arriba.
@@ -665,7 +665,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                       onChange={(e) =>
                         update("homeScore", Number(e.target.value))
                       }
-                      className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold"
+                      className="bg-white dark:bg-gray-800 border-brand/30 rounded-xl focus:ring-brand focus:border-brand h-12 text-center text-lg font-bold"
                     />
                   </div>
                   <div className="space-y-2">
@@ -685,16 +685,16 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                       onChange={(e) =>
                         update("awayScore", Number(e.target.value))
                       }
-                      className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold"
+                      className="bg-white dark:bg-gray-800 border-brand/30 rounded-xl focus:ring-brand focus:border-brand h-12 text-center text-lg font-bold"
                     />
                   </div>
                 </div>
               )}
 
               {/* Penales */}
-              <div className="pt-4 border-t border-[#ad45ff]/20">
+              <div className="pt-4 border-t border-brand/20">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-[#ad45ff]" />
+                  <Trophy className="w-4 h-4 text-brand" />
                   Definición por Penales (opcional)
                 </p>
 
@@ -712,7 +712,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                       disabled={isLoading}
                       name="penaltyWinnerTeamId"
                     >
-                      <SelectTrigger className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl h-12">
+                      <SelectTrigger className="bg-white dark:bg-gray-800 border-brand/30 rounded-xl h-12">
                         <SelectValue placeholder="Selecciona equipo ganador" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-0 shadow-xl">
@@ -758,7 +758,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                         onChange={(e) =>
                           update("penaltyScoreHome", Number(e.target.value))
                         }
-                        className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center font-bold"
+                        className="bg-white dark:bg-gray-800 border-brand/30 rounded-xl focus:ring-brand focus:border-brand h-12 text-center font-bold"
                       />
                     </div>
                     <div className="space-y-2">
@@ -777,7 +777,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
                         onChange={(e) =>
                           update("penaltyScoreAway", Number(e.target.value))
                         }
-                        className="bg-white dark:bg-gray-800 border-[#ad45ff]/30 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center font-bold"
+                        className="bg-white dark:bg-gray-800 border-brand/30 rounded-xl focus:ring-brand focus:border-brand h-12 text-center font-bold"
                       />
                     </div>
                   </div>
@@ -800,7 +800,7 @@ const DialogAddEditMatch = (props: DialogAddEditMatchProps) => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl px-6 min-w-[160px]"
+              className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 rounded-xl px-6 min-w-[160px]"
             >
               {isLoading ? (
                 <>

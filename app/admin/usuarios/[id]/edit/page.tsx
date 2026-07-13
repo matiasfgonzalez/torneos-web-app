@@ -271,7 +271,7 @@ export default function EditUser() {
             <Button
               variant="ghost"
               asChild
-              className="text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
+              className="text-brand dark:text-brand-2 hover:bg-brand/10 dark:hover:bg-brand/20"
             >
               <Link href={`/admin/usuarios/${user.id}`}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -280,7 +280,7 @@ export default function EditUser() {
             </Button>
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
-                <div className="w-1 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                <div className="w-1 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                   Editar Usuario
                 </h2>
@@ -309,7 +309,7 @@ export default function EditUser() {
             <Button
               onClick={handleSave}
               disabled={saving || !hasChanges}
-              className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0"
+              className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0"
             >
               <Save className="h-4 w-4 mr-2" />
               {saving ? "Guardando..." : "Guardar Cambios"}
@@ -324,7 +324,7 @@ export default function EditUser() {
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
               <CardHeader className="space-y-4 pb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                  <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                   <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                     Información Personal
                   </CardTitle>
@@ -465,7 +465,7 @@ export default function EditUser() {
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
               <CardHeader className="space-y-4 pb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                  <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                   <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                     Información del Sistema
                   </CardTitle>
@@ -529,7 +529,7 @@ export default function EditUser() {
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center space-x-3">
-                  <Camera className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                  <Camera className="h-5 w-5 text-brand dark:text-brand-2" />
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                     Foto de Perfil
                   </CardTitle>
@@ -542,7 +542,7 @@ export default function EditUser() {
                       src={formData.imageUrl || ""}
                       alt={formData.name}
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white font-bold text-xl">
+                    <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-bold text-xl">
                       {formData.name
                         ?.split(" ")
                         .map((n) => n[0])
@@ -593,7 +593,7 @@ export default function EditUser() {
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center space-x-3">
-                  <Shield className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                  <Shield className="h-5 w-5 text-brand dark:text-brand-2" />
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                     Permisos y Estado
                   </CardTitle>

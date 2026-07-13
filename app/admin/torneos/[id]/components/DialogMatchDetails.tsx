@@ -38,14 +38,14 @@ export default function DialogMatchDetails({
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 border-[#ad45ff]/20 text-[#ad45ff] hover:bg-[#ad45ff]/5"
+          className="gap-2 border-brand/20 text-brand hover:bg-brand/5"
         >
           Detalles
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto glass-card border-0">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+          <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
             {homeTeamName} vs {awayTeamName}
           </DialogTitle>
         </DialogHeader>
@@ -54,19 +54,19 @@ export default function DialogMatchDetails({
           <TabsList className="grid w-full grid-cols-3 bg-gray-100/50 dark:bg-gray-800/50 p-1">
             <TabsTrigger
               value="goals"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-2 data-[state=active]:text-white transition-all"
             >
               <GoalIcon className="w-4 h-4 mr-2" /> Goles
             </TabsTrigger>
             <TabsTrigger
               value="cards"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-2 data-[state=active]:text-white transition-all"
             >
               <ShieldAlert className="w-4 h-4 mr-2" /> Tarjetas
             </TabsTrigger>
             <TabsTrigger
               value="referees"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white transition-all"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-2 data-[state=active]:text-white transition-all"
             >
               <Users className="w-4 h-4 mr-2" /> Autoridades
             </TabsTrigger>

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Plus, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { IPartidos } from "@modules/partidos/types";
 import { getTournamentTeamPlayers } from "@modules/equipos/actions/getTournamentTeamPlayers";
 import { addGoal, deleteGoal } from "@modules/partidos/actions/goals";
@@ -127,8 +128,6 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
   };
 
   const handleDeleteGoal = async (goalId: string) => {
-    if (!confirm("¿Estás seguro de eliminar este gol?")) return;
-
     setIsLoading(true);
     try {
       const res = await deleteGoal(goalId);
@@ -309,15 +308,29 @@ export default function ManageGoals({ match, onUpdate }: ManageGoalsProps) {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                    onClick={() => handleDeleteGoal(goal.id)}
-                    disabled={isLoading}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <ConfirmDialog
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Eliminar gol"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        disabled={isLoading}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    }
+                    title="¿Eliminar gol?"
+                    description={
+                      <>
+                        Se va a eliminar el gol de <b>{p}</b> al minuto{" "}
+                        <b>{goal.minute}&apos;</b>. El marcador y la tabla de
+                        posiciones se recalculan automáticamente.
+                      </>
+                    }
+                    confirmLabel="Eliminar"
+                    onConfirm={() => handleDeleteGoal(goal.id)}
+                  />
                 </div>
               );
             })}

@@ -84,7 +84,7 @@ const FormColorPicker = ({
   return (
     <FormItem className="space-y-3">
       <div className="flex items-center space-x-2">
-        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           {label}
         </FormLabel>
@@ -97,7 +97,7 @@ const FormColorPicker = ({
             onClick={() => field.onChange(color.value)}
             className={`w-8 h-8 rounded-full ${color.bg} border-2 ${
               field.value === color.value
-                ? "border-[#ad45ff] ring-2 ring-[#ad45ff]/20"
+                ? "border-brand ring-2 ring-brand/20"
                 : "border-gray-300 dark:border-gray-600"
             } hover:scale-110 transition-transform`}
             title={color.name}
@@ -119,7 +119,7 @@ const FormColorPicker = ({
             value={field.value || ""}
             onChange={(e) => field.onChange(e.target.value)}
             placeholder=""
-            className="flex-1 font-mono text-sm h-10 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl"
+            className="flex-1 font-mono text-sm h-10 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl"
           />
         </FormControl>
       </div>
@@ -213,7 +213,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
             </div>
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
+          <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
             <Plus className="mr-2 h-5 w-5" />
             Registrar Equipo
           </Button>
@@ -221,11 +221,11 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
         {/* Header con gradiente */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff] rounded-t-2xl" />
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand via-brand-2 to-brand rounded-t-2xl" />
 
         <DialogHeader className="space-y-4 pt-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
               {isEditMode ? (
                 <Edit className="h-6 w-6 text-white" />
               ) : (
@@ -255,7 +255,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
             <Card className="bg-gray-50/50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-600">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg flex items-center gap-2 text-gray-900 dark:text-white">
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-brand to-brand-2 rounded-lg flex items-center justify-center">
                     <Trophy className="h-4 w-4 text-white" />
                   </div>
                   Información Básica
@@ -269,7 +269,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Nombre del Equipo
                         </FormLabel>
@@ -279,7 +279,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           placeholder="Ej: Club Atletico Federal"
                           {...field}
                           disabled={isLoading}
-                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                         />
                       </FormControl>
                       <FormMessage />
@@ -294,7 +294,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Nombre Corto
                         </FormLabel>
@@ -304,7 +304,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           placeholder="Ej: C.A.F."
                           {...field}
                           disabled={isLoading}
-                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                         />
                       </FormControl>
                     </FormItem>
@@ -318,7 +318,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3 md:col-span-2">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Descripción
                         </FormLabel>
@@ -329,7 +329,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           {...field}
                           disabled={isLoading}
                           rows={3}
-                          className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                          className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                         />
                       </FormControl>
                       <FormMessage />
@@ -357,7 +357,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Entrenador (DT)
                         </FormLabel>
@@ -367,7 +367,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           placeholder="Ej: Raul Perez"
                           {...field}
                           disabled={isLoading}
-                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                         />
                       </FormControl>
                     </FormItem>
@@ -381,7 +381,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Ciudad
                         </FormLabel>
@@ -391,7 +391,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           placeholder="Ciudad de local"
                           {...field}
                           disabled={isLoading}
-                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                         />
                       </FormControl>
                     </FormItem>
@@ -405,7 +405,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Año Fundación
                         </FormLabel>
@@ -415,7 +415,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           placeholder="1905"
                           {...field}
                           disabled={isLoading}
-                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                          className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
                         />
                       </FormControl>
                       <FormMessage />
@@ -442,7 +442,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Historia y logros
                         </FormLabel>
@@ -453,7 +453,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                           {...field}
                           disabled={isLoading}
                           rows={4}
-                          className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
+                          className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
                         />
                       </FormControl>
                       <FormMessage />
@@ -493,7 +493,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                        <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                         <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Escudo del Equipo
                         </FormLabel>
@@ -579,7 +579,7 @@ export default function TeamForm(props: Readonly<TeamFormProps>) {
               ) : (
                 <Button
                   type="submit"
-                  className="px-8 py-2.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
+                  className="px-8 py-2.5 bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
                   disabled={isLoading}
                 >
                   {isLoading ? (

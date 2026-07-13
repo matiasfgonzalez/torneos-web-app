@@ -129,7 +129,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
       <TabsContent value="teams" className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+            <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -148,7 +148,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
                 placeholder="Buscar equipo..."
                 value={searchTeam}
                 onChange={(e) => setSearchTeam(e.target.value)}
-                className="pl-10 w-full md:w-[250px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                className="pl-10 w-full md:w-[250px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-brand focus:border-brand"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
                   value={filterGroup}
                   onValueChange={(v) => setFilterGroup(v)}
                 >
-                  <SelectTrigger className="pl-10 w-[160px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]">
+                  <SelectTrigger className="pl-10 w-[160px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-brand focus:border-brand">
                     <SelectValue placeholder="Grupo" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl">
@@ -192,12 +192,12 @@ const TabsTeams = (props: TabsTeamsProps) => {
         </div>
 
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
           <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+            <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+                <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
                   <Trophy className="w-4 h-4 text-white" />
                 </div>
                 <div>
@@ -302,7 +302,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
                         </TableCell>
                         <TableCell className="text-center">
                           {row.group ? (
-                            <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0 shadow-sm">
+                            <Badge className="bg-gradient-to-r from-brand to-brand-mid text-white border-0 shadow-sm">
                               Grupo {row.group}
                             </Badge>
                           ) : (
@@ -354,7 +354,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
-                          <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white font-bold text-lg rounded-lg shadow-lg shadow-[#ad45ff]/25">
+                          <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-brand to-brand-mid text-white font-bold text-lg rounded-lg shadow-lg shadow-brand/25">
                             {row.points}
                           </span>
                         </TableCell>
@@ -423,8 +423,8 @@ const TabsTeams = (props: TabsTeamsProps) => {
                       <TableRow>
                         <TableCell colSpan={12} className="text-center py-16">
                           <div className="space-y-4">
-                            <div className="w-20 h-20 bg-gradient-to-br from-[#ad45ff]/10 to-[#c77dff]/10 rounded-2xl flex items-center justify-center mx-auto">
-                              <Trophy className="w-10 h-10 text-[#ad45ff]" />
+                            <div className="w-20 h-20 bg-gradient-to-br from-brand/10 to-brand-mid/10 rounded-2xl flex items-center justify-center mx-auto">
+                              <Trophy className="w-10 h-10 text-brand" />
                             </div>
                             <div>
                               <p className="text-gray-900 dark:text-white font-semibold text-lg">

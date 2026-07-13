@@ -57,7 +57,7 @@ export default async function AdminTeamDetail({
             <div className="pt-4">
               <Button
                 asChild
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9d35ef] hover:to-[#93a3ef] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white transition-all duration-300"
+                className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white transition-all duration-300"
               >
                 <Link
                   href="/admin/equipos"

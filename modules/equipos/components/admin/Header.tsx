@@ -40,7 +40,7 @@ const Header = (props: PropsHeader) => {
           <Button
             variant="outline"
             size="sm"
-            className="hover:bg-[#ad45ff] hover:text-white hover:border-[#ad45ff] transition-all duration-200"
+            className="hover:bg-brand hover:text-white hover:border-brand transition-all duration-200"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a Equipos
@@ -53,9 +53,9 @@ const Header = (props: PropsHeader) => {
       </div>
 
       {/* Main header card */}
-      <Card className="border-2 border-[#ad45ff]/20 dark:border-[#ad45ff]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm overflow-hidden">
+      <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm overflow-hidden">
         {/* Background decorativo */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand/5 to-brand-2/5 dark:from-brand/10 dark:to-brand-2/10" />
 
         <CardContent className="relative p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -83,26 +83,26 @@ const Header = (props: PropsHeader) => {
               {/* Team details */}
               <div className="space-y-3">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
                     {teamData.name}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4 mt-2 text-gray-600 dark:text-gray-300">
                     {teamData.shortName && (
                       <div className="flex items-center space-x-1">
-                        <span className="font-semibold text-[#ad45ff] bg-[#ad45ff]/10 px-2 py-0.5 rounded-md">
+                        <span className="font-semibold text-brand bg-brand/10 px-2 py-0.5 rounded-md">
                           {teamData.shortName}
                         </span>
                       </div>
                     )}
                     {teamData.homeCity && (
                       <div className="flex items-center space-x-1">
-                        <MapPin className="w-4 h-4 text-[#ad45ff]" />
+                        <MapPin className="w-4 h-4 text-brand" />
                         <span>{teamData.homeCity}</span>
                       </div>
                     )}
                     {teamData.yearFounded && (
                       <div className="flex items-center space-x-1">
-                        <Calendar className="w-4 h-4 text-[#ad45ff]" />
+                        <Calendar className="w-4 h-4 text-brand" />
                         <span>Fundado: {teamData.yearFounded}</span>
                       </div>
                     )}

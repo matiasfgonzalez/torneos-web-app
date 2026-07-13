@@ -219,7 +219,7 @@ export function TournamentTeamForm({
       {/* Team Selection and Group - Premium Section */}
       <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+          <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
             <Trophy className="h-4 w-4 text-white" />
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -266,7 +266,7 @@ export function TournamentTeamForm({
               >
                 <SelectTrigger
                   id="teamId"
-                  className="mt-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12"
+                  className="mt-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12"
                 >
                   <SelectValue placeholder="Selecciona un equipo" />
                 </SelectTrigger>
@@ -275,7 +275,7 @@ export function TournamentTeamForm({
                     <SelectItem
                       key={t.id}
                       value={t.id}
-                      className="py-3 cursor-pointer hover:bg-[#ad45ff]/10"
+                      className="py-3 cursor-pointer hover:bg-brand/10"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
@@ -289,7 +289,7 @@ export function TournamentTeamForm({
                           {t.name}
                         </span>
                         {t.shortName && (
-                          <Badge className="bg-[#ad45ff]/10 text-[#ad45ff] border-0 text-xs">
+                          <Badge className="bg-brand/10 text-brand border-0 text-xs">
                             {t.shortName}
                           </Badge>
                         )}
@@ -301,7 +301,7 @@ export function TournamentTeamForm({
             )}
 
             {selectedTeam && mode === "create" && (
-              <div className="mt-3 flex items-center gap-3 p-3 bg-[#ad45ff]/5 dark:bg-[#ad45ff]/10 rounded-xl border border-[#ad45ff]/20">
+              <div className="mt-3 flex items-center gap-3 p-3 bg-brand/5 dark:bg-brand/10 rounded-xl border border-brand/20">
                 <div className="w-10 h-10 rounded-lg overflow-hidden border-2 border-white dark:border-gray-700 shadow-md">
                   <img
                     src={selectedTeam.logoUrl || "/placeholder.svg"}
@@ -344,7 +344,7 @@ export function TournamentTeamForm({
               htmlFor="group"
               className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"
             >
-              <Users className="h-4 w-4 text-[#c77dff]" />
+              <Users className="h-4 w-4 text-brand-mid" />
               Grupo
             </Label>
             <Input
@@ -354,7 +354,7 @@ export function TournamentTeamForm({
               value={values.group ?? ""}
               onChange={(e) => update("group", e.target.value.toUpperCase())}
               disabled={isLoading}
-              className="mt-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center text-lg font-bold uppercase"
+              className="mt-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12 text-center text-lg font-bold uppercase"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Deja vacío si el torneo no tiene grupos.
@@ -409,7 +409,7 @@ export function TournamentTeamForm({
       {/* Stats - Premium Section */}
       <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-gradient-to-br from-[#c77dff] to-[#a3b3ff] rounded-lg">
+          <div className="p-2 bg-gradient-to-br from-brand-mid to-brand-2 rounded-lg">
             <Hash className="h-4 w-4 text-white" />
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -435,7 +435,7 @@ export function TournamentTeamForm({
                 handleNumberChange("matchesPlayed", e.target.value)
               }
               disabled={isLoading}
-              className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] h-12 text-center font-bold text-lg"
+              className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand h-12 text-center font-bold text-lg"
             />
           </div>
 
@@ -558,18 +558,18 @@ export function TournamentTeamForm({
 
           {/* Puntos - Computed Premium */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-[#ad45ff]">Puntos</Label>
-            <div className="h-12 px-3 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-[#ad45ff]/25">
+            <Label className="text-xs font-medium text-brand">Puntos</Label>
+            <div className="h-12 px-3 rounded-xl bg-gradient-to-r from-brand to-brand-mid flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-brand/25">
               {computed.points}
             </div>
           </div>
         </div>
 
         {/* Info Note */}
-        <div className="mt-4 flex items-start gap-3 p-3 bg-[#ad45ff]/5 dark:bg-[#ad45ff]/10 rounded-xl border border-[#ad45ff]/20">
-          <Info className="h-4 w-4 text-[#ad45ff] mt-0.5 flex-shrink-0" />
+        <div className="mt-4 flex items-start gap-3 p-3 bg-brand/5 dark:bg-brand/10 rounded-xl border border-brand/20">
+          <Info className="h-4 w-4 text-brand mt-0.5 flex-shrink-0" />
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Los <span className="font-semibold text-[#ad45ff]">puntos</span> se
+            Los <span className="font-semibold text-brand">puntos</span> se
             calculan automáticamente:{" "}
             <span className="font-medium">3 por victoria</span> y{" "}
             <span className="font-medium">1 por empate</span>. La diferencia de
@@ -581,7 +581,7 @@ export function TournamentTeamForm({
       {/* Notes - Premium Section */}
       <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-gradient-to-br from-[#a3b3ff] to-[#ad45ff] rounded-lg">
+          <div className="p-2 bg-gradient-to-br from-brand-2 to-brand rounded-lg">
             <ClipboardPen className="h-4 w-4 text-white" />
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-white">Notas</h3>
@@ -594,7 +594,7 @@ export function TournamentTeamForm({
           onChange={(e) => update("notes", e.target.value)}
           rows={3}
           disabled={isLoading}
-          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] resize-none"
+          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand resize-none"
         />
       </div>
 
@@ -612,7 +612,7 @@ export function TournamentTeamForm({
         <Button
           type="submit"
           disabled={isLoading}
-          className="cursor-pointer bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all duration-300 rounded-xl px-6"
+          className="cursor-pointer bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 transition-all duration-300 rounded-xl px-6"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">

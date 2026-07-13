@@ -35,8 +35,8 @@ const QuickStats = ({ tournamentData }: PropsQuickStats) => {
       title: "Formato",
       value: getFormatLabel(tournamentData.format || "LIGA"),
       icon: Trophy,
-      color: "from-[#ad45ff] to-[#c77dff]",
-      iconBg: "bg-gradient-to-br from-[#ad45ff] to-[#c77dff]",
+      color: "from-brand to-brand-mid",
+      iconBg: "bg-gradient-to-br from-brand to-brand-mid",
       description: "de competencia",
       isText: true,
     },
@@ -64,7 +64,7 @@ const QuickStats = ({ tournamentData }: PropsQuickStats) => {
     <div className="space-y-6">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+        <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
           <Trophy className="w-5 h-5 text-white" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -79,13 +79,13 @@ const QuickStats = ({ tournamentData }: PropsQuickStats) => {
           return (
             <Card
               key={stat.title}
-              className="group relative overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:shadow-[#ad45ff]/10 hover:-translate-y-1 bg-white dark:bg-gray-900 rounded-2xl"
+              className="group relative overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-brand/30 transition-all duration-300 hover:shadow-xl hover:shadow-brand/10 hover:-translate-y-1 bg-white dark:bg-gray-900 rounded-2xl"
             >
               {/* Gradient accent bar */}
               <div className={`h-1 bg-gradient-to-r ${stat.color}`} />
 
               {/* Hover gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/0 to-[#c77dff]/0 group-hover:from-[#ad45ff]/5 group-hover:to-[#c77dff]/5 transition-all duration-300 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-brand/0 to-brand-mid/0 group-hover:from-brand/5 group-hover:to-brand-mid/5 transition-all duration-300 pointer-events-none" />
 
               <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2 pt-4 px-4">
                 <div

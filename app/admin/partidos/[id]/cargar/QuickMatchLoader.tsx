@@ -139,7 +139,7 @@ export default function QuickMatchLoader({
           asChild
           variant="ghost"
           size="sm"
-          className="gap-2 -ml-2 text-gray-500 hover:text-[#ad45ff] dark:text-gray-400"
+          className="gap-2 -ml-2 text-gray-500 hover:text-brand dark:text-gray-400"
         >
           <Link href="/admin/partidos">
             <ArrowLeft className="h-4 w-4" />
@@ -148,7 +148,7 @@ export default function QuickMatchLoader({
         </Button>
         <Badge
           variant="outline"
-          className="border-[#ad45ff]/30 bg-[#ad45ff]/5 text-[#ad45ff] max-w-[60%] truncate"
+          className="border-brand/30 bg-brand/5 text-brand max-w-[60%] truncate"
         >
           {match.tournament.name}
         </Badge>
@@ -156,7 +156,7 @@ export default function QuickMatchLoader({
 
       {/* Marcador — tarjeta sticky, siempre visible mientras se cargan goles/tarjetas */}
       <Card className="sticky top-20 z-20 border-0 glass-card rounded-2xl overflow-hidden shadow-xl">
-        <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
         <CardContent className="p-4 sm:p-5 space-y-4">
           {/* Meta del partido */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
@@ -201,7 +201,7 @@ export default function QuickMatchLoader({
                     aria-label={`Restar gol a ${homeName}`}
                     onClick={() => adjustScore("home", -1)}
                     disabled={isSaving}
-                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#ad45ff]/50 hover:text-[#ad45ff] active:scale-95 transition-all disabled:opacity-40"
+                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-brand/50 hover:text-brand active:scale-95 transition-all disabled:opacity-40"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
@@ -213,7 +213,7 @@ export default function QuickMatchLoader({
                     aria-label={`Sumar gol a ${homeName}`}
                     onClick={() => adjustScore("home", 1)}
                     disabled={isSaving}
-                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#ad45ff]/50 hover:text-[#ad45ff] active:scale-95 transition-all disabled:opacity-40"
+                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-brand/50 hover:text-brand active:scale-95 transition-all disabled:opacity-40"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -224,7 +224,7 @@ export default function QuickMatchLoader({
             <div className="flex flex-col items-center gap-1 px-1">
               <span className="text-xs font-medium text-gray-400">VS</span>
               {isWalkover && (
-                <Trophy className="h-5 w-5 text-[#ad45ff]" />
+                <Trophy className="h-5 w-5 text-brand" />
               )}
             </div>
 
@@ -251,7 +251,7 @@ export default function QuickMatchLoader({
                     aria-label={`Restar gol a ${awayName}`}
                     onClick={() => adjustScore("away", -1)}
                     disabled={isSaving}
-                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#ad45ff]/50 hover:text-[#ad45ff] active:scale-95 transition-all disabled:opacity-40"
+                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-brand/50 hover:text-brand active:scale-95 transition-all disabled:opacity-40"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
@@ -263,7 +263,7 @@ export default function QuickMatchLoader({
                     aria-label={`Sumar gol a ${awayName}`}
                     onClick={() => adjustScore("away", 1)}
                     disabled={isSaving}
-                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-[#ad45ff]/50 hover:text-[#ad45ff] active:scale-95 transition-all disabled:opacity-40"
+                    className="h-11 w-11 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-brand/50 hover:text-brand active:scale-95 transition-all disabled:opacity-40"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -301,7 +301,7 @@ export default function QuickMatchLoader({
                 }
                 disabled={isSaving}
               >
-                <SelectTrigger className="h-11 rounded-xl border-[#ad45ff]/30">
+                <SelectTrigger className="h-11 rounded-xl border-brand/30">
                   <SelectValue placeholder="Equipo ganador" />
                 </SelectTrigger>
                 <SelectContent>
@@ -313,7 +313,7 @@ export default function QuickMatchLoader({
               <Button
                 onClick={handleSave}
                 disabled={isSaving || !isDirty}
-                className="h-11 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25"
+                className="h-11 rounded-xl bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -334,7 +334,7 @@ export default function QuickMatchLoader({
               <Button
                 onClick={handleSave}
                 disabled={isSaving || !isDirty}
-                className="w-full h-11 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25"
+                className="w-full h-11 rounded-xl bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -352,7 +352,7 @@ export default function QuickMatchLoader({
       <Card className="border-0 glass-card rounded-2xl overflow-hidden shadow-lg">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
-            <div className="p-1.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+            <div className="p-1.5 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
               <GoalIcon className="w-4 h-4 text-white" />
             </div>
             Goleadores
@@ -367,7 +367,7 @@ export default function QuickMatchLoader({
       <Card className="border-0 glass-card rounded-2xl overflow-hidden shadow-lg">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
-            <div className="p-1.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+            <div className="p-1.5 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
               <ShieldAlert className="w-4 h-4 text-white" />
             </div>
             Tarjetas

@@ -77,7 +77,7 @@ const ROLE_LABELS: Record<OrgRole, string> = {
 
 const ROLE_BADGE_CLASSES: Record<OrgRole, string> = {
   OWNER:
-    "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0 shadow-sm",
+    "bg-gradient-to-r from-brand to-brand-2 text-white border-0 shadow-sm",
   ORGANIZADOR:
     "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-0",
   COLABORADOR:
@@ -218,7 +218,7 @@ export default function MembersClient() {
     return (
       <div className="text-center py-16 text-gray-500 dark:text-gray-400">
         No se pudieron cargar los miembros.{" "}
-        <button onClick={() => load()} className="text-[#ad45ff] font-medium">
+        <button onClick={() => load()} className="text-brand font-medium">
           Reintentar
         </button>
       </div>
@@ -229,7 +229,7 @@ export default function MembersClient() {
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+        <div className="w-10 h-10 bg-gradient-to-r from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
           <Users className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -250,7 +250,7 @@ export default function MembersClient() {
             <p className="text-amber-800 dark:text-amber-200">{planLimitMsg}</p>
             <Link
               href="/admin/plan"
-              className="font-semibold text-[#ad45ff] hover:underline"
+              className="font-semibold text-brand hover:underline"
             >
               Ver planes →
             </Link>
@@ -295,7 +295,7 @@ export default function MembersClient() {
             <Button
               onClick={invite}
               disabled={sending}
-              className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold shadow-lg shadow-[#ad45ff]/25"
+              className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white font-semibold shadow-lg shadow-brand/25"
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -324,10 +324,10 @@ export default function MembersClient() {
                 alt={member.user.name ?? member.user.email}
                 width={40}
                 height={40}
-                className="rounded-full ring-2 ring-[#ad45ff]/20 shrink-0"
+                className="rounded-full ring-2 ring-brand/20 shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20 flex items-center justify-center text-sm font-semibold text-[#ad45ff] shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-brand/20 to-brand-2/20 flex items-center justify-center text-sm font-semibold text-brand shrink-0">
                 {(member.user.name ?? member.user.email)
                   .charAt(0)
                   .toUpperCase()}
@@ -338,7 +338,7 @@ export default function MembersClient() {
               <p className="font-medium text-gray-900 dark:text-white truncate flex items-center gap-1.5">
                 {member.user.name ?? member.user.email}
                 {member.role === "OWNER" && (
-                  <Crown className="w-3.5 h-3.5 text-[#ad45ff] shrink-0" />
+                  <Crown className="w-3.5 h-3.5 text-brand shrink-0" />
                 )}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">

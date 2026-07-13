@@ -102,7 +102,7 @@ export function AdminSuspensionsSection({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+        <div className="w-10 h-10 bg-gradient-to-r from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
           <ShieldAlert className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -118,7 +118,7 @@ export function AdminSuspensionsSection({
       {/* Alta manual */}
       <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 space-y-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
-          <Gavel className="w-4 h-4 text-[#ad45ff]" />
+          <Gavel className="w-4 h-4 text-brand" />
           Suspensión manual
         </div>
         <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -167,7 +167,7 @@ export function AdminSuspensionsSection({
         <Button
           onClick={handleCreate}
           disabled={saving}
-          className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold"
+          className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white font-semibold"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

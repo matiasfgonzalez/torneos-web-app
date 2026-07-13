@@ -50,7 +50,9 @@ Si el recurso no existe: `notFound()` (Next) o una card de error con ícono `Ale
 
 ## 3. Página admin tipo listado — dos variantes válidas
 
-> **F0 (2026-07-13):** ambas variantes ya son un componente — `<PageHeader variant="showcase" | "simple">` (`components/shared/PageHeader.tsx`), con `breadcrumbs`/`quickStats`/`actions`. Referencia migrada: `app/admin/torneos/page.tsx`. Los KPIs debajo usan `<StatCard>`/`<StatCardGrid>`. El resto de las pantallas admin sigue inline (migración en F3).
+> **F0 (2026-07-13):** ambas variantes son un componente — `<PageHeader variant="showcase" | "simple">` (`components/shared/PageHeader.tsx`), con `breadcrumbs`/`quickStats`/`actions`. Los KPIs debajo usan `<StatCard>`/`<StatCardGrid>`; los títulos de sección, `<SectionTitle>`.
+>
+> **F3 (2026-07-13): TODAS las pantallas admin ya usan `<PageHeader>`** — no escribas el header a mano. Variante **showcase** (listados de gestión con volumen): torneos, equipos, jugadores, árbitros, partidos. Variante **simple** (cuenta/config/aprobaciones): plan, pagos, planes, organizaciones, configuración. El panel además **no tiene hex de marca**: todo usa los tokens (`from-brand`, `text-brand`, `<Button variant="brand">`).
 
 **Variante A — "Sistema activo" (recomendada para entidades de gestión con volumen: torneos, equipos, jugadores, árbitros, partidos):**
 ```tsx

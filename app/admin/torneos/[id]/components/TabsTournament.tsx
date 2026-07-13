@@ -59,7 +59,7 @@ export default function TabsTournament({
     <div className="space-y-6">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+        <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
           <Settings className="w-5 h-5 text-white" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -70,41 +70,41 @@ export default function TabsTournament({
       <Tabs defaultValue="overview" className="space-y-6">
         {/* Premium Tab List */}
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-2xl blur opacity-20" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-2xl blur opacity-20" />
 
           {/* Desktop TabsList */}
           <TabsList className="relative hidden md:flex w-full bg-white dark:bg-gray-900 p-2 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 gap-2 h-auto">
             <TabsTrigger
               value="overview"
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <FileText className="w-4 h-4 mr-2" />
               Resumen
             </TabsTrigger>
             <TabsTrigger
               value="teams"
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <User className="w-4 h-4 mr-2" />
               Equipos
             </TabsTrigger>
             <TabsTrigger
               value="matches"
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <Target className="w-4 h-4 mr-2" />
               Partidos
             </TabsTrigger>
             <TabsTrigger
               value="stats"
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <Trophy className="w-4 h-4 mr-2" />
               Posiciones
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#ad45ff]/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <Settings className="w-4 h-4 mr-2" />
               Config
@@ -115,31 +115,31 @@ export default function TabsTournament({
           <TabsList className="relative md:hidden flex w-full overflow-x-auto bg-white dark:bg-gray-900 p-2 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 gap-2 h-auto scrollbar-hide">
             <TabsTrigger
               value="overview"
-              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <FileText className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
               value="teams"
-              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <User className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
               value="matches"
-              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <Target className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
               value="stats"
-              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <Trophy className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#c77dff] data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
               <Settings className="w-4 h-4" />
             </TabsTrigger>
@@ -171,9 +171,9 @@ export default function TabsTournament({
 
           {/* Sancionados (N8) */}
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
             <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
-              <div className="h-1.5 bg-gradient-to-r from-red-500 via-[#ad45ff] to-[#a3b3ff]" />
+              <div className="h-1.5 bg-gradient-to-r from-red-500 via-brand to-brand-2" />
               <CardContent className="p-6">
                 <AdminSuspensionsSection
                   suspensions={suspensions}
@@ -187,14 +187,14 @@ export default function TabsTournament({
         {/* Settings */}
         <TabsContent value="settings" className="space-y-6">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
             <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden">
               {/* Premium gradient accent bar */}
-              <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+              <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
 
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+                  <div className="p-3 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
                     <Settings className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -213,7 +213,7 @@ export default function TabsTournament({
                   {/* Info Básica Card */}
                   <div className="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#ad45ff] rounded-full" />
+                      <div className="w-2 h-2 bg-brand rounded-full" />
                       Información Básica
                     </h4>
                     <div className="space-y-3">
@@ -253,7 +253,7 @@ export default function TabsTournament({
                   {/* Fechas Card */}
                   <div className="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#c77dff] rounded-full" />
+                      <div className="w-2 h-2 bg-brand-mid rounded-full" />
                       Fechas
                     </h4>
                     <div className="space-y-3">

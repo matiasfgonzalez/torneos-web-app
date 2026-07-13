@@ -64,7 +64,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           <div className="flex items-center space-x-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-              <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-semibold">
                 {user.name
                   .split(" ")
                   .map((n) => n[0])
@@ -108,7 +108,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-              <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white font-bold text-lg">
+              <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-bold text-lg">
                 {user.name
                   .split(" ")
                   .map((n) => n[0])

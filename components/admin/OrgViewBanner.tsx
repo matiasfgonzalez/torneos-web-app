@@ -28,7 +28,7 @@ export function OrgViewBanner({ orgName }: { orgName: string | null }) {
   };
 
   return (
-    <div className="sticky top-16 z-20 flex items-center justify-between gap-3 px-4 md:px-6 py-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white shadow-md">
+    <div className="sticky top-16 z-20 flex items-center justify-between gap-3 px-4 md:px-6 py-2 bg-gradient-to-r from-brand to-brand-2 text-white shadow-md">
       <div className="flex items-center gap-2 min-w-0 text-sm font-medium">
         <Eye className="w-4 h-4 shrink-0" aria-hidden="true" />
         <span className="truncate">

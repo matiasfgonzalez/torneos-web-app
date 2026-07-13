@@ -169,7 +169,7 @@ export default function AdminNoticiaDetail({
             <Button
               variant="ghost"
               asChild
-              className="text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
+              className="text-brand dark:text-brand-2 hover:bg-brand/10 dark:hover:bg-brand/20"
             >
               <Link href="/admin/noticias">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -178,7 +178,7 @@ export default function AdminNoticiaDetail({
             </Button>
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
-                <div className="w-1 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                <div className="w-1 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                   {isEditing ? "Editar Noticia" : "Ver Noticia"}
                 </h2>
@@ -196,7 +196,7 @@ export default function AdminNoticiaDetail({
                 <Button
                   variant="outline"
                   onClick={() => setIsEditing(true)}
-                  className="border-[#ad45ff] dark:border-[#8b39cc] text-[#ad45ff] dark:text-[#a3b3ff] hover:bg-[#ad45ff]/10 dark:hover:bg-[#8b39cc]/20"
+                  className="border-brand dark:border-brand text-brand dark:text-brand-2 hover:bg-brand/10 dark:hover:bg-brand/20"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
@@ -260,7 +260,7 @@ export default function AdminNoticiaDetail({
                 </Button>
                 <Button
                   onClick={handleSave}
-                  className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0"
+                  className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Guardar
@@ -274,19 +274,19 @@ export default function AdminNoticiaDetail({
           <TabsList className="bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700">
             <TabsTrigger
               value="content"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-2 data-[state=active]:text-white text-gray-700 dark:text-gray-300"
             >
               Contenido
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-2 data-[state=active]:text-white text-gray-700 dark:text-gray-300"
             >
               Configuración
             </TabsTrigger>
             <TabsTrigger
               value="stats"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ad45ff] data-[state=active]:to-[#a3b3ff] data-[state=active]:text-white text-gray-700 dark:text-gray-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-2 data-[state=active]:text-white text-gray-700 dark:text-gray-300"
             >
               Estadísticas
             </TabsTrigger>
@@ -300,7 +300,7 @@ export default function AdminNoticiaDetail({
                 <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="space-y-4 pb-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                         Información Principal
                       </CardTitle>
@@ -324,7 +324,7 @@ export default function AdminNoticiaDetail({
                               title: e.target.value,
                             })
                           }
-                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white"
+                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white"
                         />
                       ) : (
                         <div className="text-lg font-semibold text-gray-900 dark:text-white p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
@@ -351,7 +351,7 @@ export default function AdminNoticiaDetail({
                               summary: e.target.value,
                             })
                           }
-                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white resize-none"
+                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white resize-none"
                         />
                       ) : (
                         <div className="text-gray-700 dark:text-gray-300 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 leading-relaxed">
@@ -378,7 +378,7 @@ export default function AdminNoticiaDetail({
                               content: e.target.value,
                             })
                           }
-                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white resize-none font-mono text-sm"
+                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white resize-none font-mono text-sm"
                         />
                       ) : (
                         <div className="prose prose-gray dark:prose-invert max-w-none p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
@@ -405,7 +405,7 @@ export default function AdminNoticiaDetail({
                 <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center space-x-3">
-                      <ImageIcon className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                      <ImageIcon className="h-5 w-5 text-brand dark:text-brand-2" />
                       <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                         Imagen de Portada
                       </CardTitle>
@@ -451,7 +451,7 @@ export default function AdminNoticiaDetail({
                               coverImageUrl: e.target.value,
                             })
                           }
-                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white"
+                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white"
                         />
                       </div>
                     )}
@@ -462,7 +462,7 @@ export default function AdminNoticiaDetail({
                 <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center space-x-3">
-                      <Eye className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                      <Eye className="h-5 w-5 text-brand dark:text-brand-2" />
                       <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                         Estado de Publicación
                       </CardTitle>
@@ -531,7 +531,7 @@ export default function AdminNoticiaDetail({
               <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <div>
                       <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                         Metadatos
@@ -549,7 +549,7 @@ export default function AdminNoticiaDetail({
                         Autor
                       </Label>
                       <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <User className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                        <User className="h-5 w-5 text-brand dark:text-brand-2" />
                         <span className="text-gray-900 dark:text-white font-medium">
                           {article.user.name}
                         </span>
@@ -573,7 +573,7 @@ export default function AdminNoticiaDetail({
                         Fecha de Publicación
                       </Label>
                       <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <Calendar className="h-5 w-5 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                        <Calendar className="h-5 w-5 text-brand dark:text-brand-2" />
                         <span className="text-gray-900 dark:text-white">
                           {article.publishedAt
                             ? formatDate(
@@ -591,7 +591,7 @@ export default function AdminNoticiaDetail({
               <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <div>
                       <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                         Fechas del Sistema
@@ -634,7 +634,7 @@ export default function AdminNoticiaDetail({
               <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader className="space-y-4 pb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                    <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                     <div>
                       <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                         Próximamente
@@ -647,7 +647,7 @@ export default function AdminNoticiaDetail({
                 </CardHeader>
                 <CardContent className="text-center py-12">
                   <div className="space-y-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-full flex items-center justify-center mx-auto">
+                    <div className="w-16 h-16 bg-gradient-to-br from-brand to-brand-2 rounded-full flex items-center justify-center mx-auto">
                       <BarChart3 className="h-8 w-8 text-white" />
                     </div>
                     <p className="text-lg text-gray-700 dark:text-gray-300 font-medium">
@@ -668,7 +668,7 @@ export default function AdminNoticiaDetail({
                       <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Total Vistas
                       </CardTitle>
-                      <Eye className="h-4 w-4 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                      <Eye className="h-4 w-4 text-brand dark:text-brand-2" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -684,7 +684,7 @@ export default function AdminNoticiaDetail({
                       <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Tiempo de Lectura
                       </CardTitle>
-                      <Calendar className="h-4 w-4 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                      <Calendar className="h-4 w-4 text-brand dark:text-brand-2" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -700,7 +700,7 @@ export default function AdminNoticiaDetail({
                       <CardTitle className="text-sm font-medium">
                         Compartidas
                       </CardTitle>
-                      <BarChart3 className="h-4 w-4 text-[#ad45ff] dark:text-[#a3b3ff]" />
+                      <BarChart3 className="h-4 w-4 text-brand dark:text-brand-2" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -716,7 +716,7 @@ export default function AdminNoticiaDetail({
                 <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader className="space-y-4 pb-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+                      <div className="w-2 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
                       <div>
                         <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                           Rendimiento

@@ -297,7 +297,7 @@ export default function UserDetailPage() {
               El usuario que buscas no existe o ha sido eliminado.
             </p>
             <Link href="/admin/usuarios">
-              <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white">
+              <Button className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Volver a usuarios
               </Button>
@@ -325,7 +325,7 @@ export default function UserDetailPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
                 Detalle del Usuario
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -347,7 +347,7 @@ export default function UserDetailPage() {
             <Link href={`/admin/usuarios/${userId}/edit`}>
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white"
+                className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Editar
@@ -363,7 +363,7 @@ export default function UserDetailPage() {
               <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
                 <Avatar className="h-24 w-24 mx-auto sm:mx-0">
                   <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-                  <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white font-bold text-2xl">
+                  <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-bold text-2xl">
                     {user.name
                       .split(" ")
                       .map((n) => n[0])

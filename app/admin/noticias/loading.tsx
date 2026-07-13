@@ -10,7 +10,7 @@ export default function Loading() {
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <div className="w-1 h-8 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+              <div className="w-1 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
               <Skeleton className="h-8 w-64 bg-gray-200 dark:bg-gray-700" />
             </div>
             <Skeleton className="h-4 w-96 bg-gray-200 dark:bg-gray-700" />

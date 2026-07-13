@@ -34,7 +34,7 @@ const DialogAddEditTeamTournament = (
     <Dialog open={createAssocOpen} onOpenChange={setCreateAssocOpen}>
       <DialogTrigger asChild>
         {mode === "create" ? (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all duration-300">
+          <Button className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 transition-all duration-300">
             <Plus className="mr-2 h-4 w-4" />
             Asociar equipo
           </Button>
@@ -43,7 +43,7 @@ const DialogAddEditTeamTournament = (
             variant="ghost"
             size="sm"
             title="Editar asociación"
-            className="hover:bg-[#ad45ff]/10 hover:text-[#ad45ff] transition-colors"
+            className="hover:bg-brand/10 hover:text-brand transition-colors"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -51,11 +51,11 @@ const DialogAddEditTeamTournament = (
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl p-0">
         {/* Gradient accent bar */}
-        <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-t-2xl" />
+        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-t-2xl" />
 
         <DialogHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+            <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
               <Trophy className="w-5 h-5 text-white" />
             </div>
             <div>

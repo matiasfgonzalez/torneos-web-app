@@ -41,6 +41,18 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 | `ConfirmDialog` | `ConfirmDialog.tsx` | Confirmación de acciones destructivas (patrón §8). Modo trigger o controlado (`open`/`onOpenChange` — necesario si el disparador vive en un `DropdownMenu`). Soporta `onConfirm` async con loading. Referencia: `app/admin/partidos/page.tsx`. |
 | `EntityCard` + `EntityCardAvatar` | `EntityCard.tsx` | Shell compartido de las cards públicas de listado (F2, patrón §1 de UI_PATTERNS): `Link` + esquinas + elevación en hover + barra de acento de marca. No lo uses solo — componelo con el contenido de cada entidad (ver `TournamentCard`/`TeamCard`/`PlayerCard` abajo) o copiá su estructura si aparece una entidad nueva con card pública. |
 | `FilterChipGroup` | `FilterChips.tsx` | Grupo de filtros como chips (F2, patrón §6 de UI_PATTERNS): scrollea en una fila en mobile, wrap en desktop; 44px de alto, `aria-pressed`/`role="group"`. Reemplazó a los `<Select>`/`<select>` de los 5 listados públicos. Va de la mano con `useUrlFilters` (`hooks/use-url-filters.ts`), que mantiene el estado de los filtros en la query de la URL. |
+| `SectionTitle` | `PageHeader.tsx` | Título de sección dentro de una página admin (F3): barra de acento de marca + `h2`, con `actions` opcionales. Se repetía a mano en casi todas las pantallas del panel. |
+
+## 2c. Caparazón del panel admin (F3, 2026-07-13)
+
+`app/admin/layout.tsx` (server: resuelve auth/rol/`orgView`) delega el árbol a **`AdminShell`** (`components/admin/AdminShell.tsx`, client), que coordina el **sidebar replegable** con el ancho del contenido:
+
+- El sidebar (`components/admin/sidebar.tsx`) se **repliega a solo íconos** en desktop (`md:w-72` ↔ `md:w-20`), con un botón-pestaña sobre su borde derecho (`aria-expanded`, `PanelLeftClose`/`PanelLeftOpen`). En mobile sigue abriendo en un `Sheet` lateral, siempre con texto.
+- La preferencia se **persiste en `localStorage`** y se lee con `useSyncExternalStore` — no con `useEffect` + `setState`, que dispara un render en cascada (lo rechaza `react-hooks/set-state-in-effect`).
+- `SidebarContent` está definido **a nivel de módulo**, no dentro de `AdminSidebar`: crearlo en cada render remontaría el árbol entero del sidebar en cada navegación (`react-hooks/static-components`).
+- La sección activa se marca **por prefijo de ruta**, así que las subpáginas (`/admin/torneos/[id]`) mantienen resaltado "Torneos".
+
+Al agregar una ruta admin nueva: sumá un objeto a `menuItems` (`title`/`href`/`icon` Lucide/`roles`/`enabled`) — no crees una navegación paralela.
 
 Cards por entidad que ya componen `EntityCard` (no viven en `components/shared` — cada una junto a su módulo, como el resto del código de esa entidad): `TournamentCard` (`modules/torneos/components/TournamentCard.tsx`), `TeamCard` (`modules/equipos/components/public/TeamCard.tsx`), `PlayerCard` (`modules/jugadores/components/public/PlayerCard.tsx`, con `variant="grid"|"list"`). Usalas directo — no copies su JSX a mano en una página nueva.
 

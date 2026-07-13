@@ -174,7 +174,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
     required?: boolean;
   }) => (
     <div className="flex items-center space-x-2 mb-2">
-      <div className="w-1 h-5 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
       <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
         {children}
@@ -185,13 +185,13 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
 
   // Estilos comunes para inputs
   const inputClassName =
-    "h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200";
+    "h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200";
 
   const textareaClassName =
-    "bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] focus:ring-2 focus:ring-[#ad45ff]/20 dark:focus:ring-[#a3b3ff]/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200";
+    "bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200";
 
   const selectTriggerClassName =
-    "h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] dark:focus:border-[#a3b3ff] text-gray-900 dark:text-white rounded-xl";
+    "h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl";
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -208,7 +208,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
             </div>
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
+          <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
             <Plus className="mr-2 h-5 w-5" />
             Registrar Jugador
           </Button>
@@ -216,11 +216,11 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
         {/* Header con gradiente */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff] rounded-t-2xl" />
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand via-brand-2 to-brand rounded-t-2xl" />
 
         <DialogHeader className="space-y-4 pt-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
               {isEditMode ? (
                 <Edit className="h-6 w-6 text-white" />
               ) : (
@@ -246,7 +246,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
           <Card className="bg-gray-50/50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-600">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2 text-gray-900 dark:text-white">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-brand to-brand-2 rounded-lg flex items-center justify-center">
                   <User className="h-4 w-4 text-white" />
                 </div>
                 Información Personal
@@ -647,7 +647,7 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
             ) : (
               <Button
                 type="submit"
-                className="px-8 py-2.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
+                className="px-8 py-2.5 bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
                 disabled={isLoading}
               >
                 {isLoading ? (

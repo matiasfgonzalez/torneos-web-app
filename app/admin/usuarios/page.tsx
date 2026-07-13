@@ -101,7 +101,7 @@ const UserCard = ({
         <div className="flex items-center space-x-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-            <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white font-semibold">
+            <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-semibold">
               {user.name
                 .split(" ")
                 .map((n) => n[0])
@@ -216,7 +216,7 @@ const UserCard = ({
         <Button
           size="sm"
           asChild
-          className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white"
+          className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white"
         >
           <Link href={`/admin/usuarios/${user.id}`}>Ver detalles</Link>
         </Button>
@@ -239,7 +239,7 @@ const UserRow = ({
         <div className="flex items-center space-x-4 flex-1 min-w-0">
           <Avatar className="h-10 w-10">
             <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-            <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white font-semibold text-sm">
+            <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-semibold text-sm">
               {user.name
                 .split(" ")
                 .map((n) => n[0])
@@ -470,11 +470,11 @@ export default function UsersPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-r from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-lg">
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
                 Gestión de Usuarios
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -501,7 +501,7 @@ export default function UsersPage() {
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
-            <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#8b39cc] dark:to-[#829bd9] hover:from-[#9c3ee6] hover:to-[#92a6ff] dark:hover:from-[#7a32b8] dark:hover:to-[#7189c5] text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-6 py-5 text-base font-semibold">
+            <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-6 py-5 text-base font-semibold">
               <Plus className="h-5 w-5 mr-2" />
               Nuevo Usuario
             </Button>
@@ -521,7 +521,7 @@ export default function UsersPage() {
                     Total Usuarios
                   </p>
                 </div>
-                <Users className="h-8 w-8 text-[#ad45ff]" />
+                <Users className="h-8 w-8 text-brand" />
               </div>
             </CardContent>
           </Card>
@@ -767,7 +767,7 @@ export default function UsersPage() {
                   ? "No hay usuarios que coincidan con los filtros aplicados."
                   : "Aún no hay usuarios registrados en el sistema."}
               </p>
-              <Button className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white">
+              <Button className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Primer Usuario
               </Button>

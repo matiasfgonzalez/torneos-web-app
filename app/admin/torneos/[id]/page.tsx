@@ -46,7 +46,7 @@ export default async function AdminTournamentDetail({
             <div className="pt-4">
               <Button
                 asChild
-                className="rounded-full px-8 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9d35ef] hover:to-[#b56dff] text-white shadow-lg shadow-[#ad45ff]/25 border-0"
+                className="rounded-full px-8 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 border-0"
               >
                 <Link href="/admin/torneos" className="flex items-center gap-2">
                   <ArrowLeft className="w-4 h-4" />
@@ -73,14 +73,14 @@ export default async function AdminTournamentDetail({
         <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
           <Link
             href="/admin/dashboard"
-            className="hover:text-[#ad45ff] transition-colors"
+            className="hover:text-brand transition-colors"
           >
             Dashboard
           </Link>
           <ChevronRight className="w-4 h-4" />
           <Link
             href="/admin/torneos"
-            className="hover:text-[#ad45ff] transition-colors"
+            className="hover:text-brand transition-colors"
           >
             Torneos
           </Link>

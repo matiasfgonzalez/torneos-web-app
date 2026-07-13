@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -161,26 +162,20 @@ export default function OrganizacionesClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#ad45ff]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
 
   return (
     <div className="p-6 sm:p-8 space-y-8 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
-          <Building2 className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-            Organizaciones
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Salud del negocio: ligas activas, planes y facturación
-          </p>
-        </div>
-      </div>
+      {/* Header - componente compartido (patrón §3 variante B) */}
+      <PageHeader
+        variant="simple"
+        icon={Building2}
+        title="Organizaciones"
+        description="Salud del negocio: ligas activas, planes y facturación"
+      />
 
       {/* Métricas SaaS */}
       {metrics && (
@@ -190,7 +185,7 @@ export default function OrganizacionesClient() {
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Organizaciones
               </CardTitle>
-              <Building2 className="h-4 w-4 text-[#ad45ff]" />
+              <Building2 className="h-4 w-4 text-brand" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -212,7 +207,7 @@ export default function OrganizacionesClient() {
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Conversión FREE→pago
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-[#ad45ff]" />
+              <TrendingUp className="h-4 w-4 text-brand" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -232,7 +227,7 @@ export default function OrganizacionesClient() {
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Ingresos del mes
               </CardTitle>
-              <Wallet className="h-4 w-4 text-[#ad45ff]" />
+              <Wallet className="h-4 w-4 text-brand" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -250,7 +245,7 @@ export default function OrganizacionesClient() {
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Torneos creados
               </CardTitle>
-              <Trophy className="h-4 w-4 text-[#ad45ff]" />
+              <Trophy className="h-4 w-4 text-brand" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -331,7 +326,7 @@ export default function OrganizacionesClient() {
                       size="sm"
                       disabled={viewingAs === org.id}
                       onClick={() => viewAs(org)}
-                      className="gap-1.5 border-[#ad45ff]/40 text-[#ad45ff] hover:bg-[#ad45ff]/10 dark:border-[#ad45ff]/50 dark:text-[#c77dff] dark:hover:bg-[#ad45ff]/15"
+                      className="gap-1.5 border-brand/40 text-brand hover:bg-brand/10 dark:border-brand/50 dark:text-brand-mid dark:hover:bg-brand/15"
                     >
                       {viewingAs === org.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

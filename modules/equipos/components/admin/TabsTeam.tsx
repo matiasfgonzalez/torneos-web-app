@@ -92,7 +92,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#ad45ff]" />
+                  <Users className="w-5 h-5 text-brand" />
                   Plantel Actual
                 </CardTitle>
                 <CardDescription>
@@ -119,14 +119,14 @@ export default function TabsTeam(props: PropsTabsTeam) {
                 {teamData.jugadores.map((jugador: any) => (
                   <div
                     key={jugador.id}
-                    className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/30 hover:shadow-md transition-all bg-white dark:bg-gray-800"
+                    className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-brand/30 hover:shadow-md transition-all bg-white dark:bg-gray-800"
                   >
-                    <Avatar className="w-12 h-12 border-2 border-[#ad45ff]/20 mr-3">
+                    <Avatar className="w-12 h-12 border-2 border-brand/20 mr-3">
                       <AvatarImage
                         src={jugador.imageUrlFace || jugador.imageUrl}
                         alt={jugador.name}
                       />
-                      <AvatarFallback className="bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white">
                         {jugador.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -137,7 +137,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
                       <div className="flex items-center gap-2 mt-1">
                         <Badge
                           variant="outline"
-                          className="text-xs border-[#ad45ff]/30 text-[#ad45ff] px-1.5 py-0"
+                          className="text-xs border-brand/30 text-brand px-1.5 py-0"
                         >
                           {getPositionAbbr(jugador.position)}
                         </Badge>
@@ -162,7 +162,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
           {teamData.tournamentTeams.length === 0 ? (
             <Card className="col-span-full border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardContent className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50 text-[#ad45ff]" />
+                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50 text-brand" />
                 <p className="font-medium">Sin participación en torneos</p>
                 <p className="text-sm mt-1">
                   Este equipo no ha sido inscrito en ningún torneo
@@ -211,7 +211,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
                 <CardContent>
                   <div className="grid grid-cols-4 gap-2 text-center text-sm py-2">
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
-                      <p className="font-bold text-[#ad45ff]">{tt.matchesPlayed}</p>
+                      <p className="font-bold text-brand">{tt.matchesPlayed}</p>
                       <p className="text-[10px] uppercase text-gray-500">PJ</p>
                     </div>
                     <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-2">
@@ -231,7 +231,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
                     <span>
                       {tt.goalsFor} GF • {tt.goalsAgainst} GC
                     </span>
-                    <span className="font-bold text-[#ad45ff]">
+                    <span className="font-bold text-brand">
                       {tt.points} Pts
                     </span>
                   </div>
@@ -247,7 +247,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
         <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#ad45ff]" />
+              <Calendar className="w-5 h-5 text-brand" />
               Historial de Partidos
             </CardTitle>
           </CardHeader>

@@ -83,7 +83,7 @@ const TeamsTable = (props: PropsTeamsTable) => {
     <Card className="glass-card border-0 shadow-xl">
       <CardHeader className="space-y-4">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-brand to-brand-2 rounded-xl flex items-center justify-center">
             <Users className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -104,7 +104,7 @@ const TeamsTable = (props: PropsTeamsTable) => {
               placeholder="Buscar equipos por nombre, ciudad, categoría o DT..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-0 transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="pl-10 border-2 border-gray-200 dark:border-gray-600 focus:border-brand focus:ring-0 transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
           <div className="relative min-w-48">
@@ -112,7 +112,7 @@ const TeamsTable = (props: PropsTeamsTable) => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-md focus:border-[#ad45ff] focus:outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-md focus:border-brand focus:outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -130,7 +130,7 @@ const TeamsTable = (props: PropsTeamsTable) => {
             {teams.length} equipos
           </div>
           {searchTerm && (
-            <div className="text-sm text-[#ad45ff] bg-[#ad45ff]/10 dark:bg-[#ad45ff]/20 px-3 py-1 rounded-full">
+            <div className="text-sm text-brand bg-brand/10 dark:bg-brand/20 px-3 py-1 rounded-full">
               Filtrado: {searchTerm}
             </div>
           )}
@@ -258,7 +258,7 @@ const TeamsTable = (props: PropsTeamsTable) => {
                           variant="outline"
                           size="sm"
                           asChild
-                          className="hover:bg-[#ad45ff] hover:text-white hover:border-[#ad45ff] transition-all duration-200"
+                          className="hover:bg-brand hover:text-white hover:border-brand transition-all duration-200"
                         >
                           <Link href={`/equipos/${team.id}`}>
                             <Eye className="h-4 w-4" />

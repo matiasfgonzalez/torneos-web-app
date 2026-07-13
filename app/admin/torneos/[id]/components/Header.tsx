@@ -62,7 +62,7 @@ const Header = ({ tournamentData }: PropsHeader) => {
   };
 
   const config = statusConfig[tournamentData.status] || {
-    gradient: "from-[#ad45ff] to-[#c77dff]",
+    gradient: "from-brand to-brand-mid",
     icon: null,
   };
 
@@ -71,7 +71,7 @@ const Header = ({ tournamentData }: PropsHeader) => {
       {/* Back Button - Premium Style */}
       <Button
         variant="ghost"
-        className="hover:bg-[#ad45ff]/10 hover:text-[#ad45ff] border border-gray-200 dark:border-gray-700"
+        className="hover:bg-brand/10 hover:text-brand border border-gray-200 dark:border-gray-700"
         asChild
       >
         <Link href="/admin/torneos">
@@ -81,13 +81,13 @@ const Header = ({ tournamentData }: PropsHeader) => {
       </Button>
 
       {/* Main header card - Premium Golazo Style with theme support */}
-      <div className="relative bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#1a0a2e] dark:via-[#2d1b4e] dark:to-[#1a0a2e] rounded-3xl shadow-2xl overflow-hidden border border-[#ad45ff]/20 dark:border-[#ad45ff]/20">
+      <div className="relative bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#1a0a2e] dark:via-[#2d1b4e] dark:to-[#1a0a2e] rounded-3xl shadow-2xl overflow-hidden border border-brand/20 dark:border-brand/20">
         {/* Decorative blur orbs */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#ad45ff]/20 dark:bg-[#ad45ff]/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-56 h-56 bg-[#c77dff]/10 dark:bg-[#c77dff]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-brand/20 dark:bg-brand/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-56 h-56 bg-brand-mid/10 dark:bg-brand-mid/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         {/* Gradient top accent */}
-        <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
 
         <div className="relative p-6 sm:p-8 lg:p-10">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -95,7 +95,7 @@ const Header = ({ tournamentData }: PropsHeader) => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               {/* Logo with glow effect */}
               <div className="relative group flex-shrink-0">
-                <div className="absolute -inset-2 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                <div className="absolute -inset-2 bg-gradient-to-r from-brand to-brand-mid rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
                 <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-3 flex items-center justify-center border-4 border-white/10 overflow-hidden">
                   <img
                     src={tournamentData.logoUrl || "/placeholder.svg"}
@@ -123,21 +123,21 @@ const Header = ({ tournamentData }: PropsHeader) => {
 
                   {/* Info Pills */}
                   <div className="flex flex-wrap items-center gap-3 mt-3">
-                    <div className="flex items-center gap-2 bg-[#ad45ff]/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#ad45ff]/20 dark:border-white/10">
-                      <Trophy className="w-4 h-4 text-[#ad45ff]" />
+                    <div className="flex items-center gap-2 bg-brand/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-brand/20 dark:border-white/10">
+                      <Trophy className="w-4 h-4 text-brand" />
                       <span className="text-gray-700 dark:text-white/90 text-sm font-medium">
                         {formatTournamentCategory(tournamentData)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 bg-[#c77dff]/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#c77dff]/20 dark:border-white/10">
-                      <Layers className="w-4 h-4 text-[#c77dff]" />
+                    <div className="flex items-center gap-2 bg-brand-mid/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-brand-mid/20 dark:border-white/10">
+                      <Layers className="w-4 h-4 text-brand-mid" />
                       <span className="text-gray-700 dark:text-white/90 text-sm font-medium">
                         {getFormatLabel(tournamentData.format)}
                       </span>
                     </div>
                     {tournamentData.locality && (
-                      <div className="flex items-center gap-2 bg-[#a3b3ff]/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#a3b3ff]/20 dark:border-white/10">
-                        <MapPin className="w-4 h-4 text-[#a3b3ff]" />
+                      <div className="flex items-center gap-2 bg-brand-2/10 dark:bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-brand-2/20 dark:border-white/10">
+                        <MapPin className="w-4 h-4 text-brand-2" />
                         <span className="text-gray-700 dark:text-white/90 text-sm">
                           {tournamentData.locality}
                         </span>

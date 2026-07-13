@@ -148,14 +148,14 @@ export default function DialogReferee({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "create" ? (
-          <Button className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all duration-300 rounded-xl px-6 py-6 text-base font-semibold cursor-pointer">
+          <Button className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 transition-all duration-300 rounded-xl px-6 py-6 text-base font-semibold cursor-pointer">
             <Plus className="w-5 h-5 mr-2" /> Nuevo Árbitro
           </Button>
         ) : (
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9 rounded-lg border-[#ad45ff]/50 text-[#ad45ff] hover:bg-[#ad45ff]/10 hover:border-[#ad45ff] transition-all"
+            className="h-9 w-9 rounded-lg border-brand/50 text-brand hover:bg-brand/10 hover:border-brand transition-all"
             title="Editar"
           >
             <Edit className="w-4 h-4" />
@@ -165,13 +165,13 @@ export default function DialogReferee({
 
       <DialogContent className="w-[95vw] max-w-[400px] sm:max-w-[600px] md:max-w-[750px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl p-0">
         {/* Barra de acento */}
-        <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-t-2xl" />
+        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-t-2xl" />
 
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
           <DialogHeader className="space-y-3">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
+              <div className="p-3 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/30">
                 {mode === "create" ? (
                   <Award className="w-6 h-6 text-white" />
                 ) : (
@@ -196,7 +196,7 @@ export default function DialogReferee({
           {/* Sección: Información Personal */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
             <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <User className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -216,7 +216,7 @@ export default function DialogReferee({
                 required
                 placeholder="Ej: Néstor Pitana"
                 disabled={isLoading}
-                className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
               />
             </div>
 
@@ -232,7 +232,7 @@ export default function DialogReferee({
                   onChange={(e) => setNationalId(e.target.value)}
                   placeholder="Ej: 12345678"
                   disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
                 />
               </div>
 
@@ -247,7 +247,7 @@ export default function DialogReferee({
                   value={birthDate}
                   onChange={(e) => setBirthDate(e.target.value)}
                   disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
                 />
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function DialogReferee({
                 onChange={(e) => setNationality(e.target.value)}
                 placeholder="Ej: Argentina"
                 disabled={isLoading}
-                className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
               />
             </div>
 
@@ -279,7 +279,7 @@ export default function DialogReferee({
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://ejemplo.com/foto.jpg"
                   disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff] flex-1"
+                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand flex-1"
                 />
                 {imageUrl && (
                   <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-600 shrink-0">
@@ -300,7 +300,7 @@ export default function DialogReferee({
           {/* Sección: Contacto */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
             <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <Phone className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -321,7 +321,7 @@ export default function DialogReferee({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="arbitro@email.com"
                   disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
                 />
               </div>
 
@@ -336,7 +336,7 @@ export default function DialogReferee({
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+54 9 11 1234-5678"
                   disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-[#ad45ff] focus:border-[#ad45ff]"
+                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
                 />
               </div>
             </div>
@@ -345,7 +345,7 @@ export default function DialogReferee({
           {/* Sección: Profesional */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
             <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
                 <Shield className="h-4 w-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -422,7 +422,7 @@ export default function DialogReferee({
             <Button
               type="submit"
               disabled={isLoading || !name.trim()}
-              className="px-6 h-11 mt-2 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 h-11 mt-2 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

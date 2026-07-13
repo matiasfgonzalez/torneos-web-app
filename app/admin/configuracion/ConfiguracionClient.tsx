@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import {
   Settings,
@@ -85,19 +86,13 @@ export default function ConfiguracionClient({
 
   return (
     <div className="p-6 sm:p-8 space-y-8 max-w-3xl mx-auto">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
-          <Settings className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-            Configuración del Sitio
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Contacto y redes que se muestran en el pie de página
-          </p>
-        </div>
-      </div>
+      {/* Header - componente compartido (patrón §3 variante B) */}
+      <PageHeader
+        variant="simple"
+        icon={Settings}
+        title="Configuración del Sitio"
+        description="Contacto y redes que se muestran en el pie de página"
+      />
 
       <Card>
         <CardHeader>
@@ -115,7 +110,7 @@ export default function ConfiguracionClient({
               placeholder="La plataforma líder para la gestión profesional de torneos deportivos..."
               value={form.description}
               onChange={(e) => update("description", e.target.value)}
-              className="rounded-xl focus-visible:ring-[#ad45ff]/30"
+              className="rounded-xl focus-visible:ring-brand/30"
             />
           </div>
         </CardContent>
@@ -131,7 +126,7 @@ export default function ConfiguracionClient({
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="contactEmail" className="flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5 text-[#ad45ff]" />
+              <Mail className="w-3.5 h-3.5 text-brand" />
               Email
             </Label>
             <Input
@@ -145,7 +140,7 @@ export default function ConfiguracionClient({
           </div>
           <div className="space-y-2">
             <Label htmlFor="contactPhone" className="flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5 text-[#ad45ff]" />
+              <Phone className="w-3.5 h-3.5 text-brand" />
               Teléfono
             </Label>
             <Input
@@ -158,7 +153,7 @@ export default function ConfiguracionClient({
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="address" className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-[#ad45ff]" />
+              <MapPin className="w-3.5 h-3.5 text-brand" />
               Dirección
             </Label>
             <Input
@@ -182,7 +177,7 @@ export default function ConfiguracionClient({
         <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="facebookUrl" className="flex items-center gap-2">
-              <Facebook className="w-3.5 h-3.5 text-[#ad45ff]" />
+              <Facebook className="w-3.5 h-3.5 text-brand" />
               Facebook
             </Label>
             <Input
@@ -195,7 +190,7 @@ export default function ConfiguracionClient({
           </div>
           <div className="space-y-2">
             <Label htmlFor="twitterUrl" className="flex items-center gap-2">
-              <Twitter className="w-3.5 h-3.5 text-[#ad45ff]" />
+              <Twitter className="w-3.5 h-3.5 text-brand" />
               Twitter / X
             </Label>
             <Input
@@ -208,7 +203,7 @@ export default function ConfiguracionClient({
           </div>
           <div className="space-y-2">
             <Label htmlFor="instagramUrl" className="flex items-center gap-2">
-              <Instagram className="w-3.5 h-3.5 text-[#ad45ff]" />
+              <Instagram className="w-3.5 h-3.5 text-brand" />
               Instagram
             </Label>
             <Input
@@ -226,7 +221,7 @@ export default function ConfiguracionClient({
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="gap-2 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl px-6"
+          className="gap-2 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 rounded-xl px-6"
         >
           {saving ? (
             <Loader2 className="h-4 w-4 animate-spin" />

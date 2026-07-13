@@ -212,7 +212,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
                 className={
-                  showFilters ? "bg-[#ad45ff]/10 border-[#ad45ff]/20" : ""
+                  showFilters ? "bg-brand/10 border-brand/20" : ""
                 }
               >
                 <Filter className="h-4 w-4 mr-1" />

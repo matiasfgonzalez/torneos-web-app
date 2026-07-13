@@ -27,12 +27,12 @@ const TabsOverview = (props: PropsTabsOverview) => {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Información del Torneo Card */}
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
           <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden h-full">
-            <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+            <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/25">
+                <div className="p-2.5 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/25">
                   <Trophy className="w-4 h-4 text-white" />
                 </div>
                 <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
@@ -43,8 +43,8 @@ const TabsOverview = (props: PropsTabsOverview) => {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                  <div className="p-2 bg-[#ad45ff]/10 rounded-lg">
-                    <Trophy className="h-4 w-4 text-[#ad45ff]" />
+                  <div className="p-2 bg-brand/10 rounded-lg">
+                    <Trophy className="h-4 w-4 text-brand" />
                   </div>
                   <div>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -56,8 +56,8 @@ const TabsOverview = (props: PropsTabsOverview) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                  <div className="p-2 bg-[#c77dff]/10 rounded-lg">
-                    <Building className="h-4 w-4 text-[#c77dff]" />
+                  <div className="p-2 bg-brand-mid/10 rounded-lg">
+                    <Building className="h-4 w-4 text-brand-mid" />
                   </div>
                   <div>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -69,8 +69,8 @@ const TabsOverview = (props: PropsTabsOverview) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                  <div className="p-2 bg-[#a3b3ff]/10 rounded-lg">
-                    <MapPin className="h-4 w-4 text-[#a3b3ff]" />
+                  <div className="p-2 bg-brand-2/10 rounded-lg">
+                    <MapPin className="h-4 w-4 text-brand-2" />
                   </div>
                   <div>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -128,12 +128,12 @@ const TabsOverview = (props: PropsTabsOverview) => {
 
         {/* Configuración Card */}
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#c77dff] via-[#a3b3ff] to-[#ad45ff] rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand-mid via-brand-2 to-brand rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
           <Card className="relative bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl overflow-hidden h-full">
-            <div className="h-1.5 bg-gradient-to-r from-[#c77dff] via-[#a3b3ff] to-[#ad45ff]" />
+            <div className="h-1.5 bg-gradient-to-r from-brand-mid via-brand-2 to-brand" />
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-[#c77dff] to-[#a3b3ff] rounded-xl shadow-lg shadow-[#c77dff]/25">
+                <div className="p-2.5 bg-gradient-to-br from-brand-mid to-brand-2 rounded-xl shadow-lg shadow-brand-mid/25">
                   <Settings className="w-4 h-4 text-white" />
                 </div>
                 <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
@@ -147,7 +147,7 @@ const TabsOverview = (props: PropsTabsOverview) => {
                   <span className="font-medium text-gray-600 dark:text-gray-400">
                     Formato
                   </span>
-                  <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0 shadow-lg shadow-[#ad45ff]/25">
+                  <Badge className="bg-gradient-to-r from-brand to-brand-mid text-white border-0 shadow-lg shadow-brand/25">
                     {TOURNAMENT_FORMAT_LABELS[
                       tournamentData.format as keyof typeof TOURNAMENT_FORMAT_LABELS
                     ] || tournamentData.format}
@@ -157,7 +157,7 @@ const TabsOverview = (props: PropsTabsOverview) => {
                   <span className="font-medium text-gray-600 dark:text-gray-400">
                     Categoría
                   </span>
-                  <Badge className="bg-gradient-to-r from-[#c77dff] to-[#a3b3ff] text-white border-0 shadow-lg shadow-[#c77dff]/25">
+                  <Badge className="bg-gradient-to-r from-brand-mid to-brand-2 text-white border-0 shadow-lg shadow-brand-mid/25">
                     {formatTournamentCategory(tournamentData)}
                   </Badge>
                 </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,12 +28,6 @@ interface AdminPayment {
     plan: { code: string; name: string };
   };
 }
-
-const STATUS_BADGE: Record<string, string> = {
-  PENDIENTE: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
-  APROBADO: "bg-green-500/15 text-green-600 border-green-500/30",
-  RECHAZADO: "bg-red-500/15 text-red-600 border-red-500/30",
-};
 
 export default function PagosAdminPage() {
   const [payments, setPayments] = useState<AdminPayment[]>([]);
@@ -82,7 +78,7 @@ export default function PagosAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#ad45ff]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -92,19 +88,13 @@ export default function PagosAdminPage() {
 
   return (
     <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg">
-          <Wallet className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
-            Aprobación de Pagos
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {pending.length} pendiente(s)
-          </p>
-        </div>
-      </div>
+      {/* Header - componente compartido (patrón §3 variante B) */}
+      <PageHeader
+        variant="simple"
+        icon={Wallet}
+        title="Aprobación de Pagos"
+        description={`${pending.length} pendiente(s)`}
+      />
 
       <Card>
         <CardHeader>
@@ -135,7 +125,7 @@ export default function PagosAdminPage() {
                     </p>
                   )}
                 </div>
-                <Badge className={STATUS_BADGE[p.status]}>{p.status}</Badge>
+                <StatusBadge entity="payment" status={p.status} />
               </div>
 
               {p.receiptUrl ? (
@@ -215,9 +205,7 @@ export default function PagosAdminPage() {
                       {p.reviewNotes && ` — ${p.reviewNotes}`}
                     </p>
                   </div>
-                  <Badge className={STATUS_BADGE[p.status] ?? ""}>
-                    {p.status}
-                  </Badge>
+                  <StatusBadge entity="payment" status={p.status} />
                 </div>
               ))}
             </div>
