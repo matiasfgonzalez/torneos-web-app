@@ -31,7 +31,11 @@ export async function GET(req: NextRequest) {
     const matches = await db.match.findMany({
       where,
       include: {
-        tournament: true,
+        // organization.slug: para enlazar a la URL canónica del torneo
+        // desde el listado público (tournamentPublicPath, F2)
+        tournament: {
+          include: { organization: { select: { slug: true } } },
+        },
         homeTeam: {
           include: { team: true },
         },

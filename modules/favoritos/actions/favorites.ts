@@ -11,6 +11,10 @@ export interface FavoriteTournamentItem {
   logoUrl: string | null;
   locality: string;
   status: TournamentStatus;
+  // Slugs para enlazar directo a la URL canónica (tournamentPublicPath, F2).
+  // `organization` es relación obligatoria en el schema, nunca null.
+  slug: string | null;
+  organization: { slug: string };
 }
 
 export interface FavoriteTeamItem {
@@ -42,7 +46,15 @@ export async function getUserFavorites(): Promise<UserFavorites> {
     orderBy: { createdAt: "desc" },
     include: {
       tournament: {
-        select: { id: true, name: true, logoUrl: true, locality: true, status: true },
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+          locality: true,
+          status: true,
+          slug: true,
+          organization: { select: { slug: true } },
+        },
       },
       team: {
         select: { id: true, name: true, logoUrl: true, homeCity: true },

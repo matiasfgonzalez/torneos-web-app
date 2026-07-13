@@ -6,13 +6,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Search,
@@ -34,25 +27,42 @@ import {
 } from "lucide-react";
 import { isToday } from "date-fns";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
+import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { useUrlFilters } from "@/hooks/use-url-filters";
 import { IPartidos, MatchStatus } from "@modules/partidos/types";
+import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 import { formatDate } from "@/lib/formatDate";
 
 const ITEMS_PER_PAGE = 6;
 
-interface Filters {
-  status: string;
-  tournamentId: string;
-  search: string;
-}
-
-const EMPTY_FILTERS: Filters = { status: "all", tournamentId: "all", search: "" };
+const DEFAULTS = { q: "", estado: "all", torneo: "all" };
 
 export default function PartidosPage() {
+  // Filtros en la URL (F2)
+  const { values, setFilter, clearFilters, hasActiveFilters } =
+    useUrlFilters(DEFAULTS);
+  const filters = useMemo(
+    () => ({
+      search: values.q,
+      status: values.estado,
+      tournamentId: values.torneo,
+    }),
+    [values.q, values.estado, values.torneo],
+  );
+
   const [matches, setMatches] = useState<IPartidos[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
+
+  // Cambiar un filtro vuelve a la página 1. Ajuste de estado durante el
+  // render (patrón recomendado de React) en vez de un useEffect con
+  // setState, que dispara un render en cascada.
+  const filterKey = `${filters.search}|${filters.status}|${filters.tournamentId}`;
+  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
+  if (filterKey !== lastFilterKey) {
+    setLastFilterKey(filterKey);
+    setCurrentPage(1);
+  }
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -154,25 +164,10 @@ export default function PartidosPage() {
     }
   };
 
-  const handleSearch = (value: string) => {
-    setFilters((prev) => ({ ...prev, search: value }));
-    setCurrentPage(1);
-  };
-
-  const handleFilterChange = (key: keyof Filters, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
-  };
-
   const activeFiltersCount = [
     filters.status !== "all",
     filters.tournamentId !== "all",
   ].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setFilters(EMPTY_FILTERS);
-    setCurrentPage(1);
-  };
 
   return (
     <div className="min-h-screen premium-gradient-bg">
@@ -217,96 +212,62 @@ export default function PartidosPage() {
 
       <section className="pb-16 lg:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Search and Filters */}
+          {/* Búsqueda y filtros (chips + estado en URL, F2) */}
           <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl mb-8">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar equipos, torneos, estadios..."
-                    className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff]"
+                    className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand/30 focus:border-brand"
                     value={filters.search}
-                    onChange={(e) => handleSearch(e.target.value)}
+                    onChange={(e) => setFilter("q", e.target.value)}
                   />
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="h-11 rounded-xl border-gray-200 dark:border-gray-600"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
-                  {activeFiltersCount > 0 && (
-                    <Badge className="ml-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0">
-                      {activeFiltersCount}
-                    </Badge>
-                  )}
-                </Button>
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="h-11 rounded-xl border-gray-200 dark:border-gray-600 shrink-0"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Limpiar
+                    {activeFiltersCount > 0 && (
+                      <Badge className="ml-2 bg-gradient-to-r from-brand to-brand-2 text-white border-0">
+                        {activeFiltersCount}
+                      </Badge>
+                    )}
+                  </Button>
+                )}
               </div>
 
-              {showFilters && (
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">
-                        Estado
-                      </label>
-                      <Select
-                        value={filters.status}
-                        onValueChange={(value) => handleFilterChange("status", value)}
-                      >
-                        <SelectTrigger className="h-11 rounded-xl bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                          <SelectValue placeholder="Todos los estados" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos los estados</SelectItem>
-                          <SelectItem value={MatchStatus.PROGRAMADO}>Programado</SelectItem>
-                          <SelectItem value={MatchStatus.EN_JUEGO}>En juego</SelectItem>
-                          <SelectItem value={MatchStatus.FINALIZADO}>Finalizado</SelectItem>
-                          <SelectItem value={MatchStatus.SUSPENDIDO}>Suspendido</SelectItem>
-                          <SelectItem value={MatchStatus.POSTERGADO}>Postergado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+              <FilterChipGroup
+                label="Estado"
+                icon={Filter}
+                value={filters.status}
+                onChange={(v) => setFilter("estado", v)}
+                options={[
+                  { value: "all", label: "Todos" },
+                  { value: MatchStatus.PROGRAMADO, label: "Programado" },
+                  { value: MatchStatus.EN_JUEGO, label: "En juego" },
+                  { value: MatchStatus.FINALIZADO, label: "Finalizado" },
+                  { value: MatchStatus.SUSPENDIDO, label: "Suspendido" },
+                  { value: MatchStatus.POSTERGADO, label: "Postergado" },
+                ]}
+              />
 
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">
-                        Torneo
-                      </label>
-                      <Select
-                        value={filters.tournamentId}
-                        onValueChange={(value) => handleFilterChange("tournamentId", value)}
-                      >
-                        <SelectTrigger className="h-11 rounded-xl bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                          <SelectValue placeholder="Todos los torneos" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos los torneos</SelectItem>
-                          {tournaments.map((t) => (
-                            <SelectItem key={t.id} value={t.id}>
-                              {t.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex items-end">
-                      <Button
-                        variant="outline"
-                        onClick={clearFilters}
-                        disabled={activeFiltersCount === 0 && !filters.search}
-                        className="w-full h-11 rounded-xl border-gray-200 dark:border-gray-600"
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Limpiar Filtros
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <FilterChipGroup
+                label="Torneo"
+                icon={Trophy}
+                value={filters.tournamentId}
+                onChange={(v) => setFilter("torneo", v)}
+                options={[
+                  { value: "all", label: "Todos" },
+                  ...tournaments.map((t) => ({ value: t.id, label: t.name })),
+                ]}
+              />
             </CardContent>
           </Card>
 
@@ -445,8 +406,8 @@ export default function PartidosPage() {
                     </div>
 
                     <Link
-                      href={`/torneos/${match.tournamentId}`}
-                      className="flex items-center justify-center gap-1.5 text-sm font-medium text-[#ad45ff] hover:text-[#c77dff] transition-colors pt-1"
+                      href={tournamentPublicPath(match.tournament)}
+                      className="flex items-center justify-center gap-1.5 text-sm font-medium text-brand hover:text-brand-mid transition-colors pt-1"
                     >
                       Ver torneo
                       <ChevronRight className="w-3.5 h-3.5" />

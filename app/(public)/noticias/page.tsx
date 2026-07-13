@@ -26,18 +26,25 @@ import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { formatDate } from "@/lib/formatDate";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { useUrlFilters } from "@/hooks/use-url-filters";
 import { INoticia } from "@modules/noticias/types";
 
 type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc";
 type ViewMode = "grid" | "list";
 
+const DEFAULTS = { q: "", autor: "", orden: "date-desc" };
+
 export default function NoticiasPage() {
+  // Filtros en la URL (F2)
+  const { values, setFilter, clearFilters, hasActiveFilters } =
+    useUrlFilters(DEFAULTS);
+  const { q: searchTerm, autor: selectedAuthor } = values;
+  const sortBy = values.orden as SortOption;
+
   const [noticias, setNoticias] = useState<INoticia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [selectedAuthor, setSelectedAuthor] = useState<string>("");
 
   useEffect(() => {
     const fetchNoticias = async () => {
@@ -129,12 +136,6 @@ export default function NoticiasPage() {
 
   const activeFiltersCount = [selectedAuthor].filter(Boolean).length;
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setSelectedAuthor("");
-    setSortBy("date-desc");
-  };
-
   // Noticia destacada (la más reciente)
   const noticiaDestacada = noticiasFiltradas[0];
   const restOfNoticias = noticiasFiltradas.slice(1);
@@ -212,7 +213,7 @@ export default function NoticiasPage() {
                     </button>
                   </div>
 
-                  {activeFiltersCount > 0 && (
+                  {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#ad45ff] bg-[#ad45ff]/10 rounded-lg hover:bg-[#ad45ff]/20 transition-colors"
@@ -224,8 +225,9 @@ export default function NoticiasPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1">
+              <div className="space-y-4">
+                {/* Búsqueda */}
+                <div>
                   <label
                     htmlFor="search-noticias"
                     className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
@@ -238,56 +240,40 @@ export default function NoticiasPage() {
                       id="search-noticias"
                       type="text"
                       placeholder="Título, contenido, autor..."
-                      className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                      className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => setFilter("q", e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="filter-author"
-                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                  >
-                    <User className="w-3.5 h-3.5 inline mr-1" />
-                    Autor
-                  </label>
-                  <select
-                    id="filter-author"
-                    value={selectedAuthor}
-                    onChange={(e) => setSelectedAuthor(e.target.value)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
-                  >
-                    <option value="">Todos los autores</option>
-                    {autoresDisponibles.map((autor) => (
-                      <option key={autor} value={autor}>
-                        {autor}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Chips: scrollean en mobile, wrap en desktop */}
+                <FilterChipGroup
+                  label="Autor"
+                  icon={User}
+                  value={selectedAuthor}
+                  onChange={(v) => setFilter("autor", v)}
+                  options={[
+                    { value: "", label: "Todos" },
+                    ...autoresDisponibles.map((a) => ({
+                      value: a ?? "",
+                      label: a ?? "",
+                    })),
+                  ]}
+                />
 
-                <div>
-                  <label
-                    htmlFor="sort-noticias"
-                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                  >
-                    <SortAsc className="w-3.5 h-3.5 inline mr-1" />
-                    Ordenar por
-                  </label>
-                  <select
-                    id="sort-noticias"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
-                  >
-                    <option value="date-desc">Más recientes</option>
-                    <option value="date-asc">Más antiguas</option>
-                    <option value="title-asc">Título (A-Z)</option>
-                    <option value="title-desc">Título (Z-A)</option>
-                  </select>
-                </div>
+                <FilterChipGroup
+                  label="Ordenar por"
+                  icon={SortAsc}
+                  value={sortBy}
+                  onChange={(v) => setFilter("orden", v)}
+                  options={[
+                    { value: "date-desc", label: "Más recientes" },
+                    { value: "date-asc", label: "Más antiguas" },
+                    { value: "title-asc", label: "Título (A-Z)" },
+                    { value: "title-desc", label: "Título (Z-A)" },
+                  ]}
+                />
               </div>
             </div>
           </div>

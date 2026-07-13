@@ -33,6 +33,9 @@ export interface ITournament {
   userId?: string;
   organizationId?: string;
   walkoverScore?: number;
+  // Slugs para la URL pública canónica (tournamentPublicPath, F2)
+  slug?: string | null;
+  organization?: { slug: string } | null;
   createdAt: string;
   updatedAt: string;
 }

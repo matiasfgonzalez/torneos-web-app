@@ -15,6 +15,7 @@ import type {
   FavoriteTeamItem,
 } from "@modules/favoritos/actions/favorites";
 import { FollowButton } from "@modules/favoritos/components/FollowButton";
+import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 
 interface FanHomeProps {
   name: string;
@@ -106,7 +107,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
                   >
                     <div className="flex items-start justify-between gap-2">
                       <Link
-                        href={`/torneos/${t.id}`}
+                        href={tournamentPublicPath(t)}
                         className="flex items-center gap-3 min-w-0 flex-1"
                       >
                         <div className="w-11 h-11 rounded-xl overflow-hidden border border-[#ad45ff]/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">

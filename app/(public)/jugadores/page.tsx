@@ -23,6 +23,8 @@ import {
 import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { useUrlFilters } from "@/hooks/use-url-filters";
 import { PlayerCard } from "@modules/jugadores/components/public/PlayerCard";
 import { IPlayer } from "@modules/jugadores/types";
 import {
@@ -35,11 +37,20 @@ import { PlayerPosition } from "@prisma/client";
 type SortOption = "name-asc" | "name-desc" | "number-asc" | "number-desc";
 type ViewMode = "grid" | "list";
 
+const DEFAULTS = {
+  q: "",
+  posicion: "",
+  estado: "",
+  orden: "name-asc",
+};
+
 const PlayersListInterface = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterPosition, setFilterPosition] = useState<string>("");
-  const [filterStatus, setFilterStatus] = useState<string>("");
-  const [sortBy, setSortBy] = useState<SortOption>("name-asc");
+  // Filtros en la URL (F2)
+  const { values, setFilter, clearFilters, hasActiveFilters } =
+    useUrlFilters(DEFAULTS);
+  const { q: searchTerm, posicion: filterPosition, estado: filterStatus } = values;
+  const sortBy = values.orden as SortOption;
+
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [players, setPlayers] = useState<IPlayer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -126,13 +137,6 @@ const PlayersListInterface = () => {
     Boolean,
   ).length;
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setFilterPosition("");
-    setFilterStatus("");
-    setSortBy("name-asc");
-  };
-
   const getPositionLabel = (position: string | null) => {
     if (!position) return "Sin posición";
     return PLAYER_POSITION_LABELS[position as PlayerPosition] || position;
@@ -192,7 +196,7 @@ const PlayersListInterface = () => {
                   key={posicion}
                   variant="outline"
                   className="px-4 py-2 text-sm font-medium border-2 border-brand/30 text-brand hover:bg-brand hover:text-white transition-all cursor-pointer"
-                  onClick={() => setFilterPosition(posicion)}
+                  onClick={() => setFilter("posicion", posicion)}
                 >
                   <Activity className="w-3.5 h-3.5 mr-1.5" />
                   {getPositionLabel(posicion)} ({count})
@@ -242,7 +246,7 @@ const PlayersListInterface = () => {
                     </button>
                   </div>
 
-                  {activeFiltersCount > 0 && (
+                  {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors"
@@ -254,8 +258,9 @@ const PlayersListInterface = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-1">
+              <div className="space-y-4">
+                {/* Búsqueda */}
+                <div>
                   <label
                     htmlFor="search-players"
                     className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
@@ -270,77 +275,52 @@ const PlayersListInterface = () => {
                       placeholder="Nombre, nacionalidad..."
                       className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => setFilter("q", e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="filter-position"
-                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                  >
-                    <Target className="w-3.5 h-3.5 inline mr-1" />
-                    Posición
-                  </label>
-                  <select
-                    id="filter-position"
-                    value={filterPosition}
-                    onChange={(e) => setFilterPosition(e.target.value)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
-                  >
-                    <option value="">Todas las posiciones</option>
-                    {PLAYER_POSITION_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Chips: scrollean en mobile, wrap en desktop */}
+                <FilterChipGroup
+                  label="Posición"
+                  icon={Target}
+                  value={filterPosition}
+                  onChange={(v) => setFilter("posicion", v)}
+                  options={[
+                    { value: "", label: "Todas" },
+                    ...PLAYER_POSITION_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    })),
+                  ]}
+                />
 
-                <div>
-                  <label
-                    htmlFor="filter-status"
-                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                  >
-                    <Activity className="w-3.5 h-3.5 inline mr-1" />
-                    Estado
-                  </label>
-                  <select
-                    id="filter-status"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
-                  >
-                    <option value="">Todos los estados</option>
-                    {PLAYER_STATUS_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FilterChipGroup
+                  label="Estado"
+                  icon={Activity}
+                  value={filterStatus}
+                  onChange={(v) => setFilter("estado", v)}
+                  options={[
+                    { value: "", label: "Todos" },
+                    ...PLAYER_STATUS_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    })),
+                  ]}
+                />
 
-                <div>
-                  <label
-                    htmlFor="sort-players"
-                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                  >
-                    <SortAsc className="w-3.5 h-3.5 inline mr-1" />
-                    Ordenar por
-                  </label>
-                  <select
-                    id="sort-players"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
-                  >
-                    <option value="name-asc">Nombre (A-Z)</option>
-                    <option value="name-desc">Nombre (Z-A)</option>
-                    <option value="number-asc">Número (↑)</option>
-                    <option value="number-desc">Número (↓)</option>
-                  </select>
-                </div>
+                <FilterChipGroup
+                  label="Ordenar por"
+                  icon={SortAsc}
+                  value={sortBy}
+                  onChange={(v) => setFilter("orden", v)}
+                  options={[
+                    { value: "name-asc", label: "Nombre (A-Z)" },
+                    { value: "name-desc", label: "Nombre (Z-A)" },
+                    { value: "number-asc", label: "Número ↑" },
+                    { value: "number-desc", label: "Número ↓" },
+                  ]}
+                />
               </div>
             </div>
           </div>

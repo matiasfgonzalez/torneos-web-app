@@ -5,6 +5,7 @@ import type {
   FavoriteTeamItem,
 } from "@modules/favoritos/actions/favorites";
 import { FollowButton } from "@modules/favoritos/components/FollowButton";
+import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 
 interface FavoritesTabProps {
   tournaments: FavoriteTournamentItem[];
@@ -52,7 +53,7 @@ export function FavoritesTab({ tournaments, teams }: Readonly<FavoritesTabProps>
                 key={t.id}
                 className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50"
               >
-                <Link href={`/torneos/${t.id}`} className="flex items-center gap-3 min-w-0 flex-1 group">
+                <Link href={tournamentPublicPath(t)} className="flex items-center gap-3 min-w-0 flex-1 group">
                   <div className="w-9 h-9 rounded-lg overflow-hidden border border-[#ad45ff]/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                     {t.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
