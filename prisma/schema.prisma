@@ -793,6 +793,31 @@ model MatchReferee {
 }
 
 // ============================================================
+// CONFIGURACIÓN DEL SITIO
+// ============================================================
+
+/**
+ * Fila única (singleton, id fijo "main") con la información pública del
+ * sitio que el ADMINISTRADOR puede editar sin redeploy: contacto y redes
+ * mostrados en el Footer. Ver getOrCreateSiteSettings() en
+ * modules/configuracion/actions/siteSettings.ts.
+ */
+model SiteSettings {
+  id String @id @default("main")
+
+  description  String? // tagline corta del footer
+  contactEmail String?
+  contactPhone String?
+  address      String?
+
+  facebookUrl  String?
+  twitterUrl   String?
+  instagramUrl String?
+
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
 // AUDITORÍA
 // ============================================================
 

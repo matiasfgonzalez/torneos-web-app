@@ -54,10 +54,14 @@ export const REFEREE_STATUS_LABELS: Record<RefereeStatus, string> = {
 };
 
 export const REFEREE_STATUS_COLORS: Record<RefereeStatus, string> = {
-  ACTIVO: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  INACTIVO: "bg-gray-500/20 text-gray-400 border-gray-500/30",
-  SUSPENDIDO: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  RETIRADO: "bg-red-500/20 text-red-400 border-red-500/30",
+  ACTIVO:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30",
+  INACTIVO:
+    "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30",
+  SUSPENDIDO:
+    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
+  RETIRADO:
+    "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30",
 };
 
 export const CERTIFICATION_LEVELS = [

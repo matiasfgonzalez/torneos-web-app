@@ -137,388 +137,377 @@ export default function RefereesPage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="space-y-8 p-6 sm:p-8">
-        {/* Header Premium Golazo */}
-        <div className="relative">
-          {/* Efectos de fondo */}
-          <div className="absolute -top-10 -right-10 w-64 h-64 bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-[#ad45ff]/10 to-[#c77dff]/5 rounded-full blur-3xl pointer-events-none" />
+    <div className="space-y-8 p-6 sm:p-8">
+      {/* Header mejorado */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 rounded-3xl -z-10" />
 
-          <Card className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-slate-700/50 shadow-2xl shadow-black/50 rounded-2xl overflow-hidden">
-            {/* Barra de acento */}
-            <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400" />
-
-            <CardContent className="p-6 sm:p-8">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
-                      <Award className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
-                        Panel de Árbitros
-                      </h1>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                        <p className="text-gray-400 font-medium">
-                          Sistema activo · {referees.length} árbitros
-                          registrados
-                        </p>
-                      </div>
-                    </div>
+        <Card className="border-2 border-[#ad45ff]/20 dark:border-[#ad45ff]/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-[#ad45ff] to-[#c77dff] rounded-xl shadow-lg shadow-[#ad45ff]/30">
+                    <Award className="w-7 h-7 text-white" />
                   </div>
-
-                  <p className="text-gray-400 max-w-2xl leading-relaxed">
-                    Gestiona el cuerpo arbitral de tus torneos. Agrega, edita,
-                    habilita/deshabilita y administra los árbitros.
-                  </p>
-
-                  {/* Stats rápidos */}
-                  <div className="flex flex-wrap gap-3">
-                    <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl">
-                      <Power className="w-4 h-4 text-emerald-400" />
-                      <span className="text-sm font-semibold text-emerald-400">
-                        {activeReferees} activos
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 px-4 py-2 rounded-xl">
-                      <PowerOff className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm font-semibold text-gray-400">
-                        {inactiveReferees} inactivos
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-xl">
-                      <TrendingUp className="w-4 h-4 text-amber-400" />
-                      <span className="text-sm font-semibold text-amber-400">
-                        {totalMatches} partidos dirigidos
-                      </span>
+                  <div>
+                    <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+                      Panel de Árbitros
+                    </h1>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <p className="text-gray-600 dark:text-gray-300 font-medium">
+                        Sistema activo · {referees.length} árbitros
+                        registrados
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="w-full lg:w-auto">
-                  <DialogReferee mode="create" onSuccess={fetchReferees} />
+                <p className="text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
+                  Gestiona el cuerpo arbitral de tus torneos. Agrega, edita,
+                  habilita/deshabilita y administra los árbitros.
+                </p>
+
+                {/* Stats rápidos */}
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40 px-4 py-2 rounded-xl">
+                    <Power className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                      {activeReferees} activos
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600/40 px-4 py-2 rounded-xl">
+                    <PowerOff className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                      {inactiveReferees} inactivos
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 px-4 py-2 rounded-xl">
+                    <TrendingUp className="w-4 h-4 text-[#ad45ff]" />
+                    <span className="text-sm font-semibold text-[#ad45ff]">
+                      {totalMatches} partidos dirigidos
+                    </span>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Lista de árbitros */}
-        <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 shadow-xl rounded-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff]" />
-
-          <CardHeader className="space-y-4 p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#ad45ff]/20 rounded-lg">
-                <Users className="w-5 h-5 text-[#ad45ff]" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-bold text-white">
-                  Lista de Árbitros
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  {filteredReferees.length} de {referees.length} árbitros
-                </CardDescription>
+              <div className="w-full lg:w-auto">
+                <DialogReferee mode="create" onSuccess={fetchReferees} />
               </div>
             </div>
-
-            {/* Filtros */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Buscar por nombre, email o teléfono..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 bg-slate-800/50 border-2 border-slate-600 hover:border-[#ad45ff]/50 focus:border-[#ad45ff] rounded-xl text-white placeholder:text-gray-500 transition-colors"
-                />
-              </div>
-
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48 h-11 bg-slate-800/50 border-2 border-slate-600 hover:border-[#ad45ff]/50 rounded-xl text-white">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem
-                    value="all"
-                    className="text-white hover:bg-[#ad45ff]/20"
-                  >
-                    Todos los estados
-                  </SelectItem>
-                  {Object.entries(REFEREE_STATUS_LABELS).map(
-                    ([value, label]) => (
-                      <SelectItem
-                        key={value}
-                        value={value}
-                        className="text-white hover:bg-[#ad45ff]/20"
-                      >
-                        {label}
-                      </SelectItem>
-                    ),
-                  )}
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant="outline"
-                onClick={() => setShowDisabled(!showDisabled)}
-                className={`h-11 px-4 rounded-xl border-2 transition-all ${
-                  showDisabled
-                    ? "border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
-                    : "border-gray-600 text-gray-400 hover:bg-gray-700/50"
-                }`}
-              >
-                {showDisabled ? (
-                  <Eye className="w-4 h-4 mr-2" />
-                ) : (
-                  <EyeOff className="w-4 h-4 mr-2" />
-                )}
-                {showDisabled ? "Mostrando todos" : "Solo habilitados"}
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-6 pt-0">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Loader2 className="h-10 w-10 animate-spin text-[#ad45ff] mb-4" />
-                <p className="text-gray-400">Cargando árbitros...</p>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-slate-700/50 overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/50">
-                      <TableHead className="font-semibold text-gray-300">
-                        <div className="flex items-center gap-2">
-                          <Award className="w-4 h-4 text-[#ad45ff]" />
-                          Árbitro
-                        </div>
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-300">
-                        Contacto
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-300">
-                        Nivel
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-300 text-center">
-                        Estado
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-300 text-center">
-                        Partidos
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-300 text-right">
-                        Acciones
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredReferees.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-16">
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="w-20 h-20 bg-slate-800 rounded-2xl flex items-center justify-center">
-                              <Award className="w-10 h-10 text-slate-600" />
-                            </div>
-                            <div>
-                              <p className="text-gray-400 font-medium text-lg">
-                                No se encontraron árbitros
-                              </p>
-                              <p className="text-gray-500 text-sm mt-1">
-                                {searchTerm
-                                  ? "Intenta con otros términos de búsqueda"
-                                  : "Comienza registrando tu primer árbitro"}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredReferees.map((referee) => (
-                        <TableRow
-                          key={referee.id}
-                          className={`border-slate-700/50 transition-colors ${
-                            referee.enabled
-                              ? "hover:bg-slate-800/50"
-                              : "bg-slate-900/50 opacity-60"
-                          }`}
-                        >
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-xl bg-slate-700 overflow-hidden flex items-center justify-center border border-slate-600">
-                                {referee.imageUrl ? (
-                                  <img
-                                    src={referee.imageUrl}
-                                    alt={referee.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <Shield className="w-6 h-6 text-slate-500" />
-                                )}
-                              </div>
-                              <div>
-                                <p className="font-semibold text-white">
-                                  {referee.name}
-                                </p>
-                                {referee.nationality && (
-                                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" />
-                                    {referee.nationality}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1 text-sm">
-                              {referee.email && (
-                                <div className="flex items-center gap-2 text-gray-400">
-                                  <Mail className="w-3 h-3 text-gray-500" />
-                                  <span className="truncate max-w-[180px]">
-                                    {referee.email}
-                                  </span>
-                                </div>
-                              )}
-                              {referee.phone && (
-                                <div className="flex items-center gap-2 text-gray-400">
-                                  <Phone className="w-3 h-3 text-gray-500" />
-                                  {referee.phone}
-                                </div>
-                              )}
-                              {!referee.email && !referee.phone && (
-                                <span className="text-gray-600">-</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {referee.certificationLevel ? (
-                              <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0">
-                                {referee.certificationLevel}
-                              </Badge>
-                            ) : (
-                              <span className="text-gray-600">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant="outline"
-                              className={`${REFEREE_STATUS_COLORS[referee.status]} border`}
-                            >
-                              {REFEREE_STATUS_LABELS[referee.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant="secondary"
-                              className="font-mono bg-slate-700 text-white"
-                            >
-                              {referee._count?.matches || 0}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              {/* Botón Editar */}
-                              <DialogReferee
-                                mode="edit"
-                                referee={referee}
-                                onSuccess={fetchReferees}
-                              />
-
-                              {/* Botón Habilitar/Deshabilitar */}
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleToggleEnabled(referee.id)}
-                                disabled={actionLoading === referee.id}
-                                className={`h-9 w-9 rounded-lg transition-all ${
-                                  referee.enabled
-                                    ? "border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500"
-                                    : "border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500"
-                                }`}
-                                title={
-                                  referee.enabled ? "Deshabilitar" : "Habilitar"
-                                }
-                              >
-                                {actionLoading === referee.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : referee.enabled ? (
-                                  <PowerOff className="w-4 h-4" />
-                                ) : (
-                                  <Power className="w-4 h-4" />
-                                )}
-                              </Button>
-
-                              {/* Botón Eliminar */}
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    disabled={actionLoading === referee.id}
-                                    className="h-9 w-9 rounded-lg border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 transition-all"
-                                    title="Eliminar"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-red-500/30 shadow-2xl rounded-2xl">
-                                  <div className="h-1.5 bg-gradient-to-r from-red-500 via-red-400 to-red-500 rounded-t-2xl absolute top-0 left-0 right-0" />
-                                  <AlertDialogHeader className="pt-4">
-                                    <div className="flex items-center gap-4">
-                                      <div className="p-3 bg-red-500/20 rounded-xl border border-red-500/30">
-                                        <AlertTriangle className="w-6 h-6 text-red-400" />
-                                      </div>
-                                      <AlertDialogTitle className="text-xl font-bold text-white">
-                                        ¿Eliminar árbitro?
-                                      </AlertDialogTitle>
-                                    </div>
-                                    <AlertDialogDescription className="text-gray-400 mt-4">
-                                      Esta acción eliminará a{" "}
-                                      <span className="font-semibold text-white">
-                                        {referee.name}
-                                      </span>{" "}
-                                      del sistema.
-                                      {(referee._count?.matches || 0) > 0 && (
-                                        <span className="text-amber-400 block mt-2">
-                                          ⚠️ Este árbitro tiene{" "}
-                                          {referee._count?.matches} partido(s)
-                                          asignado(s). Se realizará una
-                                          eliminación lógica.
-                                        </span>
-                                      )}
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter className="gap-3 mt-4">
-                                    <AlertDialogCancel className="px-6 h-11 bg-transparent border-2 border-slate-600 text-gray-300 hover:bg-slate-700 rounded-xl font-medium">
-                                      Cancelar
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        handleDelete(referee.id, referee.name)
-                                      }
-                                      className="px-6 h-11 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white rounded-xl font-semibold shadow-lg shadow-red-500/25"
-                                    >
-                                      <Trash2 className="w-4 h-4 mr-2" />
-                                      Eliminar
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Lista de árbitros */}
+      <Card className="border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-xl overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff]" />
+
+        <CardHeader className="space-y-4 p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#ad45ff]/10 dark:bg-[#ad45ff]/20 rounded-lg">
+              <Users className="w-5 h-5 text-[#ad45ff]" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Lista de Árbitros
+              </CardTitle>
+              <CardDescription className="text-gray-500 dark:text-gray-400">
+                {filteredReferees.length} de {referees.length} árbitros
+              </CardDescription>
+            </div>
+          </div>
+
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Buscar por nombre, email o teléfono..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 hover:border-[#ad45ff]/50 focus:border-[#ad45ff] rounded-xl transition-colors"
+              />
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48 h-11 bg-white dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 hover:border-[#ad45ff]/50 rounded-xl">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {Object.entries(REFEREE_STATUS_LABELS).map(
+                  ([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ),
+                )}
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              onClick={() => setShowDisabled(!showDisabled)}
+              className={`h-11 px-4 rounded-xl border-2 transition-all ${
+                showDisabled
+                  ? "border-green-500/50 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                  : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              }`}
+            >
+              {showDisabled ? (
+                <Eye className="w-4 h-4 mr-2" />
+              ) : (
+                <EyeOff className="w-4 h-4 mr-2" />
+              )}
+              {showDisabled ? "Mostrando todos" : "Solo habilitados"}
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-6 pt-0">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="h-10 w-10 animate-spin text-[#ad45ff] mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">
+                Cargando árbitros...
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-[#ad45ff]" />
+                        Árbitro
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">
+                      Contacto
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">
+                      Nivel
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-center">
+                      Estado
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-center">
+                      Partidos
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">
+                      Acciones
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredReferees.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-16">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center">
+                            <Award className="w-10 h-10 text-gray-400 dark:text-gray-600" />
+                          </div>
+                          <div>
+                            <p className="text-gray-600 dark:text-gray-400 font-medium text-lg">
+                              No se encontraron árbitros
+                            </p>
+                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                              {searchTerm
+                                ? "Intenta con otros términos de búsqueda"
+                                : "Comienza registrando tu primer árbitro"}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredReferees.map((referee) => (
+                      <TableRow
+                        key={referee.id}
+                        className={`border-gray-100 dark:border-gray-700 transition-colors ${
+                          referee.enabled
+                            ? "hover:bg-gray-50/80 dark:hover:bg-gray-800/50"
+                            : "bg-gray-50/50 dark:bg-gray-900/30 opacity-60"
+                        }`}
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-600">
+                              {referee.imageUrl ? (
+                                <img
+                                  src={referee.imageUrl}
+                                  alt={referee.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Shield className="w-6 h-6 text-gray-400" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900 dark:text-white">
+                                {referee.name}
+                              </p>
+                              {referee.nationality && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {referee.nationality}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1 text-sm">
+                            {referee.email && (
+                              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <Mail className="w-3 h-3 text-gray-400" />
+                                <span className="truncate max-w-[180px]">
+                                  {referee.email}
+                                </span>
+                              </div>
+                            )}
+                            {referee.phone && (
+                              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <Phone className="w-3 h-3 text-gray-400" />
+                                {referee.phone}
+                              </div>
+                            )}
+                            {!referee.email && !referee.phone && (
+                              <span className="text-gray-400 dark:text-gray-600">
+                                -
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {referee.certificationLevel ? (
+                            <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0">
+                              {referee.certificationLevel}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-600">
+                              -
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant="outline"
+                            className={`${REFEREE_STATUS_COLORS[referee.status]} border`}
+                          >
+                            {REFEREE_STATUS_LABELS[referee.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant="secondary"
+                            className="font-mono bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+                          >
+                            {referee._count?.matches || 0}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {/* Botón Editar */}
+                            <DialogReferee
+                              mode="edit"
+                              referee={referee}
+                              onSuccess={fetchReferees}
+                            />
+
+                            {/* Botón Habilitar/Deshabilitar */}
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleToggleEnabled(referee.id)}
+                              disabled={actionLoading === referee.id}
+                              className={`h-9 w-9 rounded-lg transition-all ${
+                                referee.enabled
+                                  ? "border-amber-300 dark:border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-400 dark:hover:border-amber-500"
+                                  : "border-green-300 dark:border-green-500/50 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-400 dark:hover:border-green-500"
+                              }`}
+                              title={
+                                referee.enabled ? "Deshabilitar" : "Habilitar"
+                              }
+                            >
+                              {actionLoading === referee.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : referee.enabled ? (
+                                <PowerOff className="w-4 h-4" />
+                              ) : (
+                                <Power className="w-4 h-4" />
+                              )}
+                            </Button>
+
+                            {/* Botón Eliminar */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  disabled={actionLoading === referee.id}
+                                  className="h-9 w-9 rounded-lg border-red-300 dark:border-red-500/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-400 dark:hover:border-red-500 transition-all"
+                                  title="Eliminar"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-red-500/10 dark:bg-red-500/20 rounded-xl border border-red-200 dark:border-red-500/30">
+                                      <AlertTriangle className="w-6 h-6 text-red-500" />
+                                    </div>
+                                    <AlertDialogTitle>
+                                      ¿Eliminar árbitro?
+                                    </AlertDialogTitle>
+                                  </div>
+                                  <AlertDialogDescription className="pt-2">
+                                    Esta acción eliminará a{" "}
+                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                      {referee.name}
+                                    </span>{" "}
+                                    del sistema.
+                                    {(referee._count?.matches || 0) > 0 && (
+                                      <span className="text-amber-600 dark:text-amber-400 block mt-2">
+                                        ⚠️ Este árbitro tiene{" "}
+                                        {referee._count?.matches} partido(s)
+                                        asignado(s). Se realizará una
+                                        eliminación lógica.
+                                      </span>
+                                    )}
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="gap-3 mt-2">
+                                  <AlertDialogCancel>
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() =>
+                                      handleDelete(referee.id, referee.name)
+                                    }
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

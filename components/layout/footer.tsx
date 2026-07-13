@@ -1,40 +1,38 @@
 import Link from "next/link";
 import { GradientText } from "@/components/ui-dev/gradient-text";
-import { Instagram, Twitter, Facebook, Mail, ArrowUpRight } from "lucide-react";
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
+import { getSiteSettings } from "@modules/configuracion/actions/siteSettings";
 
-const footerLinks = {
-  plataforma: [
-    { label: "Torneos", href: "/torneos" },
-    { label: "Equipos", href: "/equipos" },
-    { label: "Jugadores", href: "/jugadores" },
-    { label: "Noticias", href: "/noticias" },
-  ],
-  empresa: [
-    { label: "Acerca de", href: "#" },
-    { label: "Carreras", href: "#" },
-    { label: "Prensa", href: "#" },
-    { label: "Contacto", href: "#contacto" },
-  ],
-  soporte: [
-    { label: "Centro de Ayuda", href: "#" },
-    { label: "Documentación", href: "#" },
-    { label: "API", href: "#" },
-    { label: "Estado del Sistema", href: "#" },
-  ],
-  legal: [
-    { label: "Política de Privacidad", href: "#" },
-    { label: "Términos de Servicio", href: "#" },
-    { label: "Cookies", href: "#" },
-  ],
-};
-
-const socialLinks = [
-  { icon: Facebook, label: "Facebook", href: "#" },
-  { icon: Twitter, label: "Twitter", href: "#" },
-  { icon: Instagram, label: "Instagram", href: "#" },
+const platformLinks = [
+  { label: "Torneos", href: "/torneos" },
+  { label: "Equipos", href: "/equipos" },
+  { label: "Jugadores", href: "/jugadores" },
+  { label: "Noticias", href: "/noticias" },
 ];
 
-export function Footer() {
+// Sin páginas propias todavía (ver TODO.md A10) — se muestran como texto,
+// no como links muertos a "#".
+const legalItems = ["Términos de Servicio", "Política de Privacidad", "Cookies"];
+
+const DEFAULT_DESCRIPTION =
+  "La plataforma líder para la gestión profesional de torneos deportivos. Organiza, gestiona y haz crecer tus competencias.";
+
+/**
+ * Footer público. Server component: lee la config editable desde
+ * /admin/configuracion (modules/configuracion/actions/siteSettings.ts) para
+ * que el contacto y las redes se puedan actualizar sin redeploy.
+ */
+export async function Footer() {
+  const settings = await getSiteSettings();
+
+  const socialLinks = [
+    { icon: Facebook, label: "Facebook", href: settings.facebookUrl },
+    { icon: Twitter, label: "Twitter", href: settings.twitterUrl },
+    { icon: Instagram, label: "Instagram", href: settings.instagramUrl },
+  ].filter((s): s is typeof s & { href: string } => !!s.href);
+
+  const hasContact = settings.contactEmail || settings.contactPhone || settings.address;
+
   return (
     <footer className="relative bg-gray-900 dark:bg-gray-950 text-white overflow-hidden">
       {/* Elementos decorativos de fondo */}
@@ -60,46 +58,28 @@ export function Footer() {
               </Link>
 
               <p className="text-gray-400 leading-relaxed max-w-sm">
-                La plataforma líder para la gestión profesional de torneos
-                deportivos. Organiza, gestiona y haz crecer tus competencias.
+                {settings.description || DEFAULT_DESCRIPTION}
               </p>
 
-              {/* Redes sociales con diseño premium */}
-              <div className="flex items-center gap-3">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      className="group/social w-10 h-10 bg-gray-800 hover:bg-gradient-to-br hover:from-[#ad45ff] hover:to-[#a3b3ff] rounded-xl flex items-center justify-center transition-all duration-300 hover:shadow-lg hover:shadow-[#ad45ff]/25"
-                      aria-label={social.label}
-                    >
-                      <Icon className="w-5 h-5 text-gray-400 group-hover/social:text-white transition-colors" />
-                    </a>
-                  );
-                })}
-              </div>
-
-              {/* Newsletter mini - responsive */}
-              <div className="pt-4">
-                <p className="text-sm text-gray-500 mb-3">
-                  Suscríbete a nuestro newsletter
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input
-                      type="email"
-                      placeholder="tu@email.com"
-                      className="w-full h-10 pl-10 pr-4 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-[#ad45ff] focus:ring-1 focus:ring-[#ad45ff]/50 transition-all"
-                    />
-                  </div>
-                  <button className="h-10 px-4 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-[#ad45ff]/25 transition-all whitespace-nowrap">
-                    Enviar
-                  </button>
+              {socialLinks.length > 0 && (
+                <div className="flex items-center gap-3">
+                  {socialLinks.map((social) => {
+                    const Icon = social.icon;
+                    return (
+                      <a
+                        key={social.label}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group/social w-10 h-10 bg-gray-800 hover:bg-gradient-to-br hover:from-[#ad45ff] hover:to-[#a3b3ff] rounded-xl flex items-center justify-center transition-all duration-300 hover:shadow-lg hover:shadow-[#ad45ff]/25"
+                        aria-label={social.label}
+                      >
+                        <Icon className="w-5 h-5 text-gray-400 group-hover/social:text-white transition-colors" />
+                      </a>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Enlaces - 4 columnas */}
@@ -110,7 +90,7 @@ export function Footer() {
                   Plataforma
                 </h3>
                 <ul className="space-y-3">
-                  {footerLinks.plataforma.map((link) => (
+                  {platformLinks.map((link) => (
                     <li key={link.label}>
                       <Link
                         href={link.href}
@@ -124,45 +104,44 @@ export function Footer() {
                 </ul>
               </div>
 
-              {/* Empresa */}
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
-                  Empresa
-                </h3>
-                <ul className="space-y-3">
-                  {footerLinks.empresa.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
-                      >
-                        {link.label}
-                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Soporte */}
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
-                  Soporte
-                </h3>
-                <ul className="space-y-3">
-                  {footerLinks.soporte.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
-                      >
-                        {link.label}
-                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Contacto — editable desde /admin/configuracion */}
+              {hasContact && (
+                <div className="col-span-2">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                    Contacto
+                  </h3>
+                  <ul className="space-y-3 text-gray-400">
+                    {settings.contactEmail && (
+                      <li>
+                        <a
+                          href={`mailto:${settings.contactEmail}`}
+                          className="hover:text-white transition-colors inline-flex items-center gap-2"
+                        >
+                          <Mail className="w-3.5 h-3.5 shrink-0" />
+                          {settings.contactEmail}
+                        </a>
+                      </li>
+                    )}
+                    {settings.contactPhone && (
+                      <li>
+                        <a
+                          href={`tel:${settings.contactPhone.replace(/\s+/g, "")}`}
+                          className="hover:text-white transition-colors inline-flex items-center gap-2"
+                        >
+                          <Phone className="w-3.5 h-3.5 shrink-0" />
+                          {settings.contactPhone}
+                        </a>
+                      </li>
+                    )}
+                    {settings.address && (
+                      <li className="flex items-start gap-2">
+                        <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span>{settings.address}</span>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
 
               {/* Legal */}
               <div>
@@ -170,15 +149,9 @@ export function Footer() {
                   Legal
                 </h3>
                 <ul className="space-y-3">
-                  {footerLinks.legal.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className="group/link text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
-                      >
-                        {link.label}
-                        <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
-                      </a>
+                  {legalItems.map((item) => (
+                    <li key={item} className="text-gray-500">
+                      {item}
                     </li>
                   ))}
                 </ul>

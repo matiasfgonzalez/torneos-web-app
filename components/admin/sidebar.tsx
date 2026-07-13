@@ -138,7 +138,7 @@ const menuItems = [
     title: "Configuración",
     href: "/admin/configuracion",
     icon: Settings,
-    enabled: false,
+    enabled: true,
     roles: ["ADMINISTRADOR"],
   },
 ];

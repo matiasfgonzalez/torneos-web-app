@@ -353,16 +353,33 @@
 
 > Objetivo: llevar todo el producto al nivel de la landing ("Premium Golazo": gradiente `#ad45ff→#a3b3ff`, glass, glow suave), **sin cambiar la esencia**. Mobile-first y dark/light en todo. Cada fase es entregable por separado.
 
+> ✅ **Auditoría de consistencia visual (2026-07-12):** se recorrió el proyecto completo (públicas + admin) contra las 5 páginas de referencia pedidas (Inicio, Torneos, Jugadores, `admin/dashboard`, `admin/noticias`) para mapear qué tan extendido está el lenguaje "Premium Golazo". Resultado: la mayoría del sitio **ya lo sigue** (no estaba documentado antes de esta auditoría). Se encontraron y corrigieron los 4 desvíos reales, de mayor a menor impacto:
+> 1. **`app/(public)/partidos/page.tsx`** (pública, nav principal) usaba clases `bg-golazo-green`/`text-golazo-black`/`text-golazo-gray` **inexistentes** en `globals.css` ni en la config de Tailwind — huérfanas de un diseño anterior, sin ningún efecto real. Además el filtro de "Estado"/"Torneo" nunca se aplicaba (el `useMemo` de filtrado solo miraba `search`) y el filtro de "Tipo" usaba `MatchType`, un campo que no existe en el modelo `Match` real. Reescrita con el patrón premium (hero + stats + `premium-gradient-bg`) y filtros funcionales de verdad (torneos derivados de los partidos reales, no una lista mock hardcodeada de "La Liga/Champions League").
+> 2. **`app/admin/partidos/page.tsx`** (la pantalla admin más usada operativamente) usaba paleta `zinc-900`/`violet-600`/`indigo-600` en vez de la marca, con tema oscuro forzado (sin `dark:` en casi ninguna clase). Reescrita a la marca `#ad45ff/#c77dff` con soporte real de light/dark, agregando además el header "Sistema activo" que sí tienen Torneos/Equipos/Jugadores.
+> 3. **`app/admin/arbitros/page.tsx` + `DialogReferee.tsx`** forzaban un tema oscuro permanente (`bg-slate-900`, texto blanco hardcodeado, sin ningún `dark:`) con gradiente ámbar en el título en vez de la marca — el único rincón del admin que no respetaba el toggle claro/oscuro. Reescritos ambos al patrón estándar (header "Sistema activo", diálogo con secciones `bg-gray-50 dark:bg-gray-800/50`). De paso, `REFEREE_STATUS_COLORS` (`modules/arbitros/types/index.ts`) pasó de tonos `-400` sin variante clara (bajo contraste sobre blanco) a pares `-50/-700` claro + `-500/20/-400` oscuro.
+> 4. **`app/sign-up/[[...sign-up]]`** (pantalla de conversión clave) no tenía `Header`/`Footer` del sitio (a diferencia de `/sign-in`) y `GoogleSignUp.tsx` no tenía **ninguna** clase `dark:` ni usaba `.glass-card`, a diferencia de su gemela `GoogleSignIn.tsx`. Alineadas ambas.
+>
+> Se documentó el lenguaje real (no aspiracional) en 4 documentos de fuente de verdad (2026-07-12, ampliado a pedido del usuario a partir del primer `docs/DESIGN-SYSTEM.md`): [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) (tokens: paleta, tipografía, espaciado, color semántico, dark/light), [docs/COMPONENT_LIBRARY.md](docs/COMPONENT_LIBRARY.md) (inventario de componentes shadcn + propios y sus convenciones), [docs/UI_PATTERNS.md](docs/UI_PATTERNS.md) (plantillas de pantalla completas) y [docs/AGENT_RULES.md](docs/AGENT_RULES.md) (checklist obligatorio para cualquier IA que toque UI en este repo). Verificado: `tsc`/`build`/lint en verde, smoke test en dev server de las 3 rutas tocadas (200 OK, sin clases rotas).
+> ✅ **Footer unificado + configuración del sitio editable (2026-07-13):** se resolvió el hallazgo del footer duplicado (ver más abajo el detalle que quedó pendiente el 2026-07-12) siguiendo instrucción explícita del usuario: "usá el footer prolijo y cargá el contacto desde la administración". Se eliminó el footer inline de `app/(public)/layout.tsx` (gradiente `blue→purple`, ícono `Mic`, link muerto a `/estadisticas`) y ahora todas las páginas públicas usan el único componente `Footer` (`components/layout/footer.tsx`).
+> - **Nuevo modelo `SiteSettings`** (singleton, id fijo `"main"`, migración `20260713022847_site_settings`): `description` (tagline del footer), `contactEmail`, `contactPhone`, `address`, `facebookUrl`/`twitterUrl`/`instagramUrl`. Se crea perezosamente con los valores reales que antes estaban hardcodeados (`getOrCreateSiteSettings`-style en [modules/configuracion/actions/siteSettings.ts](modules/configuracion/actions/siteSettings.ts), cacheado con `React.cache()` porque el Footer se renderiza en cada página).
+> - **`Footer` ahora es un server component async** que lee `getSiteSettings()`: el bloque de contacto (email `mailto:`, teléfono `tel:`, dirección) solo se muestra si hay datos cargados, los íconos de redes sociales solo aparecen si tienen URL real (antes eran `href="#"` decorativos). La sección "Legal" (Términos/Privacidad/Cookies) se dejó como texto plano, no como links — consistente con la decisión ya tomada en A10 (esas páginas no existen todavía).
+> - **`/admin/configuracion`** (nueva página, `ConfiguracionClient.tsx`, solo ADMINISTRADOR): formulario para editar toda esa info sin redeploy — cambios visibles al instante (`revalidatePath("/", "layout")`). Se habilitó el ítem "Configuración" del sidebar, que ya existía pero estaba `enabled: false` sin implementación.
+> - Construido siguiendo `docs/DESIGN_SYSTEM.md`/`COMPONENT_LIBRARY.md`/`UI_PATTERNS.md` (patrón admin "header simple", variante B) como fuente de verdad — primera pieza construida bajo esa convención explícita del usuario.
+> - Verificado: `tsc`/lint/`build` en verde, smoke test en dev server confirmó que el singleton se autocreó con los valores reales por defecto y el footer los renderiza.
+>
+> Detalle del hallazgo original (2026-07-12): `app/(public)/layout.tsx` (envuelve casi todas las páginas públicas) tenía un footer **inline** distinto del componente `Footer`, con gradiente `blue-400→purple-400` en vez de la marca, ícono `Mic` (sin sentido para una plataforma de fútbol) en vez de `Trophy`, link muerto a `/estadisticas`, año de copyright hardcodeado "2025". El inline tenía datos de contacto reales que el componente `Footer` no tenía — resuelto arriba llevando esos datos a `SiteSettings` en vez de perderlos.
+> **Pendiente real que no se tocó en esta pasada** (bajo impacto, documentado abajo en F3): el header "Sistema activo" con Card decorativa no está replicado en `admin/usuarios`, `admin/plan`, `admin/pagos`, `admin/miembros`, `admin/organizaciones`, `admin/planes` — usan una versión simplificada (ícono + `<h1>` sin Card contenedora). Es un sub-lenguaje coherente en sí mismo, no un bug, pero genera un salto de estilo al navegar entre secciones admin.
+
 ### F0. Fundaciones del Design System (pre-requisito, E:Medio)
 
-- [ ] Tokens de marca en CSS (ver M6) + escala tipográfica documentada (display/h1/h2/body/caption) + espaciados estándar (secciones `py-16/24`, cards `p-6`).
+- [x] Documentar en `docs/DESIGN_SYSTEM.md` + `docs/COMPONENT_LIBRARY.md` + `docs/UI_PATTERNS.md` + `docs/AGENT_RULES.md` (paleta, uso del gradiente, patrones de componentes, plantillas de pantalla, do's/don'ts) — hecho 2026-07-12 como parte de la auditoría de consistencia visual (ver arriba).
+- [ ] Tokens de marca en CSS (ver M6) + escala tipográfica documentada (display/h1/h2/body/caption) + espaciados estándar (secciones `py-16/24`, cards `p-6`) — la paleta y espaciados ya están documentados como convención en `docs/DESIGN_SYSTEM.md`, falta migrarlos a variables `--color-brand`/`--space-*` (M6).
 - [ ] Componentes base compartidos y únicos:
   - `<PageHero>` público (badge + título con GradientText + subtítulo + stats) — hoy cada página pública lo duplica a mano.
   - `<PageHeader>` admin (título + descripción + acciones + breadcrumbs).
   - `<StatCard>` unificado (hay 3 implementaciones de StatsCards distintas).
   - `<StatusBadge>` por entidad con mapa único de colores por estado (torneo/partido/jugador/usuario) — hoy los colores de estado varían entre páginas.
   - `<EmptyState>`, `<SkeletonTable>`, `<SkeletonCards>`, `<ConfirmDialog>`.
-- [ ] Documentar en `docs/DESIGN-SYSTEM.md` (paleta, uso del gradiente, dos/dont's).
 
 ### F1. Landing (retoques menores, E:Bajo)
 
@@ -370,7 +387,8 @@
 
 ### F2. Páginas públicas (E:Alto)
 
-- [ ] Unificar los heros de `/torneos`, `/equipos`, `/jugadores`, `/noticias`, `/partidos` con `<PageHero>` (hoy cada una copia los blobs decorativos con variaciones).
+- [x] `app/(public)/partidos/page.tsx` alineada al lenguaje premium (2026-07-12, ver auditoría arriba) — quedaba la más desviada del grupo de páginas públicas.
+- [ ] Unificar los heros de `/torneos`, `/equipos`, `/jugadores`, `/noticias`, `/partidos` con `<PageHero>` (hoy cada una copia los blobs decorativos con variaciones, aunque visualmente ya son consistentes entre sí).
 - [ ] Cards de torneo/equipo/jugador con anatomía consistente (imagen, título, badges, meta, hover elevate + glow sutil).
 - [ ] Detalle de torneo público: tabs sticky en mobile, tabla de posiciones con zebra + fila destacada del líder + indicadores ▲▼ de racha, bracket con scroll horizontal contenido en mobile.
 - [ ] Filtros como chips horizontales scrolleables en mobile (patrón app deportiva) con estado en URL.
@@ -378,16 +396,18 @@
 
 ### F3. Panel admin (E:Alto)
 
-- [ ] **Dashboard:** hoy es débil — rediseñar con KPIs reales (torneos activos, partidos hoy, últimos resultados, actividad reciente del AuditLog), gráfico de evolución (usar `--chart-*` ya definidos) y accesos rápidos "Crear torneo / Cargar resultado".
+- [x] **Dashboard:** ya no es débil — `app/admin/dashboard/page.tsx` tiene KPIs reales, resultados sin cargar, próximos partidos y estado del plan (hecho en N10, 2026-07-12). Pendiente de este ítem: gráfico de evolución con `--chart-*` y actividad reciente del AuditLog (M8, no integrado aún).
+- [x] **Flujo de carga de resultados:** ya no es el más lento — pantalla única mobile-first en `/admin/partidos/[id]/cargar` (marcador + goleadores + tarjetas, hecho en N10, 2026-07-12).
+- [x] `app/admin/partidos/page.tsx` y `app/admin/arbitros/page.tsx` (+ `DialogReferee.tsx`) alineados al lenguaje premium (2026-07-12, ver auditoría arriba) — eran los dos únicos rincones del admin con paleta y modo oscuro forzado fuera de la marca.
+- [ ] **Header "Sistema activo" no replicado** en `admin/usuarios`, `admin/plan`, `admin/pagos`, `admin/miembros`, `admin/organizaciones`, `admin/planes` (ver nota de la auditoría arriba) — pasada dedicada pendiente.
 - [ ] **Tablas → DataTable común** (sort, búsqueda, paginación server, selección) que colapsa a cards en mobile (patrón ya usado en usuarios; generalizarlo).
 - [ ] **Formularios y diálogos:** loading en submit, validación inline con mensajes en español, diálogos largos → `<Sheet>` lateral en desktop y fullscreen en mobile, autosave de borradores en torneos.
-- [ ] **Flujo de carga de resultados** (el más frecuente del admin): rediseñar como stepper rápido — resultado → goles → tarjetas → confirmar, con recálculo automático visible.
 - [ ] **Navegación:** breadcrumbs en subpáginas, indicador activo en sidebar por sección, command palette `Ctrl+K` (buscar torneo/equipo/jugador y acciones) — diferenciador SaaS barato con `cmdk`.
 
 ### F4. Microinteracciones y pulido (E:Medio)
 
 - [ ] Transiciones de página suaves (template.tsx con fade corto), hover states consistentes (elevate + border-brand), toasts de éxito con acción "Deshacer" donde aplique (soft delete lo permite), number tickers en KPIs, `View Transitions` para navegación entre card→detalle.
-- [ ] Auditoría dark/light completa: hoy hay combinaciones `bg-white dark:bg-gray-900` hardcodeadas que deben usar tokens (`bg-card`).
+- [ ] Auditoría dark/light completa: los 4 casos de `dark:` ausente o forzado más graves ya se corrigieron (ver auditoría 2026-07-12 arriba); falta un barrido fino de combinaciones `bg-white dark:bg-gray-900` hardcodeadas que deberían usar tokens (`bg-card`) en componentes menores no auditados línea por línea.
 
 ---
 
