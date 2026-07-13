@@ -36,6 +36,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { MatchDialog } from "@/components/admin/match-dialog";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { toast } from "sonner";
 
 interface Match {
   id: string;
@@ -67,6 +70,7 @@ export default function PartidosPage() {
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | undefined>(undefined);
+  const [deleteTarget, setDeleteTarget] = useState<Match | null>(null);
 
   useEffect(() => {
     fetchMatches();
@@ -97,19 +101,20 @@ export default function PartidosPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este partido?")) return;
+  const performDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/matches/${id}`, {
+      const res = await fetch(`/api/matches/${deleteTarget.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
+        toast.success("Partido eliminado");
         fetchMatches();
       } else {
-        alert("Error al eliminar el partido");
+        toast.error("Error al eliminar el partido");
       }
     } catch {
-      alert("Error al eliminar el partido");
+      toast.error("Error al eliminar el partido");
     }
   };
 
@@ -132,39 +137,6 @@ export default function PartidosPage() {
   const pendingCount = matches.filter((m) => m.status === "PROGRAMADO").length;
   const liveCount = matches.filter((m) => m.status === "EN_JUEGO").length;
   const finishedCount = matches.filter((m) => m.status === "FINALIZADO").length;
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PROGRAMADO":
-        return (
-          <Badge
-            variant="outline"
-            className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-          >
-            Programado
-          </Badge>
-        );
-      case "EN_JUEGO":
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600 text-white animate-pulse">
-            En Juego
-          </Badge>
-        );
-      case "FINALIZADO":
-        return (
-          <Badge
-            variant="secondary"
-            className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-          >
-            Finalizado
-          </Badge>
-        );
-      case "SUSPENDIDO":
-        return <Badge variant="destructive">Suspendido</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
   if (loading) return <FullscreenLoading isVisible={true} />;
 
@@ -280,7 +252,7 @@ export default function PartidosPage() {
                 >
                   {match.tournament.name}
                 </Badge>
-                {getStatusBadge(match.status)}
+                <StatusBadge entity="match" status={match.status} />
               </div>
             </CardHeader>
             <CardContent>
@@ -361,7 +333,7 @@ export default function PartidosPage() {
                       Editar Detalles
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500" onClick={() => handleDelete(match.id)}>
+                    <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500" onClick={() => setDeleteTarget(match)}>
                       Eliminar Partido
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -406,6 +378,30 @@ export default function PartidosPage() {
         onOpenChange={setDialogOpen}
         matchToEdit={selectedMatch}
         onSuccess={fetchMatches}
+      />
+
+      {/* Confirmación de eliminación (F0: ConfirmDialog en vez de confirm()) */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        title="¿Eliminar partido?"
+        description={
+          deleteTarget ? (
+            <>
+              Se va a eliminar el partido{" "}
+              <b>
+                {deleteTarget.homeTeam.team.name} vs{" "}
+                {deleteTarget.awayTeam.team.name}
+              </b>{" "}
+              ({deleteTarget.tournament.name}) junto con sus goles y tarjetas.
+              Esta acción no se puede deshacer.
+            </>
+          ) : (
+            ""
+          )
+        }
+        confirmLabel="Eliminar"
+        onConfirm={performDelete}
       />
     </div>
   );

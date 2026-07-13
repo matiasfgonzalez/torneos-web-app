@@ -4,6 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* ============================================
+     Tokens de marca GOLAZO (F0/M6)
+     Cambiar la marca = tocar SOLO estas líneas.
+     ============================================ */
+  --brand: #ad45ff; /* violeta principal */
+  --brand-2: #a3b3ff; /* lila-azulado (fin de gradiente) */
+  --brand-mid: #c77dff; /* stop intermedio para gradientes de 3 puntos */
+  --brand-hover: #9c3ee6; /* hover del violeta */
+  --brand-mid-hover: #b66de6; /* hover del stop intermedio */
+  --gradient-brand: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+
   --background: oklch(0.97 0.005 240);
   --foreground: oklch(0.25 0.005 240);
   --card: oklch(1 0 0);
@@ -77,6 +88,14 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Marca GOLAZO → habilita bg-brand, text-brand, border-brand,
+     from-brand, via-brand-mid, to-brand-2, shadow-brand/25, etc. */
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-mid: var(--brand-mid);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-mid-hover: var(--brand-mid-hover);
 
   /* Color System */
   --color-background: var(--background);
@@ -160,11 +179,11 @@
 @layer components {
   /* GOLAZO specific components */
   .golazo-gradient {
-    background: linear-gradient(135deg, #ad45ff 0%, #a3b3ff 100%);
+    background: var(--gradient-brand);
   }
 
   .golazo-gradient-text {
-    background: linear-gradient(135deg, #ad45ff 0%, #a3b3ff 100%);
+    background: var(--gradient-brand);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -205,11 +224,16 @@
   }
 
   .premium-gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] dark:from-[#ad45ff] dark:to-[#a3b3ff];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand to-brand-2;
+  }
+
+  /* Gradiente de marca como fondo (botones, badges, cajas de ícono) */
+  .bg-gradient-brand {
+    background-image: var(--gradient-brand);
   }
 
   .premium-border {
-    @apply border border-transparent bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20;
+    @apply border border-transparent bg-gradient-to-r from-brand/20 to-brand-2/20;
   }
 
   .premium-shadow {

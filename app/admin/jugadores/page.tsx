@@ -11,9 +11,10 @@ export const dynamic = "force-dynamic";
 export default async function AdminJugadores() {
   const players = await getJugadores();
 
-  const activePlayers = players.filter((p) => p.status === "ACTIVE").length;
+  // Enum real de Prisma: ACTIVO/SUSPENDIDO (antes comparaba "ACTIVE"/"SUSPENDED" → siempre 0)
+  const activePlayers = players.filter((p) => p.status === "ACTIVO").length;
   const suspendedPlayers = players.filter(
-    (p) => p.status === "SUSPENDED",
+    (p) => p.status === "SUSPENDIDO",
   ).length;
   const totalGoals = players.reduce(
     (sum, player) => sum + (player.goals ? player.goals.length : 0),

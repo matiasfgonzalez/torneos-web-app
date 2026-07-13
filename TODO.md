@@ -293,7 +293,9 @@
 
 ### M6. Tokenizar la marca (93 archivos con `#ad45ff` hardcodeado)
 
-- [ ] **Problema:** El design system de globals.css define `--primary/--secondary` pero la marca real (`#ad45ff → #a3b3ff`) está copiada a mano en 93 archivos; el modo oscuro define un `--primary` blanco que casi no se usa.
+> ✅ **Núcleo implementado en F0 (2026-07-13):** tokens `--brand`/`--brand-2`/`--brand-mid`/`--gradient-brand` en globals.css + `@theme inline` → `bg-brand`, `from-brand`, etc., y `<Button variant="brand">`. **Pendiente de este ítem:** solo la migración progresiva de los ~90 archivos legacy (regla en AGENT_RULES: al tocar un archivo, migrar sus clases de marca; código nuevo solo tokens).
+
+- [~] **Problema:** El design system de globals.css define `--primary/--secondary` pero la marca real (`#ad45ff → #a3b3ff`) está copiada a mano en 93 archivos; el modo oscuro define un `--primary` blanco que casi no se usa.
 - **Solución:**
   ```css
   :root {
@@ -372,14 +374,17 @@
 
 ### F0. Fundaciones del Design System (pre-requisito, E:Medio)
 
+> ✅ **Completado (2026-07-13).** Verificado: `tsc` limpio, lint sin errores nuevos, `next build` en verde, smoke en dev server (los tokens `--brand`/`.from-brand`/`--gradient-brand` compilan en el CSS servido y `/torneos` renderiza el hero nuevo). Docs actualizadas (DESIGN_SYSTEM §1-2, COMPONENT_LIBRARY §1/2/2b/3, UI_PATTERNS §1/3/7/8, AGENT_RULES).
+
 - [x] Documentar en `docs/DESIGN_SYSTEM.md` + `docs/COMPONENT_LIBRARY.md` + `docs/UI_PATTERNS.md` + `docs/AGENT_RULES.md` (paleta, uso del gradiente, patrones de componentes, plantillas de pantalla, do's/don'ts) — hecho 2026-07-12 como parte de la auditoría de consistencia visual (ver arriba).
-- [ ] Tokens de marca en CSS (ver M6) + escala tipográfica documentada (display/h1/h2/body/caption) + espaciados estándar (secciones `py-16/24`, cards `p-6`) — la paleta y espaciados ya están documentados como convención en `docs/DESIGN_SYSTEM.md`, falta migrarlos a variables `--color-brand`/`--space-*` (M6).
-- [ ] Componentes base compartidos y únicos:
-  - `<PageHero>` público (badge + título con GradientText + subtítulo + stats) — hoy cada página pública lo duplica a mano.
-  - `<PageHeader>` admin (título + descripción + acciones + breadcrumbs).
-  - `<StatCard>` unificado (hay 3 implementaciones de StatsCards distintas).
-  - `<StatusBadge>` por entidad con mapa único de colores por estado (torneo/partido/jugador/usuario) — hoy los colores de estado varían entre páginas.
-  - `<EmptyState>`, `<SkeletonTable>`, `<SkeletonCards>`, `<ConfirmDialog>`.
+- [x] **Tokens de marca en CSS (núcleo de M6, 2026-07-13):** `--brand`/`--brand-2`/`--brand-mid`/`--brand-hover`/`--brand-mid-hover`/`--gradient-brand` en [app/globals.css](app/globals.css), expuestos vía `@theme inline` → utilidades `bg-brand`, `text-brand`, `from-brand`, `shadow-brand/25`, `.bg-gradient-brand`. Las utilidades existentes (`.premium-gradient-text`, `.golazo-gradient`, `.premium-border`) ahora leen los tokens. Cambiar la marca pasó de 93 archivos a 6 líneas. **Bonus:** variante `brand` en `buttonVariants` ([components/ui/button.tsx](components/ui/button.tsx)) — `<Button variant="brand">` reemplaza el gradiente manual repetido. La escala tipográfica/espaciados quedan como convención documentada (DESIGN_SYSTEM §3), sin variables `--space-*` (no aportaban sobre Tailwind).
+  - **Pendiente (queda en M6):** migración progresiva de los ~90 archivos legacy con `#ad45ff` hardcodeado a los tokens — regla nueva en AGENT_RULES: al tocar un archivo legacy, migrar sus clases de marca de paso; código nuevo solo tokens.
+- [x] Componentes base compartidos y únicos (2026-07-13, todos en [components/shared/](components/shared/), documentados en COMPONENT_LIBRARY §2b):
+  - `<PageHero>` + `<HeroHighlight>` — adoptado en [app/(public)/torneos/page.tsx](app/(public)/torneos/page.tsx) (referencia). Los heros de jugadores/equipos/noticias/partidos siguen inline → los migra F2.
+  - `<PageHeader>` admin con `variant="showcase"` ("Sistema activo") y `variant="simple"` + `breadcrumbs`/`quickStats`/`actions` — adoptado en [app/admin/torneos/page.tsx](app/admin/torneos/page.tsx) (referencia). El resto de pantallas admin → las migra F3 (incluye el pendiente "header no replicado" de F3).
+  - `<StatCard>`/`<StatCardGrid>` — las 3 implementaciones duplicadas de StatsCards (torneos/equipos/jugadores) ahora lo usan internamente (mismo visual, −200 líneas). **Bug corregido de paso:** los KPIs de jugadores comparaban `status === "ACTIVE"/"SUSPENDED"` contra el enum real `ACTIVO/SUSPENDIDO` → siempre 0 (mismo tipo de bug que A2), en StatsCards y en [app/admin/jugadores/page.tsx](app/admin/jugadores/page.tsx).
+  - `<StatusBadge entity="tournament|match|player|user|payment|referee">` con mapas únicos en [lib/status-colors.ts](lib/status-colors.ts) (formato REFEREE_STATUS_COLORS) + labels nuevos `MATCH_STATUS_LABELS`/`USER_STATUS_LABELS`/`PAY_STATUS_LABELS` en [lib/constants.ts](lib/constants.ts) — adoptado en `app/admin/partidos/page.tsx` (reemplaza su `getStatusBadge` local). Los `getStatusColor`/`STATUS_BADGE` locales restantes se migran al tocar cada pantalla.
+  - `<EmptyState>`, `<SkeletonTable>`/`<SkeletonCards>`, `<ConfirmDialog>` (trigger o controlado, `onConfirm` async con loading) — `ConfirmDialog` adoptado en la eliminación de partido de `/admin/partidos` (elimina el último `confirm()`/`alert()` nativo documentado; ahora con toast).
 
 ### F1. Landing (retoques menores, E:Bajo)
 

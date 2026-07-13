@@ -8,7 +8,7 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 
 | Componente | Archivo | Notas |
 |---|---|---|
-| `Button` | `button.tsx` | Variantes: `default` (usa `--primary`, gris/negro neutro — **no** es el botón de marca), `destructive`, `outline`, `secondary`, `ghost`, `link`. Tamaños: `sm`/`default`/`lg`/`icon`. **Para el botón primario de marca** no uses `variant="default"` — aplicá manualmente `bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl` (es el patrón repetido en todo el código, no hay una variant `brand` todavía — candidato a `buttonVariants` extra en F0). |
+| `Button` | `button.tsx` | Variantes: `default` (usa `--primary`, gris/negro neutro — **no** es el botón de marca), `destructive`, `outline`, `secondary`, `ghost`, `link` y **`brand`** (F0, 2026-07-13: gradiente de marca con hover y sombra — el botón primario de toda pantalla). Tamaños: `sm`/`default`/`lg`/`icon`. Para el botón primario de marca: `<Button variant="brand">` — no escribas más el gradiente a mano. |
 | `Card` / `CardHeader` / `CardTitle` / `CardDescription` / `CardContent` | `card.tsx` | Contenedor base. Para el look "premium" agregale `border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl` (listados públicos) o `border-2 border-[#ad45ff]/20 dark:border-[#ad45ff]/30 shadow-xl bg-white/95 dark:bg-gray-800/95` (header decorativo admin, ver UI_PATTERNS.md). |
 | `Badge` | `badge.tsx` | Variantes shadcn (`default`/`secondary`/`outline`/`destructive`) + casi siempre se le pasa `className` con el color semántico de la entidad (ver §3). |
 | `Dialog` / `AlertDialog` | `dialog.tsx` / `alert-dialog.tsx` | `Dialog` para crear/editar, `AlertDialog` **siempre** para acciones destructivas (eliminar, suspender). No uses `confirm()` nativo del navegador en código nuevo — sí existe todavía en un par de lugares viejos (`app/admin/partidos/page.tsx` `handleDelete`), es deuda, no lo repitas. |
@@ -22,22 +22,29 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 | `CloudinaryUpload` | `cloudinary-upload.tsx` | Ver §6. |
 | `Sonner` (`toast`) | `sonner.tsx` | `import { toast } from "sonner"`. Es el único mecanismo de notificación transitoria del proyecto — no crear un sistema de alertas propio. `<Toaster />` ya está montado en `app/admin/layout.tsx`. |
 
-## 2. Botón de marca (patrón, no componente)
+## 2. Botón de marca
 
-No existe todavía un `<GradientButton variant="brand">` reutilizable a nivel `components/ui`. El patrón se repite a mano en cada pantalla:
+`<Button variant="brand">` (F0, 2026-07-13) — usa los tokens `from-brand to-brand-mid` con hover y `shadow-brand/25`. El patrón manual `bg-gradient-to-r from-[#ad45ff] to-[#c77dff] ...` que se repite en pantallas viejas es legacy: al tocar una, reemplazalo por la variant. `components/ui-dev/gradient-button.tsx` (`GradientButton`, usado en el `Header` público) sigue vivo para su caso.
 
-```tsx
-<Button className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-lg shadow-[#ad45ff]/25 rounded-xl px-6">
-  <IconoLucide className="mr-2 h-4 w-4" />
-  Texto de acción
-</Button>
-```
+## 2b. Componentes compartidos `components/shared/*` (F0, 2026-07-13)
 
-Existe `components/ui-dev/gradient-button.tsx` (`GradientButton`) usado en el `Header` público — revisalo antes de escribir el patrón a mano si estás en una página pública; en admin todavía no se adoptó, se sigue escribiendo la clase completa.
+**Buscá acá antes de escribir un header/hero/KPI/estado vacío a mano.** Todos usan los tokens de marca y respetan dark/light:
+
+| Componente | Archivo | Uso |
+|---|---|---|
+| `PageHero` + `HeroHighlight` | `PageHero.tsx` | Hero de página pública tipo listado (patrón §1 de UI_PATTERNS): blobs + badge + título con palabra destacada + subtítulo + stats glass. Referencia: `app/(public)/torneos/page.tsx`. |
+| `PageHeader` | `PageHeader.tsx` | Header admin. `variant="showcase"` (default) = "Sistema activo" con Card decorativa (listados de gestión); `variant="simple"` = ícono + título (pantallas de cuenta/config). Soporta `breadcrumbs`, `quickStats`, `actions`. Referencia: `app/admin/torneos/page.tsx`. |
+| `StatCard` + `StatCardGrid` | `StatCard.tsx` | KPI del panel admin — reemplazó las 3 implementaciones duplicadas de StatsCards (torneos/equipos/jugadores usan esto internamente). |
+| `StatusBadge` | `StatusBadge.tsx` | Ver §3. |
+| `EmptyState` | `EmptyState.tsx` | Estado vacío estándar (patrón §7 de UI_PATTERNS). |
+| `SkeletonTable` / `SkeletonCards` | `Skeletons.tsx` | Loading que preserva layout para tablas y grids de cards. |
+| `ConfirmDialog` | `ConfirmDialog.tsx` | Confirmación de acciones destructivas (patrón §8). Modo trigger o controlado (`open`/`onOpenChange` — necesario si el disparador vive en un `DropdownMenu`). Soporta `onConfirm` async con loading. Referencia: `app/admin/partidos/page.tsx`. |
 
 ## 3. `StatusBadge` — mapas de color por entidad
 
-No hay un único componente `<StatusBadge entity="tournament" status={...}>` (documentado como pendiente en TODO.md F0). Hoy cada entidad resuelve su color de una de estas dos formas — **revisá si ya existe antes de inventar un color nuevo**:
+**Componente único** (F0, 2026-07-13): `<StatusBadge entity="tournament" | "match" | "player" | "user" | "payment" | "referee" status={...} />` (`components/shared/StatusBadge.tsx`) — resuelve label en español + color del mapa único. Los mapas viven en [lib/status-colors.ts](../lib/status-colors.ts) (formato "badge suave con borde", el de REFEREE_STATUS_COLORS). Si falta un estado/entidad: agregalo ahí, nunca inline.
+
+Historial — cada entidad resolvía su color de una de estas dos formas (legacy, migrar al tocar):
 
 **a) Mapa centralizado exportado** (patrón preferido para código nuevo):
 - `PLAYER_STATUS_COLORS` y `FOOT_COLORS` — `lib/constants.ts`. Estilo "punto/badge sólido": `bg-{color}-500` + texto blanco (pensado para un dot de 3-4px o un badge muy pequeño, no para texto largo — a ese tamaño el contraste con blanco siempre es correcto sin importar el tema).

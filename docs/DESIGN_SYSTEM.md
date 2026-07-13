@@ -4,9 +4,10 @@
 
 ## 1. Paleta de marca
 
-- **Gradiente principal:** `#ad45ff → #a3b3ff` (violeta a lila-azulado). Con un tercer stop opcional `#c77dff` para gradientes de 3 puntos (`from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]`), usado en títulos hero, barras de acento e íconos destacados.
-- **Nunca** usar paletas Tailwind nombradas (`violet-600`, `indigo-600`, `amber-400`, etc.) como color primario/de marca de una pantalla — son los hex de arriba, no un accesorio. Los colores nombrados de Tailwind sí se usan, y solo se usan, para **semántica de estado** (ver §4).
-- El gradiente de marca vive hardcodeado como literal hex en casi todo el código (`93 archivos` según auditoría previa) en vez de una variable CSS — es deuda técnica conocida (ver `TODO.md` M6), no lo dupliques a mano si podés usar las utilidades de §2 o `<GradientText>` / `<Badge>` de marca (ver COMPONENT_LIBRARY.md).
+- **Gradiente principal:** `#ad45ff → #a3b3ff` (violeta a lila-azulado). Con un tercer stop opcional `#c77dff` para gradientes de 3 puntos, usado en títulos hero, barras de acento e íconos destacados.
+- **Tokens CSS (F0, 2026-07-13):** la marca vive como variables en `app/globals.css` — `--brand` (#ad45ff), `--brand-2` (#a3b3ff), `--brand-mid` (#c77dff), `--brand-hover`, `--brand-mid-hover`, `--gradient-brand` — expuestas a Tailwind vía `@theme inline`. **Código nuevo usa los tokens, no los hex:** `bg-brand`, `text-brand`, `border-brand/30`, `from-brand via-brand-mid to-brand-2`, `shadow-brand/25`, `.bg-gradient-brand`. Cambiar la marca = tocar solo el bloque de tokens.
+- **Nunca** usar paletas Tailwind nombradas (`violet-600`, `indigo-600`, `amber-400`, etc.) como color primario/de marca de una pantalla. Los colores nombrados de Tailwind sí se usan, y solo se usan, para **semántica de estado** (ver §4).
+- El hex literal `#ad45ff` sigue presente en ~90 archivos legacy (deuda M6, migración progresiva) — al tocar uno de esos archivos, migrá sus clases de marca a los tokens; no agregues hex nuevos.
 
 ## 2. Utilidades CSS (`app/globals.css`)
 

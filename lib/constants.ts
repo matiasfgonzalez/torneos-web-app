@@ -3,9 +3,12 @@ import {
   Gender,
   TournamentStatus,
   TournamentFormat,
+  MatchStatus,
   PlayerStatus,
   PlayerPosition,
   Foot,
+  UserStatus,
+  PayStatus,
 } from "@prisma/client";
 
 // ============================================
@@ -121,6 +124,49 @@ export const TOURNAMENT_FORMAT_OPTIONS = Object.entries(
   value: value as TournamentFormat,
   label,
 }));
+
+// ============================================
+// ESTADOS DE PARTIDO
+// ============================================
+
+export const MATCH_STATUS_LABELS: Record<MatchStatus, string> = {
+  PROGRAMADO: "Programado",
+  EN_JUEGO: "En Juego",
+  ENTRETIEMPO: "Entretiempo",
+  FINALIZADO: "Finalizado",
+  SUSPENDIDO: "Suspendido",
+  POSTERGADO: "Postergado",
+  CANCELADO: "Cancelado",
+  WALKOVER: "Walkover",
+};
+
+export const MATCH_STATUS_OPTIONS = Object.entries(MATCH_STATUS_LABELS).map(
+  ([value, label]) => ({
+    value: value as MatchStatus,
+    label,
+  }),
+);
+
+// ============================================
+// ESTADOS DE USUARIO
+// ============================================
+
+export const USER_STATUS_LABELS: Record<UserStatus, string> = {
+  ACTIVO: "Activo",
+  INACTIVO: "Inactivo",
+  SUSPENDIDO: "Suspendido",
+  PENDIENTE: "Pendiente",
+};
+
+// ============================================
+// ESTADOS DE PAGO
+// ============================================
+
+export const PAY_STATUS_LABELS: Record<PayStatus, string> = {
+  PENDIENTE: "Pendiente",
+  APROBADO: "Aprobado",
+  RECHAZADO: "Rechazado",
+};
 
 // ============================================
 // ESTADOS DE JUGADOR

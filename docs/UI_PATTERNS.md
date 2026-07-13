@@ -4,6 +4,8 @@
 
 ## 1. Página pública tipo listado/hub
 
+> **F0 (2026-07-13):** el hero de este patrón ya es un componente — `<PageHero>` + `<HeroHighlight>` (`components/shared/PageHero.tsx`). Usalo en vez de copiar los blobs a mano; `app/(public)/torneos/page.tsx` es la referencia migrada. Los heros de jugadores/equipos/noticias/partidos siguen inline (migración en F2).
+
 **Ejemplos de referencia:** `app/(public)/torneos/page.tsx` + `modules/torneos/components/FiltroTorneos.tsx`, `app/(public)/jugadores/page.tsx`, `app/(public)/equipos/page.tsx`, `app/(public)/noticias/page.tsx`, `app/(public)/partidos/page.tsx`.
 
 Estructura:
@@ -45,6 +47,8 @@ Estructura:
 Si el recurso no existe: `notFound()` (Next) o una card de error con ícono `AlertTriangle`, mensaje y botón "Volver a X" con gradiente de marca (ver `app/admin/torneos/[id]/page.tsx` rama de "no encontrado" como referencia exacta a replicar).
 
 ## 3. Página admin tipo listado — dos variantes válidas
+
+> **F0 (2026-07-13):** ambas variantes ya son un componente — `<PageHeader variant="showcase" | "simple">` (`components/shared/PageHeader.tsx`), con `breadcrumbs`/`quickStats`/`actions`. Referencia migrada: `app/admin/torneos/page.tsx`. Los KPIs debajo usan `<StatCard>`/`<StatCardGrid>`. El resto de las pantallas admin sigue inline (migración en F3).
 
 **Variante A — "Sistema activo" (recomendada para entidades de gestión con volumen: torneos, equipos, jugadores, árbitros, partidos):**
 ```tsx
@@ -116,7 +120,9 @@ Reutilizá los componentes de formulario ya existentes (`ManageGoals`, `ManageCa
 ```
 Los filtros activos se muestran como chips (`Badge variant="secondary"` con `bg-[#ad45ff]/10 text-[#ad45ff]`) debajo del panel, cada uno idealmente removible individualmente (patrón en `FiltroTorneos.tsx`).
 
-## 7. Estado vacío (`EmptyState`, patrón — sin componente propio todavía)
+## 7. Estado vacío (`EmptyState` — componente en `components/shared/EmptyState.tsx` desde F0)
+
+> Usá `<EmptyState icon={...} title="..." description="..." action={...} />` en código nuevo; el markup de abajo es lo que el componente renderiza.
 
 ```tsx
 <div className="text-center py-20">
@@ -132,7 +138,7 @@ Usalo tanto para "sin resultados de búsqueda" (con botón "Limpiar filtros") co
 
 ## 8. Confirmación de acciones destructivas
 
-`AlertDialog` **siempre** (nunca `confirm()` nativo en código nuevo) para: eliminar, suspender, rechazar. Estructura: ícono de advertencia en caja de color semántico + título "¿Acción X?" + descripción con el nombre del recurso afectado en negrita +, si corresponde, una advertencia extra sobre efectos secundarios (ver `app/admin/arbitros/page.tsx` — avisa si el árbitro tiene partidos asignados). Footer: `AlertDialogCancel` + `AlertDialogAction` (el action con color semántico de la operación: rojo para eliminar).
+`AlertDialog` **siempre** (nunca `confirm()` nativo en código nuevo) para: eliminar, suspender, rechazar. **Desde F0 usá `<ConfirmDialog>`** (`components/shared/ConfirmDialog.tsx`): trigger o modo controlado, tono `danger`/`warning`, `onConfirm` async con loading — referencia: eliminación de partido en `app/admin/partidos/page.tsx`. Estructura que implementa: ícono de advertencia en caja de color semántico + título "¿Acción X?" + descripción con el nombre del recurso afectado en negrita +, si corresponde, una advertencia extra sobre efectos secundarios (ver `app/admin/arbitros/page.tsx` — avisa si el árbitro tiene partidos asignados).
 
 ## 9. Paginación
 
