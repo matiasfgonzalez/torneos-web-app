@@ -10,6 +10,9 @@ import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { checkUser } from "@/lib/checkUser";
 import { currentUser } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+import { getUserFavorites } from "@modules/favoritos/actions/favorites";
+import { FanHome } from "@modules/usuarios/components/FanHome";
 
 export default async function HomePage() {
   const user = await checkUser();
@@ -21,6 +24,30 @@ export default async function HomePage() {
     if (userLogued) {
       isLogued = true;
     }
+  }
+
+  // USUARIO logueado (N10): home personalizado con torneos/equipos seguidos
+  // en vez de la landing de marketing, que ya cumplió su función de conversión.
+  if (isLogued && user) {
+    const [membership, favorites] = await Promise.all([
+      db.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: { id: true },
+      }),
+      getUserFavorites(),
+    ]);
+
+    return (
+      <div className="min-h-screen flex flex-col premium-gradient-bg">
+        <Header isLogued={isLogued} />
+        <FanHome
+          name={user.name || "campeón"}
+          hasOrganization={!!membership}
+          favorites={favorites}
+        />
+        <Footer />
+      </div>
+    );
   }
 
   return (

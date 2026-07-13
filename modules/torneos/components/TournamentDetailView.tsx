@@ -31,6 +31,9 @@ import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
 import { SuspensionsList } from "@modules/torneos/components/SuspensionsList";
 import { notFound } from "next/navigation";
 import HeaderTorneo from "@modules/torneos/components/HeaderTorneo";
+import { checkUser } from "@/lib/checkUser";
+import { getFavoritedIds } from "@modules/favoritos/actions/favorites";
+import { FollowButton } from "@modules/favoritos/components/FollowButton";
 import TeamsCarousel from "@modules/equipos/components/TeamsCarousel";
 import PublicStandingsSection from "@modules/torneos/components/PublicStandingsSection";
 import MatchDetailModal from "@modules/torneos/components/MatchDetailModal";
@@ -119,11 +122,14 @@ const getStatusColor = (status: MatchStatus): string => {
 export default async function TournamentDetailView({
   id,
 }: Readonly<{ id: string }>) {
-  const [tournamentData, stats, suspensions] = await Promise.all([
-    getTorneoById(id),
-    getTournamentStats(id),
-    getTournamentSuspensions(id),
-  ]);
+  const [tournamentData, stats, suspensions, user, favoritedIds] =
+    await Promise.all([
+      getTorneoById(id),
+      getTournamentStats(id),
+      getTournamentSuspensions(id),
+      checkUser(),
+      getFavoritedIds(),
+    ]);
 
   if (!tournamentData) return notFound();
 
@@ -176,7 +182,18 @@ export default async function TournamentDetailView({
         </Button>
 
         {/* Tournament Header */}
-        <HeaderTorneo tournamentData={tournamentData} />
+        <HeaderTorneo
+          tournamentData={tournamentData}
+          followButton={
+            <FollowButton
+              type="tournament"
+              id={tournamentData.id}
+              initialFavorited={favoritedIds.tournamentIds.has(tournamentData.id)}
+              isLoggedIn={!!user}
+              variant="hero"
+            />
+          }
+        />
 
         {/* Teams Carousel */}
         {tournamentData.tournamentTeams &&

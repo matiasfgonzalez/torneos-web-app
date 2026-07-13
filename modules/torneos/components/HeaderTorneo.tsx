@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -22,6 +23,7 @@ import {
 
 interface PropsHeaderTorneo {
   tournamentData: ITorneo;
+  followButton?: ReactNode;
 }
 
 // Colores de estado
@@ -40,7 +42,7 @@ const statusColors: Record<string, string> = {
 };
 
 const HeaderTorneo = (props: PropsHeaderTorneo) => {
-  const { tournamentData } = props;
+  const { tournamentData, followButton } = props;
   const diasRestantes = tournamentData.endDate
     ? Math.max(
         0,
@@ -121,6 +123,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
                     Ida y Vuelta
                   </Badge>
                 )}
+                {followButton && <div className="ml-auto">{followButton}</div>}
               </div>
 
               {/* Title */}

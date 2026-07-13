@@ -5,6 +5,9 @@ import { AlertTriangle, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { checkUser } from "@/lib/checkUser";
+import { getFavoritedIds } from "@modules/favoritos/actions/favorites";
+import { FollowButton } from "@modules/favoritos/components/FollowButton";
 
 export default async function PublicTeamDetailPage({
   params,
@@ -12,7 +15,11 @@ export default async function PublicTeamDetailPage({
   params: Promise<{ id: string }>;
 }>) {
   const { id } = await params;
-  const team = await getEquipoById(id);
+  const [team, user, favoritedIds] = await Promise.all([
+    getEquipoById(id),
+    checkUser(),
+    getFavoritedIds(),
+  ]);
 
   if (team) {
     return (
@@ -52,7 +59,18 @@ export default async function PublicTeamDetailPage({
               </Link>
             </Button>
 
-            <PublicTeamHeader team={team} />
+            <PublicTeamHeader
+              team={team}
+              followButton={
+                <FollowButton
+                  type="team"
+                  id={team.id}
+                  initialFavorited={favoritedIds.teamIds.has(team.id)}
+                  isLoggedIn={!!user}
+                  variant="hero"
+                />
+              }
+            />
             <PublicTabsTeam teamData={team} />
           </div>
         </div>

@@ -1,12 +1,15 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, User, Shield, Users, Shirt } from "lucide-react";
 
 interface PublicTeamHeaderProps {
   readonly team: any;
+  readonly followButton?: ReactNode;
 }
 
 export default function PublicTeamHeader({
   team,
+  followButton,
 }: Readonly<PublicTeamHeaderProps>) {
   return (
     <div className="relative">
@@ -49,6 +52,9 @@ export default function PublicTeamHeader({
                     <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0 text-sm px-3 py-1 w-fit mx-auto sm:mx-0">
                       {team.shortName}
                     </Badge>
+                  )}
+                  {followButton && (
+                    <div className="mx-auto sm:mx-0 sm:ml-auto">{followButton}</div>
                   )}
                 </div>
               </div>

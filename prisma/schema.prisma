@@ -50,6 +50,7 @@ model User {
   auditLogs          AuditLog[]
   ownedOrganizations Organization[]       @relation("OwnedOrganizations")
   memberships        OrganizationMember[]
+  favorites          Favorite[]
 
   @@index([role, status])
 }
@@ -346,6 +347,7 @@ model Tournament {
   tournamentTeams  TournamentTeam[]
   tournamentPhases TournamentPhase[]
   suspensions      Suspension[]
+  favoritedBy      Favorite[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -403,6 +405,7 @@ model Team {
   updatedAt DateTime @updatedAt
 
   tournamentTeams TournamentTeam[]
+  favoritedBy     Favorite[]
 
   @@index([organizationId])
 }
@@ -790,6 +793,35 @@ model MatchReferee {
   role String // "Principal", "Juez de Línea", "VAR", "Cuarto Árbitro"
 
   @@unique([matchId, refereeId])
+}
+
+// ============================================================
+// FAVORITOS (N10 — torneos/equipos seguidos por un USUARIO)
+// ============================================================
+
+/**
+ * Un USUARIO puede seguir un torneo o un equipo (exactamente uno de los dos
+ * FK, validado en la capa de app — ver modules/favoritos/actions/favorites.ts).
+ * Los @@unique con columna nullable no chocan entre sí: Postgres no
+ * considera dos NULL iguales, así que cada constraint solo restringe
+ * duplicados dentro de su propio tipo (torneo vs equipo).
+ */
+model Favorite {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tournamentId String?
+  tournament   Tournament? @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tournamentId])
+  @@unique([userId, teamId])
+  @@index([userId])
 }
 
 // ============================================================

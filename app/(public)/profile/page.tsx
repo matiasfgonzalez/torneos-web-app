@@ -18,9 +18,12 @@ import {
   Calendar as CalendarIcon,
   Edit2,
   UserIcon,
+  Heart,
 } from "lucide-react";
 import ProfileForm from "./components/ProfileForm";
 import ActivityHistory from "./components/ActivityHistory";
+import { getUserFavorites } from "@modules/favoritos/actions/favorites";
+import { FavoritesTab } from "@modules/usuarios/components/FavoritesTab";
 
 export default async function ProfilePage() {
   const user = await checkUser();
@@ -28,6 +31,8 @@ export default async function ProfilePage() {
   if (!user) {
     redirect("/sign-in");
   }
+
+  const favorites = await getUserFavorites();
 
   // Calculate quick stats
   const joinedDate = new Date(user.createdAt).toLocaleDateString("es-AR", {
@@ -113,20 +118,29 @@ export default async function ProfilePage() {
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
             <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/40 dark:bg-gray-900/40 p-1 rounded-xl mb-6 backdrop-blur-md border border-white/20">
+              <TabsList className="grid w-full grid-cols-3 bg-white/40 dark:bg-gray-900/40 p-1 rounded-xl mb-6 backdrop-blur-md border border-white/20">
                 <TabsTrigger
                   value="info"
                   className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-[#ad45ff] transition-all duration-300"
                 >
                   <UserIcon className="w-4 h-4 mr-2" />
-                  Información Personal
+                  <span className="hidden sm:inline">Información Personal</span>
+                  <span className="sm:hidden">Info</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="favorites"
+                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-[#ad45ff] transition-all duration-300"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Favoritos
                 </TabsTrigger>
                 <TabsTrigger
                   value="activity"
                   className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-[#ad45ff] transition-all duration-300"
                 >
                   <Briefcase className="w-4 h-4 mr-2" />
-                  Historial y Actividad
+                  <span className="hidden sm:inline">Historial y Actividad</span>
+                  <span className="sm:hidden">Historial</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -144,6 +158,24 @@ export default async function ProfilePage() {
                   </p>
                 </div>
                 <ProfileForm user={user} />
+              </TabsContent>
+
+              <TabsContent
+                value="favorites"
+                className="glass-card p-6 md:p-8 rounded-2xl border-0 animate-in fade-in-50 zoom-in-95 duration-300"
+              >
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                    Torneos y Equipos que Seguís
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Los vas a ver también en tu inicio.
+                  </p>
+                </div>
+                <FavoritesTab
+                  tournaments={favorites.tournaments}
+                  teams={favorites.teams}
+                />
               </TabsContent>
 
               <TabsContent
