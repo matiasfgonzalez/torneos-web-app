@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Search,
   Users,
-  Eye,
-  ChevronRight,
   Grid3X3,
   LayoutList,
   Filter,
@@ -24,17 +22,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { PlayerCard } from "@modules/jugadores/components/public/PlayerCard";
 import { IPlayer } from "@modules/jugadores/types";
 import {
-  PLAYER_STATUS_LABELS,
   PLAYER_STATUS_OPTIONS,
-  PLAYER_STATUS_COLORS,
   PLAYER_POSITION_LABELS,
   PLAYER_POSITION_OPTIONS,
-  FOOT_LABELS,
-  FOOT_COLORS,
 } from "@/lib/constants";
-import { PlayerStatus, PlayerPosition, Foot } from "@prisma/client";
+import { PlayerPosition } from "@prisma/client";
 
 type SortOption = "name-asc" | "name-desc" | "number-asc" | "number-desc";
 type ViewMode = "grid" | "list";
@@ -137,27 +133,9 @@ const PlayersListInterface = () => {
     setSortBy("name-asc");
   };
 
-  const getStatusColor = (status: string) => {
-    return PLAYER_STATUS_COLORS[status as PlayerStatus] || "bg-gray-500";
-  };
-
-  const getStatusLabel = (status: string) => {
-    return PLAYER_STATUS_LABELS[status as PlayerStatus] || status;
-  };
-
   const getPositionLabel = (position: string | null) => {
     if (!position) return "Sin posición";
     return PLAYER_POSITION_LABELS[position as PlayerPosition] || position;
-  };
-
-  const getFootLabel = (foot: string | null) => {
-    if (!foot) return "N/A";
-    return FOOT_LABELS[foot as Foot] || foot;
-  };
-
-  const getFootColor = (foot: string | null) => {
-    if (!foot) return "text-gray-400";
-    return FOOT_COLORS[foot as Foot] || "text-gray-400";
   };
 
   return (
@@ -213,7 +191,7 @@ const PlayersListInterface = () => {
                 <Badge
                   key={posicion}
                   variant="outline"
-                  className="px-4 py-2 text-sm font-medium border-2 border-[#ad45ff]/30 text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white transition-all cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium border-2 border-brand/30 text-brand hover:bg-brand hover:text-white transition-all cursor-pointer"
                   onClick={() => setFilterPosition(posicion)}
                 >
                   <Activity className="w-3.5 h-3.5 mr-1.5" />
@@ -230,12 +208,12 @@ const PlayersListInterface = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filter Panel */}
           <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-gray-700/50 shadow-xl p-6 mb-8">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-tr-2xl rounded-bl-full" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-tr-2xl rounded-bl-full" />
 
             <div className="relative">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/20">
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
                     <Filter className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -252,13 +230,13 @@ const PlayersListInterface = () => {
                   <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode("grid")}
-                      className={`p-2 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-gray-600 shadow-sm text-[#ad45ff]" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
+                      className={`p-2 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-gray-600 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
                     >
                       <Grid3X3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setViewMode("list")}
-                      className={`p-2 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-600 shadow-sm text-[#ad45ff]" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
+                      className={`p-2 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-600 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
                     >
                       <LayoutList className="w-4 h-4" />
                     </button>
@@ -267,7 +245,7 @@ const PlayersListInterface = () => {
                   {activeFiltersCount > 0 && (
                     <button
                       onClick={clearFilters}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#ad45ff] bg-[#ad45ff]/10 rounded-lg hover:bg-[#ad45ff]/20 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                       Limpiar ({activeFiltersCount})
@@ -290,7 +268,7 @@ const PlayersListInterface = () => {
                       id="search-players"
                       type="text"
                       placeholder="Nombre, nacionalidad..."
-                      className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                      className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -309,7 +287,7 @@ const PlayersListInterface = () => {
                     id="filter-position"
                     value={filterPosition}
                     onChange={(e) => setFilterPosition(e.target.value)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   >
                     <option value="">Todas las posiciones</option>
                     {PLAYER_POSITION_OPTIONS.map((opt) => (
@@ -332,7 +310,7 @@ const PlayersListInterface = () => {
                     id="filter-status"
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   >
                     <option value="">Todos los estados</option>
                     {PLAYER_STATUS_OPTIONS.map((opt) => (
@@ -355,7 +333,7 @@ const PlayersListInterface = () => {
                     id="sort-players"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   >
                     <option value="name-asc">Nombre (A-Z)</option>
                     <option value="name-desc">Nombre (Z-A)</option>
@@ -367,238 +345,36 @@ const PlayersListInterface = () => {
             </div>
           </div>
 
-          {/* Content */}
+          {/* Content — anatomía compartida vía PlayerCard (F2) */}
           {isLoading ? (
             <div className="text-center py-20">
-              <div className="w-16 h-16 border-4 border-[#ad45ff]/30 border-t-[#ad45ff] rounded-full animate-spin mx-auto" />
+              <div className="w-16 h-16 border-4 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
               <p className="mt-4 text-gray-500 dark:text-gray-400">
                 Cargando jugadores...
               </p>
             </div>
           ) : filteredPlayers.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="relative inline-block">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-full blur-2xl" />
-                <div className="relative w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                  <Users className="w-12 h-12 text-gray-400" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                No se encontraron jugadores
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-                No hay jugadores que coincidan con tu búsqueda. Intenta con
-                otros filtros.
-              </p>
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white font-semibold rounded-xl shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-              >
-                <X className="w-4 h-4" />
-                Limpiar Filtros
-              </button>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No se encontraron jugadores"
+              description="No hay jugadores que coincidan con tu búsqueda. Intenta con otros filtros."
+              action={
+                <Button variant="brand" onClick={clearFilters}>
+                  <X className="w-4 h-4 mr-2" />
+                  Limpiar Filtros
+                </Button>
+              }
+            />
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredPlayers.map((player) => (
-                <Link
-                  key={player.id}
-                  href={`/jugadores/${player.id}`}
-                  className="group block h-full"
-                >
-                  <Card className="h-full border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden relative group-hover:-translate-y-1">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                    <div className="p-6">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="relative">
-                          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#ad45ff]/30 group-hover:border-[#ad45ff] transition-colors">
-                            {player.imageUrlFace ? (
-                              <img
-                                src={player.imageUrlFace}
-                                alt={player.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 flex items-center justify-center">
-                                <span className="text-2xl font-bold text-[#ad45ff]">
-                                  {player.name.charAt(0)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div
-                            className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(player.status)} rounded-full border-2 border-white dark:border-gray-800`}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors truncate">
-                              {player.name}
-                            </h3>
-                            {player.number != null && (
-                              <span className="text-xl font-bold text-[#ad45ff]">
-                                #{player.number}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {getPositionLabel(player.position)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-y border-gray-100 dark:border-gray-700/50">
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">
-                            {player.height ? `${player.height}cm` : "N/A"}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Altura
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">
-                            {player.weight ? `${player.weight}kg` : "N/A"}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Peso
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <div
-                            className={`text-sm font-bold ${getFootColor(player.dominantFoot)}`}
-                          >
-                            {getFootLabel(player.dominantFoot)}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Pie
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <Badge
-                          className={`${getStatusColor(player.status)} text-white text-xs`}
-                        >
-                          {getStatusLabel(player.status)}
-                        </Badge>
-                        <div className="flex items-center gap-1 text-[#ad45ff] group-hover:text-[#c77dff] transition-colors">
-                          <Eye className="w-4 h-4" />
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
+                <PlayerCard key={player.id} player={player} />
               ))}
             </div>
           ) : (
             <div className="space-y-4">
               {filteredPlayers.map((player) => (
-                <Link
-                  key={player.id}
-                  href={`/jugadores/${player.id}`}
-                  className="group block"
-                >
-                  <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="relative">
-                            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#ad45ff]/30 group-hover:border-[#ad45ff] transition-colors">
-                              {player.imageUrlFace ? (
-                                <img
-                                  src={player.imageUrlFace}
-                                  alt={player.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 flex items-center justify-center">
-                                  <span className="text-xl font-bold text-[#ad45ff]">
-                                    {player.name.charAt(0)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div
-                              className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(player.status)} rounded-full border border-white dark:border-gray-800`}
-                            />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-3 mb-1">
-                              <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors">
-                                {player.name}
-                              </h3>
-                              {player.number != null && (
-                                <span className="text-xl font-bold text-[#ad45ff]">
-                                  #{player.number}
-                                </span>
-                              )}
-                              <Badge
-                                variant="outline"
-                                className="border-[#ad45ff]/30 text-[#ad45ff]"
-                              >
-                                {getPositionLabel(player.position)}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                              {player.nationality && (
-                                <span>{player.nationality}</span>
-                              )}
-                              {player.birthPlace && (
-                                <>
-                                  <span>•</span>
-                                  <span>{player.birthPlace}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-8">
-                          <div className="hidden md:flex gap-6 text-sm">
-                            <div className="text-center">
-                              <div className="font-bold text-gray-900 dark:text-white">
-                                {player.height ? `${player.height}cm` : "N/A"}
-                              </div>
-                              <div className="text-gray-500 dark:text-gray-400">
-                                Altura
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="font-bold text-gray-900 dark:text-white">
-                                {player.weight ? `${player.weight}kg` : "N/A"}
-                              </div>
-                              <div className="text-gray-500 dark:text-gray-400">
-                                Peso
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div
-                                className={`font-bold ${getFootColor(player.dominantFoot)}`}
-                              >
-                                {getFootLabel(player.dominantFoot)}
-                              </div>
-                              <div className="text-gray-500 dark:text-gray-400">
-                                Pie
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge
-                              className={`${getStatusColor(player.status)} text-white`}
-                            >
-                              {getStatusLabel(player.status)}
-                            </Badge>
-                            <div className="flex items-center gap-1 text-[#ad45ff] group-hover:text-[#c77dff] transition-colors">
-                              <Eye className="w-4 h-4" />
-                              <ChevronRight className="w-4 h-4" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
+                <PlayerCard key={player.id} player={player} variant="list" />
               ))}
             </div>
           )}
@@ -607,7 +383,7 @@ const PlayersListInterface = () => {
 
       {/* CTA Section */}
       <section className="py-16 lg:py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] opacity-95" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand to-brand-2 opacity-95" />
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
@@ -626,8 +402,8 @@ const PlayersListInterface = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-white text-[#ad45ff] px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300"
+              href="/sign-up"
+              className="inline-flex items-center justify-center gap-2 bg-white text-brand px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300"
             >
               <TrendingUp className="w-5 h-5" />
               Registrarme

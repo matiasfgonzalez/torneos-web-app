@@ -101,3 +101,21 @@ export const PAY_STATUS_COLORS: Record<PayStatus, string> = {
   RECHAZADO:
     "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30",
 };
+
+/**
+ * Excepción deliberada (mismo criterio que MATCH_STATUS_COLORS.EN_JUEGO):
+ * la card pública de torneo (F2, `TournamentCard`) superpone el badge sobre
+ * un banner con textura/gradiente — un badge "suave" (bg-*-50) perdería
+ * contraste ahí. Usa relleno sólido + texto blanco en vez del par claro/
+ * oscuro estándar. No usar este mapa fuera de ese banner.
+ */
+export const TOURNAMENT_STATUS_SOLID_COLORS: Record<TournamentStatus, string> = {
+  BORRADOR: "bg-gray-400 text-white",
+  INSCRIPCION: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-500/25",
+  PENDIENTE: "bg-gradient-to-r from-brand to-brand-2 text-white shadow-brand/25",
+  ACTIVO: "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-green-500/25",
+  SUSPENDIDO: "bg-orange-500 text-white",
+  FINALIZADO: "bg-gray-500 text-white",
+  CANCELADO: "bg-red-500 text-white",
+  ARCHIVADO: "bg-gray-600 text-white",
+};

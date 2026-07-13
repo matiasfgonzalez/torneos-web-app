@@ -39,6 +39,9 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 | `EmptyState` | `EmptyState.tsx` | Estado vacío estándar (patrón §7 de UI_PATTERNS). |
 | `SkeletonTable` / `SkeletonCards` | `Skeletons.tsx` | Loading que preserva layout para tablas y grids de cards. |
 | `ConfirmDialog` | `ConfirmDialog.tsx` | Confirmación de acciones destructivas (patrón §8). Modo trigger o controlado (`open`/`onOpenChange` — necesario si el disparador vive en un `DropdownMenu`). Soporta `onConfirm` async con loading. Referencia: `app/admin/partidos/page.tsx`. |
+| `EntityCard` + `EntityCardAvatar` | `EntityCard.tsx` | Shell compartido de las cards públicas de listado (F2, patrón §1 de UI_PATTERNS): `Link` + esquinas + elevación en hover + barra de acento de marca. No lo uses solo — componelo con el contenido de cada entidad (ver `TournamentCard`/`TeamCard`/`PlayerCard` abajo) o copiá su estructura si aparece una entidad nueva con card pública. |
+
+Cards por entidad que ya componen `EntityCard` (no viven en `components/shared` — cada una junto a su módulo, como el resto del código de esa entidad): `TournamentCard` (`modules/torneos/components/TournamentCard.tsx`), `TeamCard` (`modules/equipos/components/public/TeamCard.tsx`), `PlayerCard` (`modules/jugadores/components/public/PlayerCard.tsx`, con `variant="grid"|"list"`). Usalas directo — no copies su JSX a mano en una página nueva.
 
 ## 3. `StatusBadge` — mapas de color por entidad
 

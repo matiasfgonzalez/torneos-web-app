@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { ITeam } from "@modules/equipos/types/types";
 import TeamCard from "./TeamCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Search,
   Shield,
@@ -80,13 +82,13 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
       {/* Premium Search & Filter Panel */}
       <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-gray-700/50 shadow-xl p-6">
         {/* Decorative gradient corner */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-tr-2xl rounded-bl-full" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-tr-2xl rounded-bl-full" />
 
         <div className="relative">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/20">
+              <div className="w-10 h-10 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
                 <Filter className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -107,7 +109,7 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-md transition-all ${
                     viewMode === "grid"
-                      ? "bg-white dark:bg-gray-600 shadow-sm text-[#ad45ff]"
+                      ? "bg-white dark:bg-gray-600 shadow-sm text-brand"
                       : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
                   }`}
                 >
@@ -117,7 +119,7 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
                   onClick={() => setViewMode("list")}
                   className={`p-2 rounded-md transition-all ${
                     viewMode === "list"
-                      ? "bg-white dark:bg-gray-600 shadow-sm text-[#ad45ff]"
+                      ? "bg-white dark:bg-gray-600 shadow-sm text-brand"
                       : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
                   }`}
                 >
@@ -128,7 +130,7 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
               {activeFiltersCount > 0 && (
                 <button
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#ad45ff] bg-[#ad45ff]/10 rounded-lg hover:bg-[#ad45ff]/20 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                   Limpiar ({activeFiltersCount})
@@ -153,7 +155,7 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
                   id="search-teams"
                   type="text"
                   placeholder="Nombre, ciudad o entrenador..."
-                  className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                  className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -173,7 +175,7 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
                 id="filter-city"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
               >
                 <option value="">Todas las ciudades</option>
                 {ciudadesDisponibles.map((ciudad) => (
@@ -197,7 +199,7 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
                 id="sort-teams"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-[#ad45ff]/30 focus:border-[#ad45ff] transition-all"
+                className="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
               >
                 <option value="name-asc">Nombre (A-Z)</option>
                 <option value="name-desc">Nombre (Z-A)</option>
@@ -211,28 +213,17 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
 
       {/* Results */}
       {filteredTeams.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="relative inline-block">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-full blur-2xl" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-              <Shield className="w-12 h-12 text-gray-400" />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-            No se encontraron equipos
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-            No hay equipos que coincidan con tu búsqueda. Intenta con otros
-            filtros.
-          </p>
-          <button
-            onClick={clearFilters}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white font-semibold rounded-xl shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-          >
-            <X className="w-4 h-4" />
-            Limpiar Filtros
-          </button>
-        </div>
+        <EmptyState
+          icon={Shield}
+          title="No se encontraron equipos"
+          description="No hay equipos que coincidan con tu búsqueda. Intenta con otros filtros."
+          action={
+            <Button variant="brand" onClick={clearFilters}>
+              <X className="w-4 h-4 mr-2" />
+              Limpiar Filtros
+            </Button>
+          }
+        />
       ) : (
         <div
           className={

@@ -4,7 +4,9 @@
 
 ## 1. Página pública tipo listado/hub
 
-> **F0 (2026-07-13):** el hero de este patrón ya es un componente — `<PageHero>` + `<HeroHighlight>` (`components/shared/PageHero.tsx`). Usalo en vez de copiar los blobs a mano; `app/(public)/torneos/page.tsx` es la referencia migrada. Los heros de jugadores/equipos/noticias/partidos siguen inline (migración en F2).
+> **F0 (2026-07-13):** el hero de este patrón ya es un componente — `<PageHero>` + `<HeroHighlight>` (`components/shared/PageHero.tsx`). Usalo en vez de copiar los blobs a mano; `app/(public)/torneos/page.tsx` y `app/(public)/jugadores/page.tsx` son referencia migrada. Los heros de equipos/noticias/partidos siguen inline (pendiente).
+>
+> **F2 (2026-07-13):** las cards del grid ya son componentes — anatomía compartida vía `<EntityCard>`/`<EntityCardAvatar>` (`components/shared/EntityCard.tsx`: shell con esquinas, elevación en hover y barra de acento de marca; cada entidad decide su layout interno). Consumidores: `TournamentCard` (`modules/torneos/components/TournamentCard.tsx`, banner con logo superpuesto + badge de estado **sólido** — ver `TOURNAMENT_STATUS_SOLID_COLORS` en `lib/status-colors.ts`, excepción deliberada porque el badge suave pierde contraste sobre el banner), `TeamCard` (`modules/equipos/components/public/TeamCard.tsx`, avatar circular centrado) y `PlayerCard` (`modules/jugadores/components/public/PlayerCard.tsx`, con `variant="grid"|"list"` y `<StatusBadge entity="player">`). No repitas el markup de card a mano — importá el componente de la entidad; si aparece una cuarta entidad con card pública, componela sobre `<EntityCard>` igual que las tres anteriores.
 
 **Ejemplos de referencia:** `app/(public)/torneos/page.tsx` + `modules/torneos/components/FiltroTorneos.tsx`, `app/(public)/jugadores/page.tsx`, `app/(public)/equipos/page.tsx`, `app/(public)/noticias/page.tsx`, `app/(public)/partidos/page.tsx`.
 
