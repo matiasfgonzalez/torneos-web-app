@@ -52,7 +52,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <Header isLogued={isLogued} isLandingPage={true} />
+      <Header isLogued={isLogued} />
 
       {/* Hero - Primera impresión impactante */}
       <HeroSection />

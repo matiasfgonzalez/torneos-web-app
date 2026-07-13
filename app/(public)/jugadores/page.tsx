@@ -23,6 +23,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { IPlayer } from "@modules/jugadores/types";
 import {
   PLAYER_STATUS_LABELS,
@@ -161,129 +162,44 @@ const PlayersListInterface = () => {
 
   return (
     <div className="min-h-screen premium-gradient-bg">
-      {/* Hero Section - Premium Golazo Style */}
-      <section className="relative overflow-hidden py-20 lg:py-28">
-        {/* Decorative Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#a3b3ff]/15 to-[#ad45ff]/15 rounded-full blur-3xl transform -translate-x-1/4 translate-y-1/4" />
-          <div className="absolute top-20 right-20 w-32 h-0.5 bg-gradient-to-r from-[#ad45ff] to-transparent opacity-40" />
-          <div className="absolute top-28 right-28 w-20 h-0.5 bg-gradient-to-r from-[#a3b3ff] to-transparent opacity-30" />
-          <div className="absolute bottom-32 left-16 w-40 h-0.5 bg-gradient-to-l from-[#ad45ff] to-transparent opacity-30" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white px-5 py-2 rounded-full shadow-lg shadow-[#ad45ff]/25 animate-pulse">
-              <Users className="w-5 h-5" />
-              <span className="font-semibold">Plantel Oficial</span>
-              <Zap className="w-4 h-4" />
-            </div>
-
-            <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 dark:text-white text-balance leading-tight">
-              Nuestros{" "}
-              <span className="relative">
-                <span className="bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent">
-                  Jugadores
-                </span>
-                <svg
-                  className="absolute -bottom-2 left-0 w-full"
-                  height="8"
-                  viewBox="0 0 200 8"
-                  fill="none"
-                >
-                  <path
-                    d="M1 5.5C47.6667 2.16667 141.4 -2.3 199 5.5"
-                    stroke="url(#underline-gradient-jugadores)"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                  <defs>
-                    <linearGradient
-                      id="underline-gradient-jugadores"
-                      x1="0"
-                      y1="0"
-                      x2="200"
-                      y2="0"
-                    >
-                      <stop stopColor="#ad45ff" />
-                      <stop offset="1" stopColor="#a3b3ff" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
-            </h1>
-
-            <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-pretty leading-relaxed">
-              Conoce a los talentos que forman parte de nuestros equipos.
-              Explora sus perfiles, estadísticas y trayectoria deportiva.
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/5 to-[#a3b3ff]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-[#ad45ff]/20">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {isLoading ? "..." : stats.total}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Total Jugadores
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-green-500/20">
-                  <UserCheck className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {isLoading ? "..." : stats.activos}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Activos
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {isLoading ? "..." : stats.posiciones}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Posiciones
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-orange-500/20">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {isLoading ? "..." : stats.nacionalidades}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Nacionalidades
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero - componente compartido F0 (patrón §1 de UI_PATTERNS) */}
+      <PageHero
+        badge={{ icon: Users, text: "Plantel Oficial", endIcon: Zap }}
+        title={
+          <>
+            Nuestros <HeroHighlight>Jugadores</HeroHighlight>
+          </>
+        }
+        subtitle="Conoce a los talentos que forman parte de nuestros equipos. Explora sus perfiles, estadísticas y trayectoria deportiva."
+        stats={[
+          {
+            icon: Users,
+            value: isLoading ? "..." : stats.total,
+            label: "Total Jugadores",
+          },
+          {
+            icon: UserCheck,
+            value: isLoading ? "..." : stats.activos,
+            label: "Activos",
+            gradient: "from-green-500 to-emerald-500",
+            shadow: "shadow-green-500/20",
+          },
+          {
+            icon: Target,
+            value: isLoading ? "..." : stats.posiciones,
+            label: "Posiciones",
+            gradient: "from-blue-500 to-cyan-500",
+            shadow: "shadow-blue-500/20",
+          },
+          {
+            icon: MapPin,
+            value: isLoading ? "..." : stats.nacionalidades,
+            label: "Nacionalidades",
+            gradient: "from-orange-500 to-amber-500",
+            shadow: "shadow-orange-500/20",
+          },
+        ]}
+      />
 
       {/* Quick Positions Pills */}
       {posicionesPopulares.length > 0 && (

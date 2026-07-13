@@ -115,7 +115,14 @@ export function PageHero({
         </div>
 
         {stats && stats.length > 0 && (
-          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div
+            className={cn(
+              "mt-16 grid gap-4 lg:gap-6",
+              stats.length === 3
+                ? "grid-cols-1 sm:grid-cols-3"
+                : "grid-cols-2 lg:grid-cols-4",
+            )}
+          >
             {stats.map((stat) => {
               const StatIcon = stat.icon;
               return (

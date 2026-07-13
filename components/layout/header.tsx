@@ -5,42 +5,60 @@ import { Button } from "@/components/ui/button";
 import { GradientButton } from "@/components/ui-dev/gradient-button";
 import { GradientText } from "@/components/ui-dev/gradient-text";
 import { useMobileMenu } from "@/hooks/use-mobile-menu";
-import { navigationLinks } from "@/lib/constants/navigation";
+import { siteLinks, anonLinks } from "@/lib/constants/navigation";
 import Link from "next/link";
-import { User, Menu, X, ChevronRight } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { User, Menu, X, ChevronRight, Trophy } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface HeaderProps {
   isLogued?: boolean;
-  isLandingPage?: boolean;
 }
 
+/**
+ * Header público unificado (F2): mismas secciones en todas las páginas
+ * (antes la landing mostraba anclas que desaparecían al navegar), indicador
+ * de sección activa por ruta, mobile-first y dark/light.
+ */
 export function Header(props: Readonly<HeaderProps>) {
-  const { isLogued, isLandingPage = false } = props;
+  const { isLogued } = props;
   const { isOpen, toggle, close } = useMobileMenu();
+  const pathname = usePathname();
 
-  // Filtrar enlaces de ancla cuando no estamos en la landing page
-  const visibleLinks = isLandingPage
-    ? navigationLinks
-    : navigationLinks.filter((link) => !link.href.startsWith("#"));
+  // Links de secciones + extras según sesión (una sola fuente para
+  // desktop y mobile — nunca más menús distintos por página)
+  const links: { href: string; label: string }[] = [
+    ...siteLinks,
+    ...(isLogued
+      ? [
+          { href: "/admin/dashboard", label: "Mi Panel" },
+          { href: "/profile", label: "Mi Perfil" },
+        ]
+      : [...anonLinks]),
+  ];
+
+  const isActive = (href: string) =>
+    !href.includes("#") &&
+    (pathname === href || pathname.startsWith(`${href}/`));
 
   return (
     <header className="sticky top-0 z-50">
       {/* Barra superior decorativa con gradiente */}
-      <div className="h-1 bg-gradient-to-r from-[#ad45ff] via-[#a3b3ff] to-[#ad45ff]" />
+      <div className="h-1 bg-gradient-to-r from-brand via-brand-2 to-brand" />
 
       <nav className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         {/* Efecto de brillo sutil */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/5 via-transparent to-[#a3b3ff]/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand/5 via-transparent to-brand-2/5 pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo Premium */}
             <Link href="/" className="group flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                <div className="relative w-10 h-10 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/25 group-hover:shadow-[#ad45ff]/40 transition-all group-hover:scale-105">
-                  <span className="text-lg">🏆</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-brand to-brand-2 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                <div className="relative w-10 h-10 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg shadow-brand/25 group-hover:shadow-brand/40 transition-all group-hover:scale-105">
+                  <Trophy className="w-5 h-5 text-white" aria-hidden="true" />
                 </div>
               </div>
               <GradientText className="text-2xl font-bold tracking-tight">
@@ -50,34 +68,30 @@ export function Header(props: Readonly<HeaderProps>) {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {visibleLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors rounded-lg hover:bg-[#ad45ff]/5 group"
-                >
-                  {link.label}
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] group-hover:w-3/4 transition-all duration-300 rounded-full" />
-                </a>
-              ))}
-              {isLogued && (
-                <>
+              {links.map((link) => {
+                const active = isActive(link.href);
+                return (
                   <Link
-                    href="/admin/dashboard"
-                    className="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors rounded-lg hover:bg-[#ad45ff]/5 group"
+                    key={link.href}
+                    href={link.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg group",
+                      active
+                        ? "text-brand"
+                        : "text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand hover:bg-brand/5",
+                    )}
                   >
-                    Administración
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] group-hover:w-3/4 transition-all duration-300 rounded-full" />
+                    {link.label}
+                    <span
+                      className={cn(
+                        "absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-brand to-brand-2 transition-all duration-300 rounded-full",
+                        active ? "w-3/4" : "w-0 group-hover:w-3/4",
+                      )}
+                    />
                   </Link>
-                  <Link
-                    href="/profile"
-                    className="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] transition-colors rounded-lg hover:bg-[#ad45ff]/5 group"
-                  >
-                    Mi Perfil
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] group-hover:w-3/4 transition-all duration-300 rounded-full" />
-                  </Link>
-                </>
-              )}
+                );
+              })}
             </div>
 
             {/* Desktop Actions */}
@@ -85,14 +99,14 @@ export function Header(props: Readonly<HeaderProps>) {
               <ThemeToggle />
               <SignedOut>
                 <SignInButton>
-                  <GradientButton className="cursor-pointer shadow-lg shadow-[#ad45ff]/25 hover:shadow-[#ad45ff]/40 transition-all">
+                  <GradientButton className="cursor-pointer shadow-lg shadow-brand/25 hover:shadow-brand/40 transition-all">
                     <User className="w-4 h-4" />
                     Iniciar sesión
                   </GradientButton>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20 hover:from-[#ad45ff]/30 hover:to-[#a3b3ff]/30 transition-all">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-brand/20 to-brand-2/20 hover:from-brand/30 hover:to-brand-2/30 transition-all">
                   <UserButton
                     appearance={{
                       elements: {
@@ -111,13 +125,14 @@ export function Header(props: Readonly<HeaderProps>) {
                 variant="ghost"
                 size="sm"
                 onClick={toggle}
-                className="relative w-10 h-10 p-0 text-gray-600 dark:text-gray-300 hover:bg-[#ad45ff]/10 rounded-xl transition-colors"
+                aria-expanded={isOpen}
+                aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+                className="relative w-11 h-11 p-0 text-gray-600 dark:text-gray-300 hover:bg-brand/10 rounded-xl transition-colors"
               >
-                <span className="sr-only">Abrir menú</span>
                 {isOpen ? (
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5" aria-hidden="true" />
                 ) : (
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-5 h-5" aria-hidden="true" />
                 )}
               </Button>
             </div>
@@ -133,45 +148,40 @@ export function Header(props: Readonly<HeaderProps>) {
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
-            {visibleLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="flex items-center justify-between px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] hover:bg-[#ad45ff]/5 rounded-xl transition-all group"
-                onClick={close}
-              >
-                <span className="font-medium text-sm">{link.label}</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#ad45ff] group-hover:translate-x-1 transition-all" />
-              </a>
-            ))}
-
-            {isLogued && (
-              <>
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent my-4" />
+            {links.map((link) => {
+              const active = isActive(link.href);
+              return (
                 <Link
-                  href="/admin/dashboard"
-                  className="flex items-center justify-between px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] hover:bg-[#ad45ff]/5 rounded-xl transition-all group"
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 rounded-xl transition-all group",
+                    active
+                      ? "text-brand bg-brand/5 dark:bg-brand/10"
+                      : "text-gray-700 dark:text-gray-200 hover:text-brand dark:hover:text-brand hover:bg-brand/5",
+                  )}
                   onClick={close}
                 >
-                  <span className="font-medium text-sm">Administración</span>
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#ad45ff] group-hover:translate-x-1 transition-all" />
+                  <span className="font-medium text-sm">{link.label}</span>
+                  <ChevronRight
+                    className={cn(
+                      "w-4 h-4 transition-all",
+                      active
+                        ? "text-brand"
+                        : "text-gray-400 group-hover:text-brand group-hover:translate-x-1",
+                    )}
+                    aria-hidden="true"
+                  />
                 </Link>
-                <Link
-                  href="/profile"
-                  className="flex items-center justify-between px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:text-[#ad45ff] dark:hover:text-[#ad45ff] hover:bg-[#ad45ff]/5 rounded-xl transition-all group"
-                  onClick={close}
-                >
-                  <span className="font-medium text-sm">Mi Perfil</span>
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#ad45ff] group-hover:translate-x-1 transition-all" />
-                </Link>
-              </>
-            )}
+              );
+            })}
 
             {/* Auth section mobile */}
             <div className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-800">
               <SignedOut>
                 <SignInButton>
-                  <GradientButton className="w-full cursor-pointer shadow-lg shadow-[#ad45ff]/25 py-3">
+                  <GradientButton className="w-full cursor-pointer shadow-lg shadow-brand/25 py-3">
                     <User className="w-4 h-4" />
                     Iniciar sesión
                   </GradientButton>
@@ -179,7 +189,7 @@ export function Header(props: Readonly<HeaderProps>) {
               </SignedOut>
               <SignedIn>
                 <div className="flex items-center gap-4 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                  <div className="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-brand/20 to-brand-2/20">
                     <UserButton
                       appearance={{
                         elements: {

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { formatDate } from "@/lib/formatDate";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { INoticia } from "@modules/noticias/types";
@@ -144,117 +145,33 @@ export default function NoticiasPage() {
 
   return (
     <div className="min-h-screen premium-gradient-bg">
-      {/* Hero Section - Premium Golazo Style */}
-      <section className="relative overflow-hidden py-20 lg:py-28">
-        {/* Decorative Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#a3b3ff]/15 to-[#ad45ff]/15 rounded-full blur-3xl transform -translate-x-1/4 translate-y-1/4" />
-          <div className="absolute top-20 right-20 w-32 h-0.5 bg-gradient-to-r from-[#ad45ff] to-transparent opacity-40" />
-          <div className="absolute top-28 right-28 w-20 h-0.5 bg-gradient-to-r from-[#a3b3ff] to-transparent opacity-30" />
-          <div className="absolute bottom-32 left-16 w-40 h-0.5 bg-gradient-to-l from-[#ad45ff] to-transparent opacity-30" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
-            {/* Badge animado */}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white px-5 py-2 rounded-full shadow-lg shadow-[#ad45ff]/25 animate-pulse">
-              <Newspaper className="w-5 h-5" />
-              <span className="font-semibold">Centro de Noticias</span>
-              <Zap className="w-4 h-4" />
-            </div>
-
-            {/* Título principal */}
-            <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 dark:text-white text-balance leading-tight">
-              Últimas{" "}
-              <span className="relative">
-                <span className="bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent">
-                  Noticias
-                </span>
-                <svg
-                  className="absolute -bottom-2 left-0 w-full"
-                  height="8"
-                  viewBox="0 0 200 8"
-                  fill="none"
-                >
-                  <path
-                    d="M1 5.5C47.6667 2.16667 141.4 -2.3 199 5.5"
-                    stroke="url(#underline-gradient-noticias)"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                  <defs>
-                    <linearGradient
-                      id="underline-gradient-noticias"
-                      x1="0"
-                      y1="0"
-                      x2="200"
-                      y2="0"
-                    >
-                      <stop stopColor="#ad45ff" />
-                      <stop offset="1" stopColor="#a3b3ff" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
-            </h1>
-
-            {/* Descripción */}
-            <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-pretty leading-relaxed">
-              Mantente informado con las últimas novedades, resultados y
-              análisis del mundo de los torneos deportivos.
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/5 to-[#a3b3ff]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-[#ad45ff]/20">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {stats.total}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Noticias Publicadas
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-green-500/20">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {stats.thisMonth}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Este Mes
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-                  {stats.autores}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Autores
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero - componente compartido F0 (patrón §1 de UI_PATTERNS) */}
+      <PageHero
+        badge={{ icon: Newspaper, text: "Centro de Noticias", endIcon: Zap }}
+        title={
+          <>
+            Últimas <HeroHighlight>Noticias</HeroHighlight>
+          </>
+        }
+        subtitle="Mantente informado con las últimas novedades, resultados y análisis del mundo de los torneos deportivos."
+        stats={[
+          { icon: BookOpen, value: stats.total, label: "Noticias Publicadas" },
+          {
+            icon: TrendingUp,
+            value: stats.thisMonth,
+            label: "Este Mes",
+            gradient: "from-green-500 to-emerald-500",
+            shadow: "shadow-green-500/20",
+          },
+          {
+            icon: User,
+            value: stats.autores,
+            label: "Autores",
+            gradient: "from-blue-500 to-cyan-500",
+            shadow: "shadow-blue-500/20",
+          },
+        ]}
+      />
 
       {/* Main Content */}
       <section className="py-16 lg:py-20">

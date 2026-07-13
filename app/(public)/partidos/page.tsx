@@ -33,6 +33,7 @@ import {
   X,
 } from "lucide-react";
 import { isToday } from "date-fns";
+import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { IPartidos, MatchStatus } from "@modules/partidos/types";
 import { formatDate } from "@/lib/formatDate";
 
@@ -175,58 +176,44 @@ export default function PartidosPage() {
 
   return (
     <div className="min-h-screen premium-gradient-bg">
-      {/* Hero Section - Premium Golazo Style */}
-      <section className="relative overflow-hidden py-16 lg:py-20">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#a3b3ff]/15 to-[#ad45ff]/15 rounded-full blur-3xl transform -translate-x-1/4 translate-y-1/4" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white px-5 py-2 rounded-full shadow-lg shadow-[#ad45ff]/25">
-              <Zap className="w-4 h-4" />
-              <span className="font-semibold">En Vivo y Programados</span>
-            </div>
-
-            <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 dark:text-white text-balance leading-tight">
-              Todos los{" "}
-              <span className="bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent">
-                Partidos
-              </span>
-            </h1>
-
-            <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-pretty leading-relaxed">
-              Seguí los encuentros de todos los torneos en un solo lugar.
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {[
-              { label: "Total", value: stats.total, icon: Trophy, color: "from-[#ad45ff] to-[#a3b3ff]" },
-              { label: "En Vivo", value: stats.live, icon: Play, color: "from-red-500 to-rose-500" },
-              { label: "Hoy", value: stats.today, icon: CalendarIcon, color: "from-green-500 to-emerald-500" },
-              { label: "Próximos", value: stats.upcoming, icon: Clock, color: "from-amber-500 to-orange-500" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-5 border border-white/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300"
-              >
-                <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3 shadow-lg`}>
-                  <stat.icon className="w-5 h-5 text-white" />
-                </div>
-                <div className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                  {isLoading ? "..." : stat.value}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Hero - componente compartido F0 (patrón §1 de UI_PATTERNS) */}
+      <PageHero
+        badge={{ icon: Zap, text: "En Vivo y Programados" }}
+        title={
+          <>
+            Todos los <HeroHighlight>Partidos</HeroHighlight>
+          </>
+        }
+        subtitle="Seguí los encuentros de todos los torneos en un solo lugar."
+        stats={[
+          {
+            icon: Trophy,
+            value: isLoading ? "..." : stats.total,
+            label: "Total",
+          },
+          {
+            icon: Play,
+            value: isLoading ? "..." : stats.live,
+            label: "En Vivo",
+            gradient: "from-red-500 to-rose-500",
+            shadow: "shadow-red-500/20",
+          },
+          {
+            icon: CalendarIcon,
+            value: isLoading ? "..." : stats.today,
+            label: "Hoy",
+            gradient: "from-green-500 to-emerald-500",
+            shadow: "shadow-green-500/20",
+          },
+          {
+            icon: Clock,
+            value: isLoading ? "..." : stats.upcoming,
+            label: "Próximos",
+            gradient: "from-amber-500 to-orange-500",
+            shadow: "shadow-amber-500/20",
+          },
+        ]}
+      />
 
       <section className="pb-16 lg:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
