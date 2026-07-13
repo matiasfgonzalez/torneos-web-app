@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { ITorneo } from "@modules/torneos/types";
 import { TabsContent } from "@/components/ui/tabs";
 import {
@@ -8,7 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, Plus, Search, Clock, MapPin, Target, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Plus, Search, Clock, MapPin, Target, Filter, Zap } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import DialogAddEditMatch from "../DialogAddEditMatch";
 import DialogMatchDetails from "../DialogMatchDetails";
@@ -273,7 +275,17 @@ const TabsMatches = (props: TabsTournamentProps) => {
                         </TableCell>
                         <TableCell>{getStatusBadge(match.status)}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end space-x-2">
+                          <div className="flex justify-end items-center gap-2">
+                            <Button
+                              asChild
+                              size="sm"
+                              className="gap-1.5 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9c3ee6] hover:to-[#b66de6] text-white shadow-md shadow-[#ad45ff]/20"
+                            >
+                              <Link href={`/admin/partidos/${match.id}/cargar`}>
+                                <Zap className="h-3.5 w-3.5" />
+                                Cargar
+                              </Link>
+                            </Button>
                             {(match.status === MatchStatus.EN_JUEGO ||
                               match.status === MatchStatus.FINALIZADO ||
                               match.status === MatchStatus.ENTRETIEMPO) && (

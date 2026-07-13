@@ -31,6 +31,8 @@ export interface ITournament {
   startDate?: string;
   endDate?: string;
   userId?: string;
+  organizationId?: string;
+  walkoverScore?: number;
   createdAt: string;
   updatedAt: string;
 }

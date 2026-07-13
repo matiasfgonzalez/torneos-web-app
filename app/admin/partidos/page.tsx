@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -16,6 +17,7 @@ import {
   XCircle,
   AlertCircle,
   Shield,
+  Zap,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -273,12 +275,12 @@ interface Match {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
+              <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
                   {format(new Date(match.dateTime), "PPP", { locale: es })}
                 </div>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="-mr-2 hover:bg-zinc-800">
@@ -290,9 +292,6 @@ interface Match {
                     <DropdownMenuItem className="cursor-pointer" onClick={() => handleEdit(match)}>
                       Editar Detalles
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => handleEdit(match)}>
-                      Cargar Resultado
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-zinc-800" />
                     <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500" onClick={() => handleDelete(match.id)}>
                       Eliminar Partido
@@ -300,6 +299,17 @@ interface Match {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
+              {/* Acción principal: pantalla única mobile-first (N10) */}
+              <Button
+                asChild
+                className="mt-3 w-full gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-md shadow-violet-500/20"
+              >
+                <Link href={`/admin/partidos/${match.id}/cargar`}>
+                  <Zap className="h-4 w-4" />
+                  Cargar resultado
+                </Link>
+              </Button>
             </CardContent>
             
             {/* Hover Gradient Effect */}

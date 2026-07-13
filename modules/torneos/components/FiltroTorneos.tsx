@@ -60,29 +60,46 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [selectedStatus, setSelectedStatus] = useState("Todos");
+  const [selectedLocality, setSelectedLocality] = useState("Todas");
 
   const { tournaments } = props;
 
+  const localities = Array.from(
+    new Set(
+      tournaments
+        .map((t) => t.locality?.trim())
+        .filter((locality): locality is string => !!locality),
+    ),
+  ).sort((a, b) => a.localeCompare(b, "es"));
+
   const filteredTournaments = tournaments.filter((tournament) => {
+    const term = searchTerm.toLowerCase();
     const matchesSearch =
-      tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tournament.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      tournament.name.toLowerCase().includes(term) ||
+      tournament.description?.toLowerCase().includes(term) ||
+      tournament.locality?.toLowerCase().includes(term);
     const matchesCategory =
       selectedCategory === "Todas" || tournament.ageGroup === selectedCategory;
     const matchesStatus =
       selectedStatus === "Todos" || tournament.status === selectedStatus;
+    const matchesLocality =
+      selectedLocality === "Todas" || tournament.locality === selectedLocality;
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory && matchesStatus && matchesLocality;
   });
 
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("Todas");
     setSelectedStatus("Todos");
+    setSelectedLocality("Todas");
   };
 
   const hasActiveFilters =
-    searchTerm || selectedCategory !== "Todas" || selectedStatus !== "Todos";
+    searchTerm ||
+    selectedCategory !== "Todas" ||
+    selectedStatus !== "Todos" ||
+    selectedLocality !== "Todas";
 
   return (
     <>
@@ -182,6 +199,34 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                   ))}
                 </SelectContent>
               </Select>
+
+              {localities.length > 0 && (
+                <Select
+                  value={selectedLocality}
+                  onValueChange={setSelectedLocality}
+                >
+                  <SelectTrigger className="flex-1 h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] rounded-xl bg-gray-50/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-900 transition-all">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[#ad45ff]" />
+                      <SelectValue placeholder="Localidad" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 shadow-xl max-h-80">
+                    <SelectItem value="Todas" className="rounded-lg">
+                      Todas las localidades
+                    </SelectItem>
+                    {localities.map((locality) => (
+                      <SelectItem
+                        key={locality}
+                        value={locality}
+                        className="rounded-lg"
+                      >
+                        {locality}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </div>
@@ -232,6 +277,15 @@ const FiltroTorneos = (props: PropsFiltroTorneos) => {
                 {TOURNAMENT_STATUS_LABELS[
                   selectedStatus as keyof typeof TOURNAMENT_STATUS_LABELS
                 ] || selectedStatus}
+              </Badge>
+            )}
+            {selectedLocality !== "Todas" && (
+              <Badge
+                variant="secondary"
+                className="bg-[#ad45ff]/10 text-[#ad45ff] border-[#ad45ff]/20"
+              >
+                <MapPin className="w-3 h-3 mr-1" />
+                {selectedLocality}
               </Badge>
             )}
           </div>
