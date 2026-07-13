@@ -31,5 +31,13 @@ export const memberRoleSchema = z
   })
   .strict();
 
+// Suspender/reactivar una organización (admin de plataforma, N10)
+export const organizationStatusSchema = z
+  .object({
+    status: z.enum(["ACTIVA", "SUSPENDIDA"]),
+  })
+  .strict();
+
 export type OrganizationUpdateInput = z.infer<typeof organizationUpdateSchema>;
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
+export type OrganizationStatusInput = z.infer<typeof organizationStatusSchema>;

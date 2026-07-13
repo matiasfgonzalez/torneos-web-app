@@ -132,13 +132,16 @@ export default async function AdminDashboard() {
             </div>
             <div className="flex flex-wrap justify-center gap-3 pt-2">
               <Button asChild variant="outline">
+                <Link href="/admin/organizaciones">Organizaciones</Link>
+              </Button>
+              <Button asChild variant="outline">
                 <Link href="/admin/usuarios">Usuarios</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/admin/torneos">Torneos</Link>
+                <Link href="/admin/pagos">Pagos pendientes</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/admin/pagos">Pagos pendientes</Link>
+                <Link href="/admin/planes">Planes</Link>
               </Button>
             </div>
           </CardContent>
