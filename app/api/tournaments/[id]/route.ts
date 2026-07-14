@@ -7,6 +7,49 @@ import { validationErrorResponse } from "@/lib/validators/common";
 
 type tParams = Promise<{ id: string }>;
 
+/**
+ * GET /api/tournaments/[id] — torneo + equipos inscriptos + fases (F3).
+ *
+ * Lo consume el formulario de partido cuando se lo abre desde `/admin/partidos`,
+ * donde no hay un torneo en contexto: al elegir el torneo hay que traer SUS
+ * equipos (TournamentTeam, que es lo que referencian `homeTeamId`/`awayTeamId`)
+ * y sus fases. El diálogo viejo pedía `GET /api/teams` —una ruta que no existe
+ * (solo exporta POST)— y además mandaba ids de `Team`, no de `TournamentTeam`:
+ * programar un partido desde esa pantalla nunca funcionó.
+ */
+export async function GET(req: NextRequest, { params }: { params: tParams }) {
+  try {
+    const { id } = await params;
+
+    const tournament = await db.tournament.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        tournamentTeams: {
+          include: {
+            team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
+          },
+        },
+        tournamentPhases: { orderBy: { order: "asc" } },
+      },
+    });
+
+    if (!tournament) {
+      return NextResponse.json(
+        { error: "Torneo no encontrado" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(tournament, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener el torneo:", error);
+    return NextResponse.json(
+      { error: "Error al obtener el torneo" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: tParams },

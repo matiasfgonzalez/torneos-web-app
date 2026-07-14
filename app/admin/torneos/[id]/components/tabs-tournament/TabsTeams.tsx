@@ -21,11 +21,11 @@ import { ITeam } from "@modules/equipos/types/types";
 import { cn } from "@/lib/utils";
 import { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
 import { ITorneo } from "@modules/torneos/types";
-import DialogAddEditTeamTournament from "../DialogAddEditTeamTournament";
+import TournamentTeamSheet from "../TournamentTeamSheet";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
-import DialogAddEditTeamPlayer from "../DialogAddEditTeamPlayer";
+import TeamRosterSheet from "../TeamRosterSheet";
 
 interface TabsTeamsProps {
   tournamentData: ITorneo;
@@ -97,12 +97,8 @@ const TabsTeams = (props: TabsTeamsProps) => {
   // lo remontaría en cada render — react-hooks/static-components.
   const renderRowActions = (row: ITournamentTeam) => (
     <>
-      <DialogAddEditTeamPlayer
-        mode="create"
-        tournamentData={tournamentData}
-        teamData={row}
-      />
-      <DialogAddEditTeamTournament
+      <TeamRosterSheet teamData={row} />
+      <TournamentTeamSheet
         mode="edit"
         tournamentData={tournamentData}
         equipos={equipos}
@@ -334,7 +330,7 @@ const TabsTeams = (props: TabsTeamsProps) => {
               </p>
             </div>
           </div>
-          <DialogAddEditTeamTournament
+          <TournamentTeamSheet
             mode="create"
             tournamentData={tournamentData}
             equipos={equipos}

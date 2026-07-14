@@ -193,3 +193,45 @@ La paginación server-driven (`TODO.md` M7) se enchufa dentro del propio `DataTa
 ## 10. Auth (sign-in / sign-up)
 
 Ambas rutas envuelven su formulario en `<div className="min-h-screen flex flex-col premium-gradient-bg"><Header isLogued={false}/><main className="flex-grow flex items-center justify-center p-4">...</main><Footer/></div>` — el formulario en sí (`GoogleSignIn`/`GoogleSignUp`) es un `glass-card` centrado, sin su propio wrapper de página. Si agregás un tercer flujo de auth (ej. recuperar contraseña), replicá esta estructura exacta.
+
+## 11. Formulario del panel → `FormSheet` (F3, 2026-07-14)
+
+**Todo formulario de alta/edición del panel es un `<FormSheet>`** (`components/shared/form/FormSheet.tsx`): panel lateral en desktop, **pantalla completa en mobile**, con header y barra de acciones fijos (sticky) y solo el cuerpo scrolleando. Nunca más un `Dialog` centrado con 20 campos adentro y `max-h-[90vh] overflow-y-auto`: el botón "Guardar" quedaba fuera del viewport y había que scrollear hasta el fondo para encontrarlo.
+
+```tsx
+const form = useForm<TorneoFormValues>({
+  resolver: zodResolver(torneoFormSchema),   // z de "@/lib/zod-locale" → mensajes en español
+  defaultValues: isEditMode ? valuesFromTournament(t) : emptyValues(),
+});
+
+<FormSheet
+  form={form}
+  onSubmit={onSubmit}              // async: el loading sale de formState.isSubmitting
+  open={open} onOpenChange={setOpen}
+  trigger={<Button variant="brand">…</Button>}
+  icon={Trophy} title="Crear torneo" description="…"
+  submitLabel="Crear torneo"
+  size="lg"                        // lg (2 columnas) | md (1 columna)
+  draft={draft}                    // opcional: useFormDraft, solo en alta
+>
+  <FormSection icon={Trophy} title="Identidad">
+    <TextField control={form.control} name="name" label="Nombre" required />
+    <FieldRow>
+      <SelectField … /><DateField … />
+    </FieldRow>
+  </FormSection>
+</FormSheet>
+```
+
+Lo que resuelve una sola vez (no lo reimplementes por pantalla):
+
+1. **Loading de submit**: sale de `formState.isSubmitting` — el `onSubmit` es `async` y react-hook-form lo maneja. Nada de un `useState(isLoading)` apagado a mano en un `finally`.
+2. **Validación inline en español**: Zod 4 con locale `es` global (`lib/zod-locale.ts` → `z.config(z.locales.es())`). El esquema solo escribe `message` propio cuando el genérico no le dice al usuario **cómo** arreglar el campo. El error se muestra debajo del campo (`FormMessage`), el campo queda `aria-invalid` en rojo, el foco salta al primer inválido y el footer resume "Revisá los N campos marcados en rojo" con `role="alert"`.
+3. **Guarda de cambios sin guardar**: cerrar con el formulario sucio (X, Escape, click afuera, Cancelar) abre un `<ConfirmDialog>` — nunca el `confirm()` nativo. Misma guarda en las páginas de edición que no son sheet (noticias, usuarios).
+4. **Borradores** (`hooks/use-form-draft.ts`): autoguardado debounceado en `localStorage` y aviso "Tenés un borrador sin terminar" al reabrir. **Solo en altas**: en edición la fuente de verdad es la base, y un borrador viejo pisaría datos que pudo haber cambiado otra persona. Hoy lo usa el alta de torneo (25 campos).
+
+**Campos** (`components/shared/form/fields.tsx`): `TextField`, `NumberField`, `DateField` (`withTime` para `datetime-local`), `TextareaField`, `SelectField`, `SwitchField`, `ImageField` (Cloudinary: recibe el campo de la URL y el del `publicId`), `ColorField`, más `FormSection` (agrupa campos relacionados) y `FieldRow` (2-3 columnas que colapsan a 1 en mobile). Todos: label con barra de acento de marca, alto 48px (objetivo táctil), par `dark:` completo y error inline. **No escribas un `<Input>` con clases a mano dentro de un formulario del panel.**
+
+**Fechas**: viven en el estado del formulario como string (`"2026-07-14"`, `"2026-07-14T20:30"`), que es lo que hablan los inputs nativos, y se convierten al enviar con `lib/date-input.ts` (`toDateInput`/`toDateTimeInput`/`dateTimeInputToISO`). Formatear con `toISOString().split("T")[0]` —lo que hacían los formularios viejos— pasa a UTC y **corre el día** en Argentina.
+
+Referencias: `modules/torneos/components/admin/DialogAddTournaments.tsx` (el más completo: 4 secciones + borrador), `modules/partidos/components/admin/MatchFormSheet.tsx` (campos condicionales según el estado del partido y datos que se traen de la API al elegir el torneo), `app/admin/arbitros/DialogReferee.tsx` (el más simple).

@@ -36,7 +36,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { MatchDialog, type MatchToEdit } from "@/components/admin/match-dialog";
+import {
+  MatchFormSheet,
+  type MatchToEdit,
+} from "@modules/partidos/components/admin/MatchFormSheet";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "sonner";
@@ -356,10 +359,15 @@ export default function PartidosPage() {
         </div>
       )}
 
-      <MatchDialog
+      {/* `key`: cada partido seleccionado monta un formulario nuevo, así los
+          valores iniciales salen siempre del partido actual (sin resetear a
+          mano en un effect). */}
+      <MatchFormSheet
+        key={selectedMatch?.id ?? "new"}
+        mode={selectedMatch ? "edit" : "create"}
+        match={selectedMatch}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        matchToEdit={selectedMatch}
         onSuccess={fetchMatches}
       />
 

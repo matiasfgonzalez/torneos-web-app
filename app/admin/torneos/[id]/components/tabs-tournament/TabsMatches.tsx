@@ -3,9 +3,19 @@ import Link from "next/link";
 import { ITorneo } from "@modules/torneos/types";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Eye, MapPin, Target, Filter, Zap } from "lucide-react";
+import {
+  Calendar,
+  CalendarPlus,
+  Clock,
+  Edit,
+  Eye,
+  MapPin,
+  Target,
+  Filter,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState, useCallback, useTransition } from "react";
-import DialogAddEditMatch from "../DialogAddEditMatch";
+import { MatchFormSheet } from "@modules/partidos/components/admin/MatchFormSheet";
 import DialogMatchDetails from "../DialogMatchDetails";
 import { IPartidos, MatchStatus, MATCH_STATUS } from "@modules/partidos/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -94,13 +104,32 @@ const TabsMatches = (props: TabsTournamentProps) => {
         match.status === MatchStatus.ENTRETIEMPO) && (
         <DialogMatchDetails match={match} onUpdate={fetchMatches} />
       )}
-      <DialogAddEditMatch
+      <MatchFormSheet
         mode="edit"
-        tournamentData={tournamentData}
-        matchData={match}
+        tournament={tournamentData}
+        match={match}
         onSuccess={fetchMatches}
+        trigger={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-lg transition-colors hover:bg-brand/10 hover:text-brand"
+          >
+            <Edit className="h-4 w-4" />
+            <span className="sr-only">
+              Editar {match.homeTeam.team.name} vs {match.awayTeam.team.name}
+            </span>
+          </Button>
+        }
       />
     </>
+  );
+
+  const createMatchTrigger = (
+    <Button variant="brand" className="h-11 px-5 font-medium">
+      <CalendarPlus className="h-4 w-4" />
+      Programar partido
+    </Button>
   );
 
   const columns: DataTableColumn<IPartidos>[] = [
@@ -200,10 +229,11 @@ const TabsMatches = (props: TabsTournamentProps) => {
             </p>
           </div>
         </div>
-        <DialogAddEditMatch
+        <MatchFormSheet
           mode="create"
-          tournamentData={tournamentData}
+          tournament={tournamentData}
           onSuccess={fetchMatches}
+          trigger={createMatchTrigger}
         />
       </div>
 
@@ -242,10 +272,11 @@ const TabsMatches = (props: TabsTournamentProps) => {
             "Ningún partido coincide con los filtros aplicados.",
           // El botón de la empty state anterior no tenía onClick: no hacía nada.
           action: (
-            <DialogAddEditMatch
+            <MatchFormSheet
               mode="create"
-              tournamentData={tournamentData}
+              tournament={tournamentData}
               onSuccess={fetchMatches}
+              trigger={createMatchTrigger}
             />
           ),
         }}

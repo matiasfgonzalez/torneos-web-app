@@ -1,49 +1,94 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  createReferee,
-  updateReferee,
-} from "@modules/arbitros/actions/actions";
-import {
-  IReferee,
-  CERTIFICATION_LEVELS,
-  REFEREE_STATUS_LABELS,
-} from "@modules/arbitros/types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
-  Loader2,
-  Plus,
-  Edit,
-  User,
-  Mail,
-  Phone,
   Award,
   Calendar,
-  MapPin,
   CreditCard,
+  Edit,
   Image as ImageIcon,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
   Shield,
+  User,
 } from "lucide-react";
+
+import { RefereeStatus } from "@prisma/client";
+import { z } from "@/lib/zod-locale";
+import { Button } from "@/components/ui/button";
+import { FormSheet } from "@/components/shared/form/FormSheet";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { RefereeStatus } from "@prisma/client";
+  DateField,
+  FieldRow,
+  FormSection,
+  SelectField,
+  TextField,
+} from "@/components/shared/form/fields";
+import { toDateInput } from "@/lib/date-input";
+import { createReferee, updateReferee } from "@modules/arbitros/actions/actions";
+import {
+  CERTIFICATION_LEVELS,
+  REFEREE_STATUS_LABELS,
+  type IReferee,
+} from "@modules/arbitros/types";
+
+/**
+ * Alta y edición de árbitro (F3). Migrado de 9 `useState` sueltos + validación
+ * "el botón se deshabilita si el nombre está vacío" a react-hook-form + Zod en
+ * el `<FormSheet>` común (mismo loading, misma guarda de cambios sin guardar y
+ * mismos mensajes de error que el resto del panel).
+ */
+
+const STATUS_OPTIONS = Object.entries(REFEREE_STATUS_LABELS).map(
+  ([value, label]) => ({ value, label }),
+);
+
+const refereeFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, "El nombre debe tener al menos 3 caracteres")
+    .max(120, "El nombre no puede superar los 120 caracteres"),
+  nationalId: z.string().max(20, "Máximo 20 caracteres"),
+  birthDate: z.string(),
+  nationality: z.string().max(80, "Máximo 80 caracteres"),
+  imageUrl: z.url("Pegá el link completo de la foto (https://…)").or(z.literal("")),
+  email: z.email("Revisá el email: falta el @ o el dominio").or(z.literal("")),
+  phone: z.string().max(30, "Máximo 30 caracteres"),
+  certificationLevel: z.string(),
+  status: z.enum(RefereeStatus),
+});
+
+type RefereeFormValues = z.infer<typeof refereeFormSchema>;
+
+const emptyValues = (): RefereeFormValues => ({
+  name: "",
+  nationalId: "",
+  birthDate: "",
+  nationality: "",
+  imageUrl: "",
+  email: "",
+  phone: "",
+  certificationLevel: CERTIFICATION_LEVELS[0].value,
+  status: "ACTIVO",
+});
+
+const valuesFromReferee = (referee: IReferee): RefereeFormValues => ({
+  name: referee.name ?? "",
+  nationalId: referee.nationalId ?? "",
+  birthDate: toDateInput(referee.birthDate),
+  nationality: referee.nationality ?? "",
+  imageUrl: referee.imageUrl ?? "",
+  email: referee.email ?? "",
+  phone: referee.phone ?? "",
+  certificationLevel: referee.certificationLevel || CERTIFICATION_LEVELS[0].value,
+  status: referee.status,
+});
 
 interface DialogRefereeProps {
   readonly mode: "create" | "edit";
@@ -56,396 +101,169 @@ export default function DialogReferee({
   referee,
   onSuccess,
 }: DialogRefereeProps) {
+  const isEdit = mode === "edit";
   const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Form fields
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [nationalId, setNationalId] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [nationality, setNationality] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [certificationLevel, setCertificationLevel] = useState("Nivel 1");
-  const [status, setStatus] = useState<RefereeStatus>("ACTIVO");
+  const form = useForm<RefereeFormValues>({
+    resolver: zodResolver(refereeFormSchema),
+    defaultValues: isEdit && referee ? valuesFromReferee(referee) : emptyValues(),
+  });
 
-  // El formulario se precarga al abrir el diálogo (o si cambia el árbitro).
-  // Es estado DERIVADO de props: se ajusta durante el render comparando una
-  // clave con la anterior, no con un useEffect + setState — eso renderiza dos
-  // veces (una con el form vacío) y el linter lo rechaza
-  // (react-hooks/set-state-in-effect). Ver docs/AGENT_RULES.md.
-  const formKey = `${open}|${mode}|${referee?.id ?? "new"}`;
-  const [lastFormKey, setLastFormKey] = useState(formKey);
-
-  if (formKey !== lastFormKey) {
-    setLastFormKey(formKey);
-
-    if (open && referee && mode === "edit") {
-      setName(referee.name || "");
-      setEmail(referee.email || "");
-      setPhone(referee.phone || "");
-      setNationalId(referee.nationalId || "");
-      setBirthDate(
-        referee.birthDate
-          ? new Date(referee.birthDate).toISOString().split("T")[0]
-          : "",
-      );
-      setNationality(referee.nationality || "");
-      setImageUrl(referee.imageUrl || "");
-      setCertificationLevel(referee.certificationLevel || "Nivel 1");
-      setStatus(referee.status);
-    } else if (open && mode === "create") {
-      setName("");
-      setEmail("");
-      setPhone("");
-      setNationalId("");
-      setBirthDate("");
-      setNationality("");
-      setImageUrl("");
-      setCertificationLevel("Nivel 1");
-      setStatus("ACTIVO");
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const onSubmit = async (data: RefereeFormValues) => {
+    const payload = {
+      name: data.name,
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+      nationalId: data.nationalId || undefined,
+      birthDate: data.birthDate || undefined,
+      nationality: data.nationality || undefined,
+      imageUrl: data.imageUrl || undefined,
+      certificationLevel: data.certificationLevel || undefined,
+      // El estado solo se toca al editar: uno nuevo nace ACTIVO
+      status: isEdit ? data.status : undefined,
+    };
 
     try {
-      const data = {
-        name,
-        email: email || undefined,
-        phone: phone || undefined,
-        nationalId: nationalId || undefined,
-        birthDate: birthDate || undefined,
-        nationality: nationality || undefined,
-        imageUrl: imageUrl || undefined,
-        certificationLevel: certificationLevel || undefined,
-        status: mode === "edit" ? status : undefined,
-      };
+      const res =
+        isEdit && referee
+          ? await updateReferee(referee.id, payload)
+          : await createReferee(payload);
 
-      let res;
-      if (mode === "create") {
-        res = await createReferee(data);
-      } else {
-        if (!referee) return;
-        res = await updateReferee(referee.id, data);
+      if (!res.success) {
+        toast.error(res.error || "No se pudo guardar el árbitro");
+        return;
       }
 
-      if (res.success) {
-        toast.success(
-          mode === "create"
-            ? "Árbitro creado correctamente"
-            : "Árbitro actualizado correctamente",
-        );
-        setOpen(false);
-        onSuccess();
-      } else {
-        toast.error(res.error || "Error en la operación");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error inesperado");
-    } finally {
-      setIsLoading(false);
+      toast.success(isEdit ? "Árbitro guardado" : "Árbitro creado");
+      setOpen(false);
+      form.reset(isEdit ? data : emptyValues());
+      onSuccess();
+    } catch {
+      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {mode === "create" ? (
-          <Button className="bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 transition-all duration-300 rounded-xl px-6 py-6 text-base font-semibold cursor-pointer">
-            <Plus className="w-5 h-5 mr-2" /> Nuevo Árbitro
-          </Button>
-        ) : (
+    <FormSheet
+      form={form}
+      onSubmit={onSubmit}
+      open={open}
+      onOpenChange={setOpen}
+      size="md"
+      icon={isEdit ? Edit : Award}
+      title={isEdit ? "Editar árbitro" : "Nuevo árbitro"}
+      description={isEdit ? referee?.name : "Solo el nombre es obligatorio"}
+      submitLabel={isEdit ? "Guardar cambios" : "Crear árbitro"}
+      submitIcon={isEdit ? undefined : Plus}
+      trigger={
+        isEdit ? (
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9 rounded-lg border-brand/50 text-brand hover:bg-brand/10 hover:border-brand transition-all"
-            title="Editar"
+            className="h-9 w-9 rounded-lg border-brand/50 text-brand transition-all hover:border-brand hover:bg-brand/10"
+            aria-label={`Editar ${referee?.name ?? "árbitro"}`}
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="h-4 w-4" />
           </Button>
-        )}
-      </DialogTrigger>
+        ) : (
+          <Button variant="brand" className="h-12 px-6 text-base font-semibold">
+            <Plus className="h-5 w-5" />
+            Nuevo árbitro
+          </Button>
+        )
+      }
+    >
+      <FormSection icon={User} title="Datos personales">
+        <TextField
+          control={form.control}
+          name="name"
+          label="Nombre completo"
+          icon={User}
+          required
+          placeholder="Ej: Néstor Pitana"
+          autoComplete="name"
+        />
+        <FieldRow>
+          <TextField
+            control={form.control}
+            name="nationalId"
+            label="DNI"
+            icon={CreditCard}
+            inputMode="numeric"
+            placeholder="12345678"
+          />
+          <DateField
+            control={form.control}
+            name="birthDate"
+            label="Fecha de nacimiento"
+            icon={Calendar}
+          />
+        </FieldRow>
+        <FieldRow>
+          <TextField
+            control={form.control}
+            name="nationality"
+            label="Nacionalidad"
+            icon={MapPin}
+            placeholder="Ej: Argentina"
+          />
+          <TextField
+            control={form.control}
+            name="imageUrl"
+            label="Foto (URL)"
+            icon={ImageIcon}
+            type="url"
+            inputMode="url"
+            placeholder="https://ejemplo.com/foto.jpg"
+          />
+        </FieldRow>
+      </FormSection>
 
-      <DialogContent className="w-[95vw] max-w-[400px] sm:max-w-[600px] md:max-w-[750px] max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-0 shadow-2xl rounded-2xl p-0">
-        {/* Barra de acento */}
-        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-t-2xl" />
+      <FormSection icon={Phone} title="Contacto">
+        <FieldRow>
+          <TextField
+            control={form.control}
+            name="email"
+            label="Email"
+            icon={Mail}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="arbitro@email.com"
+          />
+          <TextField
+            control={form.control}
+            name="phone"
+            label="Teléfono"
+            icon={Phone}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="+54 9 343 123-4567"
+          />
+        </FieldRow>
+      </FormSection>
 
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4">
-          <DialogHeader className="space-y-3">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-brand to-brand-mid rounded-xl shadow-lg shadow-brand/30">
-                {mode === "create" ? (
-                  <Award className="w-6 h-6 text-white" />
-                ) : (
-                  <Edit className="w-6 h-6 text-white" />
-                )}
-              </div>
-              <div>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {mode === "create" ? "Nuevo Árbitro" : "Editar Árbitro"}
-                </DialogTitle>
-                <DialogDescription className="text-gray-500 dark:text-gray-400 mt-1">
-                  {mode === "create"
-                    ? "Registra un nuevo árbitro en el sistema"
-                    : "Modifica la información del árbitro"}
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6">
-          {/* Sección: Información Personal */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                Información Personal
-              </h3>
-            </div>
-
-            {/* Nombre */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                <User className="w-3 h-3" />
-                Nombre completo <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Ej: Néstor Pitana"
-                disabled={isLoading}
-                className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* DNI */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <CreditCard className="w-3 h-3" />
-                  DNI / Documento
-                </Label>
-                <Input
-                  value={nationalId}
-                  onChange={(e) => setNationalId(e.target.value)}
-                  placeholder="Ej: 12345678"
-                  disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
-                />
-              </div>
-
-              {/* Fecha de nacimiento */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Calendar className="w-3 h-3" />
-                  Fecha de nacimiento
-                </Label>
-                <Input
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
-                />
-              </div>
-            </div>
-
-            {/* Nacionalidad */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                <MapPin className="w-3 h-3" />
-                Nacionalidad
-              </Label>
-              <Input
-                value={nationality}
-                onChange={(e) => setNationality(e.target.value)}
-                placeholder="Ej: Argentina"
-                disabled={isLoading}
-                className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
-              />
-            </div>
-
-            {/* URL de imagen */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                <ImageIcon className="w-3 h-3" />
-                URL de foto
-              </Label>
-              <div className="flex gap-3">
-                <Input
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://ejemplo.com/foto.jpg"
-                  disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand flex-1"
-                />
-                {imageUrl && (
-                  <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-600 shrink-0">
-                    <img
-                      src={imageUrl}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sección: Contacto */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
-                <Phone className="h-4 w-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                Información de Contacto
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Email */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Mail className="w-3 h-3" />
-                  Email
-                </Label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="arbitro@email.com"
-                  disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
-                />
-              </div>
-
-              {/* Teléfono */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Phone className="w-3 h-3" />
-                  Teléfono
-                </Label>
-                <Input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+54 9 11 1234-5678"
-                  disabled={isLoading}
-                  className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand focus:border-brand"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Sección: Profesional */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-100 dark:border-gray-700 space-y-4">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-gradient-to-br from-brand to-brand-mid rounded-lg">
-                <Shield className="h-4 w-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                Información Profesional
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Nivel de certificación */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Award className="w-3 h-3" />
-                  Nivel de certificación
-                </Label>
-                <Select
-                  value={certificationLevel}
-                  onValueChange={setCertificationLevel}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CERTIFICATION_LEVELS.map((level) => (
-                      <SelectItem key={level.value} value={level.value}>
-                        {level.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Estado (solo en modo edición) */}
-              {mode === "edit" && (
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                    <Shield className="w-3 h-3" />
-                    Estado
-                  </Label>
-                  <Select
-                    value={status}
-                    onValueChange={(v) => setStatus(v as RefereeStatus)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(REFEREE_STATUS_LABELS).map(
-                        ([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={isLoading}
-              className="px-6 h-11 rounded-xl border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 mt-2"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || !name.trim()}
-              className="px-6 h-11 mt-2 bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Procesando...
-                </>
-              ) : mode === "edit" ? (
-                "Guardar cambios"
-              ) : (
-                "Crear árbitro"
-              )}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <FormSection icon={Shield} title="Ficha profesional">
+        <FieldRow>
+          <SelectField
+            control={form.control}
+            name="certificationLevel"
+            label="Nivel de certificación"
+            icon={Award}
+            options={CERTIFICATION_LEVELS}
+          />
+          {isEdit && (
+            <SelectField
+              control={form.control}
+              name="status"
+              label="Estado"
+              icon={Shield}
+              options={STATUS_OPTIONS}
+            />
+          )}
+        </FieldRow>
+      </FormSection>
+    </FormSheet>
   );
 }

@@ -6,6 +6,8 @@ export interface ITeam {
   organizationId: string;
   description: string | null;
   logoUrl: string | null;
+  /** Public ID de Cloudinary: hace falta para reemplazar/borrar el escudo. */
+  logoPublicId: string | null;
   enabled: boolean;
   deletedAt: Date | null;
   shortName: string | null;

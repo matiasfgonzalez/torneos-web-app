@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { INoticia } from "@modules/noticias/types";
 import { formatDate } from "@/lib/formatDate";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 export default function EditNoticia() {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function EditNoticia() {
   const [loadingArticle, setLoadingArticle] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -142,11 +144,11 @@ export default function EditNoticia() {
     }
   };
 
+  // Sin `confirm()` nativo (lo prohíbe AGENT_RULES): la confirmación de descarte
+  // usa el <ConfirmDialog> del panel, igual que el FormSheet de los diálogos.
   const handleCancel = () => {
     if (hasChanges) {
-      if (confirm("¿Estás seguro? Los cambios no guardados se perderán.")) {
-        router.push(`/admin/noticias`);
-      }
+      setDiscardOpen(true);
     } else {
       router.push(`/admin/noticias`);
     }
@@ -594,6 +596,17 @@ export default function EditNoticia() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={discardOpen}
+        onOpenChange={setDiscardOpen}
+        tone="warning"
+        title="¿Descartar los cambios?"
+        description="Los cambios que hiciste en esta noticia no se guardaron y se van a perder."
+        confirmLabel="Descartar"
+        cancelLabel="Seguir editando"
+        onConfirm={() => router.push("/admin/noticias")}
+      />
     </div>
   );
 }

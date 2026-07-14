@@ -1,135 +1,122 @@
 "use client";
 
 import { useState } from "react";
-import { z } from "zod";
-
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import {
+  Calendar,
+  CalendarClock,
+  Edit,
+  Eye,
+  FileText,
+  Flag,
+  Gavel,
+  Hash,
+  ImageIcon,
+  MapPin,
+  Plus,
+  Repeat,
+  Shield,
+  Trophy,
+  Users,
+} from "lucide-react";
+
+import { z } from "@/lib/zod-locale";
+import { Button } from "@/components/ui/button";
+import { FormSheet } from "@/components/shared/form/FormSheet";
+import {
+  DateField,
+  FieldRow,
+  FormSection,
+  ImageField,
+  NumberField,
+  SelectField,
+  SwitchField,
+  TextField,
+  TextareaField,
+} from "@/components/shared/form/fields";
+import { useFormDraft } from "@/hooks/use-form-draft";
+import { toDateInput, toDateTimeInput, dateTimeInputToISO } from "@/lib/date-input";
 import {
   AGE_GROUP_OPTIONS,
   GENDER_OPTIONS,
   TOURNAMENT_FORMAT_OPTIONS,
   TOURNAMENT_STATUS_OPTIONS,
 } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
+import type { ITorneo } from "@modules/torneos/types";
 
-import { Input } from "@/components/ui/input";
+/**
+ * Alta y edición de torneo (F3): 25 campos en un `<FormSheet>` (panel lateral
+ * en desktop, pantalla completa en mobile) con validación inline en español y
+ * autoguardado de borrador en el alta.
+ *
+ * Antes era un `Dialog` centrado de 1146 líneas con el botón "Guardar" al final
+ * de un scroll interno y el JSX de cada campo escrito a mano.
+ */
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form, // Importar el componente Form de Shadcn
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
-import { Edit, Plus, Loader2 } from "lucide-react";
-import { ITorneo } from "@modules/torneos/types";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-
-// Esquema Zod mejorado con validaciones robustas
-const tournamentSchema = z
+// Las fechas viven como string ("2026-07-14"), que es lo que hablan los inputs
+// nativos; se convierten recién al armar el payload (ver lib/date-input.ts).
+const tournamentFormSchema = z
   .object({
     name: z
       .string()
+      .trim()
       .min(3, "El nombre debe tener al menos 3 caracteres")
       .max(100, "El nombre no puede superar los 100 caracteres"),
     description: z
       .string()
-      .max(500, "La descripción no puede superar los 500 caracteres")
-      .optional(),
-    // Categoría en 3 campos (M13)
-    ageGroup: z.string().min(1, "La categoría es obligatoria"),
-    gender: z.string().min(1, "El género es obligatorio"),
+      .max(500, "La descripción no puede superar los 500 caracteres"),
+    ageGroup: z.string().min(1, "Elegí la categoría"),
+    gender: z.string().min(1, "Elegí el género"),
     division: z
       .string()
-      .max(30, "La división no puede superar los 30 caracteres")
-      .optional(),
+      .max(30, "La división no puede superar los 30 caracteres"),
     locality: z
       .string()
+      .trim()
       .min(3, "La localidad debe tener al menos 3 caracteres")
       .max(50, "La localidad no puede superar los 50 caracteres"),
-    startDate: z.date(),
-    endDate: z.date().optional(),
-    logoUrl: z.string().optional().nullable(),
-    logoPublicId: z.string().optional().nullable(),
-    liga: z
-      .string()
-      .max(100, "La liga no puede superar los 100 caracteres")
-      .optional(),
-    format: z.string().min(1, "El formato es obligatorio"),
+    startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
+    endDate: z.string(),
+    nextMatch: z.string(),
+    logoUrl: z.string().nullish(),
+    logoPublicId: z.string().nullish(),
+    liga: z.string().max(100, "La liga no puede superar los 100 caracteres"),
+    format: z.string().min(1, "Elegí el formato"),
     homeAndAway: z.boolean(),
-    nextMatch: z.date().optional(),
-    // Nuevos campos
-    status: z.string().min(1, "El estado es obligatorio"),
+    status: z.string().min(1, "Elegí el estado"),
     enabled: z.boolean(),
     rules: z
       .string()
-      .max(2000, "El reglamento no puede superar los 2000 caracteres")
-      .optional(),
+      .max(2000, "El reglamento no puede superar los 2000 caracteres"),
     trophy: z
       .string()
-      .max(500, "La descripción del premio no puede superar los 500 caracteres")
-      .optional(),
+      .max(500, "La descripción del premio no puede superar los 500 caracteres"),
     // Configuración deportiva (N7)
-    pointsWin: z.number().int().min(0).max(10),
-    pointsDraw: z.number().int().min(0).max(10),
-    pointsLoss: z.number().int().min(-10).max(10),
-    walkoverScore: z.number().int().min(0).max(20),
+    pointsWin: z.number("Ingresá un número").int().min(0).max(10),
+    pointsDraw: z.number("Ingresá un número").int().min(0).max(10),
+    pointsLoss: z.number("Ingresá un número").int().min(-10).max(10),
+    walkoverScore: z.number("Ingresá un número").int().min(0).max(20),
     tiebreakerPreset: z.string(),
     // Sanciones automáticas (N8): 0 desactiva
-    yellowsForSuspension: z.number().int().min(0).max(50),
-    matchesPerRedCard: z.number().int().min(0).max(20),
+    yellowsForSuspension: z.number("Ingresá un número").int().min(0).max(50),
+    matchesPerRedCard: z.number("Ingresá un número").int().min(0).max(20),
+  })
+  .refine((data) => !data.endDate || data.endDate >= data.startDate, {
+    message: "La fecha de fin no puede ser anterior a la de inicio",
+    path: ["endDate"],
   })
   .refine(
-    (data) => {
-      if (data.endDate && data.startDate) {
-        return data.endDate.getTime() >= data.startDate.getTime();
-      }
-      return true;
-    },
+    (data) => !data.nextMatch || data.nextMatch.slice(0, 10) >= data.startDate,
     {
-      message: "La fecha de fin no puede ser anterior a la fecha de inicio.",
-      path: ["endDate"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.nextMatch && data.startDate) {
-        return data.nextMatch.getTime() >= data.startDate.getTime();
-      }
-      return true;
-    },
-    {
-      message: "El próximo partido debe ser posterior a la fecha de inicio.",
+      message: "El próximo partido no puede ser anterior al inicio del torneo",
       path: ["nextMatch"],
     },
   );
 
-type TournamentFormValues = z.infer<typeof tournamentSchema>;
-
-interface PropsDialogAddTournaments {
-  tournament?: ITorneo;
-}
+type TournamentFormValues = z.infer<typeof tournamentFormSchema>;
 
 // Presets de desempate (N7). El orden de criterios se guarda como array en
 // Tournament.tiebreakers; acá se expone como opciones legibles.
@@ -151,7 +138,11 @@ const TIEBREAKER_PRESETS: Record<
   },
 };
 
-// Deriva el preset a partir del array guardado (o el default si no coincide)
+const TIEBREAKER_OPTIONS = Object.entries(TIEBREAKER_PRESETS).map(
+  ([value, preset]) => ({ value, label: preset.label }),
+);
+
+/** Deriva el preset a partir del array guardado (o el default si no coincide). */
 const presetFromTiebreakers = (tiebreakers: unknown): string => {
   if (Array.isArray(tiebreakers)) {
     const serialized = JSON.stringify(tiebreakers);
@@ -163,983 +154,377 @@ const presetFromTiebreakers = (tiebreakers: unknown): string => {
   return "DIF_FIRST";
 };
 
-// Función helper para formatear fechas
-const formatDateForAPI = (date: Date | undefined): string | undefined => {
-  return date ? date.toISOString().split("T")[0] : undefined;
-};
+const emptyValues = (): TournamentFormValues => ({
+  name: "",
+  description: "",
+  ageGroup: AGE_GROUP_OPTIONS[0].value,
+  gender: GENDER_OPTIONS[0].value,
+  division: "",
+  locality: "",
+  startDate: "",
+  endDate: "",
+  nextMatch: "",
+  logoUrl: null,
+  logoPublicId: null,
+  liga: "",
+  format: TOURNAMENT_FORMAT_OPTIONS[0].value,
+  homeAndAway: false,
+  status: TOURNAMENT_STATUS_OPTIONS[0].value,
+  enabled: true,
+  rules: "",
+  trophy: "",
+  pointsWin: 3,
+  pointsDraw: 1,
+  pointsLoss: 0,
+  walkoverScore: 3,
+  tiebreakerPreset: "DIF_FIRST",
+  yellowsForSuspension: 5,
+  matchesPerRedCard: 1,
+});
 
-// Hook personalizado para manejar el submit
-const useSubmitTournament = (isEditMode: boolean, tournament?: ITorneo) => {
-  const [isLoading, setIsLoading] = useState(false);
+const valuesFromTournament = (t: ITorneo): TournamentFormValues => ({
+  name: t.name ?? "",
+  description: t.description ?? "",
+  ageGroup: t.ageGroup || AGE_GROUP_OPTIONS[0].value,
+  gender: t.gender || GENDER_OPTIONS[0].value,
+  division: t.division ?? "",
+  locality: t.locality ?? "",
+  startDate: toDateInput(t.startDate),
+  endDate: toDateInput(t.endDate),
+  nextMatch: toDateTimeInput(t.nextMatch),
+  logoUrl: t.logoUrl ?? null,
+  logoPublicId: t.logoPublicId ?? null,
+  liga: t.liga ?? "",
+  format: t.format || TOURNAMENT_FORMAT_OPTIONS[0].value,
+  homeAndAway: t.homeAndAway ?? false,
+  status: t.status || TOURNAMENT_STATUS_OPTIONS[0].value,
+  enabled: t.enabled ?? true,
+  rules: t.rules ?? "",
+  trophy: t.trophy ?? "",
+  pointsWin: t.pointsWin ?? 3,
+  pointsDraw: t.pointsDraw ?? 1,
+  pointsLoss: t.pointsLoss ?? 0,
+  walkoverScore: t.walkoverScore ?? 3,
+  tiebreakerPreset: presetFromTiebreakers(t.tiebreakers),
+  yellowsForSuspension: t.yellowsForSuspension ?? 5,
+  matchesPerRedCard: t.matchesPerRedCard ?? 1,
+});
+
+interface PropsDialogAddTournaments {
+  tournament?: ITorneo;
+}
+
+const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
+  const isEditMode = !!tournament;
+  const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const submitTournament = async (data: TournamentFormValues) => {
-    try {
-      setIsLoading(true);
-
-      const { tiebreakerPreset, ...rest } = data;
-      const payload = {
-        ...rest,
-        startDate: formatDateForAPI(data.startDate),
-        endDate: formatDateForAPI(data.endDate),
-        nextMatch: data.nextMatch ? data.nextMatch.toISOString() : undefined,
-        // Preset → array de criterios de desempate (N7)
-        tiebreakers: (
-          TIEBREAKER_PRESETS[tiebreakerPreset] ?? TIEBREAKER_PRESETS.DIF_FIRST
-        ).value,
-      };
-
-      const method = isEditMode ? "PATCH" : "POST";
-      const url = isEditMode
-        ? `/api/tournaments/${tournament?.id}`
-        : `/api/tournaments`;
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        toast.success(
-          isEditMode
-            ? "Torneo editado correctamente"
-            : "Torneo creado correctamente",
-        );
-        router.refresh();
-        return true;
-      } else {
-        const errorData = await res.json();
-        toast.error(
-          errorData.message ||
-            (isEditMode
-              ? "Error al editar el torneo"
-              : "Error al crear el torneo"),
-        );
-        console.error("Error al procesar torneo:", errorData);
-        return false;
-      }
-    } catch (err) {
-      const errorMessage = isEditMode
-        ? "Error al editar el torneo"
-        : "Error al crear el torneo";
-      toast.error(`${errorMessage}: ${err}`);
-      console.error("Error en la petición:", err);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { submitTournament, isLoading };
-};
-
-const DialogAddTournaments = (props: PropsDialogAddTournaments) => {
-  const { tournament } = props;
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const isEditMode = !!tournament;
-
-  const { submitTournament, isLoading } = useSubmitTournament(
-    isEditMode,
-    tournament,
-  );
-
-  // Inicializar useForm con zodResolver y defaultValues
   const form = useForm<TournamentFormValues>({
-    resolver: zodResolver(tournamentSchema),
-    defaultValues: {
-      name: isEditMode && tournament?.name ? tournament.name : "",
-      description: isEditMode ? tournament?.description || "" : "",
-      ageGroup: isEditMode
-        ? tournament?.ageGroup || AGE_GROUP_OPTIONS[0].value
-        : AGE_GROUP_OPTIONS[0].value,
-      gender: isEditMode
-        ? tournament?.gender || GENDER_OPTIONS[0].value
-        : GENDER_OPTIONS[0].value,
-      division: isEditMode ? tournament?.division || "" : "",
-      locality: isEditMode ? tournament?.locality || "" : "",
-      startDate:
-        isEditMode && tournament?.startDate
-          ? new Date(tournament.startDate)
-          : undefined,
-      endDate:
-        isEditMode && tournament?.endDate
-          ? new Date(tournament.endDate)
-          : undefined,
-      logoUrl: isEditMode ? tournament?.logoUrl || null : null,
-      logoPublicId: isEditMode ? tournament?.logoPublicId || null : null,
-      liga: isEditMode ? tournament?.liga || "" : "",
-      format: isEditMode
-        ? tournament?.format || TOURNAMENT_FORMAT_OPTIONS[0].value
-        : TOURNAMENT_FORMAT_OPTIONS[0].value,
-      homeAndAway: isEditMode ? tournament?.homeAndAway || false : false,
-      nextMatch:
-        isEditMode && tournament?.nextMatch
-          ? new Date(tournament.nextMatch)
-          : undefined,
-      // Nuevos campos
-      status: isEditMode
-        ? tournament?.status || TOURNAMENT_STATUS_OPTIONS[0].value
-        : TOURNAMENT_STATUS_OPTIONS[0].value,
-      enabled: isEditMode ? (tournament?.enabled ?? true) : true,
-      rules: isEditMode ? tournament?.rules || "" : "",
-      trophy: isEditMode ? tournament?.trophy || "" : "",
-      // Configuración deportiva (N7)
-      pointsWin: isEditMode ? (tournament?.pointsWin ?? 3) : 3,
-      pointsDraw: isEditMode ? (tournament?.pointsDraw ?? 1) : 1,
-      pointsLoss: isEditMode ? (tournament?.pointsLoss ?? 0) : 0,
-      walkoverScore: isEditMode ? (tournament?.walkoverScore ?? 3) : 3,
-      tiebreakerPreset: isEditMode
-        ? presetFromTiebreakers(tournament?.tiebreakers)
-        : "DIF_FIRST",
-      // Sanciones automáticas (N8)
-      yellowsForSuspension: isEditMode
-        ? (tournament?.yellowsForSuspension ?? 5)
-        : 5,
-      matchesPerRedCard: isEditMode ? (tournament?.matchesPerRedCard ?? 1) : 1,
-    },
+    resolver: zodResolver(tournamentFormSchema),
+    defaultValues: isEditMode ? valuesFromTournament(tournament) : emptyValues(),
+  });
+
+  // Solo en el alta: en edición la fuente de verdad es la base (ver use-form-draft)
+  const draft = useFormDraft(form, {
+    key: "tournament:new",
+    enabled: !isEditMode,
   });
 
   const onSubmit = async (data: TournamentFormValues) => {
-    const success = await submitTournament(data);
-    if (success) {
-      setIsDialogOpen(false);
-      form.reset();
+    const { tiebreakerPreset, nextMatch, ...rest } = data;
+
+    const payload = {
+      ...rest,
+      nextMatch: dateTimeInputToISO(nextMatch),
+      endDate: data.endDate || null,
+      division: data.division || null,
+      liga: data.liga || null,
+      description: data.description || null,
+      rules: data.rules || null,
+      trophy: data.trophy || null,
+      tiebreakers: (
+        TIEBREAKER_PRESETS[tiebreakerPreset] ?? TIEBREAKER_PRESETS.DIF_FIRST
+      ).value,
+    };
+
+    try {
+      const res = await fetch(
+        isEditMode ? `/api/tournaments/${tournament.id}` : "/api/tournaments",
+        {
+          method: isEditMode ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        toast.error(
+          error?.error ??
+            (isEditMode
+              ? "No se pudo guardar el torneo"
+              : "No se pudo crear el torneo"),
+        );
+        return;
+      }
+
+      toast.success(isEditMode ? "Torneo guardado" : "Torneo creado");
+      draft.clear();
+      setOpen(false);
+      form.reset(isEditMode ? data : emptyValues());
+      router.refresh();
+    } catch {
+      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
     }
   };
 
-  const handleCancel = () => {
-    setIsDialogOpen(false);
-    form.reset();
-  };
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        {isEditMode ? (
+    <FormSheet
+      form={form}
+      onSubmit={onSubmit}
+      open={open}
+      onOpenChange={setOpen}
+      draft={isEditMode ? undefined : draft}
+      icon={isEditMode ? Edit : Trophy}
+      title={isEditMode ? "Editar torneo" : "Crear torneo"}
+      description={
+        isEditMode ? tournament.name : "Los datos se guardan mientras escribís"
+      }
+      submitLabel={isEditMode ? "Guardar cambios" : "Crear torneo"}
+      submitIcon={isEditMode ? undefined : Plus}
+      trigger={
+        isEditMode ? (
           <Button
-            variant="secondary"
-            size="sm"
-            asChild
-            className="bg-green-600 hover:bg-green-700 text-white cursor-pointer rounded-xl shadow-lg"
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-lg border-brand/50 text-brand hover:border-brand hover:bg-brand/10"
+            aria-label={`Editar ${tournament.name}`}
           >
-            <div>
-              <Edit className="h-4 w-4" />
-            </div>
+            <Edit className="h-4 w-4" />
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-8 py-6 text-base font-semibold cursor-pointer">
-            <Plus className="mr-2 h-5 w-5" />
-            Crear Torneo
+          <Button variant="brand" className="h-12 px-6 text-base font-semibold">
+            <Plus className="h-5 w-5" />
+            Crear torneo
           </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[750px] max-w-[95vw] max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl">
-        {/* Header con gradiente */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand via-brand-2 to-brand rounded-t-2xl" />
+        )
+      }
+    >
+      <FormSection icon={Trophy} title="Identidad">
+        <TextField
+          control={form.control}
+          name="name"
+          label="Nombre del torneo"
+          icon={Trophy}
+          required
+          placeholder="Ej: Copa de Verano 2026"
+        />
+        <FieldRow>
+          <TextField
+            control={form.control}
+            name="locality"
+            label="Localidad"
+            icon={MapPin}
+            required
+            placeholder="Ej: Oro Verde"
+          />
+          <TextField
+            control={form.control}
+            name="liga"
+            label="Liga o asociación"
+            icon={Flag}
+            placeholder="Ej: Liga Paranaense"
+          />
+        </FieldRow>
+        <FieldRow cols={3}>
+          <SelectField
+            control={form.control}
+            name="ageGroup"
+            label="Categoría"
+            icon={Users}
+            required
+            options={AGE_GROUP_OPTIONS}
+          />
+          <SelectField
+            control={form.control}
+            name="gender"
+            label="Género"
+            required
+            options={GENDER_OPTIONS}
+          />
+          <TextField
+            control={form.control}
+            name="division"
+            label="División"
+            placeholder='Ej: "A", "Primera"'
+          />
+        </FieldRow>
+        <ImageField
+          control={form.control}
+          name="logoUrl"
+          publicIdName="logoPublicId"
+          label="Logo"
+          icon={ImageIcon}
+          folder="torneos/logos"
+          placeholder="Arrastrá el logo o hacé clic para elegirlo"
+        />
+        <TextareaField
+          control={form.control}
+          name="description"
+          label="Descripción"
+          icon={FileText}
+          rows={3}
+          placeholder="De qué se trata el torneo, quiénes participan…"
+        />
+      </FormSection>
 
-        <DialogHeader className="space-y-4 pt-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg">
-              {isEditMode ? (
-                <Edit className="h-6 w-6 text-white" />
-              ) : (
-                <Plus className="h-6 w-6 text-white" />
-              )}
-            </div>
-            <div>
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isEditMode ? "Editar Torneo" : "Crear Nuevo Torneo"}
-              </DialogTitle>
-              <DialogDescription className="text-gray-600 dark:text-gray-300 text-base">
-                Completa la información básica del torneo
-              </DialogDescription>
-            </div>
-          </div>
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent" />
-        </DialogHeader>
+      <FormSection icon={Calendar} title="Calendario">
+        <FieldRow>
+          <DateField
+            control={form.control}
+            name="startDate"
+            label="Fecha de inicio"
+            icon={Calendar}
+            required
+          />
+          <DateField
+            control={form.control}
+            name="endDate"
+            label="Fecha de fin"
+            icon={Calendar}
+          />
+        </FieldRow>
+        <DateField
+          control={form.control}
+          name="nextMatch"
+          label="Próximo partido"
+          icon={CalendarClock}
+          withTime
+          description="Se muestra como destacado en la ficha pública del torneo."
+        />
+      </FormSection>
 
-        {/* Formulario con react-hook-form */}
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-6 py-6 px-1"
-          >
-            {/* Campo: Nombre del Torneo */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Nombre del Torneo
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      placeholder="Ej: Copa de Verano 2024"
-                      {...field}
-                      disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      <FormSection
+        icon={Gavel}
+        title="Reglas deportivas"
+        description="Puntaje, desempates y sanciones de la tabla de posiciones."
+      >
+        <FieldRow>
+          <SelectField
+            control={form.control}
+            name="format"
+            label="Formato"
+            required
+            options={TOURNAMENT_FORMAT_OPTIONS}
+          />
+          <SelectField
+            control={form.control}
+            name="tiebreakerPreset"
+            label="Criterio de desempate"
+            options={TIEBREAKER_OPTIONS}
+          />
+        </FieldRow>
 
-            {/* Campo: Localidad */}
-            <FormField
-              control={form.control}
-              name="locality"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Localidad
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      placeholder="Ej: Buenos Aires"
-                      {...field}
-                      disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <SwitchField
+          control={form.control}
+          name="homeAndAway"
+          label="Ida y vuelta"
+          onText="Cada cruce se juega dos veces, uno de local y uno de visitante."
+          offText="Cada cruce se juega una sola vez."
+        />
 
-            {/* Categoría (M13): edad + género + división */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="ageGroup"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Categoría
-                      </FormLabel>
-                    </div>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
-                          <SelectValue placeholder="Categoría" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                        {AGE_GROUP_OPTIONS.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Género
-                      </FormLabel>
-                    </div>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
-                          <SelectValue placeholder="Género" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                        {GENDER_OPTIONS.map((g) => (
-                          <SelectItem key={g.value} value={g.value}>
-                            {g.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="division"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        División (opcional)
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Input
-                        placeholder='Ej: "A", "Primera"'
-                        disabled={isLoading}
-                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+        <FieldRow cols={3}>
+          <NumberField
+            control={form.control}
+            name="pointsWin"
+            label="Puntos por victoria"
+            min={0}
+            max={10}
+            unit="pts"
+          />
+          <NumberField
+            control={form.control}
+            name="pointsDraw"
+            label="Puntos por empate"
+            min={0}
+            max={10}
+            unit="pts"
+          />
+          <NumberField
+            control={form.control}
+            name="pointsLoss"
+            label="Puntos por derrota"
+            min={-10}
+            max={10}
+            unit="pts"
+          />
+        </FieldRow>
 
-            {/* Campos de Fecha (Inicio y Fin) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Fecha de Inicio
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        value={
-                          field.value
-                            ? field.value.toISOString().split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value))
-                        }
-                        disabled={isLoading}
-                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <FieldRow cols={3}>
+          <NumberField
+            control={form.control}
+            name="walkoverScore"
+            label="Goles en walkover"
+            icon={Repeat}
+            min={0}
+            max={20}
+            description="Marcador que se le asigna al ganador."
+          />
+          <NumberField
+            control={form.control}
+            name="yellowsForSuspension"
+            label="Amarillas para suspender"
+            icon={Hash}
+            min={0}
+            max={50}
+            description="0 desactiva la sanción automática."
+          />
+          <NumberField
+            control={form.control}
+            name="matchesPerRedCard"
+            label="Fechas por roja"
+            icon={Hash}
+            min={0}
+            max={20}
+            description="0 desactiva la sanción automática."
+          />
+        </FieldRow>
+      </FormSection>
 
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                      <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Fecha de Fin
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        value={
-                          field.value
-                            ? field.value.toISOString().split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value))
-                        }
-                        disabled={isLoading}
-                        className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Campo: Descripción */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Descripción
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Descripción del torneo..."
-                      {...field}
-                      disabled={isLoading}
-                      rows={3}
-                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Formato del Torneo (Select) */}
-            <FormField
-              control={form.control}
-              name="format"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Formato
-                    </FormLabel>
-                  </div>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
-                        <SelectValue placeholder="Selecciona un formato" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      {TOURNAMENT_FORMAT_OPTIONS.map((format) => (
-                        <SelectItem key={format.value} value={format.value}>
-                          {format.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: ida y vuelta */}
-            <FormField
-              control={form.control}
-              name="homeAndAway"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="homeAndAway"
-                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:focus:ring-brand-2"
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                        disabled={isLoading}
-                      />
-                      <div>
-                        <FormLabel
-                          htmlFor="homeAndAway"
-                          className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
-                        >
-                          ¿Ida y vuelta?
-                        </FormLabel>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {field.value
-                            ? "Los equipos jugarán partidos de ida y vuelta"
-                            : "Los equipos jugarán solo un partido"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Sección: Configuración deportiva (N7) */}
-            <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center space-x-2">
-                <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Configuración deportiva
-                </FormLabel>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
-                Puntaje y desempates de la tabla de posiciones.
-              </p>
-
-              {/* Puntos por resultado */}
-              <div className="grid grid-cols-3 gap-3">
-                <FormField
-                  control={form.control}
-                  name="pointsWin"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Puntos por victoria
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={10}
-                          value={field.value}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                          disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="pointsDraw"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Puntos por empate
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={10}
-                          value={field.value}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                          disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="pointsLoss"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Puntos por derrota
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={-10}
-                          max={10}
-                          value={field.value}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                          disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Marcador de walkover */}
-                <FormField
-                  control={form.control}
-                  name="walkoverScore"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Goles en walkover (al ganador)
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={20}
-                          value={field.value}
-                          onChange={(e) =>
-                            field.onChange(e.target.valueAsNumber)
-                          }
-                          disabled={isLoading}
-                          className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Preset de desempate */}
-                <FormField
-                  control={form.control}
-                  name="tiebreakerPreset"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Criterio de desempate
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={isLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl">
-                            <SelectValue placeholder="Criterio de desempate" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                          {Object.entries(TIEBREAKER_PRESETS).map(
-                            ([key, preset]) => (
-                              <SelectItem key={key} value={key}>
-                                {preset.label}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Sanciones automáticas (N8) */}
-              <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">
-                  Sanciones automáticas (0 = desactivado)
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="yellowsForSuspension"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1.5">
-                        <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                          Amarillas para suspender 1 fecha
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={0}
-                            max={50}
-                            value={field.value}
-                            onChange={(e) =>
-                              field.onChange(e.target.valueAsNumber)
-                            }
-                            disabled={isLoading}
-                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="matchesPerRedCard"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1.5">
-                        <FormLabel className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                          Fechas de suspensión por roja
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={0}
-                            max={20}
-                            value={field.value}
-                            onChange={(e) =>
-                              field.onChange(e.target.valueAsNumber)
-                            }
-                            disabled={isLoading}
-                            className="h-11 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand text-gray-900 dark:text-white rounded-xl"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Campo: Estado del Torneo (Select) */}
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Estado del Torneo
-                    </FormLabel>
-                  </div>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl">
-                        <SelectValue placeholder="Selecciona un estado" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      {TOURNAMENT_STATUS_OPTIONS.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Torneo Habilitado */}
-            <FormField
-              control={form.control}
-              name="enabled"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="enabled"
-                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:focus:ring-brand-2"
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                        disabled={isLoading}
-                      />
-                      <div>
-                        <FormLabel
-                          htmlFor="enabled"
-                          className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
-                        >
-                          ¿Torneo habilitado?
-                        </FormLabel>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {field.value
-                            ? "El torneo es visible al público"
-                            : "El torneo está oculto"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Liga o Asociación */}
-            <FormField
-              control={form.control}
-              name="liga"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Liga o Asociación (Organizador)
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      placeholder="Ej: AFA, Liga Cordobesa..."
-                      {...field}
-                      disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Logo del Torneo */}
-            <FormField
-              control={form.control}
-              name="logoUrl"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Logo del Torneo
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <CloudinaryUpload
-                      folder="torneos/logos"
-                      value={field.value}
-                      publicId={form.watch("logoPublicId")}
-                      onChange={(url, publicId) => {
-                        form.setValue("logoUrl", url);
-                        form.setValue("logoPublicId", publicId);
-                      }}
-                      disabled={isLoading}
-                      placeholder="Arrastra el logo o haz clic para seleccionar"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Próximo partido (opcional) */}
-            <FormField
-              control={form.control}
-              name="nextMatch"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Próximo partido (opcional)
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="datetime-local"
-                      value={
-                        field.value
-                          ? new Date(field.value).toISOString().slice(0, 16)
-                          : ""
-                      }
-                      onChange={(e) => field.onChange(new Date(e.target.value))}
-                      disabled={isLoading}
-                      className="h-12 bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Reglamento */}
-            <FormField
-              control={form.control}
-              name="rules"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Reglamento (opcional)
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Reglas especiales, configuraciones del torneo..."
-                      {...field}
-                      disabled={isLoading}
-                      rows={4}
-                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Campo: Premio/Trofeo */}
-            <FormField
-              control={form.control}
-              name="trophy"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-                    <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Premio / Trofeo (opcional)
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Descripción del premio para el ganador..."
-                      {...field}
-                      disabled={isLoading}
-                      rows={2}
-                      className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand-2/20 text-gray-900 dark:text-white rounded-xl resize-none transition-all duration-200"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                type="button"
-                variant="outline"
-                className="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl font-medium transition-all duration-200"
-                onClick={handleCancel}
-                disabled={isLoading}
-              >
-                Cancelar
-              </Button>
-              {isEditMode ? (
-                <Button
-                  type="submit"
-                  className="px-8 py-2.5 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    "Guardar Cambios"
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  className="px-8 py-2.5 bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 rounded-xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creando...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Registrar Torneo
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+      <FormSection icon={Eye} title="Publicación">
+        <SelectField
+          control={form.control}
+          name="status"
+          label="Estado"
+          icon={Shield}
+          required
+          options={TOURNAMENT_STATUS_OPTIONS}
+        />
+        <SwitchField
+          control={form.control}
+          name="enabled"
+          label="Torneo habilitado"
+          onText="Visible en el sitio público."
+          offText="Oculto: solo lo ve el panel."
+        />
+        <TextareaField
+          control={form.control}
+          name="rules"
+          label="Reglamento"
+          icon={FileText}
+          rows={4}
+          placeholder="Reglas especiales, formato de desempate, sanciones…"
+        />
+        <TextareaField
+          control={form.control}
+          name="trophy"
+          label="Premio"
+          icon={Trophy}
+          rows={2}
+          placeholder="Qué se lleva el campeón"
+        />
+      </FormSection>
+    </FormSheet>
   );
 };
 

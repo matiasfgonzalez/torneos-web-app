@@ -1,20 +1,21 @@
 import { z } from "zod";
 import { nullableString } from "./common";
 
-const standingStat = z.coerce.number().int().min(-999).max(9999);
-
+/**
+ * Inscripción de un equipo en un torneo.
+ *
+ * (F3, decisión del usuario 2026-07-14 — cierra el punto 5 de C6): la API ya
+ * **no acepta estadísticas de standings** (`matchesPlayed`, `wins`, `draws`,
+ * `losses`, `goalsFor`, `goalsAgainst`, `goalDifference`, `points`). Eran doble
+ * fuente de verdad: el cliente podía escribir números que el siguiente recálculo
+ * de la tabla —el que sale de los partidos, `lib/standings/*`— pisaba igual.
+ * Un ajuste manual de puntos (quita por sanción) va por `bonusPoints`, que el
+ * recálculo respeta.
+ */
 const tournamentTeamBase = z.object({
   group: nullableString(20),
   isEliminated: z.boolean(),
   notes: nullableString(500),
-  matchesPlayed: standingStat,
-  wins: standingStat,
-  draws: standingStat,
-  losses: standingStat,
-  goalsFor: standingStat,
-  goalsAgainst: standingStat,
-  goalDifference: standingStat,
-  points: standingStat,
 });
 
 export const tournamentTeamCreateSchema = tournamentTeamBase.partial().extend({

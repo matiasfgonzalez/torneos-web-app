@@ -33,6 +33,7 @@ import {
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   IUser,
   IUpdateUserData,
@@ -84,6 +85,7 @@ export default function EditUser() {
   const [saving, setSaving] = useState(false);
   const [currentUserRole] = useState<UserRole>(UserRole.ADMINISTRADOR); // En producción vendría del contexto de autenticación
   const [hasChanges, setHasChanges] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
 
   const [formData, setFormData] = useState<IUpdateUserData>({
     name: "",
@@ -202,22 +204,25 @@ export default function EditUser() {
     }
   };
 
+  // Sin `confirm()` nativo (lo prohíbe AGENT_RULES): la confirmación de descarte
+  // usa el <ConfirmDialog> del panel, igual que el FormSheet de los diálogos.
   const handleCancel = () => {
-    if (hasChanges && user) {
-      if (confirm("¿Estás seguro de que quieres descartar los cambios?")) {
-        setFormData({
-          name: user.name || "",
-          phone: user.phone || "",
-          location: user.location || "",
-          bio: user.bio || "",
-          role: user.role,
-          status: user.status,
-          imageUrl: user.imageUrl || "",
-        });
-        setHasChanges(false);
-        setErrors({});
-      }
-    }
+    if (hasChanges && user) setDiscardOpen(true);
+  };
+
+  const discardChanges = () => {
+    if (!user) return;
+    setFormData({
+      name: user.name || "",
+      phone: user.phone || "",
+      location: user.location || "",
+      bio: user.bio || "",
+      role: user.role,
+      status: user.status,
+      imageUrl: user.imageUrl || "",
+    });
+    setHasChanges(false);
+    setErrors({});
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -703,6 +708,17 @@ export default function EditUser() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={discardOpen}
+        onOpenChange={setDiscardOpen}
+        tone="warning"
+        title="¿Descartar los cambios?"
+        description="El formulario vuelve a los datos guardados del usuario."
+        confirmLabel="Descartar"
+        cancelLabel="Seguir editando"
+        onConfirm={discardChanges}
+      />
     </div>
   );
 }
