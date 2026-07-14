@@ -405,13 +405,21 @@ export default function PartidosPage() {
                       )}
                     </div>
 
-                    <Link
-                      href={tournamentPublicPath(match.tournament)}
-                      className="flex items-center justify-center gap-1.5 text-sm font-medium text-brand hover:text-brand-mid transition-colors pt-1"
-                    >
-                      Ver torneo
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <div className="flex items-center justify-between gap-3 pt-1">
+                      <Link
+                        href={`/partidos/${match.id}`}
+                        className="flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-mid transition-colors"
+                      >
+                        Ver partido
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                      <Link
+                        href={tournamentPublicPath(match.tournament)}
+                        className="text-sm font-medium text-gray-500 hover:text-brand dark:text-gray-400 transition-colors"
+                      >
+                        Ver torneo
+                      </Link>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

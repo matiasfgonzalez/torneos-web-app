@@ -3,12 +3,24 @@
 import { db } from "@/lib/db";
 import { IPartidos } from "@modules/partidos/types";
 
+/**
+ * Partido completo por ID: equipos, torneo, fase, goles, tarjetas y árbitros.
+ *
+ * Los goles/tarjetas incluyen `tournamentTeam` porque sin eso no se puede saber
+ * de qué lado del marcador va cada evento en la cronología (la ficha pública
+ * `/partidos/[id]` y el modal del torneo lo necesitan).
+ */
 export async function getMatchById(id: string): Promise<IPartidos | null> {
   try {
     const match = await db.match.findUnique({
       where: { id },
       include: {
-        tournament: true,
+        tournament: {
+          include: {
+            // Para armar la URL canónica del torneo (tournamentPublicPath).
+            organization: { select: { slug: true } },
+          },
+        },
         homeTeam: {
           include: {
             team: true,
@@ -25,7 +37,11 @@ export async function getMatchById(id: string): Promise<IPartidos | null> {
             teamPlayer: {
               include: {
                 player: true,
+                tournamentTeam: { include: { team: true } },
               },
+            },
+            assistTeamPlayer: {
+              include: { player: true },
             },
           },
           orderBy: { minute: "asc" },
@@ -35,6 +51,7 @@ export async function getMatchById(id: string): Promise<IPartidos | null> {
             teamPlayer: {
               include: {
                 player: true,
+                tournamentTeam: { include: { team: true } },
               },
             },
           },

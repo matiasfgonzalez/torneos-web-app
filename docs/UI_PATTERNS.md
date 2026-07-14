@@ -35,7 +35,9 @@ Reglas:
 
 ## 2. Página pública de detalle
 
-**Ejemplos:** `modules/torneos/components/TournamentDetailView.tsx` (usado por `/torneos/[id]` y `/liga/[slug]/[torneo]`), `app/(public)/equipos/[id]/page.tsx`, `app/(public)/noticias/[id]/page.tsx`, `app/(public)/jugadores/[id]/player-detail-page.tsx` (única excepción con tema propio "tarjeta de jugador" slate+partículas — deliberado, no migrarlo a `bg-gray-50`).
+**Ejemplos:** `modules/torneos/components/TournamentDetailView.tsx` (usado por `/torneos/[id]` y `/liga/[slug]/[torneo]`), `app/(public)/equipos/[id]/page.tsx`, `app/(public)/noticias/[id]/page.tsx`, `modules/partidos/components/MatchDetailView.tsx` (ficha de partido, `/partidos/[id]`), `app/(public)/jugadores/[id]/player-detail-page.tsx` (única excepción con tema propio "tarjeta de jugador" slate+partículas — deliberado, no migrarlo a `bg-gray-50`).
+
+**Toda entidad pública tiene que ser linkeable.** Si una entidad se muestra en varios lugares (una card, un modal, una fila de tabla, un cuadro de eliminación), **todos** esos lugares llevan a su ficha — si no, la entidad no se puede compartir ni bookmarkear. La ficha de partido (2026-07-14) es la referencia: se llega desde el listado `/partidos`, la card de partido del equipo, el fixture y el bracket del torneo, el modal de detalle del torneo (que no tiene URL propia y por eso linkea a la ficha), los goles en la ficha del jugador y el panel. Un modal **nunca** reemplaza a la página: es un atajo, y siempre ofrece "ver ficha completa".
 
 Estructura:
 ```

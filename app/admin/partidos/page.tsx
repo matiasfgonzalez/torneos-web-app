@@ -305,6 +305,12 @@ export default function PartidosPage() {
                     <DropdownMenuItem className="cursor-pointer" onClick={() => handleEdit(match)}>
                       Editar Detalles
                     </DropdownMenuItem>
+                    {/* Cómo lo ve el hincha */}
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href={`/partidos/${match.id}`}>
+                        Ver ficha pública
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500" onClick={() => setDeleteTarget(match)}>
                       Eliminar Partido

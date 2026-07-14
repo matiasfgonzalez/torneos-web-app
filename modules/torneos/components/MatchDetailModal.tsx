@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
   Clock,
   MapPin,
   Calendar,
+  ChevronRight,
 } from "lucide-react";
 import { IMatch } from "@modules/torneos/types/tournament-teams.types";
 import { MatchStatus } from "@prisma/client";
@@ -358,6 +360,19 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* El modal no tiene URL propia: para compartir o linkear el partido,
+            la ficha pública es /partidos/[id]. */}
+        <Button
+          asChild
+          variant="outline"
+          className="mt-4 w-full border-brand/30 text-brand hover:bg-brand/10"
+        >
+          <Link href={`/partidos/${match.id}`}>
+            Ver ficha completa del partido
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Link>
+        </Button>
       </DialogContent>
     </Dialog>
   );

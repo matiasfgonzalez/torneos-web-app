@@ -429,6 +429,19 @@ export default async function TournamentDetailView({
                               )}
                             </div>
                           </div>
+
+                          {/* Ficha del partido: en "Próximos" no hay modal de
+                              detalle (todavía no hay eventos que mostrar), pero
+                              la ficha sí existe y es linkeable. */}
+                          <div className="mt-4 flex justify-center">
+                            <Link
+                              href={`/partidos/${match.id}`}
+                              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand-mid transition-colors"
+                            >
+                              Ver partido
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     ))}

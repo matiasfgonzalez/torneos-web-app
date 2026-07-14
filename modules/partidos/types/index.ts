@@ -91,6 +91,14 @@ export interface IGoal {
       };
     };
   };
+  /** Asistencia, si se cargó. */
+  assistTeamPlayer?: {
+    id: string;
+    player: {
+      id: string;
+      name: string;
+    };
+  } | null;
 }
 export enum MatchStatus {
   PROGRAMADO = "PROGRAMADO",

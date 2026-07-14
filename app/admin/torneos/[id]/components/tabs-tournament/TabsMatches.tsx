@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ITorneo } from "@modules/torneos/types";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, Target, Filter, Zap } from "lucide-react";
+import { Calendar, Clock, Eye, MapPin, Target, Filter, Zap } from "lucide-react";
 import { useEffect, useState, useCallback, useTransition } from "react";
 import DialogAddEditMatch from "../DialogAddEditMatch";
 import DialogMatchDetails from "../DialogMatchDetails";
@@ -71,6 +71,22 @@ const TabsMatches = (props: TabsTournamentProps) => {
         <Link href={`/admin/partidos/${match.id}/cargar`}>
           <Zap className="h-3.5 w-3.5" />
           Cargar
+        </Link>
+      </Button>
+      {/* Ficha pública: cómo queda el partido para el hincha */}
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        title="Ver ficha pública"
+        className="hover:bg-brand hover:text-white hover:border-brand transition-all"
+      >
+        <Link href={`/partidos/${match.id}`}>
+          <Eye className="h-4 w-4" />
+          <span className="sr-only">
+            Ver ficha pública de {match.homeTeam.team.name} vs{" "}
+            {match.awayTeam.team.name}
+          </span>
         </Link>
       </Button>
       {(match.status === MatchStatus.EN_JUEGO ||

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -175,13 +176,16 @@ export function KnockoutBracket({
                   const hasPenalties = match.penaltyWinnerTeamId != null;
 
                   return (
-                    <div
+                    // La llave del cuadro es un link a la ficha del partido:
+                    // es el lugar donde el hincha naturalmente hace clic.
+                    <Link
+                      href={`/partidos/${match.id}`}
                       key={match.id}
-                      className={`relative bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-4 border ${
+                      className={`relative block bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-4 border ${
                         group.phaseName === "FINAL"
                           ? "border-yellow-300 dark:border-yellow-600/50 shadow-lg shadow-yellow-500/10"
                           : "border-gray-100 dark:border-gray-700"
-                      } hover:shadow-xl transition-all duration-300`}
+                      } hover:shadow-xl hover:border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-all duration-300`}
                     >
                       {/* Fecha y estado */}
                       <div className="flex items-center justify-between mb-3">
@@ -323,7 +327,7 @@ export function KnockoutBracket({
                           <span>{match.stadium}</span>
                         </div>
                       )}
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

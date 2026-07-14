@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Trophy,
   Calendar,
   Goal,
@@ -333,6 +335,16 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
             </Button>
           </div>
         )}
+
+        {/* Ficha completa del partido. Va siempre: el desplegable de arriba solo
+            existe si el partido ya tiene goles o tarjetas cargados. */}
+        <Link
+          href={`/partidos/${partido.id}`}
+          className="flex items-center justify-center gap-1 h-9 text-xs font-medium text-brand hover:text-brand-mid border-t border-gray-100 dark:border-gray-800 transition-colors"
+        >
+          Ver ficha del partido
+          <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
       </CardContent>
     </Card>
   );

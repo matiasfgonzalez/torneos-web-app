@@ -737,10 +737,22 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                             {!goal.isPenalty && !goal.isOwnGoal && "⚽ Gol"}
                           </span>
                         </div>
-                        <div className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-                          {goal.match?.homeTeam?.team?.name || "Local"} vs{" "}
-                          {goal.match?.awayTeam?.team?.name || "Visitante"}
-                        </div>
+                        {/* Enlace a la ficha del partido: desde el gol se llega
+                            al contexto en el que se convirtió. */}
+                        {goal.match?.id ? (
+                          <Link
+                            href={`/partidos/${goal.match.id}`}
+                            className="block text-sm text-slate-500 dark:text-gray-400 mt-1 hover:text-brand dark:hover:text-brand transition-colors"
+                          >
+                            {goal.match?.homeTeam?.team?.name || "Local"} vs{" "}
+                            {goal.match?.awayTeam?.team?.name || "Visitante"}
+                          </Link>
+                        ) : (
+                          <div className="text-sm text-slate-500 dark:text-gray-400 mt-1">
+                            {goal.match?.homeTeam?.team?.name || "Local"} vs{" "}
+                            {goal.match?.awayTeam?.team?.name || "Visitante"}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right">
                         {goal.minute && (
