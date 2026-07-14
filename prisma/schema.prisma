@@ -467,6 +467,10 @@ model Player {
   description       String?
   bio               String?
   status            PlayerStatus    @default(ACTIVO)
+  // Baja lógica: el jugador se sigue viendo (y conserva su historial de goles,
+  // tarjetas y sanciones) pero deja de estar disponible para sumarlo a un
+  // equipo. El borrado físico solo se permite si no tiene ningún TeamPlayer.
+  enabled           Boolean         @default(true)
   joinedAt          DateTime?
   deletedAt         DateTime?
 

@@ -17,6 +17,11 @@ export async function getJugadores(): Promise<IPlayer[]> {
       orderBy: {
         createdAt: "desc",
       },
+      // El panel necesita saber si el jugador tiene historial para decidir si
+      // se puede eliminar o solo deshabilitar (ver actions/players.ts).
+      include: {
+        _count: { select: { teamPlayer: true } },
+      },
     });
 
     return jugadores as IPlayer[];

@@ -10,7 +10,8 @@ import {
 } from "@/components/shared/DataTable";
 import { ITeam } from "@modules/equipos/types/types";
 import TeamForm from "./team-form";
-import DeleteTeamButton from "./DeleteTeamButton";
+import { DeleteOrDisableButtons } from "@/components/shared/DeleteOrDisableButtons";
+import { deleteTeam, toggleTeamEnabled } from "@modules/equipos/actions/teams";
 
 interface PropsTeamsTable {
   teams: ITeam[];
@@ -28,7 +29,13 @@ function StatusBadge({ enabled }: { enabled: boolean }) {
   );
 }
 
-function RowActions({ team }: { team: ITeam }) {
+/**
+ * Acciones de fila. La baja la resuelve `DeleteOrDisableButtons`: eliminar solo
+ * si el equipo nunca se inscribió en un torneo (`_count.tournamentTeams === 0`),
+ * y si no, deshabilitarlo para no perder plantel, estadísticas ni partidos (ver
+ * `modules/equipos/actions/teams.ts`).
+ */
+function RowActions({ team }: Readonly<{ team: ITeam }>) {
   return (
     <>
       <Button
@@ -44,7 +51,16 @@ function RowActions({ team }: { team: ITeam }) {
         </Link>
       </Button>
       <TeamForm isEditMode={true} team={team} />
-      <DeleteTeamButton team={team} />
+      <DeleteOrDisableButtons
+        entityLabel="equipo"
+        name={team.name}
+        enabled={team.enabled}
+        relationCount={team._count?.tournamentTeams ?? 0}
+        relationLabel="torneos"
+        disableConsequence="no vas a poder inscribirlo en un torneo nuevo y va a dejar de aparecer en el listado público"
+        onDelete={() => deleteTeam(team.id)}
+        onToggleEnabled={() => toggleTeamEnabled(team.id)}
+      />
     </>
   );
 }

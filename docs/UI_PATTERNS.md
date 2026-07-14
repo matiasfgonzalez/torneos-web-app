@@ -163,6 +163,23 @@ Usalo tanto para "sin resultados de búsqueda" (con botón "Limpiar filtros") co
 
 `AlertDialog` **siempre** (nunca `confirm()` nativo en código nuevo) para: eliminar, suspender, rechazar. **Desde F0 usá `<ConfirmDialog>`** (`components/shared/ConfirmDialog.tsx`): trigger o modo controlado, tono `danger`/`warning`, `onConfirm` async con loading — referencia: eliminación de partido en `app/admin/partidos/page.tsx`. Estructura que implementa: ícono de advertencia en caja de color semántico + título "¿Acción X?" + descripción con el nombre del recurso afectado en negrita +, si corresponde, una advertencia extra sobre efectos secundarios (ver `app/admin/arbitros/page.tsx` — avisa si el árbitro tiene partidos asignados).
 
+## 8b. Baja de una entidad con historial: eliminar vs. deshabilitar (2026-07-14)
+
+Regla de negocio del proyecto, para **toda entidad que participe del historial deportivo** (jugador, equipo, torneo, árbitro):
+
+- **Sin relaciones** (se cargó y nunca se usó) → **eliminar** de verdad. No hay historial que perder.
+- **Con relaciones** → **nunca** eliminar: **deshabilitar** (`enabled = false`). Los datos y el historial se siguen viendo; lo que se pierde es poder *usarla* (sumar el jugador a un equipo, inscribir el equipo en un torneo nuevo).
+
+No es una preferencia estética: las FK del schema son `onDelete: Cascade`, así que un borrado físico con historial se lleva puestos **goles, tarjetas, suspensiones y estadísticas de partidos ya jugados**, y deja la tabla de posiciones mintiendo.
+
+Cómo se implementa (referencia: `modules/jugadores/actions/players.ts` y `modules/equipos/actions/teams.ts`):
+
+1. El **listado del panel** trae el conteo de relaciones (`_count: { teamPlayer }` / `_count: { tournamentTeams }`) para que la UI sepa de antemano qué ofrecer.
+2. La UI usa **`<DeleteOrDisableButtons>`** (`components/shared/DeleteOrDisableButtons.tsx`): un toggle habilitar/deshabilitar + un botón de baja cuyo diálogo cambia según el caso — con historial explica *por qué* no se puede eliminar y ofrece deshabilitar (tono `warning`, ícono `Archive`); sin historial ofrece eliminar (tono `danger`, ícono `Trash2`). Si ya está deshabilitado y tiene historial, ese segundo botón no se muestra: no hay nada que ofrecer.
+3. El **server action vuelve a verificar** las relaciones antes de borrar. Nunca confíes en el conteo que mandó el cliente: pudo haber cargado la lista antes de que la entidad se usara.
+4. Al borrar de verdad, limpiá también las **imágenes en Cloudinary** (`deleteImage(publicId)`), o quedan huérfanas. Si falla ese borrado remoto no revertimos el de la base.
+5. Un registro deshabilitado tiene que **desaparecer de todo selector** donde se lo usaría (`/api/players` no devuelve deshabilitados; `tournament-team-form` filtra `t.enabled`). Deshabilitar sin sacarlo de los selectores no deshabilita nada.
+
 ## 9. Paginación
 
 **Listados públicos:** patrón numérico con máximo 5 números visibles + Anterior/Siguiente, en una `Card` propia debajo del listado. Referencia: `app/(public)/partidos/page.tsx`.

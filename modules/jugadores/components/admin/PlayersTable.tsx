@@ -16,9 +16,35 @@ import {
 import { calcularEdad } from "@/lib/calcularEdad";
 import type { Foot, PlayerPosition } from "@prisma/client";
 import PlayerForm from "./player-form";
+import { DeleteOrDisableButtons } from "@/components/shared/DeleteOrDisableButtons";
+import { deletePlayer, togglePlayerEnabled } from "@modules/jugadores/actions/players";
 
 interface PropsPlayersTable {
   players: IPlayer[];
+}
+
+/**
+ * Acciones de fila. La baja la resuelve `DeleteOrDisableButtons`: eliminar solo
+ * si el jugador nunca jugó en un equipo (`_count.teamPlayer === 0`), y si no,
+ * deshabilitarlo para no perder goles/tarjetas/sanciones (ver
+ * `modules/jugadores/actions/players.ts`).
+ */
+function RowActions({ player }: Readonly<{ player: IPlayer }>) {
+  return (
+    <>
+      <PlayerForm isEditMode={true} player={player} />
+      <DeleteOrDisableButtons
+        entityLabel="jugador"
+        name={player.name}
+        enabled={player.enabled}
+        relationCount={player._count?.teamPlayer ?? 0}
+        relationLabel="equipos"
+        disableConsequence="no vas a poder sumarlo a ningún equipo"
+        onDelete={() => deletePlayer(player.id)}
+        onToggleEnabled={() => togglePlayerEnabled(player.id)}
+      />
+    </>
+  );
 }
 
 const positionLabel = (p: string | null) =>
@@ -113,8 +139,20 @@ const PlayersTable = ({ players }: PropsPlayersTable) => {
     {
       id: "status",
       header: "Estado",
-      sortValue: (p) => p.status,
-      cell: (player) => <StatusBadge entity="player" status={player.status} />,
+      sortValue: (p) => (p.enabled ? p.status : "ZZ_DESHABILITADO"),
+      cell: (player) => (
+        <div className="space-y-1">
+          <StatusBadge entity="player" status={player.status} />
+          {!player.enabled && (
+            <Badge
+              variant="outline"
+              className="block w-fit border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400"
+            >
+              Deshabilitado
+            </Badge>
+          )}
+        </div>
+      ),
     },
     {
       id: "actions",
@@ -123,7 +161,7 @@ const PlayersTable = ({ players }: PropsPlayersTable) => {
       hideOnCard: true,
       cell: (player) => (
         <div className="flex justify-end gap-2">
-          <PlayerForm isEditMode={true} player={player} />
+          <RowActions player={player} />
         </div>
       ),
     },
@@ -156,8 +194,12 @@ const PlayersTable = ({ players }: PropsPlayersTable) => {
               value: o.value as string,
               label: o.label,
             })),
+            { value: "disabled", label: "Deshabilitados" },
           ],
-          test: (player, value) => player.status === value,
+          test: (player, value) =>
+            value === "disabled"
+              ? !player.enabled
+              : player.enabled && player.status === value,
         },
       ]}
       empty={{
@@ -168,7 +210,7 @@ const PlayersTable = ({ players }: PropsPlayersTable) => {
         filteredDescription:
           "Ningún jugador coincide con los filtros aplicados.",
       }}
-      rowActions={(player) => <PlayerForm isEditMode={true} player={player} />}
+      rowActions={(player) => <RowActions player={player} />}
     />
   );
 };

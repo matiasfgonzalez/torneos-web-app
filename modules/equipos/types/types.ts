@@ -17,4 +17,6 @@ export interface ITeam {
   awayColor: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   players?: any[];
+  /** Presente en el listado del panel: cuántos torneos jugó. 0 ⇒ es eliminable. */
+  _count?: { tournamentTeams: number };
 }

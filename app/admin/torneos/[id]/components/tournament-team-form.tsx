@@ -125,7 +125,9 @@ export function TournamentTeamForm({
       return teams;
     }
     const usedSet = new Set(usedTeamIds);
-    return teams.filter((t) => !usedSet.has(t.id));
+    // Un equipo deshabilitado (baja lógica) conserva su historial pero no se
+    // puede inscribir en un torneo nuevo — ver modules/equipos/actions/teams.ts.
+    return teams.filter((t) => !usedSet.has(t.id) && t.enabled);
   }, [teams, usedTeamIds, mode, tournamentTeam?.teamId]);
 
   const selectedTeam = useMemo(

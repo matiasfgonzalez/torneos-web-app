@@ -32,6 +32,8 @@ export interface IPlayer {
   description: string;
   bio: string;
   status: string;
+  /** Baja lógica: sigue visible con todo su historial, pero no se puede sumar a un equipo. */
+  enabled: boolean;
   joinedAt: string | Date;
   instagramUrl: string;
   twitterUrl: string;
@@ -42,6 +44,8 @@ export interface IPlayer {
   goals?: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   teamPlayer?: any[];
+  /** Presente en el listado del panel: en cuántos equipos-torneo jugó. 0 ⇒ es eliminable. */
+  _count?: { teamPlayer: number };
 }
 
 // Este enum está deprecado, usar el de abajo o importar de Prisma

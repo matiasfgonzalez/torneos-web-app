@@ -89,7 +89,10 @@ const DialogAddEditTeamPlayer = (
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const res = await fetch("/api/players");
+        // scope=panel: solo jugadores de mis organizaciones. La ruta ya excluye
+        // los deshabilitados/eliminados — un jugador dado de baja no se puede
+        // sumar a un equipo.
+        const res = await fetch("/api/players?scope=panel");
         if (!res.ok) throw new Error("Error al obtener los jugadores");
 
         const data: IPlayer[] = await res.json();

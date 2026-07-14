@@ -32,6 +32,11 @@ export async function getAdminEquipos(): Promise<ITeam[]> {
       orderBy: {
         createdAt: "desc",
       },
+      // El panel necesita saber si el equipo tiene historial para decidir si se
+      // puede eliminar o solo deshabilitar (ver actions/teams.ts).
+      include: {
+        _count: { select: { tournamentTeams: true } },
+      },
     });
 
     return equipos as ITeam[];

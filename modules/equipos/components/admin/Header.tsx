@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, Calendar, User, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import DeleteTeamButton from "./DeleteTeamButton";
+import { DeleteOrDisableButtons } from "@/components/shared/DeleteOrDisableButtons";
+import { deleteTeam, toggleTeamEnabled } from "@modules/equipos/actions/teams";
 import TeamForm from "./team-form";
 
 interface PropsHeader {
@@ -149,8 +150,20 @@ const Header = (props: PropsHeader) => {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
               <TeamForm isEditMode={true} team={teamData} />
-              <div className="w-full sm:w-auto">
-                <DeleteTeamButton team={teamData} />
+              <div className="flex gap-2">
+                {/* Eliminar solo si el equipo nunca jugó un torneo; si tiene
+                    historial, la baja es lógica (ver actions/teams.ts). */}
+                <DeleteOrDisableButtons
+                  entityLabel="equipo"
+                  name={teamData.name}
+                  enabled={teamData.enabled}
+                  relationCount={teamData.tournamentTeams?.length ?? 0}
+                  relationLabel="torneos"
+                  disableConsequence="no vas a poder inscribirlo en un torneo nuevo y va a dejar de aparecer en el listado público"
+                  onDelete={() => deleteTeam(teamData.id)}
+                  onToggleEnabled={() => toggleTeamEnabled(teamData.id)}
+                  redirectAfterDelete="/admin/equipos"
+                />
               </div>
             </div>
           </div>

@@ -43,6 +43,7 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 | `FilterChipGroup` | `FilterChips.tsx` | Grupo de filtros como chips (F2, patrón §6 de UI_PATTERNS): scrollea en una fila en mobile, wrap en desktop; 44px de alto, `aria-pressed`/`role="group"`. Reemplazó a los `<Select>`/`<select>` de los 5 listados públicos. Va de la mano con `useUrlFilters` (`hooks/use-url-filters.ts`), que mantiene el estado de los filtros en la query de la URL. |
 | `SectionTitle` | `PageHeader.tsx` | Título de sección dentro de una página admin (F3): barra de acento de marca + `h2`, con `actions` opcionales. Se repetía a mano en casi todas las pantallas del panel. |
 | `DataTable` | `DataTable.tsx` | **Tabla del panel** (F3): orden por columna, búsqueda, filtros de chips, paginación, colapso a cards en mobile y estado vacío. Ver §4 — no armes una `<Table>` a mano. |
+| `DeleteOrDisableButtons` | `DeleteOrDisableButtons.tsx` | **Baja de una entidad con historial** (2026-07-14, patrón §8b de UI_PATTERNS): toggle habilitar/deshabilitar + baja que elimina solo si `relationCount === 0` y si no ofrece deshabilitar, explicando por qué. Usado en jugadores y equipos; replicalo para cualquier entidad nueva que participe del historial deportivo. |
 
 ## 2c. Caparazón del panel admin (F3, 2026-07-13)
 
