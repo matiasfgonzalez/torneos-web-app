@@ -131,12 +131,12 @@ const TeamsTable = ({ teams }: PropsTeamsTable) => {
         <div className="flex items-center gap-2">
           <div
             className="w-6 h-6 rounded-lg border-2 border-white dark:border-gray-600 shadow-md"
-            style={{ backgroundColor: team.homeColor }}
+            style={{ backgroundColor: team.homeColor ?? undefined }}
             title="Color local"
           />
           <div
             className="w-6 h-6 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-md"
-            style={{ backgroundColor: team.awayColor }}
+            style={{ backgroundColor: team.awayColor ?? undefined }}
             title="Color visitante"
           />
         </div>

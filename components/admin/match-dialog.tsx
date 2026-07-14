@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useTransition } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -54,17 +54,37 @@ const matchSchema = z.object({
 
 type MatchFormValues = z.infer<typeof matchSchema>;
 
+/** Lo que el formulario necesita de un partido existente para precargarse. */
+export interface MatchToEdit {
+  id: string;
+  tournamentId: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  dateTime: string;
+  status: MatchFormValues["status"];
+  stadium?: string | null;
+  city?: string | null;
+  description?: string | null;
+}
+
+/** Opción de un `<Select>` de torneo/equipo. */
+interface SelectOption {
+  id: string;
+  name: string;
+}
+
 interface MatchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  matchToEdit?: any; // Replace with proper type if available
+  matchToEdit?: MatchToEdit;
   onSuccess: () => void;
 }
 
 export function MatchDialog({ open, onOpenChange, matchToEdit, onSuccess }: MatchDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [tournaments, setTournaments] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
+  const [, startFetch] = useTransition();
+  const [tournaments, setTournaments] = useState<SelectOption[]>([]);
+  const [teams, setTeams] = useState<SelectOption[]>([]);
 
   const form = useForm<MatchFormValues>({
     resolver: zodResolver(matchSchema),
@@ -74,11 +94,34 @@ export function MatchDialog({ open, onOpenChange, matchToEdit, onSuccess }: Matc
     },
   });
 
+  // Declarada ANTES del effect que la usa (si no, el effect la lee en la zona
+  // muerta temporal: react-hooks/immutability) y con el fetch dentro de una
+  // transición, para que el setState no quede en el cuerpo del effect
+  // (react-hooks/set-state-in-effect).
+  const fetchAuxData = useCallback(() => {
+    startFetch(async () => {
+      try {
+        const [tournamentsRes, teamsRes] = await Promise.all([
+          fetch("/api/tournaments"),
+          fetch("/api/teams"),
+        ]);
+
+        if (tournamentsRes.ok) setTournaments(await tournamentsRes.json());
+        if (teamsRes.ok) setTeams(await teamsRes.json());
+      } catch (error) {
+        console.error("Error loading data", error);
+        toast.error("Error", {
+          description: "No se pudieron cargar torneos o equipos",
+        });
+      }
+    });
+  }, []);
+
   useEffect(() => {
     if (open) {
       fetchAuxData();
     }
-  }, [open]);
+  }, [open, fetchAuxData]);
 
   useEffect(() => {
     if (matchToEdit) {
@@ -101,23 +144,6 @@ export function MatchDialog({ open, onOpenChange, matchToEdit, onSuccess }: Matc
       });
     }
   }, [matchToEdit, form]);
-
-  const fetchAuxData = async () => {
-    try {
-      const [tournamentsRes, teamsRes] = await Promise.all([
-        fetch("/api/tournaments"),
-        fetch("/api/teams")
-      ]);
-      
-      if (tournamentsRes.ok) setTournaments(await tournamentsRes.json());
-      if (teamsRes.ok) setTeams(await teamsRes.json());
-    } catch (error) {
-      console.error("Error loading data", error);
-      toast.error("Error", {
-        description: "No se pudieron cargar torneos o equipos",
-      });
-    }
-  };
 
   const onSubmit = async (data: MatchFormValues) => {
     setLoading(true);
@@ -151,9 +177,12 @@ export function MatchDialog({ open, onOpenChange, matchToEdit, onSuccess }: Matc
       });
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error", {
-        description: error.message,
+        description:
+          error instanceof Error
+            ? error.message
+            : "Error al guardar el partido",
       });
     } finally {
       setLoading(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -70,8 +70,17 @@ export default function DialogReferee({
   const [certificationLevel, setCertificationLevel] = useState("Nivel 1");
   const [status, setStatus] = useState<RefereeStatus>("ACTIVO");
 
-  // Reset form when dialog opens or referee changes
-  useEffect(() => {
+  // El formulario se precarga al abrir el diálogo (o si cambia el árbitro).
+  // Es estado DERIVADO de props: se ajusta durante el render comparando una
+  // clave con la anterior, no con un useEffect + setState — eso renderiza dos
+  // veces (una con el form vacío) y el linter lo rechaza
+  // (react-hooks/set-state-in-effect). Ver docs/AGENT_RULES.md.
+  const formKey = `${open}|${mode}|${referee?.id ?? "new"}`;
+  const [lastFormKey, setLastFormKey] = useState(formKey);
+
+  if (formKey !== lastFormKey) {
+    setLastFormKey(formKey);
+
     if (open && referee && mode === "edit") {
       setName(referee.name || "");
       setEmail(referee.email || "");
@@ -87,7 +96,6 @@ export default function DialogReferee({
       setCertificationLevel(referee.certificationLevel || "Nivel 1");
       setStatus(referee.status);
     } else if (open && mode === "create") {
-      // Reset for create mode
       setName("");
       setEmail("");
       setPhone("");
@@ -98,7 +106,7 @@ export default function DialogReferee({
       setCertificationLevel("Nivel 1");
       setStatus("ACTIVO");
     }
-  }, [open, referee, mode]);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

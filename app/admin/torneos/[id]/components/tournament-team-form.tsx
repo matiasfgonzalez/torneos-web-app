@@ -110,14 +110,12 @@ export function TournamentTeamForm({
     return { goalDifference, points };
   }, [values.goalsFor, values.goalsAgainst, values.wins, values.draws]);
 
-  useEffect(() => {
-    setValues((prev: TournamentTeamForm) => ({
-      ...prev,
-      tournamentId,
-      goalDifference: computed.goalDifference,
-      points: computed.points,
-    }));
-  }, [computed.goalDifference, computed.points, tournamentId]);
+  // Antes había acá un useEffect que copiaba `computed` (diferencia de gol y
+  // puntos) y `tournamentId` de vuelta al estado del form. Era redundante y
+  // disparaba un render extra por cada tecla: la UI ya muestra `computed`
+  // directamente, y `onSubmitLocal` arma el payload con `computed` y con
+  // `tournamentId`, no con la copia del estado. Estado derivado se calcula, no
+  // se guarda (react-hooks/set-state-in-effect).
 
   const availableTeams = useMemo(() => {
     if (mode === "edit" && tournamentTeam?.teamId) {

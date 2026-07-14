@@ -16,9 +16,10 @@ import { formatTournamentCategory } from "@/lib/constants";
 import { PLAYER_POSITION_LABELS } from "@/lib/constants";
 import { PlayerPosition } from "@prisma/client";
 import MatchCard from "./MatchCard";
+import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
 
 interface PropsTabsTeam {
-  readonly teamData: any;
+  readonly teamData: TeamDetail;
 }
 
 export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
@@ -126,7 +127,7 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {teamData.jugadores.map((jugador: any) => (
+            {teamData.jugadores.map((jugador) => (
               <div
                 key={jugador.id}
                 className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:-translate-y-1"
@@ -155,7 +156,7 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
                       <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] rounded-2xl blur opacity-0 group-hover:opacity-50 transition-opacity" />
                       <Avatar className="relative w-18 h-18 border-3 border-white dark:border-gray-700 shadow-xl rounded-2xl">
                         <AvatarImage
-                          src={jugador.imageUrlFace || jugador.imageUrl}
+                          src={jugador.imageUrlFace ?? jugador.imageUrl ?? undefined}
                           alt={jugador.name}
                           className="object-cover rounded-xl"
                         />
@@ -208,7 +209,7 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
               </CardContent>
             </Card>
           ) : (
-            teamData.tournamentTeams.map((tt: any) => (
+            teamData.tournamentTeams.map((tt) => (
               <Card
                 key={tt.id}
                 className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:-translate-y-1"
@@ -373,7 +374,7 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {teamData.partidos.map((partido: any) => (
+                {teamData.partidos.map((partido) => (
                   <MatchCard
                     key={partido.id}
                     partido={partido}

@@ -127,6 +127,23 @@ export enum CardType {
   ROJA = "ROJA",
 }
 
+/** Jugador dentro de un equipo-torneo, tal como llega en goles y tarjetas. */
+export interface IEventTeamPlayer {
+  id: string;
+  player: {
+    id: string;
+    name: string;
+  };
+  tournamentTeam?: {
+    id: string;
+    team: {
+      id: string;
+      name: string;
+      logoUrl?: string;
+    };
+  };
+}
+
 export interface ICard {
   id: string;
   matchId: string;
@@ -136,7 +153,7 @@ export interface ICard {
   reason?: string;
   createdAt: string;
   updatedAt: string;
-  teamPlayer?: any; // Considerar definir ITeamPlayer completo si es necesario
+  teamPlayer?: IEventTeamPlayer;
 }
 
 export interface IReferee {

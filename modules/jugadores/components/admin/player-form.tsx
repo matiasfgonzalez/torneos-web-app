@@ -58,6 +58,32 @@ interface PlayerFormProps {
   player?: IPlayer;
 }
 
+/**
+ * Label con barra de acento de marca. Vive a nivel de módulo, no adentro de
+ * `PlayerForm`: un componente creado en cada render remonta su subárbol y
+ * resetea su estado (react-hooks/static-components).
+ */
+function FormLabel({
+  icon: Icon,
+  children,
+  required,
+}: Readonly<{
+  icon: React.ElementType;
+  children: React.ReactNode;
+  required?: boolean;
+}>) {
+  return (
+    <div className="flex items-center space-x-2 mb-2">
+      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
+      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+        {children}
+        {required && <span className="text-red-500">*</span>}
+      </label>
+    </div>
+  );
+}
+
 export default function PlayerForm(props: Readonly<PlayerFormProps>) {
   const { isEditMode, player } = props;
 
@@ -162,26 +188,6 @@ export default function PlayerForm(props: Readonly<PlayerFormProps>) {
     "Guatemala",
     "Panamá",
   ];
-
-  // Componente reutilizable para labels con barra violeta
-  const FormLabel = ({
-    icon: Icon,
-    children,
-    required,
-  }: {
-    icon: React.ElementType;
-    children: React.ReactNode;
-    required?: boolean;
-  }) => (
-    <div className="flex items-center space-x-2 mb-2">
-      <div className="w-1 h-5 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
-      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-        {children}
-        {required && <span className="text-red-500">*</span>}
-      </label>
-    </div>
-  );
 
   // Estilos comunes para inputs
   const inputClassName =

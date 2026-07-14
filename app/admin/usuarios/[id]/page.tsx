@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -124,36 +124,40 @@ export default function UserDetailPage() {
 
   const [user, setUser] = useState<UserWithStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [, startFetch] = useTransition();
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Función para cargar los datos del usuario
-  const fetchUser = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/users/${userId}`);
-      const result: ApiResponse<UserWithStats> = await response.json();
+  // Función para cargar los datos del usuario.
+  // `isLoading` arranca en true y el fetch va dentro de una transición: así el
+  // setState no queda en el cuerpo del effect (react-hooks/set-state-in-effect).
+  const fetchUser = useCallback(() => {
+    startFetch(async () => {
+      try {
+        const response = await fetch(`/api/users/${userId}`);
+        const result: ApiResponse<UserWithStats> = await response.json();
 
-      if (result.success && result.data) {
-        setUser(result.data);
-      } else {
-        toast.error(result.message || "Error al cargar el usuario");
+        if (result.success && result.data) {
+          setUser(result.data);
+        } else {
+          toast.error(result.message || "Error al cargar el usuario");
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        toast.error("Error al cargar los datos del usuario");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      toast.error("Error al cargar los datos del usuario");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    });
+  }, [userId]);
 
   // Cargar datos al montar el componente
   useEffect(() => {
     if (userId) {
       fetchUser();
     }
-  }, [userId]);
+  }, [userId, fetchUser]);
 
   // Función para actualizar el rol del usuario
   const handleRoleUpdate = async (newRole: UserRole) => {

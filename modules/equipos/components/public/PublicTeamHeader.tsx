@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, User, Shield, Users, Shirt } from "lucide-react";
+import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
 
 interface PublicTeamHeaderProps {
-  readonly team: any;
+  readonly team: TeamDetail;
   readonly followButton?: ReactNode;
 }
 

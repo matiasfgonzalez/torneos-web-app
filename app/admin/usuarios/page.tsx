@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,14 +157,18 @@ const UserCard = ({
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="text-gray-900 dark:text-white">¿Estás seguro?</AlertDialogTitle>
+                  <AlertDialogTitle className="text-gray-900 dark:text-white">
+                    ¿Estás seguro?
+                  </AlertDialogTitle>
                   <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
                     Esta acción marcará al usuario como inactivo. Esta operación
                     puede deshacerse.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
+                    Cancelar
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => onDelete(user.id)}
                     className="bg-red-600 hover:bg-red-700 text-white"
@@ -356,7 +360,7 @@ interface ApiUser extends Omit<
 export default function UsersPage() {
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, startRefresh] = useTransition();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filters, setFilters] = useState<UserFilters>({
     search: "",
@@ -376,43 +380,48 @@ export default function UsersPage() {
     hasPreviousPage: false,
   });
 
-  // Función para cargar usuarios
-  const fetchUsers = async (currentFilters = filters) => {
-    try {
-      setIsRefreshing(true);
-      const params = new URLSearchParams();
+  // Función para cargar usuarios.
+  // El fetch va dentro de una transición: así el setState no queda en el cuerpo
+  // del effect que la llama al montar (react-hooks/set-state-in-effect), y el
+  // pendiente de la transición hace de `isRefreshing` sin un estado aparte.
+  const fetchUsers = (currentFilters = filters) => {
+    startRefresh(async () => {
+      try {
+        const params = new URLSearchParams();
 
-      if (currentFilters.search) params.append("search", currentFilters.search);
-      if (currentFilters.role !== "all")
-        params.append("role", currentFilters.role);
-      if (currentFilters.status !== "all")
-        params.append("status", currentFilters.status);
-      params.append("sortBy", currentFilters.sortBy);
-      params.append("sortOrder", currentFilters.sortOrder);
-      params.append("page", currentFilters.page.toString());
-      params.append("limit", currentFilters.limit.toString());
+        if (currentFilters.search)
+          params.append("search", currentFilters.search);
+        if (currentFilters.role !== "all")
+          params.append("role", currentFilters.role);
+        if (currentFilters.status !== "all")
+          params.append("status", currentFilters.status);
+        params.append("sortBy", currentFilters.sortBy);
+        params.append("sortOrder", currentFilters.sortOrder);
+        params.append("page", currentFilters.page.toString());
+        params.append("limit", currentFilters.limit.toString());
 
-      const response = await fetch(`/api/users?${params.toString()}`);
-      const result: ApiResponse<ApiUser[]> = await response.json();
+        const response = await fetch(`/api/users?${params.toString()}`);
+        const result: ApiResponse<ApiUser[]> = await response.json();
 
-      if (result.success && result.data) {
-        setUsers(result.data);
-        if (result.meta) {
-          setMeta(result.meta);
+        if (result.success && result.data) {
+          setUsers(result.data);
+          if (result.meta) {
+            setMeta(result.meta);
+          }
+        } else {
+          toast.error(result.message || "Error al cargar usuarios");
         }
-      } else {
-        toast.error(result.message || "Error al cargar usuarios");
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Error al cargar los usuarios");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Error al cargar los usuarios");
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
+    });
   };
 
   // Cargar usuarios al montar el componente
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchUsers();
   }, []);

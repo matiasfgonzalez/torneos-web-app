@@ -63,9 +63,14 @@ export default function QuickMatchLoader({
   );
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
+  // El borrador se rearma cuando llegan datos frescos del partido. Es estado
+  // derivado: se ajusta durante el render comparando con el `match` anterior,
+  // no con un useEffect + setState (react-hooks/set-state-in-effect).
+  const [lastMatch, setLastMatch] = useState(match);
+  if (match !== lastMatch) {
+    setLastMatch(match);
     setDraft(draftFromMatch(match));
-  }, [match]);
+  }
 
   const refreshMatch = async () => {
     const fresh = await getMatchById(match.id);

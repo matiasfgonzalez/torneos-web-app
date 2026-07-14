@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteOrDisableButtons } from "@/components/shared/DeleteOrDisableButtons";
 import { deleteTeam, toggleTeamEnabled } from "@modules/equipos/actions/teams";
 import TeamForm from "./team-form";
+import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
 
 interface PropsHeader {
-  teamData: any; // Using any for flexibility with Prisma includes, or we can define a proper interface extending ITeam
+  teamData: TeamDetail;
 }
 
 const Header = (props: PropsHeader) => {

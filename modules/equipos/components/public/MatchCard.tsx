@@ -16,9 +16,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
+import type { TeamMatch } from "@modules/equipos/actions/getEquipoById";
 
 interface MatchCardProps {
-  partido: any;
+  partido: TeamMatch;
   teamId: string;
   teamLogo?: string | null;
 }
@@ -47,15 +48,12 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
   const allGoals = partido.goals || [];
   const allCards = partido.cards || [];
 
-  // Función para obtener si un evento pertenece al equipo LOCAL del partido
-  const isHomeEvent = (event: any) => {
-    if (event.teamPlayer?.tournamentTeamId) {
-      return event.teamPlayer.tournamentTeamId === partido.homeTeamId;
-    }
-    // Fallback: si no tenemos ID de torneo, difícil saber sin más contexto.
-    // Asumimos false si falla.
-    return false;
-  };
+  // Un evento (gol o tarjeta) es del equipo LOCAL si su jugador pertenece al
+  // equipo-torneo local. Los dos tipos comparten esa forma, así que alcanza con
+  // pedir lo único que se usa.
+  const isHomeEvent = (event: {
+    teamPlayer?: { tournamentTeamId?: string } | null;
+  }) => event.teamPlayer?.tournamentTeamId === partido.homeTeamId;
 
   const hasDetails = (allGoals.length > 0 || allCards.length > 0) && isPlayed;
 
@@ -80,13 +78,11 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
           <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
             <Calendar className="w-3.5 h-3.5" />
             <span>{formatDate(partido.dateTime, "dd MMM yyyy")}</span>
-            {partido.time && (
-              <>
-                <span>•</span>
-                <Clock className="w-3.5 h-3.5" />
-                <span>{partido.time}</span>
-              </>
-            )}
+            {/* La hora sale de `dateTime`. Antes se leía `partido.time`, un
+                campo que no existe en el modelo: el reloj nunca se mostraba. */}
+            <span>•</span>
+            <Clock className="w-3.5 h-3.5" />
+            <span>{formatDate(partido.dateTime, "HH:mm")}</span>
           </div>
           {partido.torneoNombre && (
             <Badge
@@ -107,17 +103,17 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
               <div className="relative w-14 h-14 sm:w-16 sm:h-16">
                 <div className="absolute -inset-2 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-full blur-sm opacity-50" />
                 <div className="relative w-full h-full p-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center">
+                  {/* El equipo local es "mi equipo" si el partido fue de local;
+                      si no, es el rival. El fallback que había acá leía
+                      `partido.homeTeam`/`awayTeam`, que no existen en este
+                      objeto: nunca se evaluaba. */}
                   <img
                     src={
                       (partido.esLocal
                         ? teamLogo
-                        : partido.equipoRival?.logoUrl) ||
-                      (partido.esLocal
-                        ? partido.homeTeam?.team?.logoUrl
-                        : partido.awayTeam?.team?.logoUrl) ||
-                      "/placeholder.svg"
+                        : partido.equipoRival?.logoUrl) || "/placeholder.svg"
                     }
-                    alt="Home Team"
+                    alt=""
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -233,7 +229,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
                       </div>
                       <span className="font-medium">Árbitro:</span>
                       <span className="text-gray-900 dark:text-gray-200 font-semibold">
-                        {partido.referees.find((r: any) => r.role === "Principal")?.referee?.name || partido.referees[0]?.referee?.name}
+                        {partido.referees.find((r) => r.role === "Principal")?.referee?.name || partido.referees[0]?.referee?.name}
                       </span>
                    </div>
                 )}
@@ -246,7 +242,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
                           <Goal className="w-3.5 h-3.5" /> Goles
                         </div>
                         <div className="space-y-2">
-                          {allGoals.map((goal: any) => {
+                          {allGoals.map((goal) => {
                             const isHomeGoal = isHomeEvent(goal);
                             return (
                               <div
@@ -289,7 +285,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
                           <AlertTriangle className="w-3.5 h-3.5" /> Tarjetas
                         </div>
                         <div className="space-y-2">
-                          {allCards.map((card: any) => {
+                          {allCards.map((card) => {
                              const isHomeCard = isHomeEvent(card);
                              // Asumimos 'AMARILLA' o 'ROJA'
                              const isYellow = card.type === 'AMARILLA';

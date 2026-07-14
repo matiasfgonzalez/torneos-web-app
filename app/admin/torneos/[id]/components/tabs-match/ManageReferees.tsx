@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -39,7 +39,8 @@ export default function ManageReferees({
   onUpdate,
 }: ManageRefereesProps) {
   const [allReferees, setAllReferees] = useState<IReferee[]>([]);
-  const [isLoadingReferees, setIsLoadingReferees] = useState(false);
+  // El pendiente de la transición hace de "cargando árbitros".
+  const [isLoadingReferees, startFetch] = useTransition();
   const [isAssigning, setIsAssigning] = useState(false);
 
   const [selectedRefereeId, setSelectedRefereeId] = useState("");
@@ -47,18 +48,22 @@ export default function ManageReferees({
 
   const matchReferees = match.referees || [];
 
-  useEffect(() => {
-    fetchReferees();
+  // Declarada ANTES del effect que la usa (si no, el effect la lee en la zona
+  // muerta temporal: react-hooks/immutability) y con el fetch dentro de una
+  // transición, para que el setState no quede en el cuerpo del effect
+  // (react-hooks/set-state-in-effect).
+  const fetchReferees = useCallback(() => {
+    startFetch(async () => {
+      const res = await getReferees();
+      if (res.success) {
+        setAllReferees(res.data as unknown as IReferee[]);
+      }
+    });
   }, []);
 
-  const fetchReferees = async () => {
-    setIsLoadingReferees(true);
-    const res = await getReferees();
-    if (res.success) {
-      setAllReferees(res.data as unknown as IReferee[]);
-    }
-    setIsLoadingReferees(false);
-  };
+  useEffect(() => {
+    fetchReferees();
+  }, [fetchReferees]);
 
   const handleAssign = async () => {
     if (!selectedRefereeId) {

@@ -22,9 +22,10 @@ import { formatDate } from "@/lib/formatDate";
 import { formatTournamentCategory } from "@/lib/constants";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
 
 interface PropsTabsTeam {
-  teamData: any; // Using any for flexibility
+  teamData: TeamDetail;
 }
 
 export default function TabsTeam(props: PropsTabsTeam) {
@@ -116,14 +117,14 @@ export default function TabsTeam(props: PropsTabsTeam) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {teamData.jugadores.map((jugador: any) => (
+                {teamData.jugadores.map((jugador) => (
                   <div
                     key={jugador.id}
                     className="flex items-center p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-brand/30 hover:shadow-md transition-all bg-white dark:bg-gray-800"
                   >
                     <Avatar className="w-12 h-12 border-2 border-brand/20 mr-3">
                       <AvatarImage
-                        src={jugador.imageUrlFace || jugador.imageUrl}
+                        src={jugador.imageUrlFace ?? jugador.imageUrl ?? undefined}
                         alt={jugador.name}
                       />
                       <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white">
@@ -170,7 +171,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
               </CardContent>
             </Card>
           ) : (
-            teamData.tournamentTeams.map((tt: any) => (
+            teamData.tournamentTeams.map((tt) => (
               <Card
                 key={tt.id}
                 className="hover:shadow-lg transition-shadow border-0 shadow-md bg-white dark:bg-gray-800"
@@ -258,7 +259,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
                 <p>No hay partidos registrados</p>
               </div>
             ) : (
-              teamData.partidos.map((partido: any) => (
+              teamData.partidos.map((partido) => (
                 <div
                   key={partido.id}
                   className="flex flex-col sm:flex-row items-center border border-gray-100 dark:border-gray-700 rounded-xl p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors gap-4"

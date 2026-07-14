@@ -45,6 +45,8 @@ Base Radix + `class-variance-authority`, ya instaladas y themeadas con los token
 | `DataTable` | `DataTable.tsx` | **Tabla del panel** (F3): orden por columna, búsqueda, filtros de chips, paginación, colapso a cards en mobile y estado vacío. Ver §4 — no armes una `<Table>` a mano. |
 | `DeleteOrDisableButtons` | `DeleteOrDisableButtons.tsx` | **Baja de una entidad con historial** (2026-07-14, patrón §8b de UI_PATTERNS): toggle habilitar/deshabilitar + baja que elimina solo si `relationCount === 0` y si no ofrece deshabilitar, explicando por qué. Usado en jugadores y equipos; replicalo para cualquier entidad nueva que participe del historial deportivo. |
 
+**Hooks compartidos** (`hooks/`): `useUrlFilters` (filtros en la query de la URL, ver UI_PATTERNS §6) y **`useIsMounted`** (`use-mounted.ts`, 2026-07-14) — guard de hidratación con `useSyncExternalStore`: `false` en el server y durante la hidratación, `true` después. Usalo para todo lo que solo puede resolverse en el browser (tema, `localStorage`, `window`); reemplaza al viejo `useState(false)` + `useEffect(() => setMounted(true))`, que dispara un render en cascada.
+
 ## 2c. Caparazón del panel admin (F3, 2026-07-13)
 
 `app/admin/layout.tsx` (server: resuelve auth/rol/`orgView`) delega el árbol a **`AdminShell`** (`components/admin/AdminShell.tsx`, client), que coordina el **sidebar replegable** con el ancho del contenido:

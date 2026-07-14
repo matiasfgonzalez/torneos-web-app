@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
 import {
   Trophy,
   Users,
@@ -10,7 +11,7 @@ import {
 } from "lucide-react";
 
 interface PropsQuickStats {
-  teamData: any; // Using any to match the structure from getEquipoById
+  teamData: TeamDetail;
 }
 
 const QuickStats = (props: PropsQuickStats) => {

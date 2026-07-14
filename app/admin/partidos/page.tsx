@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -36,15 +36,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { MatchDialog } from "@/components/admin/match-dialog";
+import { MatchDialog, type MatchToEdit } from "@/components/admin/match-dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "sonner";
 
-interface Match {
-  id: string;
-  dateTime: string;
-  status: string;
+interface Match extends MatchToEdit {
   homeScore: number | null;
   awayScore: number | null;
   homeTeam: {
@@ -67,30 +64,37 @@ interface Match {
 export default function PartidosPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, startFetch] = useTransition();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<Match | null>(null);
 
-  useEffect(() => {
-    fetchMatches();
+  // Declarada ANTES del effect que la usa (si no, el effect la lee en la zona
+  // muerta temporal: react-hooks/immutability) y con el fetch dentro de una
+  // transición, para que el setState no quede en el cuerpo del effect
+  // (react-hooks/set-state-in-effect).
+  const fetchMatches = useCallback(() => {
+    startFetch(async () => {
+      try {
+        // scope=panel (N3): solo partidos de las organizaciones del usuario
+        const res = await fetch("/api/matches?scope=panel");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setMatches(data);
+        }
+      } catch (error) {
+        console.error("Error fetching matches:", error);
+      } finally {
+        setLoading(false);
+      }
+    });
   }, []);
 
-  const fetchMatches = async () => {
-    try {
-      // scope=panel (N3): solo partidos de las organizaciones del usuario
-      const res = await fetch("/api/matches?scope=panel");
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setMatches(data);
-      }
-    } catch (error) {
-      console.error("Error fetching matches:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchMatches();
+  }, [fetchMatches]);
 
   const handleCreate = () => {
     setSelectedMatch(undefined);

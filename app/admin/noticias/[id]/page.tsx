@@ -60,20 +60,24 @@ export default function AdminNoticiaDetail({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    if (article) {
-      setEditedArticle({
-        title: article.title,
-        summary: article.summary,
-        content: article.content,
-        coverImageUrl: article.coverImageUrl || "",
-        published: article.published,
-      });
-    }
-  }, [article]);
+  // El borrador de edición se precarga con la noticia que llegó del server. Es
+  // estado derivado: se ajusta durante el render comparando con la noticia
+  // anterior, no con un useEffect + setState (react-hooks/set-state-in-effect).
+  const [lastArticle, setLastArticle] = useState(article);
+  if (article && article !== lastArticle) {
+    setLastArticle(article);
+    setEditedArticle({
+      title: article.title,
+      summary: article.summary,
+      content: article.content,
+      coverImageUrl: article.coverImageUrl || "",
+      published: article.published,
+    });
+  }
 
+  // `loading` arranca en true (la carga ya está en curso en el primer render),
+  // así el effect no necesita un setState síncrono en su cuerpo.
   useEffect(() => {
-    setLoading(true);
     fetch(`/api/noticias/${id}`)
       .then((res) => res.json())
       .then((data: INoticia) => {
@@ -84,7 +88,7 @@ export default function AdminNoticiaDetail({
         setError(true);
         setLoading(false);
       });
-  }, []);
+  }, [id]);
 
   if (loading)
     return (

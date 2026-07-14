@@ -82,6 +82,29 @@ interface CloudinaryUploadProps {
   showMaxSize?: boolean;
 }
 
+/**
+ * Elimina una imagen de Cloudinary.
+ *
+ * Vive a nivel de módulo, no adentro del componente: no depende de ningún
+ * estado ni prop, y declarada abajo como `const` quedaba siendo usada antes de
+ * existir por `handleUpload` (react-hooks/immutability).
+ */
+async function deleteImage(publicIdToDelete: string) {
+  try {
+    const response = await fetch("/api/cloudinary/delete", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publicId: publicIdToDelete }),
+    });
+
+    if (!response.ok) {
+      console.warn("No se pudo eliminar la imagen anterior");
+    }
+  } catch (err) {
+    console.warn("Error al eliminar imagen:", err);
+  }
+}
+
 // ============================================================================
 // COMPONENTE
 // ============================================================================
@@ -247,25 +270,6 @@ export function CloudinaryUpload({
   // ============================================================================
   // ELIMINACIÓN
   // ============================================================================
-
-  /**
-   * Elimina la imagen actual de Cloudinary
-   */
-  const deleteImage = async (publicIdToDelete: string) => {
-    try {
-      const response = await fetch("/api/cloudinary/delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicId: publicIdToDelete }),
-      });
-
-      if (!response.ok) {
-        console.warn("No se pudo eliminar la imagen anterior");
-      }
-    } catch (err) {
-      console.warn("Error al eliminar imagen:", err);
-    }
-  };
 
   /**
    * Maneja la acción de eliminar/desasociar imagen del usuario

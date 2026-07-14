@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +40,8 @@ type CardOption = {
 
 export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingPlayers, setIsFetchingPlayers] = useState(false);
+  // El pendiente de la transición hace de "cargando jugadores".
+  const [isFetchingPlayers, startFetch] = useTransition();
   const [homePlayers, setHomePlayers] = useState<PlayerOption[]>([]);
   const [awayPlayers, setAwayPlayers] = useState<PlayerOption[]>([]);
 
@@ -137,40 +138,43 @@ export default function ManageCards({ match, onUpdate }: ManageCardsProps) {
     (a, b) => (a.minute || 0) - (b.minute || 0),
   );
 
+  // Declarada ANTES del effect que la usa (si no, el effect la lee en la zona
+  // muerta temporal: react-hooks/immutability) y con el fetch dentro de una
+  // transición, para que el setState no quede en el cuerpo del effect
+  // (react-hooks/set-state-in-effect).
+  const fetchPlayers = useCallback(() => {
+    startFetch(async () => {
+      try {
+        const [home, away] = await Promise.all([
+          getTournamentTeamPlayers(match.homeTeamId),
+          getTournamentTeamPlayers(match.awayTeamId),
+        ]);
+        setHomePlayers(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          home.map((tp: any) => ({
+            id: tp.id,
+            name: tp.player.name,
+            number: tp.number,
+          })),
+        );
+        setAwayPlayers(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          away.map((tp: any) => ({
+            id: tp.id,
+            name: tp.player.name,
+            number: tp.number,
+          })),
+        );
+      } catch (error) {
+        console.error("Error fetching players:", error);
+        toast.error("Error al cargar jugadores");
+      }
+    });
+  }, [match.homeTeamId, match.awayTeamId]);
+
   useEffect(() => {
     fetchPlayers();
-  }, []);
-
-  const fetchPlayers = async () => {
-    setIsFetchingPlayers(true);
-    try {
-      const [home, away] = await Promise.all([
-        getTournamentTeamPlayers(match.homeTeamId),
-        getTournamentTeamPlayers(match.awayTeamId),
-      ]);
-      setHomePlayers(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        home.map((tp: any) => ({
-          id: tp.id,
-          name: tp.player.name,
-          number: tp.number,
-        })),
-      );
-      setAwayPlayers(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        away.map((tp: any) => ({
-          id: tp.id,
-          name: tp.player.name,
-          number: tp.number,
-        })),
-      );
-    } catch (error) {
-      console.error("Error fetching players:", error);
-      toast.error("Error al cargar jugadores");
-    } finally {
-      setIsFetchingPlayers(false);
-    }
-  };
+  }, [fetchPlayers]);
 
   const handleAddCard = async () => {
     if (!selectedPlayerId) {

@@ -4,16 +4,13 @@ import { useState, useEffect } from "react";
 import { Moon, Sun, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme/theme-provider";
+import { useIsMounted } from "@/hooks/use-mounted";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  // Guard de hidratación: el tema real solo se conoce en el browser.
+  const mounted = useIsMounted();
   const [showMenu, setShowMenu] = useState(false);
-
-  // Evitar hidration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Cerrar menu al hacer clic fuera
   useEffect(() => {
