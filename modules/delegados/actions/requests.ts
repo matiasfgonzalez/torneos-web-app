@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import type { TeamManagerStatus } from "@prisma/client";
+import type { ApprovalStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
@@ -178,7 +178,7 @@ export async function getPendingTeamRequests(organizationId: string) {
 // narrowea al pasar el valor por otra función.
 type RequestContext =
   | { ok: false; error: string }
-  | { ok: true; request: { id: string; status: TeamManagerStatus }; user: AppUser };
+  | { ok: true; request: { id: string; status: ApprovalStatus }; user: AppUser };
 
 /** Valida que quien resuelve la solicitud gestione la liga dueña del equipo. */
 async function authForRequest(requestId: string): Promise<RequestContext> {

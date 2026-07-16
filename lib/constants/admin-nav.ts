@@ -101,12 +101,19 @@ export const adminNavItems: AdminNavItem[] = [
     keywords: ["encuentros", "fixture", "resultados", "fechas"],
   },
   {
-    title: "Delegados",
+    title: "Solicitudes",
     href: "/admin/delegados",
     icon: UserCheck2,
     enabled: true,
     roles: ["ADMINISTRADOR", "USUARIO"],
-    keywords: ["solicitudes", "representantes", "equipos", "aprobar"],
+    keywords: [
+      "delegados",
+      "inscripciones",
+      "representantes",
+      "fichas",
+      "reclamos",
+      "aprobar",
+    ],
   },
   {
     title: "Miembros",

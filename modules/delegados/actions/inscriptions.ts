@@ -6,6 +6,11 @@ import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getManagedTeamIds, requireActionTeamManager } from "@/lib/teamAuth";
 import { requireActionOrgAccess } from "@/lib/orgAuth";
+import {
+  formatDeadline,
+  isRegistrationClosed,
+  remainingSlots,
+} from "@/lib/inscriptions";
 
 /**
  * Inscripción de un equipo a un torneo, pedida por el delegado (S3/N13).
@@ -52,30 +57,50 @@ export async function getOpenTournamentsForMyTeams() {
       locality: true,
       startDate: true,
       organizationId: true,
+      maxTeams: true,
+      registrationDeadline: true,
       organization: { select: { name: true } },
       tournamentTeams: {
         where: { teamId: { in: teamIds } },
         select: { id: true, teamId: true, registrationStatus: true },
       },
+      // Cupos ya ocupados: solo cuentan los aprobados
+      _count: {
+        select: {
+          tournamentTeams: { where: { registrationStatus: "INSCRIPTO" } },
+        },
+      },
     },
     orderBy: { startDate: "asc" },
   });
 
-  return tournaments.map((t) => ({
-    id: t.id,
-    name: t.name,
-    locality: t.locality,
-    startDate: t.startDate.toISOString(),
-    organizationName: t.organization.name,
-    // Equipos míos de esa liga que todavía puedo anotar
-    myTeams: teams
-      .filter((team) => team.organizationId === t.organizationId)
-      .map((team) => ({
-        id: team.id,
-        name: team.name,
-        registration: t.tournamentTeams.find((tt) => tt.teamId === team.id) ?? null,
-      })),
-  }));
+  return tournaments
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      locality: t.locality,
+      startDate: t.startDate.toISOString(),
+      organizationName: t.organization.name,
+      maxTeams: t.maxTeams,
+      takenSlots: t._count.tournamentTeams,
+      remaining: remainingSlots(t.maxTeams, t._count.tournamentTeams),
+      registrationDeadline: t.registrationDeadline?.toISOString() ?? null,
+      deadlineLabel: t.registrationDeadline
+        ? formatDeadline(t.registrationDeadline)
+        : null,
+      // Equipos míos de esa liga que todavía puedo anotar
+      myTeams: teams
+        .filter((team) => team.organizationId === t.organizationId)
+        .map((team) => ({
+          id: team.id,
+          name: team.name,
+          registration:
+            t.tournamentTeams.find((tt) => tt.teamId === team.id) ?? null,
+        })),
+    }))
+    // Un torneo cuyas inscripciones cerraron por fecha no se ofrece: mostrar un
+    // botón que el server va a rechazar es peor que no mostrarlo.
+    .filter((t) => !isRegistrationClosed(t.registrationDeadline));
 }
 
 /** El delegado pide inscribir su equipo a un torneo. */
@@ -89,7 +114,14 @@ export async function requestInscription(input: {
   const [tournament, team] = await Promise.all([
     db.tournament.findFirst({
       where: { id: input.tournamentId, deletedAt: null },
-      select: { id: true, name: true, status: true, organizationId: true },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        organizationId: true,
+        maxTeams: true,
+        registrationDeadline: true,
+      },
     }),
     db.team.findUnique({
       where: { id: input.teamId },
@@ -104,6 +136,16 @@ export async function requestInscription(input: {
     return {
       success: false,
       error: "Este torneo no está recibiendo inscripciones.",
+    };
+  }
+
+  // Cierre por fecha (S3). Se compara en el server: la fecha del navegador la
+  // pone el usuario y se puede atrasar a mano.
+  const closed = isRegistrationClosed(tournament.registrationDeadline);
+  if (closed) {
+    return {
+      success: false,
+      error: `Las inscripciones a ${tournament.name} cerraron el ${formatDeadline(tournament.registrationDeadline!)}.`,
     };
   }
   if (!team.enabled) {
@@ -131,6 +173,21 @@ export async function requestInscription(input: {
       RECHAZADO: "fue rechazado en este torneo",
     }[existing.registrationStatus];
     return { success: false, error: `${team.name} ${label}.` };
+  }
+
+  // Cupo lleno (S3). Se cuentan los **aprobados**: una solicitud pendiente no
+  // ocupa lugar todavía (la liga puede rechazarla). El control duro está al
+  // aprobar — acá solo se evita hacer poner en cola a alguien para nada.
+  if (tournament.maxTeams !== null) {
+    const taken = await db.tournamentTeam.count({
+      where: { tournamentId: tournament.id, registrationStatus: "INSCRIPTO" },
+    });
+    if (taken >= tournament.maxTeams) {
+      return {
+        success: false,
+        error: `${tournament.name} ya cubrió sus ${tournament.maxTeams} cupos.`,
+      };
+    }
   }
 
   await db.tournamentTeam.create({
@@ -197,6 +254,29 @@ export async function approveInscription(
 ): Promise<InscriptionResult> {
   const ctx = await authForInscription(tournamentTeamId);
   if (!ctx.ok) return { success: false, error: ctx.error };
+
+  // El control duro del cupo va acá, no al pedir: entre la solicitud y la
+  // aprobación pueden haberse aprobado otras. Si no, aprobar de a una las
+  // pendientes desbordaría el cupo sin que nadie se entere.
+  const tournament = await db.tournament.findUnique({
+    where: { id: ctx.tt.tournament.id },
+    select: { name: true, maxTeams: true },
+  });
+
+  if (tournament?.maxTeams != null) {
+    const taken = await db.tournamentTeam.count({
+      where: {
+        tournamentId: ctx.tt.tournament.id,
+        registrationStatus: "INSCRIPTO",
+      },
+    });
+    if (taken >= tournament.maxTeams) {
+      return {
+        success: false,
+        error: `${tournament.name} ya tiene sus ${tournament.maxTeams} cupos cubiertos. Ampliá el cupo del torneo o rechazá esta solicitud.`,
+      };
+    }
+  }
 
   await db.tournamentTeam.update({
     where: { id: tournamentTeamId },

@@ -17,6 +17,10 @@ import {
   approveInscription,
   rejectInscription,
 } from "@modules/delegados/actions/inscriptions";
+import {
+  approvePlayerClaim,
+  rejectPlayerClaim,
+} from "@modules/jugadores/actions/claims";
 
 interface Request {
   id: string;
@@ -33,10 +37,23 @@ interface Inscription {
   playerCount: number;
 }
 
+interface Claim {
+  id: string;
+  userName: string | null;
+  userEmail: string;
+  playerName: string;
+  nationalId: string;
+}
+
 export default function DelegadosClient({
   requests,
   inscriptions,
-}: Readonly<{ requests: Request[]; inscriptions: Inscription[] }>) {
+  claims,
+}: Readonly<{
+  requests: Request[];
+  inscriptions: Inscription[];
+  claims: Claim[];
+}>) {
   const router = useRouter();
   const [isPending, start] = useTransition();
 
@@ -58,10 +75,10 @@ export default function DelegadosClient({
     <div className="space-y-6">
       <PageHeader
         icon={UserCheck}
-        title="Delegados"
+        title="Solicitudes"
         variant="simple"
-        description="Personas que piden representar a un equipo de tu liga"
-        breadcrumbs={[{ label: "Delegados" }]}
+        description="Delegados, inscripciones a torneos y jugadores reclamando su ficha"
+        breadcrumbs={[{ label: "Solicitudes" }]}
       />
 
       {/* Inscripciones a torneos pedidas por delegados (S3) */}
@@ -131,7 +148,74 @@ export default function DelegadosClient({
         </section>
       )}
 
-      {requests.length === 0 && inscriptions.length === 0 ? (
+      {/* Jugadores reclamando su propia ficha (N12) */}
+      {claims.length > 0 && (
+        <section className="space-y-3">
+          <SectionTitle>Jugadores reclamando su ficha</SectionTitle>
+          {claims.map((claim) => (
+            <article
+              key={claim.id}
+              className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-card p-5 lg:flex-row lg:items-center dark:border-gray-700"
+            >
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  {claim.playerName}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <b>{claim.userName || "Sin nombre"}</b> dice ser este jugador
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {claim.userEmail} · DNI {claim.nationalId}
+                </p>
+              </div>
+
+              <div className="flex shrink-0 gap-2">
+                <ConfirmDialog
+                  trigger={
+                    <Button variant="outline" disabled={isPending} className="h-11 px-4">
+                      Rechazar
+                    </Button>
+                  }
+                  title="¿Rechazar el reclamo?"
+                  description={
+                    <>
+                      <b>{claim.userName || claim.userEmail}</b> no va a
+                      gestionar la ficha de <b>{claim.playerName}</b>.
+                    </>
+                  }
+                  confirmLabel="Rechazar"
+                  onConfirm={() => resolve(rejectPlayerClaim, claim.id)}
+                />
+                <ConfirmDialog
+                  trigger={
+                    <Button variant="brand" disabled={isPending} className="h-11 px-4">
+                      <UserCheck className="h-4 w-4" aria-hidden="true" />
+                      Es él
+                    </Button>
+                  }
+                  tone="warning"
+                  icon={UserCheck}
+                  title="¿Confirmás que es esa persona?"
+                  description={
+                    <>
+                      <b>{claim.userName || claim.userEmail}</b> va a poder ver y{" "}
+                      <b>editar los datos</b> de la ficha de{" "}
+                      <b>{claim.playerName}</b>, y su historial en todas las
+                      ligas. Confirmá solo si sabés que es esa persona.
+                    </>
+                  }
+                  confirmLabel="Confirmar"
+                  onConfirm={() => resolve(approvePlayerClaim, claim.id)}
+                />
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {requests.length === 0 &&
+      inscriptions.length === 0 &&
+      claims.length === 0 ? (
         <EmptyState
           icon={UserCheck}
           title="No hay solicitudes pendientes"

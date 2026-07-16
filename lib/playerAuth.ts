@@ -49,6 +49,8 @@ export function playerTeamScopeWhere(
  * ¿Puede este usuario editar la ficha del jugador?
  *
  * - ADMINISTRADOR de plataforma: siempre.
+ * - **El propio jugador**, si reclamó la ficha y se la aprobaron (N12): son sus
+ *   datos.
  * - Quien la creó: sí — para corregir lo que acaba de cargar (una ficha recién
  *   creada todavía no participa en ningún lado, así que ningún otro chequeo la
  *   alcanzaría).
@@ -67,6 +69,13 @@ export async function canEditPlayer(
   });
   if (!player) return false;
   if (player.createdById === user.id) return true;
+
+  // El dueño de la ficha (N12): son sus propios datos
+  const ownClaim = await db.playerClaim.findUnique({
+    where: { userId_playerId: { userId: user.id, playerId } },
+    select: { status: true },
+  });
+  if (ownClaim?.status === "APROBADO") return true;
 
   // ¿Está en el plantel de un equipo que representa?
   const managedTeamIds = await getManagedTeamIds(user);

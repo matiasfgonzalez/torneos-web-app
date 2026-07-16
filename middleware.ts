@@ -9,6 +9,7 @@ const isProtectedPage = createRouteMatcher([
   "/admin(.*)",
   "/profile(.*)",
   "/mi-equipo(.*)",
+  "/mi-ficha(.*)",
   "/bienvenida(.*)",
 ]);
 

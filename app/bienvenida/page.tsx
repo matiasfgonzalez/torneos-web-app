@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Heart, Shield, Trophy } from "lucide-react";
+import { ArrowRight, Heart, Shield, Trophy, UserCircle } from "lucide-react";
 
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
@@ -33,6 +33,15 @@ const DOORS = [
     featured: false,
   },
   {
+    href: "/mi-ficha",
+    icon: UserCircle,
+    title: "Juego en una liga",
+    description:
+      "Vinculá tu ficha con tu DNI y mirá tu trayectoria: los torneos que jugaste, tus goles y tus tarjetas.",
+    cta: "Buscar mi ficha",
+    featured: false,
+  },
+  {
     href: "/mi-equipo",
     icon: Shield,
     title: "Represento a un equipo",
@@ -57,7 +66,7 @@ export default async function BienvenidaPage() {
   if (!user) redirect("/sign-in");
 
   // Quien ya eligió no vuelve a elegir: esta pantalla es de alta, no un menú.
-  const [membership, managership] = await Promise.all([
+  const [membership, managership, claim] = await Promise.all([
     db.organizationMember.findFirst({
       where: { userId: user.id },
       select: { id: true },
@@ -66,10 +75,15 @@ export default async function BienvenidaPage() {
       where: { userId: user.id },
       select: { id: true },
     }),
+    db.playerClaim.findFirst({
+      where: { userId: user.id, status: { in: ["PENDIENTE", "APROBADO"] } },
+      select: { id: true },
+    }),
   ]);
 
   if (membership) redirect("/admin/dashboard");
   if (managership) redirect("/mi-equipo");
+  if (claim) redirect("/mi-ficha");
 
   const firstName = user.name?.split(" ")[0] || "campeón";
 
@@ -88,7 +102,7 @@ export default async function BienvenidaPage() {
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {DOORS.map((door) => (
             <Link
               key={door.href}

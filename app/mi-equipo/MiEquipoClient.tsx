@@ -35,11 +35,11 @@ import {
 } from "@modules/delegados/actions/queries";
 import RosterSection, { type Roster } from "./RosterSection";
 import InscriptionsSection, { type OpenTournament } from "./InscriptionsSection";
-import type { TeamManagerStatus } from "@prisma/client";
+import type { ApprovalStatus } from "@prisma/client";
 
 interface MyRequest {
   id: string;
-  status: TeamManagerStatus;
+  status: ApprovalStatus;
   team: {
     id: string;
     name: string;
@@ -59,7 +59,7 @@ interface Props {
 }
 
 const STATUS_UI: Record<
-  TeamManagerStatus,
+  ApprovalStatus,
   { icon: typeof Clock; label: string; className: string }
 > = {
   PENDIENTE: {

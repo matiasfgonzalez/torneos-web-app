@@ -56,6 +56,9 @@ model User {
   teamManagerships   TeamManager[]
   teamManagerDecisions TeamManager[]      @relation("TeamManagerDecisions")
   playersCreated     Player[]             @relation("PlayersCreated")
+  // Ficha de jugador que esta persona reclama como propia (N12)
+  playerClaims         PlayerClaim[]
+  playerClaimDecisions PlayerClaim[]      @relation("PlayerClaimDecisions")
 
   @@index([role, status])
 }
@@ -325,6 +328,15 @@ model Tournament {
   trophy       String?
   deletedAt    DateTime?
 
+  /// Cupo de equipos (S3). `null` = sin límite propio del torneo (igual manda
+  /// el límite del plan de la liga, que es otra cosa: este lo elige el
+  /// organizador, aquel lo impone la plataforma).
+  maxTeams Int?
+
+  /// Última fecha para pedir inscripción (S3). `null` = sin fecha límite: se
+  /// cierra a mano cambiando el estado del torneo.
+  registrationDeadline DateTime?
+
   // Configuración deportiva (N7): reglas de puntaje y desempate por torneo.
   // Habilita multi-deporte a futuro (básquet/vóley solo cambian estos valores).
   pointsWin     Int  @default(3)
@@ -417,8 +429,12 @@ model Team {
   @@index([organizationId])
 }
 
-enum TeamManagerStatus {
-  PENDIENTE // solicitud esperando que la liga la apruebe
+/// Estado de una solicitud que alguien tiene que aprobar. Compartido por los
+/// dos flujos de aprobación: delegado de equipo (`TeamManager`, N13) y
+/// jugador reclamando su ficha (`PlayerClaim`, N12) — mismo vocabulario para el
+/// mismo concepto.
+enum ApprovalStatus {
+  PENDIENTE // esperando que alguien la resuelva
   APROBADO
   RECHAZADO
 }
@@ -443,7 +459,7 @@ model TeamManager {
   teamId String
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
-  status TeamManagerStatus @default(PENDIENTE)
+  status ApprovalStatus @default(PENDIENTE)
 
   /// Mensaje del solicitante ("soy el DT desde 2019") para que la liga decida.
   message String?
@@ -551,12 +567,52 @@ model Player {
   createdBy   User?   @relation("PlayersCreated", fields: [createdById], references: [id])
 
   teamPlayer TeamPlayer[]
+  claims     PlayerClaim[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // El unique de `nationalId` está en el campo: es global, no por liga.
   @@index([name])
+}
+
+/// El jugador reclama su propia ficha (N12).
+///
+/// La ficha la carga un delegado o la liga; el jugador después pide ser su
+/// dueño para ver sus estadísticas de todas las ligas y gestionar sus datos.
+///
+/// **Lo aprueba quien es responsable de la ficha** — el mismo criterio que
+/// `canEditPlayer`: la liga donde el jugador juega, el delegado que lo tiene en
+/// su plantel, o quien la cargó. Es la gente que puede reconocerlo; la
+/// plataforma no tiene forma de verificar que ese usuario es esa persona.
+///
+/// Una ficha puede tener a lo sumo **un** reclamo APROBADO. Postgres no permite
+/// un índice único parcial desde Prisma, así que la regla se valida en el
+/// server (`approvePlayerClaim`).
+model PlayerClaim {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  status ApprovalStatus @default(PENDIENTE)
+
+  /// Con qué prueba el usuario que es esa persona ("mi fecha de nacimiento es…").
+  message String?
+
+  decidedById String?
+  decidedBy   User?     @relation("PlayerClaimDecisions", fields: [decidedById], references: [id])
+  decidedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, playerId])
+  @@index([playerId, status])
+  @@index([userId])
 }
 
 // ============================================================

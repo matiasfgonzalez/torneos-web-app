@@ -5,6 +5,7 @@ import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg } from "@/lib/orgAuth";
 import { getPendingTeamRequests } from "@modules/delegados/actions/requests";
 import { getPendingInscriptions } from "@modules/delegados/actions/inscriptions";
+import { getPendingPlayerClaims } from "@modules/jugadores/actions/claims";
 import DelegadosClient from "./DelegadosClient";
 
 export const metadata: Metadata = {
@@ -22,15 +23,25 @@ export default async function DelegadosPage() {
 
   const user = await checkUser();
   const org = user ? await getOrCreateOwnOrg(user) : null;
-  const [requests, inscriptions] = org
+  const [requests, inscriptions, claims] = org
     ? await Promise.all([
         getPendingTeamRequests(org.id),
         getPendingInscriptions(org.id),
+        // Reclamos de ficha: se filtran por responsabilidad sobre cada ficha,
+        // no por organización (la ficha es global, N12).
+        getPendingPlayerClaims(),
       ])
-    : [[], []];
+    : [[], [], []];
 
   return (
     <DelegadosClient
+      claims={claims.map((c) => ({
+        id: c.id,
+        userName: c.user.name,
+        userEmail: c.user.email,
+        playerName: c.player.name,
+        nationalId: c.player.nationalId,
+      }))}
       inscriptions={inscriptions.map((i) => ({
         id: i.id,
         teamName: i.team.name,

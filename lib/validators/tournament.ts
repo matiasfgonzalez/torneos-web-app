@@ -5,7 +5,7 @@ import {
   TournamentFormat,
   TournamentStatus,
 } from "@prisma/client";
-import { nullableString } from "./common";
+import { nullableInt, nullableString } from "./common";
 import { TIEBREAKER_CRITERIA } from "@/lib/standings/config";
 
 // Fechas date-only ("2025-07-01") se interpretan en hora local, no UTC,
@@ -50,6 +50,9 @@ const tournamentBase = z.object({
   endDate: nullableLocalDate,
   status: z.enum(TournamentStatus),
   enabled: z.boolean(),
+  // Inscripción online (S3): null = sin límite / sin fecha de cierre
+  maxTeams: nullableInt(2, 128),
+  registrationDeadline: nullableLocalDate,
   rules: nullableString(20000),
   trophy: nullableString(500),
   // Configuración deportiva (N7): puntaje, walkover y desempates
@@ -80,6 +83,8 @@ export const tournamentCreateSchema = tournamentBase
     endDate: true,
     rules: true,
     trophy: true,
+    maxTeams: true,
+    registrationDeadline: true,
     pointsWin: true,
     pointsDraw: true,
     pointsLoss: true,

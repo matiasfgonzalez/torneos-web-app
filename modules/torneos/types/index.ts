@@ -13,6 +13,10 @@ export interface ITorneo {
   enabled: boolean; // Si el torneo está habilitado/visible
   rules?: string | null; // Reglamento del torneo
   trophy?: string | null; // Premio/Trofeo del torneo
+  /** Cupo de equipos (S3). `null` = sin límite propio del torneo. */
+  maxTeams?: number | null;
+  /** Cierre de inscripciones (S3). `null` = no cierra por fecha. */
+  registrationDeadline?: string | Date | null;
   nextMatch: string | Date;
   startDate: string | Date;
   endDate: string | Date;

@@ -89,6 +89,14 @@ const tournamentFormSchema = z
     homeAndAway: z.boolean(),
     status: z.string().min(1, "Elegí el estado"),
     enabled: z.boolean(),
+    // Inscripción online (S3): vacío = sin límite / sin cierre por fecha
+    maxTeams: z
+      .number("Ingresá un número")
+      .int()
+      .min(2, "El cupo mínimo es 2 equipos")
+      .max(128, "El cupo máximo es 128 equipos")
+      .optional(),
+    registrationDeadline: z.string(),
     rules: z
       .string()
       .max(2000, "El reglamento no puede superar los 2000 caracteres"),
@@ -109,6 +117,16 @@ const tournamentFormSchema = z
     message: "La fecha de fin no puede ser anterior a la de inicio",
     path: ["endDate"],
   })
+  .refine(
+    (data) =>
+      !data.registrationDeadline ||
+      data.registrationDeadline.slice(0, 10) <= data.startDate,
+    {
+      message:
+        "Las inscripciones no pueden cerrar después de que arranque el torneo",
+      path: ["registrationDeadline"],
+    },
+  )
   .refine(
     (data) => !data.nextMatch || data.nextMatch.slice(0, 10) >= data.startDate,
     {
@@ -172,6 +190,8 @@ const emptyValues = (): TournamentFormValues => ({
   homeAndAway: false,
   status: TOURNAMENT_STATUS_OPTIONS[0].value,
   enabled: true,
+  maxTeams: undefined,
+  registrationDeadline: "",
   rules: "",
   trophy: "",
   pointsWin: 3,
@@ -200,6 +220,8 @@ const valuesFromTournament = (t: ITorneo): TournamentFormValues => ({
   homeAndAway: t.homeAndAway ?? false,
   status: t.status || TOURNAMENT_STATUS_OPTIONS[0].value,
   enabled: t.enabled ?? true,
+  maxTeams: t.maxTeams ?? undefined,
+  registrationDeadline: toDateTimeInput(t.registrationDeadline),
   rules: t.rules ?? "",
   trophy: t.trophy ?? "",
   pointsWin: t.pointsWin ?? 3,
@@ -232,11 +254,13 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
   });
 
   const onSubmit = async (data: TournamentFormValues) => {
-    const { tiebreakerPreset, nextMatch, ...rest } = data;
+    const { tiebreakerPreset, nextMatch, registrationDeadline, ...rest } = data;
 
     const payload = {
       ...rest,
       nextMatch: dateTimeInputToISO(nextMatch),
+      maxTeams: data.maxTeams ?? null,
+      registrationDeadline: dateTimeInputToISO(registrationDeadline),
       endDate: data.endDate || null,
       division: data.division || null,
       liga: data.liga || null,
@@ -403,6 +427,33 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
           withTime
           description="Se muestra como destacado en la ficha pública del torneo."
         />
+      </FormSection>
+
+      <FormSection
+        icon={Users}
+        title="Inscripción online"
+        description="Aplica cuando el torneo está en estado «Inscripción»: los delegados piden anotar su equipo y vos aprobás."
+      >
+        <FieldRow>
+          <NumberField
+            control={form.control}
+            name="maxTeams"
+            label="Cupo de equipos"
+            icon={Users}
+            min={2}
+            max={128}
+            placeholder="Sin límite"
+            description="Vacío = sin cupo. Se cuentan solo los equipos ya aprobados."
+          />
+          <DateField
+            control={form.control}
+            name="registrationDeadline"
+            label="Cierre de inscripciones"
+            icon={CalendarClock}
+            withTime
+            description="Vacío = no cierra por fecha."
+          />
+        </FieldRow>
       </FormSection>
 
       <FormSection
