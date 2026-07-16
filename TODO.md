@@ -537,7 +537,13 @@
     - La lista del delegado **oculta los torneos con inscripción vencida** y deshabilita el botón sin cupo: mostrar un botón que el server va a rechazar es peor que no mostrarlo. El cierre se valida igual en el server (la fecha del navegador la pone el usuario).
     - Validación cruzada en el form: las inscripciones no pueden cerrar después de que arranque el torneo.
     - **Falta de S3:** cobro de la inscripción con Mercado Pago (opcional).
-    - ⚠️ **Hallazgo anotado, no tocado:** `assertPlanLimit(org, "addTeamToTournament")` cuenta **todos** los `TournamentTeam`, incluidos los `RECHAZADO` — así, rechazar inscripciones consume cupo del plan igual. Antes de S3 el enum no se usaba y daba lo mismo; ahora no. Corregir al tocar `lib/planLimits.ts`.
+    - ✅ **Límite del plan, corregido de raíz (2026-07-14).** El síntoma conocido era que `assertPlanLimit(org, "addTeamToTournament")` contaba **todos** los `TournamentTeam` (rechazar una inscripción consumía cupo del plan igual). Al mirarlo apareció que era **lo menos grave de tres**:
+      1. **El conteo** incluía `RECHAZADO` y `PENDIENTE`. Ahora cuenta solo `INSCRIPTO`: es lo único que de verdad ocupa un lugar. Una solicitud que nunca se aprueba no debería costar nada.
+      2. 🔴 **El camino del delegado no consultaba el plan en absoluto.** `assertPlanLimit` se llamaba en **un solo lugar** (`POST /api/tournament-teams`, la liga agregando a mano); ni `requestInscription` ni `approveInscription` lo miraban. O sea: **el límite comercial simplemente no se aplicaba si los equipos entraban por inscripción online** — una liga en FREE podía terminar con 30 equipos en un torneo de 8. Es fuga de ingresos, que es exactamente lo que el límite existe para evitar.
+      3. **El control estaba en el lugar equivocado.** Ahora va donde el equipo **pasa a ocupar lugar** (`approveInscription`), no solo al crearlo: si no, aprobar de a una las pendientes desborda el cupo sin que nadie se entere.
+    - **Concepto nuevo: capacidad efectiva** (`effectiveCapacity` en [lib/inscriptions.ts](lib/inscriptions.ts), puro y testeado) = la más chica entre el cupo del torneo y el del plan. Devuelve también **de dónde sale el límite**, y eso no es decorativo: decide a quién se le cuenta qué.
+    - 🔒 **El delegado no ve el plan de la liga.** Que una liga esté en el plan gratis es su relación comercial con la plataforma: no es problema del delegado y la expone. Al delegado se le dice *"este torneo ya no tiene lugar"*; al organizador, el mensaje real con el upsell. Mismo límite, distinto mensaje según quién escucha.
+    - Verificado: 148 tests ✅ (+4 de `effectiveCapacity`), `tsc` limpio, 0 errores de lint, build verde.
 - [ ] **S4. Página pública compartible + QR (E:Medio):** URL limpia por torneo con OG image dinámica (marcador/tabla), botón compartir por WhatsApp (canal #1 en ligas amateur) y QR imprimible.
 - [ ] **S5. Notificaciones (E:Medio):** in-app (campana con no-leídas) + email (Resend) para: resultado cargado, próximo partido, equipo aprobado. Base: modelo `Notification` + preferencias por usuario.
 - [ ] **S6. Live match center (E:Alto):** marcador en vivo minuto a minuto (el admin carga eventos, el público ve actualizado con polling/SSE). Gran diferenciador para ligas locales.
@@ -692,6 +698,25 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
   - **Sugerencia de planes iniciales:** FREE (1 torneo activo, 12 equipos/torneo, 2 miembros, marca "Powered by GOLAZO" en páginas públicas) / PRO (torneos ilimitados, 30 equipos, 10 miembros, export PDF, sin marca) / PREMIUM (todo + branding propio de la liga + live match center cuando exista). Precios los definís vos; el schema no los hardcodea.
   - **Enforcement:** helper único `assertPlanLimit(orgId, "createTournament" | "addTeam" | "addMember")` llamado en los endpoints de creación; devuelve 402 con mensaje de upsell. Features por flag: `hasFeature(orgId, "exportPdf")`. Los límites se leen del Plan, nunca se copian a la org (cambiar un plan actualiza a todos sus clientes).
   - **Vencimiento:** job/check on-read — si `currentPeriodEnd < now` → status VENCIDA → la org pasa a límites de FREE (no se borra nada; solo se bloquea crear). Nunca ocultar datos ya cargados: es la mejor política de retención.
+
+#### N4b. 🔴 Auditoría de límites de plan — caminos que los esquivaban (2026-07-14)
+
+> Pasada completa sobre **cada límite contra todos los caminos que lo cruzan**, no solo el de creación. Disparada por el hallazgo de `addTeamToTournament`. Resultado: **4 bypasses reales, todos corregidos**; el conteo mal era el menos grave.
+
+| Límite | Estado | Hallazgo |
+|---|---|---|
+| `maxTeamsPerTournament` | ✅ corregido | Contaba `RECHAZADO`/`PENDIENTE`; y **el camino del delegado no lo consultaba nunca** (ver S3) |
+| `maxActiveTournaments` | ✅ corregido | **Dos bypasses** (abajo) |
+| `maxMembers` | ✅ sano | Aceptar una invitación es neutro (miembro +1, invitación pendiente −1); cambiar de rol no suma |
+| features (`hasFeature`) | ⚠️ ver abajo | No se aplica en ningún lado — pero porque las features no existen |
+
+**Los dos bypasses de `maxActiveTournaments`** (ambos: el límite se consume en una transición que nadie miraba):
+1. **Reactivar un archivado.** `PATCH /api/tournaments/[id]` acepta `status` y no chequeaba el plan. Con FREE (1 torneo activo): archivar el que tenías → deja de contar → crear uno nuevo → volver el archivado a `ACTIVO` = **2 activos con plan de 1**.
+2. **Restaurar un eliminado.** El endpoint de restore (que agregué yo en F4 para el "Deshacer") devuelve `deletedAt: null`, y el conteo filtra `deletedAt: null` → el torneo vuelve a contar. Mismo truco: eliminar → crear → restaurar.
+
+**La corrección de fondo:** se extrajo `isActiveTournamentStatus()` — la regla de "qué torneo ocupa cupo" ahora la comparten **el conteo y los tres caminos que activan** (crear, reactivar, restaurar). Cuando la sabía solo el conteo, cualquier camino nuevo la esquivaba sin que nadie lo notara. Un estado desconocido cuenta como activo a propósito: cobrar de más se corrige, regalar el producto no se detecta. +8 tests.
+
+**⚠️ Features de pago: no es un bypass, es un problema peor.** `hasFeature()` existe y **no lo llama nadie** — porque `exportPdf` (S8), `liveMatch` (S6) y `customBranding` **no están construidas**. El riesgo real: la landing (`pricing-section`) **las anuncia** si el admin las tilda en `/admin/planes`, o sea vender algo que no se puede entregar. Se agregó un aviso en esa pantalla para que nadie las active por error. `hasFeature` queda como el punto de enforcement listo para cuando S6/S8 lleguen.
 
 #### N5. 🟠 Pagos manuales con comprobante (E:Medio)
 

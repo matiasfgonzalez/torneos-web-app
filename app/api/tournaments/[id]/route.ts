@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
+import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
 import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentUpdateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -129,6 +130,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         organizationId: true,
         name: true,
         slug: true,
+        status: true,
       },
     });
 
@@ -143,6 +145,25 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const auth = await requireApiOrgAccess(existing.organizationId);
     if (auth.error) {
       return auth.error;
+    }
+
+    // **Reactivar consume el límite igual que crear.** Faltaba: se podía
+    // archivar un torneo (deja de contar), crear uno nuevo con el cupo libre y
+    // después devolver el archivado a ACTIVO — quedando con más torneos activos
+    // de los que permite el plan, sin pasar nunca por el chequeo.
+    const wasActive = isActiveTournamentStatus(existing.status);
+    const willBeActive = parsed.data.status
+      ? isActiveTournamentStatus(parsed.data.status)
+      : wasActive;
+
+    if (willBeActive && !wasActive) {
+      const check = await assertPlanLimit(
+        existing.organizationId,
+        "createTournament",
+      );
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 402 });
+      }
     }
 
     // El slug se genera una sola vez y NO cambia al renombrar, para mantener

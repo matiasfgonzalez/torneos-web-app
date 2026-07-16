@@ -284,6 +284,17 @@ export default function PlanesClient() {
             </p>
 
             <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+              {/* Estas tres features se anuncian en la landing (pricing-section)
+                  pero TODAVÍA NO ESTÁN IMPLEMENTADAS (S6/S8) y nada las
+                  restringe: `hasFeature()` existe pero no lo llama nadie.
+                  Tildarlas hoy = venderlas sin poder cumplirlas. */}
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-900/20">
+                <p className="text-xs text-amber-800 dark:text-amber-300">
+                  <b>Estas funciones todavía no están construidas.</b> Si las
+                  activás acá, la página de precios las anuncia y no vas a poder
+                  cumplirlas. Dejalas apagadas hasta que existan.
+                </p>
+              </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="exportPdf" className="cursor-pointer">
                   Exportar PDF

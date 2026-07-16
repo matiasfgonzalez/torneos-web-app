@@ -7,10 +7,12 @@ import { checkUser } from "@/lib/checkUser";
 import { getManagedTeamIds, requireActionTeamManager } from "@/lib/teamAuth";
 import { requireActionOrgAccess } from "@/lib/orgAuth";
 import {
+  effectiveCapacity,
   formatDeadline,
   isRegistrationClosed,
   remainingSlots,
 } from "@/lib/inscriptions";
+import { assertPlanLimit, getEffectivePlan } from "@/lib/planLimits";
 
 /**
  * Inscripción de un equipo a un torneo, pedida por el delegado (S3/N13).
@@ -74,16 +76,34 @@ export async function getOpenTournamentsForMyTeams() {
     orderBy: { startDate: "asc" },
   });
 
+  // Plan de cada liga: la capacidad real de un torneo es la más chica entre su
+  // cupo y el del plan. Se resuelve por organización (no por torneo) para no
+  // repetir la consulta por cada uno.
+  const plans = new Map(
+    await Promise.all(
+      orgIds.map(
+        async (orgId) =>
+          [orgId, await getEffectivePlan(orgId)] as const,
+      ),
+    ),
+  );
+
   return tournaments
-    .map((t) => ({
+    .map((t) => {
+      const planMax = plans.get(t.organizationId)!.maxTeamsPerTournament;
+      const capacity = effectiveCapacity(t.maxTeams, planMax);
+
+      return {
       id: t.id,
       name: t.name,
       locality: t.locality,
       startDate: t.startDate.toISOString(),
       organizationName: t.organization.name,
-      maxTeams: t.maxTeams,
+      // El delegado ve la capacidad real y cuántos lugares quedan, pero nunca
+      // de dónde sale el límite: el plan de la liga no es asunto suyo.
+      maxTeams: capacity.limit,
       takenSlots: t._count.tournamentTeams,
-      remaining: remainingSlots(t.maxTeams, t._count.tournamentTeams),
+      remaining: remainingSlots(capacity.limit, t._count.tournamentTeams),
       registrationDeadline: t.registrationDeadline?.toISOString() ?? null,
       deadlineLabel: t.registrationDeadline
         ? formatDeadline(t.registrationDeadline)
@@ -97,7 +117,8 @@ export async function getOpenTournamentsForMyTeams() {
           registration:
             t.tournamentTeams.find((tt) => tt.teamId === team.id) ?? null,
         })),
-    }))
+      };
+    })
     // Un torneo cuyas inscripciones cerraron por fecha no se ofrece: mostrar un
     // botón que el server va a rechazar es peor que no mostrarlo.
     .filter((t) => !isRegistrationClosed(t.registrationDeadline));
@@ -177,17 +198,24 @@ export async function requestInscription(input: {
 
   // Cupo lleno (S3). Se cuentan los **aprobados**: una solicitud pendiente no
   // ocupa lugar todavía (la liga puede rechazarla). El control duro está al
-  // aprobar — acá solo se evita hacer poner en cola a alguien para nada.
-  if (tournament.maxTeams !== null) {
-    const taken = await db.tournamentTeam.count({
-      where: { tournamentId: tournament.id, registrationStatus: "INSCRIPTO" },
-    });
-    if (taken >= tournament.maxTeams) {
-      return {
-        success: false,
-        error: `${tournament.name} ya cubrió sus ${tournament.maxTeams} cupos.`,
-      };
-    }
+  // aprobar — acá solo se evita poner a alguien en una cola que nunca va a
+  // avanzar.
+  //
+  // La capacidad real es la más chica entre el cupo del torneo y el del plan de
+  // la liga. El motivo **no se le dice al delegado**: que la liga esté en el
+  // plan gratis es su relación comercial con la plataforma, no es problema del
+  // delegado y expone a la liga. Él ve "no hay lugar"; la liga ve el upsell.
+  const plan = await getEffectivePlan(tournament.organizationId);
+  const capacity = effectiveCapacity(tournament.maxTeams, plan.maxTeamsPerTournament);
+  const taken = await db.tournamentTeam.count({
+    where: { tournamentId: tournament.id, registrationStatus: "INSCRIPTO" },
+  });
+
+  if (taken >= capacity.limit) {
+    return {
+      success: false,
+      error: `${tournament.name} ya no tiene lugar para más equipos.`,
+    };
   }
 
   await db.tournamentTeam.create({
@@ -255,9 +283,10 @@ export async function approveInscription(
   const ctx = await authForInscription(tournamentTeamId);
   if (!ctx.ok) return { success: false, error: ctx.error };
 
-  // El control duro del cupo va acá, no al pedir: entre la solicitud y la
-  // aprobación pueden haberse aprobado otras. Si no, aprobar de a una las
-  // pendientes desbordaría el cupo sin que nadie se entere.
+  // Acá es donde el equipo **pasa a ocupar un lugar**, así que acá van los dos
+  // controles duros. Al pedir no alcanza: entre la solicitud y la aprobación
+  // pueden haberse aprobado otras, y aprobar de a una las pendientes
+  // desbordaría el cupo sin que nadie se entere.
   const tournament = await db.tournament.findUnique({
     where: { id: ctx.tt.tournament.id },
     select: { name: true, maxTeams: true },
@@ -276,6 +305,21 @@ export async function approveInscription(
         error: `${tournament.name} ya tiene sus ${tournament.maxTeams} cupos cubiertos. Ampliá el cupo del torneo o rechazá esta solicitud.`,
       };
     }
+  }
+
+  // Límite del plan. **Faltaba por completo en este camino**: la inscripción
+  // online entraba equipos al torneo sin pasar nunca por el plan, así que el
+  // límite comercial simplemente no se aplicaba si los equipos llegaban por
+  // delegado en vez de cargarlos la liga a mano.
+  const planCheck = await assertPlanLimit(
+    ctx.tt.tournament.organizationId,
+    "addTeamToTournament",
+    { tournamentId: ctx.tt.tournament.id },
+  );
+  if (!planCheck.ok) {
+    // Al organizador sí se le dice que es su plan: es su relación con la
+    // plataforma y es el upsell.
+    return { success: false, error: planCheck.error };
   }
 
   await db.tournamentTeam.update({

@@ -24,6 +24,17 @@ const INACTIVE_TOURNAMENT_STATUSES = [
   "ARCHIVADO",
 ] as const;
 
+/**
+ * ¿Este estado hace que el torneo cuente contra `maxActiveTournaments`?
+ *
+ * Se exporta porque el límite **no se consume solo al crear**: reactivar un
+ * torneo archivado o restaurar uno eliminado también lo consumen, y esos
+ * caminos tienen que preguntar lo mismo que el conteo.
+ */
+export function isActiveTournamentStatus(status: string): boolean {
+  return !INACTIVE_TOURNAMENT_STATUSES.some((s) => s === status);
+}
+
 async function getFreePlan(): Promise<Plan> {
   const free = await db.plan.findUnique({ where: { code: "FREE" } });
   if (!free) {
@@ -113,8 +124,18 @@ export async function assertPlanLimit(
 
     case "addTeamToTournament": {
       if (!ctx.tournamentId) return { ok: true };
+
+      // Solo cuentan los equipos que **de verdad ocupan un lugar** en el
+      // torneo (S3). Antes se contaban todos los `TournamentTeam`, y con las
+      // inscripciones online eso significaba que **rechazar una solicitud
+      // consumía cupo del plan igual** — la liga pagaba por equipos que no
+      // dejó entrar. Una inscripción PENDIENTE tampoco ocupa: todavía no
+      // está adentro, y si nunca se aprueba no debería costar nada.
       const count = await db.tournamentTeam.count({
-        where: { tournamentId: ctx.tournamentId },
+        where: {
+          tournamentId: ctx.tournamentId,
+          registrationStatus: "INSCRIPTO",
+        },
       });
       if (count >= plan.maxTeamsPerTournament) {
         return {

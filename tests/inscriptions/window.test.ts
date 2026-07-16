@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canRequestInscription,
+  effectiveCapacity,
   isRegistrationClosed,
   remainingSlots,
 } from "@/lib/inscriptions";
@@ -49,6 +50,31 @@ describe("remainingSlots", () => {
 
   it("nunca devuelve negativo aunque se haya desbordado el cupo", () => {
     expect(remainingSlots(8, 12)).toBe(0);
+  });
+});
+
+describe("effectiveCapacity", () => {
+  it("sin cupo del torneo, manda el plan", () => {
+    expect(effectiveCapacity(null, 8)).toEqual({ limit: 8, source: "plan" });
+    expect(effectiveCapacity(undefined, 8)).toEqual({ limit: 8, source: "plan" });
+  });
+
+  it("manda el más chico de los dos", () => {
+    // El organizador quiere 20 pero su plan da 8 → 8
+    expect(effectiveCapacity(20, 8)).toEqual({ limit: 8, source: "plan" });
+    // El plan da 30 pero el torneo es de 10 → 10
+    expect(effectiveCapacity(10, 30)).toEqual({ limit: 10, source: "tournament" });
+  });
+
+  it("empatados, el torneo es el motivo: es lo que el organizador eligió", () => {
+    expect(effectiveCapacity(8, 8)).toEqual({ limit: 8, source: "tournament" });
+  });
+
+  it("distingue el motivo, que es lo que decide a quién se le cuenta qué", () => {
+    // `source: "plan"` → al organizador se le ofrece mejorar el plan;
+    // al delegado solo se le dice que no hay lugar.
+    expect(effectiveCapacity(50, 8).source).toBe("plan");
+    expect(effectiveCapacity(4, 8).source).toBe("tournament");
   });
 });
 

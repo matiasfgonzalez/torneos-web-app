@@ -33,6 +33,28 @@ export function remainingSlots(
   return Math.max(0, maxTeams - takenSlots);
 }
 
+/**
+ * Capacidad REAL de un torneo: la más chica entre el cupo que puso el
+ * organizador y el que permite el plan de su liga.
+ *
+ * Son dos límites distintos y hay que distinguirlos, porque **le hablan a
+ * gente distinta**:
+ * - `tournament`: lo eligió el organizador ("este torneo es de 8 equipos").
+ *   Se le puede decir a cualquiera.
+ * - `plan`: es la relación comercial de la liga con la plataforma. Al
+ *   organizador se le muestra con el upsell; **al delegado nunca** — no es su
+ *   problema y expone a la liga.
+ */
+export function effectiveCapacity(
+  tournamentMax: number | null | undefined,
+  planMax: number,
+): { limit: number; source: "tournament" | "plan" } {
+  if (tournamentMax == null || planMax < tournamentMax) {
+    return { limit: planMax, source: "plan" };
+  }
+  return { limit: tournamentMax, source: "tournament" };
+}
+
 export type InscriptionBlock =
   | { open: true }
   | { open: false; reason: "deadline" | "full" | "status"; message: string };
