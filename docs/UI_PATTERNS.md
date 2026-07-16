@@ -180,7 +180,22 @@ Cómo se implementa (referencia: `modules/jugadores/actions/players.ts` y `modul
 2. La UI usa **`<DeleteOrDisableButtons>`** (`components/shared/DeleteOrDisableButtons.tsx`): un toggle habilitar/deshabilitar + un botón de baja cuyo diálogo cambia según el caso — con historial explica *por qué* no se puede eliminar y ofrece deshabilitar (tono `warning`, ícono `Archive`); sin historial ofrece eliminar (tono `danger`, ícono `Trash2`). Si ya está deshabilitado y tiene historial, ese segundo botón no se muestra: no hay nada que ofrecer.
 3. El **server action vuelve a verificar** las relaciones antes de borrar. Nunca confíes en el conteo que mandó el cliente: pudo haber cargado la lista antes de que la entidad se usara.
 4. Al borrar de verdad, limpiá también las **imágenes en Cloudinary** (`deleteImage(publicId)`), o quedan huérfanas. Si falla ese borrado remoto no revertimos el de la base.
-5. Un registro deshabilitado tiene que **desaparecer de todo selector** donde se lo usaría (`/api/players` no devuelve deshabilitados; `tournament-team-form` filtra `t.enabled`). Deshabilitar sin sacarlo de los selectores no deshabilita nada.
+5. Un registro deshabilitado tiene que **desaparecer de todo selector** donde se lo usaría (`/api/players` no devuelve deshabilitados; el formulario de inscripción filtra `enabled`). Deshabilitar sin sacarlo de los selectores no deshabilita nada.
+
+## 8c. Deshacer una baja reversible (F4, 2026-07-14)
+
+**Si el server puede deshacer la acción, la UI tiene que ofrecerlo** — y el copy tiene que decir la verdad sobre lo que pasa.
+
+El DELETE de torneo siempre fue un **soft delete** (C7: escribe `deletedAt`, conserva partidos, goles y standings), pero el diálogo decía *"Esta acción no se puede deshacer. Se eliminará el torneo y todos sus datos"* y no había forma de recuperarlo salvo entrar a la base a mano. Dos errores en uno: asustaba con una consecuencia falsa y desperdiciaba una red de seguridad que ya existía.
+
+El patrón (referencia: `modules/torneos/components/admin/DeleteTournamentButton.tsx`):
+
+1. **Endpoint de restauración** que revierte exactamente lo que escribió el DELETE, con el mismo control de acceso (`POST /api/tournaments/[id]/restore`; espeja a `restoreReferee`).
+2. **Toast con acción "Deshacer"** y `duration: 10000` — el default de 4s se va antes de que el usuario registre el error.
+3. **Copy honesto** en la confirmación: qué se pierde, qué se conserva y que se puede restaurar.
+4. Si la baja se hizo desde la ficha del propio recurso, pasá `redirectAfterDelete` (esa ruta deja de existir) — y el "Deshacer" devuelve a la ficha: deshacer es volver al estado anterior, también el de navegación.
+
+Aplica a **toda baja reversible**. Una baja irreversible no lleva "Deshacer": lleva el copy que explica por qué (ver §8b).
 
 ## 9. Paginación
 

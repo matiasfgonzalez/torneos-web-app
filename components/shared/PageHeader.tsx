@@ -98,7 +98,9 @@ export function PageHeader({
       {/* Background decorativo */}
       <div className="absolute inset-0 bg-gradient-to-r from-brand/5 to-brand-2/5 dark:from-brand/10 dark:to-brand-2/10 rounded-3xl -z-10" />
 
-      <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+      {/* `bg-card/95` en vez de `bg-white/95 dark:bg-gray-800/95`: el token ya
+          da la superficie correcta en los dos temas (F4). */}
+      <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-card/95 backdrop-blur-sm">
         <CardContent className="p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="space-y-3">

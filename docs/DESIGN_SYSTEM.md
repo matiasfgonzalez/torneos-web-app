@@ -50,9 +50,26 @@ Cada entidad con estado tiene su propio mapa de colores en `lib/constants.ts` o 
 
 Lucide React exclusivamente (`lucide-react`). Contenedor de ícono destacado: `p-2` a `p-3`, `rounded-lg`/`rounded-xl`, `bg-gradient-to-br from-[#ad45ff] to-[#c77dff]`, ícono `text-white`. Nunca emojis como ícono estructural/de navegación (sí como acento puntual dentro de copy, ej. "✨ Lo que obtienes gratis", "¡Bienvenido! 👋" — uso decorativo en texto, no como reemplazo de un ícono funcional).
 
+## 5b. Movimiento (F4, 2026-07-14)
+
+**Una sola curva y tres duraciones para toda la app.** Si cada pantalla inventa su `duration-300 ease-in-out`, el producto se mueve con ritmos distintos y se nota. Tokens en `globals.css`:
+
+| Token | Valor | Para qué |
+|---|---|---|
+| `--ease-out` (→ utilidad `ease-brand`) | `cubic-bezier(0.22, 1, 0.36, 1)` | La curva de entrada de todo. Sale rápido y desacelera. |
+| `--duration-fast` | 150ms | Feedback inmediato: hover, press, foco. |
+| `--duration-base` | 250ms | La mayoría: paneles, acentos, badges. |
+| `--duration-slow` | 400ms | Techo. **Nada de la UI dura más.** |
+
+- **`.interactive-surface`** es el gesto único de "esto se puede tocar": sube 2px, gana sombra y el borde toma color de marca. Lo usan `StatCard` y `EntityCard`; no vuelvas a escribir `hover:-translate-y-1 hover:shadow-xl transition-all duration-300` a mano.
+- **`.page-transition`** (en `app/template.tsx`) da el fade de 200ms entre rutas. `template.tsx` se remonta en cada navegación, así que no hace falta JS ni estado.
+- **Movimiento con significado:** cada animación expresa una relación causa-efecto. El contador de los KPIs (`<NumberTicker>`) dice "esto se acaba de medir"; fuera de un KPI es ruido — no lo pongas en una tabla ni en un marcador, donde el número tiene que leerse al instante.
+- **`prefers-reduced-motion`:** `globals.css` ya anula animaciones y transiciones **de CSS** globalmente. Una animación hecha en JS (un `requestAnimationFrame`) **no la toca la media query**: usá el hook `usePrefersReducedMotion()` (`hooks/use-reduced-motion.ts`) y pintá el estado final.
+
 ## 6. Accesibilidad y modo oscuro (no negociable)
 
 - Toda clase de color (`bg-*`, `text-*`, `border-*`) que no sea un token semántico de shadcn (`bg-card`, `text-muted-foreground`, etc.) necesita su contraparte `dark:`. Una pantalla que se ve "siempre oscura" o "siempre clara" sin importar el toggle es un bug, no una variante de diseño.
+- **Superficie de card = `bg-card`, no `bg-white dark:bg-gray-800` (F4).** Hasta 2026-07-14 el token `--card` valía en dark **exactamente lo mismo** que `--background`, así que toda `<Card>` se confundía con la página y había que taparlo a mano — de ahí los ~89 archivos con `dark:bg-gray-800/900` hardcodeado. El token ya está corregido (card/popover un escalón por encima del fondo): **en código nuevo usá `bg-card`**, y al tocar un archivo legacy migrá sus superficies de paso (misma política que los tokens de marca en M6). Excepción legítima: una sección *hundida* dentro de una card (ej. `FormSection`) no es `bg-card` — ahí `bg-gray-50 dark:bg-gray-900/50` es deliberado.
 - Texto de color sobre fondo claro: tono `600`-`700` mínimo. En dark mode: `300`-`400` sobre fondos `900/20`-`900/30`.
 - Focus visible en todo elemento interactivo (heredado de shadcn — no lo remuevas con `outline-none` sin agregar un reemplazo).
 - Objetivo táctil mínimo 44×44px en acciones primarias de mobile (ver el patrón de steppers en `app/admin/partidos/[id]/cargar/QuickMatchLoader.tsx`).
@@ -64,3 +81,5 @@ Lucide React exclusivamente (`lucide-react`). Contenedor de ícono destacado: `p
 - `app/admin/partidos/page.tsx` usaba `zinc-900`/`violet-600`/`indigo-600` en vez de la marca, también forzando oscuro. Corregido (2026-07-12).
 - `app/sign-up/[[...sign-up]]/GoogleSignUp.tsx` no tenía ninguna clase `dark:` (a diferencia de su gemela `GoogleSignIn.tsx`) y el `page.tsx` no incluía `Header`/`Footer`. Corregido (2026-07-12).
 - `REFEREE_STATUS_COLORS` (`modules/arbitros/types/index.ts`) usaba tonos `-400` sin variante clara (bajo contraste sobre blanco). Corregido a pares `-50/-700` claro + `-500/20/-400` oscuro (2026-07-12).
+- **El token `--card` era igual a `--background` en modo oscuro** (`oklch(0.145 0 0)` los dos), así que `<Card>` —que usa `bg-card`— no se despegaba del fondo: solo el borde la salvaba. Era la causa raíz de que ~89 archivos hardcodearan `dark:bg-gray-800/900` encima. Corregido a `oklch(0.205 0 0)` en card y popover (2026-07-14). Verificado en el CSS servido: dark `--background: #0a0a0a` vs `--card: #171717`.
+- **El botón "Eliminar torneo" mentía**: decía "Esta acción no se puede deshacer. Se eliminará el torneo y todos sus datos" cuando el DELETE es un **soft delete** que conserva todo (C7). Copy corregido + "Deshacer" real en el toast (2026-07-14). Regla general: el copy de una confirmación tiene que describir **lo que el server hace de verdad**, no la consecuencia más aterradora imaginable.

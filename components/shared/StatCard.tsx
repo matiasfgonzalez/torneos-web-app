@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NumberTicker } from "@/components/shared/NumberTicker";
 import { cn } from "@/lib/utils";
 
 /**
@@ -37,7 +38,10 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden border-2 border-gray-100 dark:border-gray-700 hover:border-brand/30 dark:hover:border-brand/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white dark:bg-gray-800",
+        // `interactive-surface` (F4): el hover de superficie único de la app.
+        // El fondo sale de `bg-card`, que en dark ya no es igual al fondo de la
+        // página (token corregido en F4) — antes había que forzar `bg-gray-800`.
+        "interactive-surface group relative overflow-hidden border-2 border-gray-100 dark:border-gray-700",
         className,
       )}
     >
@@ -52,7 +56,9 @@ export function StatCard({
             {title}
           </CardTitle>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {value}
+            {/* Solo los KPIs numéricos cuentan; un valor como "3 de 5" o "—"
+                se pinta tal cual (animar texto no significa nada). */}
+            {typeof value === "number" ? <NumberTicker value={value} /> : value}
           </div>
         </div>
 

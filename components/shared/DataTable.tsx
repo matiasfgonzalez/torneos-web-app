@@ -272,7 +272,7 @@ export function DataTable<T>({
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="pl-10 h-11 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-brand bg-white dark:bg-gray-800"
+                className="pl-10 h-11 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-brand bg-card"
               />
             </div>
           )}
@@ -395,7 +395,7 @@ export function DataTable<T>({
                   {renderCard ? (
                     renderCard(row)
                   ) : (
-                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 space-y-3">
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-card p-4 space-y-3">
                       {/* La primera columna hace de título de la card */}
                       <div>{cardColumns[0]?.cell(row)}</div>
                       <dl className="grid grid-cols-2 gap-2 text-sm">

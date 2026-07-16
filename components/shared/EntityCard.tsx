@@ -33,12 +33,16 @@ export function EntityCard({
     >
       <article
         className={cn(
-          "relative h-full overflow-hidden rounded-2xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
+          // El hover (elevación + borde de marca) sale de `interactive-surface`
+          // (F4): antes cada card lo escribía a mano con duraciones distintas.
+          // El borde arranca transparente para que la card siga leyéndose como
+          // vidrio y el color de marca solo aparezca al apuntarla.
+          "interactive-surface relative h-full overflow-hidden rounded-2xl border border-transparent bg-card/80 shadow-lg backdrop-blur-xl",
           className,
         )}
       >
         {topAccent && (
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-brand-2 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 z-10" />
+          <div className="absolute top-0 left-0 z-10 h-1 w-full origin-left scale-x-0 bg-gradient-to-r from-brand to-brand-2 transition-transform duration-200 ease-brand group-hover:scale-x-100" />
         )}
         {children}
       </article>

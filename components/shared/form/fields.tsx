@@ -46,8 +46,9 @@ import { cn } from "@/lib/utils";
  * `FormProvider`.
  */
 
+// `bg-card`: superficie del token, no `bg-white dark:bg-gray-900` a mano (F4).
 const CONTROL_BASE =
-  "bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl transition-colors focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20 aria-invalid:border-red-500 dark:aria-invalid:border-red-500";
+  "bg-card border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl transition-colors duration-150 ease-brand focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20 aria-invalid:border-red-500 dark:aria-invalid:border-red-500";
 
 /** 48px: objetivo táctil cómodo (mínimo 44 de WCAG/HIG). */
 const INPUT_CLASS = cn(CONTROL_BASE, "h-12");
@@ -388,7 +389,7 @@ export function SwitchField<T extends FieldValues>({
       render={({ field }) => (
         <FormItem
           className={cn(
-            "flex flex-row items-center justify-between gap-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900",
+            "flex flex-row items-center justify-between gap-4 rounded-xl border border-gray-200 bg-card p-4 dark:border-gray-700",
             className,
           )}
         >

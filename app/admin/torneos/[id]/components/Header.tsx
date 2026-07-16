@@ -182,7 +182,10 @@ const Header = ({ tournamentData }: PropsHeader) => {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <DialogAddTournaments tournament={tournamentData} />
-              <DeleteTournamentButton tournament={tournamentData} />
+              <DeleteTournamentButton
+                tournament={tournamentData}
+                redirectAfterDelete="/admin/torneos"
+              />
             </div>
           </div>
         </div>

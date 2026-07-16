@@ -1,93 +1,109 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ITorneo } from "@modules/torneos/types";
 
 interface DeleteTournamentButtonProps {
   tournament: ITorneo;
+  /** Ruta a la que ir tras eliminar. Pasala cuando el botón vive en la ficha
+      del propio torneo: esa ruta deja de existir al darlo de baja. Mismo
+      contrato que `<DeleteOrDisableButtons redirectAfterDelete>`. */
+  redirectAfterDelete?: string;
 }
 
-export function DeleteTournamentButton(
-  props: Readonly<DeleteTournamentButtonProps>,
-) {
-  const { tournament } = props;
-
-  const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+/**
+ * Baja de un torneo (F4).
+ *
+ * Dos cosas cambiaron acá:
+ *
+ * 1. **El copy mentía.** Decía "Esta acción no se puede deshacer. Se eliminará
+ *    el torneo y todos sus datos", pero el DELETE es un **soft delete** (C7):
+ *    escribe `deletedAt` y conserva partidos, goles, tarjetas y la tabla de
+ *    posiciones. Asustaba con una consecuencia que no ocurre.
+ * 2. **Ahora se puede deshacer de verdad**: el toast ofrece "Deshacer" contra
+ *    `POST /api/tournaments/[id]/restore`. El soft delete siempre lo permitió;
+ *    lo que faltaba era la forma de pedirlo sin entrar a la base a mano.
+ */
+export function DeleteTournamentButton({
+  tournament,
+  redirectAfterDelete,
+}: Readonly<DeleteTournamentButtonProps>) {
   const router = useRouter();
 
-  const handleDelete = async (id: string) => {
+  const restore = async () => {
     try {
-      setIsLoading(true);
+      const res = await fetch(`/api/tournaments/${tournament.id}/restore`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        toast.error(error?.error ?? "No se pudo restaurar el torneo");
+        return;
+      }
+      toast.success(`"${tournament.name}" volvió al listado`);
+      // Si se eliminó desde la ficha, el "Deshacer" tiene que devolver ahí:
+      // deshacer significa volver al estado anterior, también el de navegación.
+      if (redirectAfterDelete) router.push(`/admin/torneos/${tournament.id}`);
+      router.refresh();
+    } catch {
+      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    }
+  };
 
-      const res = await fetch(`/api/tournaments/${id}`, {
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/tournaments/${tournament.id}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Error al eliminar el torneo");
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        toast.error(error?.error ?? "No se pudo eliminar el torneo");
+        return;
+      }
 
-      toast.success("Torneo eliminado correctamente");
+      toast.success(`"${tournament.name}" eliminado`, {
+        description: "El historial se conserva por si lo restaurás.",
+        // 10s en vez de los 4 por defecto: un "Deshacer" que se va antes de que
+        // el usuario registre el error no sirve de nada.
+        duration: 10000,
+        action: { label: "Deshacer", onClick: () => void restore() },
+      });
 
-      // Sólo cerrar el modal si la eliminación fue exitosa
-      setOpen(false);
-      router.refresh(); // o router.push("/admin/torneos")
-    } catch (error) {
-      toast.error("No se pudo eliminar el torneo");
-      console.error(error);
-    } finally {
-      setIsLoading(false); // Siempre asegurarse de resetear el estado
+      // Tras borrar desde la ficha del propio torneo, esa ruta ya no existe
+      if (redirectAfterDelete) router.push(redirectAfterDelete);
+      router.refresh();
+    } catch {
+      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="cursor-pointer">
+    <ConfirmDialog
+      trigger={
+        <Button
+          variant="destructive"
+          size="sm"
+          aria-label={`Eliminar ${tournament.name}`}
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
-      </DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>¿Eliminar torneo?</DialogTitle>
-        </DialogHeader>
-
-        <p className="text-sm text-muted-foreground">
-          Esta acción no se puede deshacer. Se eliminará el torneo{" "}
-          <strong>{tournament.name}</strong> y todos sus datos.
-        </p>
-
-        <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={() => setOpen(false)}
-            disabled={isLoading}
-            className="cursor-pointer"
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleDelete(tournament.id)}
-            disabled={isLoading}
-            className="cursor-pointer"
-          >
-            {isLoading ? "Eliminando..." : "Confirmar eliminación"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      }
+      title="¿Eliminar el torneo?"
+      description={
+        <>
+          <b>{tournament.name}</b> sale del listado y del sitio público. Sus
+          partidos, goles y tabla de posiciones se conservan, y vas a poder
+          restaurarlo desde el aviso que aparece al eliminarlo.
+        </>
+      }
+      confirmLabel="Eliminar"
+      onConfirm={handleDelete}
+    />
   );
 }

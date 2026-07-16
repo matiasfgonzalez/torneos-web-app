@@ -60,10 +60,10 @@ export function FilterChipGroup({
               aria-pressed={selected}
               className={cn(
                 // 44px de alto: objetivo táctil mínimo (AGENT_RULES)
-                "shrink-0 h-11 px-4 rounded-full border-2 text-sm font-medium whitespace-nowrap transition-all",
+                "shrink-0 h-11 px-4 rounded-full border-2 text-sm font-medium whitespace-nowrap transition-colors duration-150 ease-brand",
                 selected
                   ? "bg-gradient-to-r from-brand to-brand-2 border-transparent text-white shadow-lg shadow-brand/25"
-                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-brand/50 hover:text-brand",
+                  : "bg-card border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-brand/50 hover:text-brand",
               )}
             >
               {option.label}

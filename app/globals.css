@@ -15,6 +15,17 @@
   --brand-mid-hover: #b66de6; /* hover del stop intermedio */
   --gradient-brand: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
 
+  /* ============================================
+     Tokens de movimiento (F4)
+     Una sola curva y tres duraciones para toda la app: si cada pantalla
+     inventa su `duration-300 ease-in-out`, el producto se mueve con ritmos
+     distintos y se nota. `--ease-out` es la curva de entrada estándar.
+     ============================================ */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms; /* feedback inmediato: hover, press */
+  --duration-base: 250ms; /* la mayoría: paneles, acentos, badges */
+  --duration-slow: 400ms; /* techo: nada de la UI dura más */
+
   --background: oklch(0.97 0.005 240);
   --foreground: oklch(0.25 0.005 240);
   --card: oklch(1 0 0);
@@ -53,9 +64,15 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
+  /* Bug corregido en F4: `--card` y `--popover` valían exactamente lo mismo
+     que `--background` (0.145), así que en modo oscuro toda <Card> quedaba
+     del color de la página — sin elevación, solo el borde la salvaba. Por eso
+     89 archivos terminaron hardcodeando `dark:bg-gray-800/900` encima. Ahora
+     la superficie está un escalón por arriba del fondo, que es lo que el
+     sistema de elevación asume (y el default de shadcn). */
+  --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
+  --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.985 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -96,6 +113,9 @@
   --color-brand-mid: var(--brand-mid);
   --color-brand-hover: var(--brand-hover);
   --color-brand-mid-hover: var(--brand-mid-hover);
+
+  /* Movimiento (F4) → habilita `ease-brand` como utilidad de Tailwind */
+  --ease-brand: var(--ease-out);
 
   /* Color System */
   --color-background: var(--background);
@@ -259,6 +279,33 @@
       0 0 10px -5px rgba(163, 179, 255, 0.1);
   }
 
+  /* Hover de superficie interactiva (F4) — el gesto único de "esto se puede
+     tocar": sube 2px, gana sombra y el borde toma el color de marca. Estaba
+     escrito a mano con valores distintos en cards, StatCard y EntityCard.
+     `motion-safe` no hace falta: la media query global ya anula la transición,
+     pero el translate sí se anula acá para que no salte sin animar. */
+  .interactive-surface {
+    @apply transition-[transform,box-shadow,border-color] duration-200 ease-brand hover:-translate-y-0.5 hover:shadow-lg hover:border-brand/40;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .interactive-surface:hover {
+      transform: none;
+    }
+  }
+
+  /* Transición de página (F4): fade + 4px de subida, 200ms. Corto a propósito
+     — una transición de página que se nota es una transición que estorba. */
+  .page-transition {
+    animation: pageIn 200ms var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-transition {
+      animation: none;
+    }
+  }
+
   /* Line clamp utilities */
   .line-clamp-1 {
     overflow: hidden;
@@ -340,6 +387,18 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* Entrada de página (F4, ver .page-transition) */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
