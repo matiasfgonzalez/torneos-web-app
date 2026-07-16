@@ -12,139 +12,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Trophy,
-  Users,
-  Users2,
-  UserCheck,
-  Calendar,
-  BarChart3,
-  Settings,
   Menu,
-  Home,
   Shield,
-  Newspaper,
   ArrowLeft,
   Info,
-  CreditCard,
-  Wallet,
-  UsersRound,
-  Building2,
-  Layers,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Roles de PLATAFORMA (N1): ADMINISTRADOR | USUARIO.
-// El acceso fino por organización lo validan los layouts/APIs;
-// acá USUARIO = miembro de organización con acceso al panel.
-const menuItems = [
-  {
-    title: "Dashboard",
-    href: "/admin/dashboard",
-    icon: Home,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Noticias",
-    href: "/admin/noticias",
-    icon: Newspaper,
-    enabled: true,
-    roles: ["ADMINISTRADOR"],
-  },
-  {
-    title: "Torneos",
-    href: "/admin/torneos",
-    icon: Trophy,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Equipos",
-    href: "/admin/equipos",
-    icon: Users,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Jugadores",
-    href: "/admin/jugadores",
-    icon: UserCheck,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Árbitros",
-    href: "/admin/arbitros",
-    icon: Shield,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Partidos",
-    href: "/admin/partidos",
-    icon: Calendar,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Miembros",
-    href: "/admin/miembros",
-    icon: UsersRound,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Plan y Pagos",
-    href: "/admin/plan",
-    icon: CreditCard,
-    enabled: true,
-    roles: ["ADMINISTRADOR", "USUARIO"],
-  },
-  {
-    title: "Usuarios",
-    href: "/admin/usuarios",
-    icon: Users2,
-    enabled: true,
-    roles: ["ADMINISTRADOR"],
-  },
-  {
-    title: "Organizaciones",
-    href: "/admin/organizaciones",
-    icon: Building2,
-    enabled: true,
-    roles: ["ADMINISTRADOR"],
-  },
-  {
-    title: "Planes",
-    href: "/admin/planes",
-    icon: Layers,
-    enabled: true,
-    roles: ["ADMINISTRADOR"],
-  },
-  {
-    title: "Aprobar Pagos",
-    href: "/admin/pagos",
-    icon: Wallet,
-    enabled: true,
-    roles: ["ADMINISTRADOR"],
-  },
-  {
-    title: "Estadísticas",
-    href: "/admin/estadisticas",
-    icon: BarChart3,
-    enabled: false,
-    roles: ["ADMINISTRADOR"],
-  },
-  {
-    title: "Configuración",
-    href: "/admin/configuracion",
-    icon: Settings,
-    enabled: true,
-    roles: ["ADMINISTRADOR"],
-  },
-];
+import {
+  navItemsForRole,
+  type AdminNavItem,
+} from "@/lib/constants/admin-nav";
 
 interface AdminSidebarProps {
   role: string | null;
@@ -158,6 +37,9 @@ interface AdminSidebarProps {
  * (el estado lo persiste AdminShell en localStorage); en mobile abre en un
  * `Sheet` lateral. La sección activa se marca por prefijo de ruta, así que
  * las subpáginas (`/admin/torneos/[id]`) mantienen "Torneos" resaltado.
+ *
+ * Los ítems salen de `lib/constants/admin-nav.ts` — la misma fuente que usa el
+ * command palette (Ctrl+K).
  */
 export function AdminSidebar({
   role,
@@ -167,9 +49,7 @@ export function AdminSidebar({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const visibleItems = menuItems.filter((item) =>
-    item.roles.includes(role ?? "viewer"),
-  );
+  const visibleItems = navItemsForRole(role);
 
   return (
     <>
@@ -244,7 +124,7 @@ export function AdminSidebar({
 }
 
 interface SidebarContentProps {
-  items: typeof menuItems;
+  items: AdminNavItem[];
   pathname: string;
   role: string | null;
   /** Solo íconos: aplica al sidebar fijo de desktop, nunca al Sheet mobile. */

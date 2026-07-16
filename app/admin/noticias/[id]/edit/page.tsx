@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   ArrowLeft,
   Save,
@@ -227,19 +228,17 @@ export default function EditNoticia() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900/50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Noticias", href: "/admin/noticias" },
+            { label: article.title, href: `/admin/noticias/${id}` },
+            { label: "Editar" },
+          ]}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              asChild
-              className="text-brand dark:text-brand-2 hover:bg-brand/10 dark:hover:bg-brand/20"
-            >
-              <Link href="/admin/noticias">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver a noticias
-              </Link>
-            </Button>
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
                 <div className="w-1 h-8 bg-gradient-to-b from-brand to-brand-2 rounded-full" />

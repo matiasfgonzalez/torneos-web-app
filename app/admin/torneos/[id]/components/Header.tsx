@@ -1,7 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft,
   Trophy,
   MapPin,
   Calendar,
@@ -10,6 +7,7 @@ import {
   Layers,
   Users,
 } from "lucide-react";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ITorneo } from "@modules/torneos/types";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
 import { DeleteTournamentButton } from "@modules/torneos/components/admin/DeleteTournamentButton";
@@ -68,17 +66,14 @@ const Header = ({ tournamentData }: PropsHeader) => {
 
   return (
     <div className="space-y-6">
-      {/* Back Button - Premium Style */}
-      <Button
-        variant="ghost"
-        className="hover:bg-brand/10 hover:text-brand border border-gray-200 dark:border-gray-700"
-        asChild
-      >
-        <Link href="/admin/torneos">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver a Torneos
-        </Link>
-      </Button>
+      {/* Reemplaza al botón "Volver a Torneos": dice dónde estás además de a
+          dónde volvés, y su link de sección hace lo mismo que hacía el botón. */}
+      <Breadcrumbs
+        items={[
+          { label: "Torneos", href: "/admin/torneos" },
+          { label: tournamentData.name },
+        ]}
+      />
 
       {/* Main header card - Premium Golazo Style with theme support */}
       <div className="relative bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#1a0a2e] dark:via-[#2d1b4e] dark:to-[#1a0a2e] rounded-3xl shadow-2xl overflow-hidden border border-brand/20 dark:border-brand/20">

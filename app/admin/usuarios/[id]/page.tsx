@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   ArrowLeft,
   Edit,
@@ -315,19 +316,16 @@ export default function UserDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
+        <Breadcrumbs
+          items={[
+            { label: "Usuarios", href: "/admin/usuarios" },
+            { label: user.name || user.email },
+          ]}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            <Link href="/admin/usuarios">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver
-              </Button>
-            </Link>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
                 Detalle del Usuario

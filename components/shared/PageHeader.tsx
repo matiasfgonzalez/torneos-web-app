@@ -1,8 +1,9 @@
-import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Breadcrumbs, type Breadcrumb } from "@/components/shared/Breadcrumbs";
 import { cn } from "@/lib/utils";
+
+export type { Breadcrumb };
 
 /**
  * Header de página admin (F0) — las dos variantes documentadas en
@@ -13,11 +14,6 @@ import { cn } from "@/lib/utils";
  * - `variant="simple"`: ícono + título + descripción sin Card — pantallas
  *   de cuenta/configuración (plan, pagos, miembros, ...).
  */
-
-export interface Breadcrumb {
-  label: string;
-  href?: string;
-}
 
 export interface QuickStat {
   icon: LucideIcon;
@@ -37,33 +33,6 @@ export interface PageHeaderProps {
   /** Acción principal (botón/diálogo de creación) a la derecha */
   actions?: React.ReactNode;
   breadcrumbs?: Breadcrumb[];
-}
-
-function Breadcrumbs({ items }: { items: Breadcrumb[] }) {
-  return (
-    <nav
-      aria-label="Breadcrumb"
-      className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4"
-    >
-      {items.map((item, i) => (
-        <span key={`${item.label}-${i}`} className="flex items-center gap-2">
-          {i > 0 && <ChevronRight className="w-4 h-4" aria-hidden="true" />}
-          {item.href ? (
-            <Link
-              href={item.href}
-              className="hover:text-brand transition-colors"
-            >
-              {item.label}
-            </Link>
-          ) : (
-            <span className="text-gray-900 dark:text-white font-medium truncate max-w-[200px]">
-              {item.label}
-            </span>
-          )}
-        </span>
-      ))}
-    </nav>
-  );
 }
 
 /**

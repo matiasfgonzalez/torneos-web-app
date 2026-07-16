@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Calendar, User, Shield } from "lucide-react";
+import { MapPin, Calendar, User, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { DeleteOrDisableButtons } from "@/components/shared/DeleteOrDisableButtons";
 import { deleteTeam, toggleTeamEnabled } from "@modules/equipos/actions/teams";
@@ -36,23 +35,15 @@ const Header = (props: PropsHeader) => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb navigation */}
-      <div className="flex items-center space-x-2">
-        <Link href="/admin/equipos">
-          <Button
-            variant="outline"
-            size="sm"
-            className="hover:bg-brand hover:text-white hover:border-brand transition-all duration-200"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver a Equipos
-          </Button>
-        </Link>
-        <span className="text-gray-400 dark:text-gray-500">/</span>
-        <span className="text-gray-600 dark:text-gray-300 font-medium">
-          Detalle del Equipo
-        </span>
-      </div>
+      {/* Antes: un pseudo-breadcrumb a mano (botón "Volver a Equipos" + "/" +
+          "Detalle del Equipo"), que en el último nivel decía el tipo de página
+          en vez de en qué equipo estabas. */}
+      <Breadcrumbs
+        items={[
+          { label: "Equipos", href: "/admin/equipos" },
+          { label: teamData.name },
+        ]}
+      />
 
       {/* Main header card */}
       <Card className="border-2 border-brand/20 dark:border-brand/30 shadow-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm overflow-hidden">

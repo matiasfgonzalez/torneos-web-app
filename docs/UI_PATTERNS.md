@@ -235,3 +235,20 @@ Lo que resuelve una sola vez (no lo reimplementes por pantalla):
 **Fechas**: viven en el estado del formulario como string (`"2026-07-14"`, `"2026-07-14T20:30"`), que es lo que hablan los inputs nativos, y se convierten al enviar con `lib/date-input.ts` (`toDateInput`/`toDateTimeInput`/`dateTimeInputToISO`). Formatear con `toISOString().split("T")[0]` —lo que hacían los formularios viejos— pasa a UTC y **corre el día** en Argentina.
 
 Referencias: `modules/torneos/components/admin/DialogAddTournaments.tsx` (el más completo: 4 secciones + borrador), `modules/partidos/components/admin/MatchFormSheet.tsx` (campos condicionales según el estado del partido y datos que se traen de la API al elegir el torneo), `app/admin/arbitros/DialogReferee.tsx` (el más simple).
+
+## 12. Navegación del panel: breadcrumbs y command palette (F3, 2026-07-14)
+
+**Toda subpágina admin abre con `<Breadcrumbs>`** (`components/shared/Breadcrumbs.tsx`), no con un botón "Volver a X":
+
+```tsx
+<Breadcrumbs items={[
+  { label: "Torneos", href: "/admin/torneos" },
+  { label: tournamentData.name },        // último nivel: sin href
+]} />
+```
+
+El nivel "Panel" lo agrega el componente. El último ítem es la página actual (`aria-current="page"`, sin link) y **dice cuál es el recurso, no el tipo de pantalla**: "Panel / Equipos / Racing", nunca "Detalle del Equipo" (lo que decía el pseudo-breadcrumb a mano de `modules/equipos/.../Header.tsx`). El link de la sección hace lo mismo que hacía el botón "Volver", más el contexto de dónde estás parado.
+
+Están en las 6 subpáginas: detalle de torneo, detalle de equipo, detalle y edición de noticia, detalle y edición de usuario. **Excepción deliberada:** `/admin/partidos/[id]/cargar` conserva su "← Partidos" + badge del torneo — es el patrón §5 (acción rápida mobile-first) y ahí un breadcrumb competiría con el marcador sticky, que es lo único que importa en esa pantalla.
+
+**Command palette:** `Ctrl/⌘+K` en cualquier pantalla del panel — busca torneos/equipos/jugadores por nombre y salta a secciones. Ver COMPONENT_LIBRARY §2c; al sumar una ruta admin no hay que tocarlo (sale de `adminNavItems`).
