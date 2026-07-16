@@ -530,6 +530,7 @@
   - **Pendiente que abre S1:** avanzar rondas de una llave automáticamente al cargar un resultado (hoy la ronda siguiente se crea a mano). Requiere decidir cómo se representa "el ganador de la llave 3" antes de que exista — probablemente `Match.homeTeamId` nullable + un campo de origen.
 - [ ] **S2. Multi-tenancy con organizaciones/ligas:** ✅ definido y detallado en N2 (schema concreto de `Organization`/`OrganizationMember`, News queda global, sin Clerk Organizations). Ver sección 🧭.
 - [ ] **S3. Inscripción online de equipos (E:Alto):** flujo público — organizador publica torneo con cupos y fecha límite → delegados registran equipo + plantel → organizador aprueba/rechaza. Estados `INSCRIPCION` ya existen en el enum; falta el workflow. Opcional: cobro de inscripción con Mercado Pago.
+  - ⚠️ **Bloqueado por N13 (definido 2026-07-14):** S3 dice "delegados registran equipo + plantel", pero **el delegado no existía en el modelo** — no hay figura que represente a un equipo, y el sign-up mandaba a todos a "creá tu liga". N13 define esa figura (`TeamManager`), cómo se aprueba y el alta con tres puertas. Con eso, S3 se reduce a: cupos + fecha límite en el torneo, el delegado inscribe, la liga aprueba con `RegistrationStatus` (que ya existe sin usar). **Hacer N13 primero.**
 - [ ] **S4. Página pública compartible + QR (E:Medio):** URL limpia por torneo con OG image dinámica (marcador/tabla), botón compartir por WhatsApp (canal #1 en ligas amateur) y QR imprimible.
 - [ ] **S5. Notificaciones (E:Medio):** in-app (campana con no-leídas) + email (Resend) para: resultado cargado, próximo partido, equipo aprobado. Base: modelo `Notification` + preferencias por usuario.
 - [ ] **S6. Live match center (E:Alto):** marcador en vivo minuto a minuto (el admin carga eventos, el público ve actualizado con polling/SSE). Gran diferenciador para ligas locales.
@@ -780,6 +781,46 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 #### N12. 🟢 Identidad global de jugador cross-liga (E:Alto, post-N2, diferenciador futuro)
 
 - [ ] Perfil global verificado por DNI: un jugador puede reclamar su perfil (registrándose con el DNI que cargó su organizador), ver sus stats agregadas de todas las ligas y su "carnet digital" con QR (verificación anti-suplantación en la cancha, dolor real de ligas amateur). Convierte a los ~jugadores (miles) en usuarios de la plataforma → embudo de nuevos organizadores. Requiere N2, N3 y política de privacidad.
+
+#### N13. 🔴 El delegado de equipo y el flujo de alta — prerequisito de S3 (E:Alto)
+
+> **Definido con el product owner (2026-07-14)** al analizar S3. Diagnóstico: el modelo tenía **tres personas reales pero solo dos puertas**.
+
+**El hueco encontrado**
+
+Los permisos vivían en dos ejes y **los dos son del lado de la liga**: `UserRole` (ADMINISTRADOR/USUARIO) y `OrgRole` (OWNER/ORGANIZADOR/COLABORADOR, todos personal de la liga). **No existía el delegado**: nadie representa a un equipo. Y el alta empujaba a todos al lugar equivocado — `GoogleSignUp` tenía `forceRedirectUrl="/crear-liga"` y `validatePanelAccess` redirige ahí a cualquiera sin liga, así que **un delegado que se registraba recibía "creá tu liga"**, el producto equivocado, sin más salida que volver al home a mano.
+
+| Persona | Qué quiere | Estado previo |
+|---|---|---|
+| Hincha | Seguir a su equipo | ✅ FanHome con favoritos |
+| Organizador | Gestionar su liga | ✅ `/crear-liga` + `/admin` |
+| **Delegado** | Anotar su equipo y cargar el plantel | ❌ **no existía** |
+
+**Decisión 1 — el delegado NO es `OrganizationMember`.** La tentación era sumar `DELEGADO` a `OrgRole` y reusar todo. No conviene, y no es estético: **todas las consultas del panel se acotan con `getPanelOrgIds()`, que devuelve organizaciones**. Un delegado que fuera miembro vería *todos* los equipos y jugadores de la liga entera; habría que agregar filtro por equipo a cada query del panel — la fuga de N3 otra vez. El delegado no trabaja para la liga: **representa a un equipo**, así que su permiso cuelga del equipo.
+
+- Modelo nuevo **`TeamManager`** (usuario ↔ equipo, estado `PENDIENTE`/`APROBADO`/`RECHAZADO`). Al no ser miembro, `getPanelOrgIds()` le devuelve `[]` y no ve nada de la liga por accidente.
+- Área propia **`/mi-equipo`**, no `/admin`.
+
+**Decisión 2 — cómo se llega a ser delegado.** Los dos caminos son el mismo flujo con distinta entrada, y **siempre los aprueba la liga** (si no, cualquiera se declara delegado de cualquier equipo):
+1. Elige liga → **reclama un equipo existente** → la liga aprueba.
+2. Elige liga → **propone un equipo nuevo** → se crea con `enabled: false` (que ya significa "existe pero no se puede usar", regla de F3) → al aprobar queda habilitado. Si se rechaza, el equipo se borra: todavía no tiene historial.
+
+**Decisión 3 — qué puede hacer el delegado aprobado.** Cargar y editar el plantel de **su** equipo, inscribirlo en torneos abiertos y ver su fixture. **No toca resultados, goles ni tarjetas**: eso es de la liga, y es lo que hace confiable a la tabla (para reportes desde el equipo ya existe `COLABORADOR`).
+
+**Decisión 4 — alta con tres puertas.** Sign-up deja de forzar `/crear-liga` y aterriza en **`/bienvenida`**: *sigo a mi equipo* (hincha, salida por defecto), *represento a un equipo* (delegado) y *organizo una liga* (el wizard actual de N6). Se elige una vez y se puede cambiar después.
+
+**Por qué esto desbloquea S3:** con el delegado ya identificado y aprobado, la inscripción es inscribir su equipo en un torneo abierto y que la liga apruebe — con `RegistrationStatus.PENDIENTE`/`RECHAZADO`, que **ya están en el schema sin usar** desde N2, puestos justo para esto.
+
+- [~] **Implementación — base lista (2026-07-14):**
+  - **Schema:** modelo `TeamManager` + enum `TeamManagerStatus`, migración `20260716144357_delegado_de_equipo` **aplicada**. Puramente aditiva (solo `CREATE TYPE`/`CREATE TABLE`, ni un `DROP` ni `ALTER` sobre tablas existentes): no pudo perder datos. `@@unique([userId, teamId])` (una solicitud por persona y equipo; un rechazo previo se reusa al reintentar) + auditoría de la decisión (`decidedById`/`decidedAt`).
+  - **Guards:** [lib/teamAuth.ts](lib/teamAuth.ts) — espejo de `orgAuth` para el otro lado del mostrador: `getManagedTeamIds`, `canManageTeam`, `requireActionTeamManager`, `requireApiTeamManager`.
+  - **Acciones:** [modules/delegados/actions/requests.ts](modules/delegados/actions/requests.ts) — `requestTeamClaim` (reclamar), `requestNewTeam` (proponer, con anti-duplicado por nombre dentro de la liga), `approveTeamRequest` (habilita el equipo si era propuesta), `rejectTeamRequest` (borra el equipo propuesto **solo** si sigue sin usar: `!enabled && 0 torneos && 1 solo solicitante`; si algo cambió, se queda deshabilitado y lo resuelve la liga).
+  - **Alta con tres puertas:** [/bienvenida](app/bienvenida/page.tsx). El sign-up ya **no fuerza `/crear-liga`** y `validatePanelAccess` manda al delegado a `/mi-equipo` en vez de ofrecerle crear una liga. `/bienvenida` y `/mi-equipo` protegidas en el middleware.
+  - **Área del delegado:** [/mi-equipo](app/mi-equipo/page.tsx) — buscar equipo y reclamarlo, proponer uno nuevo, ver el estado de las solicitudes. Deliberadamente chica: no es `/admin`.
+  - **Bandeja de la liga:** [/admin/delegados](app/admin/delegados/page.tsx) con aprobar/rechazar (distingue "equipo nuevo" de reclamo y explica en el diálogo qué pasa en cada caso). Ítem nuevo en `adminNavItems` → aparece en sidebar y command palette.
+  - Verificado: `tsc` limpio, **0 errores de lint**, 118 tests ✅, `next build` verde, smoke en dev (rutas nuevas compilan; anónimo → protegidas por el middleware).
+- [ ] **Falta para cerrar N13:** que el delegado **cargue el plantel de su equipo** (`/mi-equipo` hoy muestra el estado pero todavía no gestiona jugadores) — es el paso que le saca al organizador el trabajo pesado, y va junto con S3.
+- [ ] **Pendientes menores de N13:** email al aprobar/rechazar (llega con S5/Resend); que el delegado pueda cancelar su propia solicitud; transferir la delegación a otra persona.
 
 ---
 

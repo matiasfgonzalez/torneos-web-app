@@ -10,6 +10,7 @@ import {
   Shield,
   Trophy,
   UserCheck,
+  UserCheck2,
   Users,
   Users2,
   UsersRound,
@@ -98,6 +99,14 @@ export const adminNavItems: AdminNavItem[] = [
     enabled: true,
     roles: ["ADMINISTRADOR", "USUARIO"],
     keywords: ["encuentros", "fixture", "resultados", "fechas"],
+  },
+  {
+    title: "Delegados",
+    href: "/admin/delegados",
+    icon: UserCheck2,
+    enabled: true,
+    roles: ["ADMINISTRADOR", "USUARIO"],
+    keywords: ["solicitudes", "representantes", "equipos", "aprobar"],
   },
   {
     title: "Miembros",

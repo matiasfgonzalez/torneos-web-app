@@ -116,10 +116,13 @@ export default function GoogleSignUp() {
           </div>
 
           {/* Botón de Google mejorado */}
+          {/* Aterriza en /bienvenida, no en /crear-liga (N13): forzar el
+              wizard de liga le daba el producto equivocado a los otros dos
+              tercios de la gente que se registra (hinchas y delegados). */}
           <SignUpButton
             mode="redirect"
-            forceRedirectUrl="/crear-liga"
-            fallbackRedirectUrl="/crear-liga"
+            forceRedirectUrl="/bienvenida"
+            fallbackRedirectUrl="/bienvenida"
           >
             <Button
               size="lg"

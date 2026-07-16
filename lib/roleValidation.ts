@@ -62,8 +62,15 @@ export async function validatePanelAccess(
     // ¿Fue invitado a una liga? Aceptar la invitación y dejarlo entrar (N6)
     const accepted = await acceptPendingInvites(user);
     if (accepted === 0) {
-      // Sin liga todavía → funnel de onboarding "Creá tu liga"
-      redirect("/crear-liga");
+      // Sin liga. Antes esto mandaba a todos a "Creá tu liga", que a un
+      // delegado le ofrece el producto equivocado (N13): si representa a un
+      // equipo, su lugar es /mi-equipo. Solo el que no es ninguna de las dos
+      // cosas entra al funnel de onboarding.
+      const managership = await db.teamManager.findFirst({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      redirect(managership ? "/mi-equipo" : "/bienvenida");
     }
   }
 

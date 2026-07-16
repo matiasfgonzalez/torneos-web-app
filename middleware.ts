@@ -3,7 +3,14 @@ import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 
 // Páginas que requieren sesión (la validación fina de rol vive en layouts/handlers)
-const isProtectedPage = createRouteMatcher(["/admin(.*)", "/profile(.*)"]);
+// `/mi-equipo` y `/bienvenida` (N13) son de usuario logueado: sin sesión no
+// tienen ningún sentido, así que se protegen igual que el panel y el perfil.
+const isProtectedPage = createRouteMatcher([
+  "/admin(.*)",
+  "/profile(.*)",
+  "/mi-equipo(.*)",
+  "/bienvenida(.*)",
+]);
 
 // Webhooks futuros (Clerk/Mercado Pago) validan firma propia, no sesión
 const isWebhook = createRouteMatcher(["/api/webhooks(.*)"]);

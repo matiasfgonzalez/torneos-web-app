@@ -51,6 +51,10 @@ model User {
   ownedOrganizations Organization[]       @relation("OwnedOrganizations")
   memberships        OrganizationMember[]
   favorites          Favorite[]
+  // Equipos que representa como delegado (N13). Es un eje distinto de
+  // `memberships`: el delegado no trabaja para la liga, representa a un equipo.
+  teamManagerships   TeamManager[]
+  teamManagerDecisions TeamManager[]      @relation("TeamManagerDecisions")
 
   @@index([role, status])
 }
@@ -406,8 +410,54 @@ model Team {
 
   tournamentTeams TournamentTeam[]
   favoritedBy     Favorite[]
+  managers        TeamManager[]
 
   @@index([organizationId])
+}
+
+enum TeamManagerStatus {
+  PENDIENTE // solicitud esperando que la liga la apruebe
+  APROBADO
+  RECHAZADO
+}
+
+// Delegado de equipo (N13). Es la figura que representa a UN equipo: carga su
+// plantel y lo inscribe en torneos (S3).
+//
+// **No es `OrganizationMember` a propósito.** Los roles de `OrgRole` son
+// personal de la liga, y todas las consultas del panel se acotan por
+// organización (`getPanelOrgIds`): si el delegado fuera miembro, vería todos
+// los equipos y jugadores de la liga entera. Colgando del equipo, el
+// aislamiento sale solo — `getPanelOrgIds()` le devuelve [].
+//
+// La liga siempre aprueba: sin eso, cualquiera se declara delegado de cualquier
+// equipo.
+model TeamManager {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  status TeamManagerStatus @default(PENDIENTE)
+
+  /// Mensaje del solicitante ("soy el DT desde 2019") para que la liga decida.
+  message String?
+
+  /// Quién resolvió la solicitud y cuándo (auditoría de la decisión).
+  decidedById String?
+  decidedBy   User?     @relation("TeamManagerDecisions", fields: [decidedById], references: [id])
+  decidedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Una sola solicitud por persona y equipo: reintentar actualiza la existente
+  @@unique([userId, teamId])
+  @@index([teamId, status])
+  @@index([userId])
 }
 
 enum Foot {
