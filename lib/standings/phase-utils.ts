@@ -13,39 +13,6 @@ import { makeStandingsComparator } from "./config";
 export type PhaseType = "GROUP" | "LEAGUE" | "KNOCKOUT";
 
 /**
- * Nombres de fases del modelo Phase (legacy)
- */
-export type LegacyPhaseName =
-  | "FECHA"
-  | "CRUCES"
-  | "FASES_DE_GRUPOS"
-  | "DIECISAVOS_DE_FINAL"
-  | "OCTAVOS_DE_FINAL"
-  | "CUARTOS_DE_FINAL"
-  | "SEMIFINAL"
-  | "FINAL";
-
-/**
- * Fases de eliminación directa (knockout) que NO suman puntos
- */
-const KNOCKOUT_PHASES: Set<LegacyPhaseName> = new Set([
-  "CRUCES",
-  "DIECISAVOS_DE_FINAL",
-  "OCTAVOS_DE_FINAL",
-  "CUARTOS_DE_FINAL",
-  "SEMIFINAL",
-  "FINAL",
-]);
-
-/**
- * Fases que SÍ suman puntos a la tabla de posiciones
- */
-const POINT_COUNTING_PHASES: Set<LegacyPhaseName> = new Set([
-  "FECHA",
-  "FASES_DE_GRUPOS",
-]);
-
-/**
  * Determina si un tipo de fase de TournamentPhase suma puntos
  */
 export function phaseTypeCountsPoints(
@@ -57,38 +24,28 @@ export function phaseTypeCountsPoints(
 }
 
 /**
- * Determina si una fase legacy suma puntos
+ * ¿La fase de este partido es de eliminación directa? (S1)
+ *
+ * Filtra por **`type`**, no por nombre. La versión anterior comparaba
+ * `match.phase?.name` contra una lista fija de nombres (`OCTAVOS_DE_FINAL`,
+ * `CRUCES`…) del modelo `Phase` **legacy, borrado en A6**: el campo ya no lo
+ * trae ninguna query, así que devolvía `false` siempre y el bracket, los badges
+ * de fase y la detección de llaves quedaron muertos sin que nadie lo notara.
+ * `TournamentPhase.name` es texto libre y no se puede comparar contra una lista.
  */
-export function legacyPhaseCountsPoints(
-  phaseName: string | undefined | null,
+export function isKnockoutPhaseType(
+  type: string | undefined | null,
 ): boolean {
-  if (!phaseName) return true; // Por defecto suma puntos si no hay fase
-  return POINT_COUNTING_PHASES.has(phaseName as LegacyPhaseName);
+  return type?.toUpperCase() === "KNOCKOUT";
 }
 
 /**
- * Determina si una fase legacy es de eliminación directa
+ * ¿Esta fase es la que define el título? Se usa solo para destacarla en el
+ * bracket. Por nombre a propósito: `TournamentPhase` no marca cuál es la final,
+ * y el generador (S1) la nombra exactamente "Final".
  */
-export function isKnockoutPhase(phaseName: string | undefined | null): boolean {
-  if (!phaseName) return false;
-  return KNOCKOUT_PHASES.has(phaseName as LegacyPhaseName);
-}
-
-/**
- * Obtiene el nombre legible de una fase legacy
- */
-export function getLegacyPhaseName(phaseName: string): string {
-  const names: Record<string, string> = {
-    FECHA: "Fecha",
-    CRUCES: "Cruces",
-    FASES_DE_GRUPOS: "Fase de Grupos",
-    DIECISAVOS_DE_FINAL: "Dieciseisavos de Final",
-    OCTAVOS_DE_FINAL: "Octavos de Final",
-    CUARTOS_DE_FINAL: "Cuartos de Final",
-    SEMIFINAL: "Semifinal",
-    FINAL: "Final",
-  };
-  return names[phaseName] || phaseName;
+export function isFinalPhase(name: string | undefined | null): boolean {
+  return name?.trim().toLowerCase() === "final";
 }
 
 /**
@@ -101,21 +58,6 @@ export function getPhaseTypeName(type: string): string {
     KNOCKOUT: "Eliminación Directa",
   };
   return names[type.toUpperCase()] || type;
-}
-
-/**
- * Ordena las fases de eliminación directa por orden lógico
- */
-export function getKnockoutPhaseOrder(phaseName: string): number {
-  const order: Record<string, number> = {
-    CRUCES: 0,
-    DIECISAVOS_DE_FINAL: 1,
-    OCTAVOS_DE_FINAL: 2,
-    CUARTOS_DE_FINAL: 3,
-    SEMIFINAL: 4,
-    FINAL: 5,
-  };
-  return order[phaseName] ?? 99;
 }
 
 /**

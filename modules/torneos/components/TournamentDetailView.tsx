@@ -319,30 +319,17 @@ export default async function TournamentDetailView({
                                 ? "Programado"
                                 : "Postergado"}
                             </Badge>
-                            {match.phase && (
+                            {/* El nombre de la fase ya viene legible desde la
+                                base ("Cuartos de final"): esta cadena de 9
+                                ternarios traducía nombres del enum del modelo
+                                `Phase` legacy, borrado en A6 — y como el campo
+                                nunca llegaba, el badge no se mostraba nunca. */}
+                            {match.tournamentPhase && (
                               <Badge className="bg-brand/10 text-brand border-0 rounded-full text-xs px-2.5 py-0.5">
-                                {match.phase.name === "FECHA"
-                                  ? "Fecha"
-                                  : match.phase.name === "CRUCES"
-                                    ? "Cruces"
-                                    : match.phase.name === "FASES_DE_GRUPOS"
-                                      ? "Fase de Grupos"
-                                      : match.phase.name ===
-                                          "DIECISAVOS_DE_FINAL"
-                                        ? "Dieciseisavos"
-                                        : match.phase.name ===
-                                            "OCTAVOS_DE_FINAL"
-                                          ? "Octavos"
-                                          : match.phase.name ===
-                                              "CUARTOS_DE_FINAL"
-                                            ? "Cuartos"
-                                            : match.phase.name === "SEMIFINAL"
-                                              ? "Semifinal"
-                                              : match.phase.name === "FINAL"
-                                                ? "Final"
-                                                : match.phase.name}
-                                {match.roundNumber &&
-                                  ` - Jornada ${match.roundNumber}`}
+                                {match.tournamentPhase.name}
+                                {match.roundNumber
+                                  ? ` · Fecha ${match.roundNumber}`
+                                  : ""}
                               </Badge>
                             )}
                           </div>

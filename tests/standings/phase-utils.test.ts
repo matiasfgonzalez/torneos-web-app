@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   getTournamentDisplayType,
-  isKnockoutPhase,
-  legacyPhaseCountsPoints,
+  isFinalPhase,
+  isKnockoutPhaseType,
   phaseTypeCountsPoints,
 } from "@/lib/standings/phase-utils";
 
@@ -28,28 +28,33 @@ describe("phaseTypeCountsPoints", () => {
   });
 });
 
-describe("legacyPhaseCountsPoints", () => {
-  it("FECHA y FASES_DE_GRUPOS suman", () => {
-    expect(legacyPhaseCountsPoints("FECHA")).toBe(true);
-    expect(legacyPhaseCountsPoints("FASES_DE_GRUPOS")).toBe(true);
+// Los helpers legacy (`legacyPhaseCountsPoints`, `isKnockoutPhase`,
+// `getLegacyPhaseName`, `getKnockoutPhaseOrder`) se borraron en S1: hablaban del
+// modelo `Phase` eliminado en A6 y comparaban nombres que ninguna query trae.
+describe("isKnockoutPhaseType", () => {
+  it("detecta la fase de eliminación por su tipo", () => {
+    expect(isKnockoutPhaseType("KNOCKOUT")).toBe(true);
+    expect(isKnockoutPhaseType("knockout")).toBe(true);
   });
 
-  it("fases eliminatorias no suman", () => {
-    expect(legacyPhaseCountsPoints("FINAL")).toBe(false);
-    expect(legacyPhaseCountsPoints("SEMIFINAL")).toBe(false);
-    expect(legacyPhaseCountsPoints("CRUCES")).toBe(false);
+  it("grupos y liga no son eliminación", () => {
+    expect(isKnockoutPhaseType("GROUP")).toBe(false);
+    expect(isKnockoutPhaseType("LEAGUE")).toBe(false);
   });
 
-  it("sin fase suma (default)", () => {
-    expect(legacyPhaseCountsPoints(null)).toBe(true);
+  it("sin fase no es eliminación", () => {
+    expect(isKnockoutPhaseType(null)).toBe(false);
+    expect(isKnockoutPhaseType(undefined)).toBe(false);
   });
 });
 
-describe("isKnockoutPhase", () => {
-  it("detecta fases knockout", () => {
-    expect(isKnockoutPhase("OCTAVOS_DE_FINAL")).toBe(true);
-    expect(isKnockoutPhase("FECHA")).toBe(false);
-    expect(isKnockoutPhase(null)).toBe(false);
+describe("isFinalPhase", () => {
+  it("reconoce la final por nombre, sin confundirla con la semifinal", () => {
+    expect(isFinalPhase("Final")).toBe(true);
+    expect(isFinalPhase("final")).toBe(true);
+    expect(isFinalPhase("Semifinal")).toBe(false);
+    expect(isFinalPhase("Cuartos de final")).toBe(false);
+    expect(isFinalPhase(null)).toBe(false);
   });
 });
 

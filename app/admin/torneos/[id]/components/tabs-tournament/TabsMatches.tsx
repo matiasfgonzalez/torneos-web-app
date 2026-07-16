@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useCallback, useTransition } from "react";
 import { MatchFormSheet } from "@modules/partidos/components/admin/MatchFormSheet";
+import GenerateFixtureSheet from "../GenerateFixtureSheet";
 import DialogMatchDetails from "../DialogMatchDetails";
 import { IPartidos, MatchStatus, MATCH_STATUS } from "@modules/partidos/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -30,6 +31,10 @@ const TabsMatches = (props: TabsTournamentProps) => {
   const { tournamentData } = props;
   const [matches, setMatches] = useState<IPartidos[]>([]);
   const [, startFetch] = useTransition();
+
+  // Los equipos inscriptos vienen con el torneo: el generador necesita saber
+  // cuántos hay para ofrecerse (o explicar que faltan).
+  const teamCount = tournamentData.tournamentTeams?.length ?? 0;
 
   // El fetch va dentro de una transición: así el setState no queda en el cuerpo
   // del effect (react-hooks/set-state-in-effect).
@@ -229,12 +234,22 @@ const TabsMatches = (props: TabsTournamentProps) => {
             </p>
           </div>
         </div>
-        <MatchFormSheet
-          mode="create"
-          tournament={tournamentData}
-          onSuccess={fetchMatches}
-          trigger={createMatchTrigger}
-        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          {/* Generar el fixture entero es la acción de arranque; cargar un
+              partido suelto es la excepción. De ahí el orden y la jerarquía:
+              generar es la acción principal, "Programar partido" queda al lado. */}
+          <GenerateFixtureSheet
+            tournamentData={tournamentData}
+            teamCount={teamCount}
+            onSuccess={fetchMatches}
+          />
+          <MatchFormSheet
+            mode="create"
+            tournament={tournamentData}
+            onSuccess={fetchMatches}
+            trigger={createMatchTrigger}
+          />
+        </div>
       </div>
 
       <DataTable
@@ -264,21 +279,37 @@ const TabsMatches = (props: TabsTournamentProps) => {
         ]}
         empty={{
           icon: Calendar,
-          title: "No hay partidos programados",
+          title:
+            teamCount < 2
+              ? "Todavía no hay equipos inscriptos"
+              : "No hay partidos programados",
+          // El estado vacío es una invitación a actuar, y con equipos ya
+          // inscriptos la acción correcta es generar el fixture entero, no
+          // cargar 30 partidos a mano (S1).
           description:
-            "Comenzá creando tu primer partido: vas a poder programar encuentros, registrar resultados y gestionar el fixture completo.",
+            teamCount < 2
+              ? "Inscribí equipos en la pestaña Equipos y después generá el fixture completo de una vez."
+              : `Generá el fixture completo a partir de los ${teamCount} equipos inscriptos, o cargá un partido suelto.`,
           filteredTitle: "No se encontraron partidos",
           filteredDescription:
             "Ningún partido coincide con los filtros aplicados.",
           // El botón de la empty state anterior no tenía onClick: no hacía nada.
-          action: (
-            <MatchFormSheet
-              mode="create"
-              tournament={tournamentData}
-              onSuccess={fetchMatches}
-              trigger={createMatchTrigger}
-            />
-          ),
+          action:
+            teamCount < 2 ? undefined : (
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <GenerateFixtureSheet
+                  tournamentData={tournamentData}
+                  teamCount={teamCount}
+                  onSuccess={fetchMatches}
+                />
+                <MatchFormSheet
+                  mode="create"
+                  tournament={tournamentData}
+                  onSuccess={fetchMatches}
+                  trigger={createMatchTrigger}
+                />
+              </div>
+            ),
         }}
         rowActions={renderRowActions}
       />

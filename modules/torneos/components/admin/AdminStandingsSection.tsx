@@ -13,7 +13,7 @@ import { KnockoutBracket } from "@modules/torneos/components/KnockoutBracket";
 import {
   hasMultipleGroups,
   getTournamentDisplayType,
-  isKnockoutPhase,
+  isKnockoutPhaseType,
 } from "@/lib/standings/phase-utils";
 
 interface AdminStandingsSectionProps {
@@ -48,7 +48,7 @@ export function AdminStandingsSection({
   );
 
   const hasKnockoutMatches = useMemo(
-    () => matches.some((m) => isKnockoutPhase(m.phase?.name)),
+    () => matches.some((m) => isKnockoutPhaseType(m.tournamentPhase?.type)),
     [matches],
   );
 

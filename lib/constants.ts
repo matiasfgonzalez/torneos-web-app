@@ -10,6 +10,7 @@ import {
   UserStatus,
   PayStatus,
 } from "@prisma/client";
+import { supportsFixture } from "@/lib/fixture/formats";
 
 // ============================================
 // CATEGORÍA DE TORNEO (M13: ageGroup + gender + division)
@@ -124,6 +125,24 @@ export const TOURNAMENT_FORMAT_OPTIONS = Object.entries(
   value: value as TournamentFormat,
   label,
 }));
+
+/**
+ * Formatos ofrecidos al crear/editar un torneo (S1) — cierra el pendiente del
+ * TODO: "marcar qué formatos soporta el generador y ocultar el resto".
+ *
+ * El enum tiene 14 valores heredados y solo 10 tienen generador de fixture;
+ * elegir "SUIZO" creaba un torneo que nada en el sistema sabía manejar.
+ *
+ * `currentFormat` se conserva aunque no tenga generador: un torneo viejo en
+ * SUIZO tiene que poder editarse (nombre, fechas…) sin que el select le cambie
+ * el formato por lo bajo.
+ */
+export function tournamentFormatOptions(currentFormat?: string) {
+  return TOURNAMENT_FORMAT_OPTIONS.filter(
+    (option) =>
+      supportsFixture(option.value) || option.value === currentFormat,
+  );
+}
 
 // ============================================
 // ESTADOS DE PARTIDO

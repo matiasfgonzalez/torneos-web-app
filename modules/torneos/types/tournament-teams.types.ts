@@ -132,8 +132,15 @@ export interface IMatch {
 
   roundNumber?: number;
 
-  phaseId?: string;
-  phase?: IPhase;
+  /**
+   * Fase del partido. Se llamaba `phase`/`phaseId` y apuntaba al modelo `Phase`
+   * legacy, **borrado en A6**: la query (`getTorneoById`) trae `tournamentPhase`
+   * y nunca `phase`, así que el campo viejo era siempre `undefined` y con él se
+   * cayó en silencio todo el display de fases (bracket, badges, detección de
+   * llaves). Ver S1 en TODO.md.
+   */
+  tournamentPhaseId?: string | null;
+  tournamentPhase?: IPhase | null;
 
   createdAt: string | Date;
   updatedAt: string | Date;

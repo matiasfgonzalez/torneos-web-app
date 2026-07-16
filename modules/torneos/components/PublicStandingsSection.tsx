@@ -13,7 +13,7 @@ import { KnockoutBracket } from "@modules/torneos/components/KnockoutBracket";
 import {
   hasMultipleGroups,
   getTournamentDisplayType,
-  isKnockoutPhase,
+  isKnockoutPhaseType,
 } from "@/lib/standings/phase-utils";
 
 /** Cuántos resultados recientes componen la "racha" de la tabla (F2) */
@@ -77,7 +77,7 @@ export function PublicStandingsSection({
   );
 
   const hasKnockoutMatches = useMemo(
-    () => matches.some((m) => isKnockoutPhase(m.phase?.name)),
+    () => matches.some((m) => isKnockoutPhaseType(m.tournamentPhase?.type)),
     [matches],
   );
 

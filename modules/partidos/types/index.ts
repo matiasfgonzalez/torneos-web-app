@@ -1,3 +1,5 @@
+import type { PhaseType } from "@prisma/client";
+
 export interface ITeam {
   id: string;
   name: string;
@@ -60,10 +62,18 @@ export interface ITournamentTeam {
   team: ITeam;
 }
 
+/** Fase de un torneo (`TournamentPhase`). */
 export interface IPhase {
   id: string;
+  /** Texto libre: "Fase de grupos", "Cuartos de final", "Apertura". */
   name: string;
   order: number;
+  /**
+   * Qué clase de fase es. **Es el campo por el que hay que filtrar**, no el
+   * nombre: `name` es libre y no se puede comparar contra una lista fija (era
+   * el bug del bracket, que buscaba nombres del modelo `Phase` legacy).
+   */
+  type?: PhaseType;
 }
 
 export interface IGoal {

@@ -12,11 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Swords, Calendar, MapPin } from "lucide-react";
 import { IMatch } from "@modules/torneos/types/tournament-teams.types";
-import {
-  getKnockoutPhaseOrder,
-  getLegacyPhaseName,
-  isKnockoutPhase,
-} from "@/lib/standings/phase-utils";
+import { isFinalPhase, isKnockoutPhaseType } from "@/lib/standings/phase-utils";
 
 interface KnockoutBracketProps {
   matches: IMatch[];
@@ -49,25 +45,31 @@ export function KnockoutBracket({
   title = "Fase Final",
   description = "Partidos de eliminación directa",
 }: Readonly<KnockoutBracketProps>) {
-  // Filtrar solo partidos de eliminación directa y agrupar por fase
+  // Filtrar los partidos de eliminación directa y agrupar por fase.
+  // Por `tournamentPhase.type`, no por el nombre: el nombre es texto libre
+  // (ver isKnockoutPhaseType — comparar nombres es lo que tenía roto al bracket).
   const groupedMatches = useMemo((): GroupedMatch[] => {
-    const knockoutMatches = matches.filter((match) =>
-      isKnockoutPhase(match.phase?.name),
-    );
+    const grouped = new Map<string, { order: number; matches: IMatch[] }>();
 
-    const grouped = new Map<string, IMatch[]>();
-
-    knockoutMatches.forEach((match) => {
-      const phaseName = match.phase?.name || "CRUCES";
-      const phaseMatches = grouped.get(phaseName) || [];
-      phaseMatches.push(match);
-      grouped.set(phaseName, phaseMatches);
-    });
+    matches
+      .filter((match) => isKnockoutPhaseType(match.tournamentPhase?.type))
+      .forEach((match) => {
+        const phase = match.tournamentPhase;
+        if (!phase) return;
+        const entry = grouped.get(phase.name) ?? {
+          order: phase.order,
+          matches: [],
+        };
+        entry.matches.push(match);
+        grouped.set(phase.name, entry);
+      });
 
     return Array.from(grouped.entries())
-      .map(([phaseName, phaseMatches]) => ({
+      .map(([phaseName, { order, matches: phaseMatches }]) => ({
         phaseName,
-        phaseOrder: getKnockoutPhaseOrder(phaseName),
+        // El orden lo define la fase (`TournamentPhase.order`), que es dato del
+        // torneo — antes salía de una tabla de nombres fijos.
+        phaseOrder: order,
         matches: [...phaseMatches].sort(
           (a, b) =>
             new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
@@ -140,18 +142,18 @@ export function KnockoutBracket({
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
                 <Badge
-                  className={`px-4 py-1.5 text-sm font-bold ${
-                    group.phaseName === "FINAL"
-                      ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-white border-0"
-                      : group.phaseName === "SEMIFINAL"
-                        ? "bg-gradient-to-r from-purple-500 to-indigo-600 text-white border-0"
-                        : "bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0"
+                  className={`px-4 py-1.5 text-sm font-bold border-0 text-white ${
+                    isFinalPhase(group.phaseName)
+                      ? "bg-gradient-to-r from-yellow-400 to-amber-500"
+                      : "bg-gradient-to-r from-brand to-brand-mid"
                   }`}
                 >
-                  {group.phaseName === "FINAL" && (
-                    <Trophy className="w-4 h-4 mr-1" />
+                  {isFinalPhase(group.phaseName) && (
+                    <Trophy className="w-4 h-4 mr-1" aria-hidden="true" />
                   )}
-                  {getLegacyPhaseName(group.phaseName)}
+                  {/* El nombre ya viene legible desde la fase ("Cuartos de
+                      final"): antes se traducía desde un enum legacy. */}
+                  {group.phaseName}
                 </Badge>
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
               </div>
@@ -159,11 +161,9 @@ export function KnockoutBracket({
               {/* Partidos de esta fase */}
               <div
                 className={`grid gap-4 ${
-                  group.phaseName === "FINAL"
+                  isFinalPhase(group.phaseName) || group.matches.length === 1
                     ? "grid-cols-1 max-w-2xl mx-auto"
-                    : group.matches.length === 1
-                      ? "grid-cols-1 max-w-2xl mx-auto"
-                      : "grid-cols-1 md:grid-cols-2"
+                    : "grid-cols-1 md:grid-cols-2"
                 }`}
               >
                 {group.matches.map((match) => {
@@ -182,7 +182,7 @@ export function KnockoutBracket({
                       href={`/partidos/${match.id}`}
                       key={match.id}
                       className={`relative block bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-4 border ${
-                        group.phaseName === "FINAL"
+                        isFinalPhase(group.phaseName)
                           ? "border-yellow-300 dark:border-yellow-600/50 shadow-lg shadow-yellow-500/10"
                           : "border-gray-100 dark:border-gray-700"
                       } hover:shadow-xl hover:border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-all duration-300`}

@@ -44,6 +44,7 @@ import {
   GENDER_OPTIONS,
   TOURNAMENT_FORMAT_OPTIONS,
   TOURNAMENT_STATUS_OPTIONS,
+  tournamentFormatOptions,
 } from "@/lib/constants";
 import type { ITorneo } from "@modules/torneos/types";
 
@@ -415,7 +416,10 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
             name="format"
             label="Formato"
             required
-            options={TOURNAMENT_FORMAT_OPTIONS}
+            // Solo los formatos que el generador de fixture sabe armar (S1).
+            // Conserva el del torneo si es uno viejo sin generador.
+            options={tournamentFormatOptions(tournament?.format)}
+            description="Define cómo se genera el fixture."
           />
           <SelectField
             control={form.control}
