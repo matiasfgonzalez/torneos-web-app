@@ -17,6 +17,9 @@ export interface IPlayerTeam {
 export interface IPlayer {
   id: string;
   name: string;
+  /** DNI — identidad global del jugador (N12). Obligatorio y único en toda la
+      plataforma: es lo que evita cargar dos veces a la misma persona. */
+  nationalId: string;
   birthDate: string | Date;
   birthPlace: string;
   nationality: string;

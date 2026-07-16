@@ -6,13 +6,17 @@ import { toast } from "sonner";
 import { Mail, Shield, Sparkles, UserCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   approveTeamRequest,
   rejectTeamRequest,
 } from "@modules/delegados/actions/requests";
+import {
+  approveInscription,
+  rejectInscription,
+} from "@modules/delegados/actions/inscriptions";
 
 interface Request {
   id: string;
@@ -22,21 +26,29 @@ interface Request {
   team: { name: string; homeCity: string | null; isProposal: boolean };
 }
 
+interface Inscription {
+  id: string;
+  teamName: string;
+  tournamentName: string;
+  playerCount: number;
+}
+
 export default function DelegadosClient({
   requests,
-}: Readonly<{ requests: Request[] }>) {
+  inscriptions,
+}: Readonly<{ requests: Request[]; inscriptions: Inscription[] }>) {
   const router = useRouter();
   const [isPending, start] = useTransition();
 
   const resolve = (
-    action: typeof approveTeamRequest,
+    action: (id: string) => Promise<{ success: boolean } & Record<string, unknown>>,
     id: string,
   ) =>
     new Promise<void>((resolve) => {
       start(async () => {
         const res = await action(id);
-        if (res.success) toast.success(res.message ?? "Listo");
-        else toast.error(res.error);
+        if (res.success) toast.success((res.message as string) ?? "Listo");
+        else toast.error((res.error as string) ?? "No se pudo completar");
         router.refresh();
         resolve();
       });
@@ -52,14 +64,82 @@ export default function DelegadosClient({
         breadcrumbs={[{ label: "Delegados" }]}
       />
 
-      {requests.length === 0 ? (
+      {/* Inscripciones a torneos pedidas por delegados (S3) */}
+      {inscriptions.length > 0 && (
+        <section className="space-y-3">
+          <SectionTitle>Inscripciones a torneos</SectionTitle>
+          {inscriptions.map((inscription) => (
+            <article
+              key={inscription.id}
+              className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-card p-5 lg:flex-row lg:items-center dark:border-gray-700"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  {inscription.teamName}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Quiere jugar <b>{inscription.tournamentName}</b>
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {inscription.playerCount === 0
+                    ? "Todavía sin jugadores cargados"
+                    : `${inscription.playerCount} ${inscription.playerCount === 1 ? "jugador cargado" : "jugadores cargados"}`}
+                </p>
+              </div>
+
+              <div className="flex shrink-0 gap-2">
+                <ConfirmDialog
+                  trigger={
+                    <Button variant="outline" disabled={isPending} className="h-11 px-4">
+                      Rechazar
+                    </Button>
+                  }
+                  title="¿Rechazar la inscripción?"
+                  description={
+                    <>
+                      <b>{inscription.teamName}</b> no va a jugar{" "}
+                      <b>{inscription.tournamentName}</b>. El plantel que el
+                      delegado ya cargó se conserva por si cambiás de opinión.
+                    </>
+                  }
+                  confirmLabel="Rechazar"
+                  onConfirm={() => resolve(rejectInscription, inscription.id)}
+                />
+                <ConfirmDialog
+                  trigger={
+                    <Button variant="brand" disabled={isPending} className="h-11 px-4">
+                      <UserCheck className="h-4 w-4" aria-hidden="true" />
+                      Aprobar
+                    </Button>
+                  }
+                  tone="warning"
+                  icon={UserCheck}
+                  title="¿Aprobar la inscripción?"
+                  description={
+                    <>
+                      <b>{inscription.teamName}</b> queda inscripto en{" "}
+                      <b>{inscription.tournamentName}</b> y entra en el fixture
+                      cuando lo generes.
+                    </>
+                  }
+                  confirmLabel="Aprobar"
+                  onConfirm={() => resolve(approveInscription, inscription.id)}
+                />
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {requests.length === 0 && inscriptions.length === 0 ? (
         <EmptyState
           icon={UserCheck}
           title="No hay solicitudes pendientes"
-          description="Cuando alguien pida representar a un equipo de tu liga, la solicitud aparece acá para que la apruebes o la rechaces."
+          description="Cuando alguien pida representar a un equipo de tu liga o inscribirlo en un torneo, la solicitud aparece acá para que la apruebes o la rechaces."
         />
       ) : (
         <div className="space-y-3">
+          {requests.length > 0 && <SectionTitle>Delegados</SectionTitle>}
           {requests.map((request) => (
             <article
               key={request.id}

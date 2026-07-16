@@ -2,35 +2,68 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import {
-  getPanelOrgIds,
-  orgScopeWhere,
-  requireApiOrgContext,
-} from "@/lib/orgAuth";
+import { checkUser } from "@/lib/checkUser";
+import { getPanelOrgIds } from "@/lib/orgAuth";
+import { getManagedTeamIds } from "@/lib/teamAuth";
+import { logPlayerCreate, playerOrgScopeWhere } from "@/lib/playerAuth";
 import { apiError } from "@/lib/apiResponse";
 import { playerCreateSchema } from "@/lib/validators/player";
 import { validationErrorResponse } from "@/lib/validators/common";
 
+/**
+ * Alta de ficha de jugador (N12/N13).
+ *
+ * La ficha es **global**: no pertenece a ninguna liga. La puede cargar cualquiera
+ * que tenga un motivo para hacerlo — gestor de una liga o delegado de un equipo
+ * aprobado — y el DNI, único en toda la plataforma, evita el duplicado.
+ */
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const user = await checkUser();
+    if (!user) return apiError(401, "No autenticado");
 
-    const auth = await requireApiOrgContext();
-    if (auth.error) {
-      return auth.error;
+    // Cargar fichas es de quien gestiona una liga o representa a un equipo.
+    // Un USUARIO suelto no tiene por qué crear identidades de terceros.
+    const [orgIds, managedTeamIds] = await Promise.all([
+      getPanelOrgIds(user),
+      getManagedTeamIds(user),
+    ]);
+    const canLoad =
+      user.role === "ADMINISTRADOR" ||
+      (orgIds?.length ?? 0) > 0 ||
+      orgIds === null ||
+      managedTeamIds.length > 0;
+
+    if (!canLoad) {
+      return apiError(403, "Necesitás gestionar una liga o representar a un equipo");
     }
 
-    const parsed = playerCreateSchema.safeParse(body);
+    const parsed = playerCreateSchema.safeParse(await req.json());
     if (!parsed.success) {
       return validationErrorResponse(parsed.error);
     }
 
-    const newPlayer = await db.player.create({
-      data: {
-        ...parsed.data,
-        organizationId: auth.org.id,
-      },
+    // El DNI ya existe → es la misma persona, no una ficha nueva. Se devuelve
+    // 409 con el id para que la UI ofrezca asociarlo en vez de duplicarlo.
+    const existing = await db.player.findUnique({
+      where: { nationalId: parsed.data.nationalId },
+      select: { id: true, name: true },
     });
+    if (existing) {
+      return NextResponse.json(
+        {
+          error: "Ya existe un jugador con ese DNI",
+          existingPlayer: existing,
+        },
+        { status: 409 },
+      );
+    }
+
+    const newPlayer = await db.player.create({
+      data: { ...parsed.data, createdById: user.id },
+    });
+
+    await logPlayerCreate(user.id, newPlayer.id, parsed.data);
 
     return NextResponse.json(newPlayer, { status: 201 });
   } catch (error) {
@@ -45,8 +78,10 @@ export async function POST(req: Request) {
  * "agregar jugador al equipo" — y un jugador dado de baja no se puede sumar a
  * ningún equipo, esa es justamente la diferencia entre deshabilitar y eliminar.
  *
- * `?scope=panel` acota a las organizaciones del usuario (el selector del panel);
- * sin el parámetro devuelve el listado público de difusión (todas las ligas).
+ * `?scope=panel` acota a los jugadores que **participan en los torneos** de las
+ * organizaciones del usuario. Antes filtraba por `Player.organizationId`, que
+ * ya no existe: la ficha es global (N12) y lo que hace "mío" a un jugador es
+ * que juegue en un torneo mío, no quién lo cargó.
  */
 export async function GET(req: Request) {
   try {
@@ -59,7 +94,8 @@ export async function GET(req: Request) {
 
     if (scope === "panel") {
       const orgIds = await getPanelOrgIds();
-      Object.assign(where, orgScopeWhere(orgIds));
+      if (orgIds?.length === 0) return NextResponse.json([]);
+      Object.assign(where, playerOrgScopeWhere(orgIds));
     }
 
     const players = await db.player.findMany({ where });

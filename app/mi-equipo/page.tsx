@@ -5,9 +5,11 @@ import { checkUser } from "@/lib/checkUser";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import {
+  getMyRosters,
   getMyTeamRequests,
   getOpenOrganizations,
 } from "@modules/delegados/actions/queries";
+import { getOpenTournamentsForMyTeams } from "@modules/delegados/actions/inscriptions";
 import MiEquipoClient from "./MiEquipoClient";
 
 export const metadata: Metadata = {
@@ -24,9 +26,11 @@ export default async function MiEquipoPage() {
   const user = await checkUser();
   if (!user) redirect("/sign-in");
 
-  const [requests, organizations] = await Promise.all([
+  const [requests, organizations, rosters, openTournaments] = await Promise.all([
     getMyTeamRequests(),
     getOpenOrganizations(),
+    getMyRosters(),
+    getOpenTournamentsForMyTeams(),
   ]);
 
   return (
@@ -48,6 +52,8 @@ export default async function MiEquipoPage() {
             },
           }))}
           organizations={organizations}
+          rosters={rosters}
+          openTournaments={openTournaments}
         />
       </main>
       <Footer />

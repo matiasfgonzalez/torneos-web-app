@@ -64,7 +64,15 @@ export async function generateTournamentFixture(
       organizationId: true,
       format: true,
       homeAndAway: true,
-      tournamentTeams: { select: { id: true }, orderBy: { createdAt: "asc" } },
+      // Solo los equipos **aprobados** entran al fixture (S3/N13): una
+      // inscripción PENDIENTE o RECHAZADA no juega. Sin este filtro, pedir
+      // inscripción alcanzaría para meterse en el fixture sin que la liga
+      // haya dicho que sí.
+      tournamentTeams: {
+        where: { registrationStatus: "INSCRIPTO" },
+        select: { id: true },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 
@@ -86,7 +94,8 @@ export async function generateTournamentFixture(
   if (teamIds.length < 2) {
     return {
       success: false,
-      error: "Inscribí al menos 2 equipos antes de generar el fixture.",
+      error:
+        "Se necesitan al menos 2 equipos aprobados para generar el fixture. Las inscripciones pendientes no cuentan hasta que las apruebes.",
     };
   }
 

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   ShieldX,
   Loader2,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ import {
   searchTeamsToClaim,
   type ClaimableTeam,
 } from "@modules/delegados/actions/queries";
+import RosterSection, { type Roster } from "./RosterSection";
+import InscriptionsSection, { type OpenTournament } from "./InscriptionsSection";
 import type { TeamManagerStatus } from "@prisma/client";
 
 interface MyRequest {
@@ -51,6 +54,8 @@ interface MyRequest {
 interface Props {
   requests: MyRequest[];
   organizations: { id: string; name: string; locality: string | null }[];
+  rosters: Roster[];
+  openTournaments: OpenTournament[];
 }
 
 const STATUS_UI: Record<
@@ -77,7 +82,12 @@ const STATUS_UI: Record<
   },
 };
 
-export default function MiEquipoClient({ requests, organizations }: Readonly<Props>) {
+export default function MiEquipoClient({
+  requests,
+  organizations,
+  rosters,
+  openTournaments,
+}: Readonly<Props>) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ClaimableTeam[] | null>(null);
@@ -187,11 +197,26 @@ export default function MiEquipoClient({ requests, organizations }: Readonly<Pro
             );
           })}
 
-          {requests.some((r) => r.status === "APROBADO") && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              La carga del plantel y la inscripción a torneos llegan con S3.
-            </p>
-          )}
+        </section>
+      )}
+
+      {/* Torneos abiertos para inscribir */}
+      <InscriptionsSection tournaments={openTournaments} />
+
+      {/* Planteles: uno por torneo en el que juega cada equipo */}
+      {rosters.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
+            <Users className="h-5 w-5 text-brand" aria-hidden="true" />
+            Mis planteles
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Un plantel por torneo. La ficha del jugador es una sola: el mismo
+            jugador puede estar en varios torneos sin volver a cargarlo.
+          </p>
+          {rosters.map((roster) => (
+            <RosterSection key={roster.id} roster={roster} />
+          ))}
         </section>
       )}
 

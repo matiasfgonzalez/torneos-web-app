@@ -95,3 +95,58 @@ export async function getMyTeamRequests() {
     orderBy: { createdAt: "desc" },
   });
 }
+
+/**
+ * Planteles del delegado: un plantel por torneo en el que juega cada equipo.
+ *
+ * La ficha del jugador es una sola (global, N12); lo que hay por torneo es su
+ * `TeamPlayer`. Por eso la misma persona aparece en dos planteles distintos sin
+ * estar cargada dos veces.
+ */
+export async function getMyRosters() {
+  const user = await checkUser();
+  if (!user) return [];
+
+  const managerships = await db.teamManager.findMany({
+    where: { userId: user.id, status: "APROBADO" },
+    select: { teamId: true },
+  });
+  const teamIds = managerships.map((m) => m.teamId);
+  if (teamIds.length === 0) return [];
+
+  const rosters = await db.tournamentTeam.findMany({
+    where: { teamId: { in: teamIds } },
+    select: {
+      id: true,
+      registrationStatus: true,
+      team: { select: { id: true, name: true } },
+      tournament: { select: { id: true, name: true, status: true } },
+      teamPlayer: {
+        select: {
+          id: true,
+          number: true,
+          position: true,
+          player: { select: { id: true, name: true, nationalId: true } },
+          _count: { select: { goals: true, cards: true } },
+        },
+        orderBy: { player: { name: "asc" } },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return rosters.map((r) => ({
+    id: r.id,
+    registrationStatus: r.registrationStatus,
+    teamName: r.team.name,
+    tournamentName: r.tournament.name,
+    players: r.teamPlayer.map((tp) => ({
+      id: tp.id,
+      number: tp.number,
+      position: tp.position,
+      playerName: tp.player.name,
+      nationalId: tp.player.nationalId,
+      hasHistory: tp._count.goals > 0 || tp._count.cards > 0,
+    })),
+  }));
+}

@@ -4,6 +4,7 @@ import { validatePanelAccess } from "@/lib/roleValidation";
 import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg } from "@/lib/orgAuth";
 import { getPendingTeamRequests } from "@modules/delegados/actions/requests";
+import { getPendingInscriptions } from "@modules/delegados/actions/inscriptions";
 import DelegadosClient from "./DelegadosClient";
 
 export const metadata: Metadata = {
@@ -21,10 +22,21 @@ export default async function DelegadosPage() {
 
   const user = await checkUser();
   const org = user ? await getOrCreateOwnOrg(user) : null;
-  const requests = org ? await getPendingTeamRequests(org.id) : [];
+  const [requests, inscriptions] = org
+    ? await Promise.all([
+        getPendingTeamRequests(org.id),
+        getPendingInscriptions(org.id),
+      ])
+    : [[], []];
 
   return (
     <DelegadosClient
+      inscriptions={inscriptions.map((i) => ({
+        id: i.id,
+        teamName: i.team.name,
+        tournamentName: i.tournament.name,
+        playerCount: i._count.teamPlayer,
+      }))}
       requests={requests.map((r) => ({
         id: r.id,
         message: r.message,

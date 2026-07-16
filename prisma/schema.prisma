@@ -55,6 +55,7 @@ model User {
   // `memberships`: el delegado no trabaja para la liga, representa a un equipo.
   teamManagerships   TeamManager[]
   teamManagerDecisions TeamManager[]      @relation("TeamManagerDecisions")
+  playersCreated     Player[]             @relation("PlayersCreated")
 
   @@index([role, status])
 }
@@ -85,11 +86,12 @@ model Organization {
   ownerId String
   owner   User   @relation("OwnedOrganizations", fields: [ownerId], references: [id])
 
-  members      OrganizationMember[]
-  invites      OrganizationInvite[]
-  tournaments  Tournament[]
-  teams        Team[]
-  players      Player[]
+  members     OrganizationMember[]
+  invites     OrganizationInvite[]
+  tournaments Tournament[]
+  teams       Team[]
+  // `players` se eliminó: la ficha de jugador es global (N12), no de una liga.
+  // Los jugadores de una liga se derivan de la participación en sus torneos.
   referees     Referee[]
   subscription Subscription?
 
@@ -498,10 +500,25 @@ enum PlayerPosition {
   FALSO_9
 }
 
+/// Ficha de jugador — **identidad global de la plataforma** (N12, decisión del
+/// product owner 2026-07-14).
+///
+/// Antes el jugador pertenecía a una liga (`organizationId` + unique por
+/// `[organizationId, nationalId]`), así que la misma persona jugando en dos
+/// ligas eran dos fichas. Ahora hay **una sola ficha por persona**, identificada
+/// por su DNI, y `TeamPlayer` la ata a cada `TournamentTeam`: el mismo jugador
+/// puede estar en varios torneos (en el mismo equipo o en otro), pero nunca dos
+/// veces en el mismo torneo.
+///
+/// Consecuencia: la ficha **no tiene dueño**. Qué jugadores ve una liga se
+/// deriva de la participación (`TeamPlayer → TournamentTeam → Tournament`), no
+/// de un `organizationId`. Toda edición queda registrada en `AuditLog`.
 model Player {
-  id                String          @id @default(uuid())
-  name              String
-  nationalId        String? // DNI — identidad y anti-duplicados dentro de la liga
+  id   String @id @default(uuid())
+  name String
+  /// DNI — **la clave de identidad**. Obligatorio y único en toda la
+  /// plataforma: es lo que evita que dos delegados carguen a la misma persona.
+  nationalId String @unique
   birthDate         DateTime?
   birthPlace        String?
   nationality       String?
@@ -527,16 +544,19 @@ model Player {
   instagramUrl String?
   twitterUrl   String?
 
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Quién dio de alta la ficha. Es solo trazabilidad: **no da propiedad ni
+  /// acota visibilidad** (la ficha es global). Quién puede editarla se resuelve
+  /// por participación — ver `lib/playerAuth.ts`.
+  createdById String?
+  createdBy   User?   @relation("PlayersCreated", fields: [createdById], references: [id])
 
   teamPlayer TeamPlayer[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([organizationId, nationalId])
-  @@index([organizationId])
+  // El unique de `nationalId` está en el campo: es global, no por liga.
+  @@index([name])
 }
 
 // ============================================================

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
+import { playerOrgScopeWhere } from "@/lib/playerAuth";
 
 /**
  * GET /api/admin/search?q=… — buscador del command palette (F3).
@@ -52,8 +53,12 @@ export async function GET(req: NextRequest) {
         take: LIMIT,
         orderBy: { name: "asc" },
       }),
+      // Los jugadores NO se acotan con `scope` (que filtra por
+      // `organizationId`): la ficha es global y ese campo ya no existe (N12).
+      // El equivalente es "juega en un torneo mío" — si no, el buscador del
+      // panel expondría a todos los jugadores de la plataforma.
       db.player.findMany({
-        where: { ...scope, deletedAt: null, name: match },
+        where: { ...playerOrgScopeWhere(orgIds), deletedAt: null, name: match },
         select: { id: true, name: true, position: true, enabled: true },
         take: LIMIT,
         orderBy: { name: "asc" },

@@ -9,6 +9,7 @@ import {
   Activity,
   Calendar,
   Clock,
+  CreditCard,
   Edit,
   FileText,
   Footprints,
@@ -81,6 +82,14 @@ const playerFormSchema = z.object({
     .trim()
     .min(3, "El nombre debe tener al menos 3 caracteres")
     .max(120, "El nombre no puede superar los 120 caracteres"),
+  // El DNI identifica al jugador en TODA la plataforma (N12): es lo que evita
+  // que la misma persona termine cargada dos veces por distintos delegados.
+  nationalId: z
+    .string()
+    .trim()
+    .min(6, "El DNI debe tener al menos 6 dígitos")
+    .max(20, "El DNI no puede superar los 20 caracteres")
+    .regex(/^[0-9A-Za-z.\s-]+$/, "El DNI solo puede tener números y letras"),
   birthDate: z.string(),
   birthPlace: z.string().max(120, "Máximo 120 caracteres"),
   nationality: z.string(),
@@ -120,6 +129,7 @@ type PlayerFormValues = z.infer<typeof playerFormSchema>;
 
 const emptyValues = (): PlayerFormValues => ({
   name: "",
+  nationalId: "",
   birthDate: "",
   birthPlace: "",
   nationality: "Argentina",
@@ -142,6 +152,7 @@ const emptyValues = (): PlayerFormValues => ({
 
 const valuesFromPlayer = (p: IPlayer): PlayerFormValues => ({
   name: p.name ?? "",
+  nationalId: p.nationalId ?? "",
   birthDate: toDateInput(p.birthDate),
   birthPlace: p.birthPlace ?? "",
   nationality: p.nationality ?? "",
@@ -195,6 +206,17 @@ export default function PlayerForm({
 
       if (!res.ok) {
         const error = await res.json().catch(() => null);
+
+        // 409 = ese DNI ya tiene ficha. No es un error de sistema: es la misma
+        // persona ya cargada. El mensaje va en el campo, que es donde se
+        // corrige (y no en un toast que se va).
+        if (res.status === 409 && error?.existingPlayer) {
+          form.setError("nationalId", {
+            message: `Ese DNI ya es de ${error.existingPlayer.name}. Sumalo desde el plantel en vez de cargarlo de nuevo.`,
+          });
+          return;
+        }
+
         toast.error(
           error?.error ??
             (isEditMode
@@ -243,15 +265,27 @@ export default function PlayerForm({
       }
     >
       <FormSection icon={User} title="Datos personales">
-        <TextField
-          control={form.control}
-          name="name"
-          label="Nombre completo"
-          icon={User}
-          required
-          placeholder="Ej: Lionel Andrés Messi"
-          autoComplete="name"
-        />
+        <FieldRow>
+          <TextField
+            control={form.control}
+            name="name"
+            label="Nombre completo"
+            icon={User}
+            required
+            placeholder="Ej: Lionel Andrés Messi"
+            autoComplete="name"
+          />
+          <TextField
+            control={form.control}
+            name="nationalId"
+            label="DNI"
+            icon={CreditCard}
+            required
+            inputMode="numeric"
+            placeholder="12345678"
+            description="Identifica al jugador en toda la plataforma: evita que se cargue dos veces."
+          />
+        </FieldRow>
         <FieldRow>
           <DateField
             control={form.control}

@@ -3,7 +3,8 @@
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { deleteImage } from "@/lib/cloudinary";
-import { requireActionOrgAccess } from "@/lib/orgAuth";
+import { checkUser } from "@/lib/checkUser";
+import { canEditPlayer } from "@/lib/playerAuth";
 
 /**
  * Baja de jugadores.
@@ -21,14 +22,27 @@ import { requireActionOrgAccess } from "@/lib/orgAuth";
  * disponible para sumarlo a un equipo.
  */
 
-/** Valida acceso a la organización dueña del jugador. */
+/**
+ * Valida que el usuario pueda tocar esta ficha.
+ *
+ * La ficha ya no tiene liga dueña (`Player.organizationId` se eliminó: la
+ * identidad es global, N12), así que el permiso sale de la **participación**
+ * — ver `lib/playerAuth.ts`.
+ */
 async function authForPlayer(playerId: string) {
+  const user = await checkUser();
+  if (!user) return { error: "Debes iniciar sesión para realizar esta acción" };
+
   const player = await db.player.findUnique({
     where: { id: playerId },
-    select: { organizationId: true },
+    select: { id: true },
   });
-  if (!player) return { error: "Jugador no encontrado" as string };
-  return requireActionOrgAccess(player.organizationId);
+  if (!player) return { error: "Jugador no encontrado" };
+
+  if (!(await canEditPlayer(user, playerId))) {
+    return { error: "No tienes permisos para realizar esta acción" };
+  }
+  return { user };
 }
 
 function revalidatePlayerPaths(id: string) {

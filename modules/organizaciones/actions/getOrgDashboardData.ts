@@ -94,7 +94,16 @@ export async function getOrgDashboardData(
       },
     }),
     db.team.count({ where: { organizationId, enabled: true } }),
-    db.player.count({ where: { organizationId, deletedAt: null } }),
+    // Jugadores que participan en torneos de esta liga. La ficha es global
+    // (N12): ya no hay `Player.organizationId` que contar.
+    db.player.count({
+      where: {
+        deletedAt: null,
+        teamPlayer: {
+          some: { tournamentTeam: { tournament: { organizationId } } },
+        },
+      },
+    }),
     db.match.findMany({
       where: {
         tournament: { organizationId, deletedAt: null },
