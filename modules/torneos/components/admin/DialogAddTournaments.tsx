@@ -38,6 +38,7 @@ import {
   TextareaField,
 } from "@/components/shared/form/fields";
 import { useFormDraft } from "@/hooks/use-form-draft";
+import { toastPlanLimit } from "@/lib/planUpsell";
 import { toDateInput, toDateTimeInput, dateTimeInputToISO } from "@/lib/date-input";
 import {
   AGE_GROUP_OPTIONS,
@@ -284,12 +285,17 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
 
       if (!res.ok) {
         const error = await res.json().catch(() => null);
-        toast.error(
+        const message =
           error?.error ??
-            (isEditMode
-              ? "No se pudo guardar el torneo"
-              : "No se pudo crear el torneo"),
-        );
+          (isEditMode
+            ? "No se pudo guardar el torneo"
+            : "No se pudo crear el torneo");
+        // 402 = límite del plan → upsell con acción hacia /admin/plan (N14d)
+        if (res.status === 402) {
+          toastPlanLimit(message);
+        } else {
+          toast.error(message);
+        }
         return;
       }
 

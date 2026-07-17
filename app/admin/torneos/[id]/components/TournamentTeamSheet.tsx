@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ClipboardPen, Edit, Hash, Plus, Shield, Trophy } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
+import { toastPlanLimit } from "@/lib/planUpsell";
 import { Button } from "@/components/ui/button";
 import { FormSheet } from "@/components/shared/form/FormSheet";
 import {
@@ -107,12 +108,17 @@ export default function TournamentTeamSheet({
 
       if (!res.ok) {
         const error = await res.json().catch(() => null);
-        toast.error(
+        const message =
           error?.error ??
-            (isEdit
-              ? "No se pudo guardar la inscripción"
-              : "No se pudo inscribir el equipo"),
-        );
+          (isEdit
+            ? "No se pudo guardar la inscripción"
+            : "No se pudo inscribir el equipo");
+        // 402 = límite del plan → upsell con acción hacia /admin/plan (N14d)
+        if (res.status === 402) {
+          toastPlanLimit(message);
+          return;
+        }
+        toast.error(message);
         return;
       }
 

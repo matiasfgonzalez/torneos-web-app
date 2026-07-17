@@ -13,12 +13,20 @@ export const metadata: Metadata = {
  * (D12/N14c): el plan es la relación comercial de la liga con la plataforma,
  * no del staff. Las APIs detrás ya lo exigían para mutar; esto alinea la vista.
  */
-export default async function PlanPage() {
+export default async function PlanPage({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<{ plan?: string }>;
+}>) {
   const user = await validatePanelAccess();
 
   if (user.role !== "ADMINISTRADOR" && (await getMyOrgRole(user)) !== "OWNER") {
     redirect("/admin/dashboard");
   }
 
-  return <PlanClient />;
+  // Plan preseleccionado desde el pricing o el wizard (`?plan=PRO`, N14d).
+  // PlanClient lo valida contra los planes pagos reales al renderizar.
+  const { plan } = await searchParams;
+
+  return <PlanClient initialPlan={plan?.toUpperCase() ?? ""} />;
 }

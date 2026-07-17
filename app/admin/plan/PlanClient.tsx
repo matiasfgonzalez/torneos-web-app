@@ -58,14 +58,19 @@ interface PaymentRow {
   reviewNotes?: string | null;
 }
 
-export default function PlanClient() {
+export default function PlanClient({
+  initialPlan = "",
+}: Readonly<{
+  /** Plan preseleccionado desde el pricing/wizard (`?plan=PRO`, N14d). */
+  initialPlan?: string;
+}>) {
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [plans, setPlans] = useState<PlanInfo[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Formulario de pago
-  const [selectedPlan, setSelectedPlan] = useState<string>("");
+  const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan);
   const [months, setMonths] = useState("1");
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [receiptPublicId, setReceiptPublicId] = useState<string | null>(null);
@@ -136,6 +141,9 @@ export default function PlanClient() {
   }
 
   const paidPlans = plans.filter((p) => Number(p.priceMonthly) > 0);
+  // Derivado al renderizar (no useEffect): si `initialPlan` vino con un código
+  // inexistente por la URL, simplemente no hay selección — sin estado roto.
+  const selected = paidPlans.find((p) => p.code === selectedPlan);
 
   return (
     <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
@@ -240,7 +248,7 @@ export default function PlanClient() {
             ))}
           </div>
 
-          {selectedPlan && (
+          {selected && (
             <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -262,12 +270,9 @@ export default function PlanClient() {
                   <p className="text-sm font-medium">Total a transferir</p>
                   <p className="text-2xl font-bold text-brand">
                     $
-                    {(
-                      Number(
-                        paidPlans.find((p) => p.code === selectedPlan)
-                          ?.priceMonthly ?? 0,
-                      ) * Number(months)
-                    ).toLocaleString("es-AR")}
+                    {(Number(selected.priceMonthly) * Number(months)).toLocaleString(
+                      "es-AR",
+                    )}
                   </p>
                 </div>
               </div>

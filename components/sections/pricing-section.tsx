@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { checkUser } from "@/lib/checkUser";
 import { GradientText } from "@/components/ui-dev/gradient-text";
 import { Check, Sparkles, Shield, Clock } from "lucide-react";
 
@@ -91,19 +92,30 @@ export async function PricingSection() {
     orderBy: { order: "asc" },
   });
 
+  // CTA consciente de sesión (N14d): con liga propia el destino es contratar
+  // en /admin/plan (con el plan preseleccionado); sin liga, el funnel de
+  // /crear-liga (que a un anónimo lo manda a registrarse, como siempre).
+  const user = await checkUser();
+  const hasOrg = user
+    ? !!(await db.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: { id: true },
+      }))
+    : false;
+
   return (
     <section
       id="precios"
       className="relative py-24 bg-white dark:bg-gray-900 overflow-hidden"
     >
       {/* Elementos decorativos de fondo */}
-      <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-[#ad45ff]/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
-      <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[#a3b3ff]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-brand/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-brand-2/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#ad45ff] mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand mb-4">
             Planes simples y transparentes
           </p>
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
@@ -120,6 +132,17 @@ export async function PricingSection() {
           {plans.map((plan) => {
             const isHighlight = plan.code === HIGHLIGHT_CODE;
             const price = Number(plan.priceMonthly);
+            // Con liga: contratar en el panel con el plan preseleccionado;
+            // FREE ya lo tiene (o es su fallback) → ver su plan, sin query.
+            const ctaHref = hasOrg
+              ? price > 0
+                ? `/admin/plan?plan=${plan.code}`
+                : "/admin/plan"
+              : "/crear-liga";
+            const ctaLabel =
+              hasOrg && price === 0
+                ? "Ver mi plan"
+                : (CTA_BY_CODE[plan.code] ?? "Empezar");
             const bullets = planBullets({
               maxActiveTournaments: plan.maxActiveTournaments,
               maxTeamsPerTournament: plan.maxTeamsPerTournament,
@@ -132,13 +155,13 @@ export async function PricingSection() {
                 key={plan.id}
                 className={`relative flex flex-col rounded-3xl border p-8 transition-all duration-300 ${
                   isHighlight
-                    ? "border-[#ad45ff] bg-white dark:bg-gray-800 shadow-2xl shadow-[#ad45ff]/15 lg:scale-[1.03]"
-                    : "border-gray-100 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 hover:border-[#ad45ff]/40 hover:shadow-xl"
+                    ? "border-brand bg-white dark:bg-gray-800 shadow-2xl shadow-brand/15 lg:scale-[1.03]"
+                    : "border-gray-100 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 hover:border-brand/40 hover:shadow-xl"
                 }`}
               >
                 {isHighlight && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <div className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white px-5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-[#ad45ff]/25 whitespace-nowrap">
+                    <div className="bg-gradient-to-r from-brand to-brand-2 text-white px-5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-brand/25 whitespace-nowrap">
                       <Sparkles className="w-3.5 h-3.5" />
                       Más elegido
                     </div>
@@ -159,7 +182,7 @@ export async function PricingSection() {
                     <span
                       className={`text-4xl font-bold ${
                         isHighlight
-                          ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent"
+                          ? "bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent"
                           : "text-gray-900 dark:text-white"
                       }`}
                     >
@@ -176,8 +199,8 @@ export async function PricingSection() {
                 <ul className="space-y-3 mb-8 flex-1">
                   {bullets.map((bullet) => (
                     <li key={bullet} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-5 h-5 mt-0.5 bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 text-[#ad45ff]" />
+                      <div className="flex-shrink-0 w-5 h-5 mt-0.5 bg-gradient-to-r from-brand/10 to-brand-2/10 rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 text-brand" />
                       </div>
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         {bullet}
@@ -187,14 +210,14 @@ export async function PricingSection() {
                 </ul>
 
                 <Link
-                  href="/crear-liga"
-                  className={`inline-flex items-center justify-center w-full py-3 rounded-xl font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ad45ff]/50 ${
+                  href={ctaHref}
+                  className={`inline-flex items-center justify-center w-full py-3 rounded-xl font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand/50 ${
                     isHighlight
-                      ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white shadow-lg shadow-[#ad45ff]/25"
-                      : "border border-[#ad45ff] text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white"
+                      ? "bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25"
+                      : "border border-brand text-brand hover:bg-brand hover:text-white"
                   }`}
                 >
-                  {CTA_BY_CODE[plan.code] ?? "Empezar"}
+                  {ctaLabel}
                 </Link>
               </div>
             );
@@ -205,13 +228,13 @@ export async function PricingSection() {
         <div className="flex flex-wrap justify-center gap-8 mt-16">
           <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <Shield className="w-5 h-5 text-[#ad45ff]" />
+              <Shield className="w-5 h-5 text-brand" />
             </div>
             <span className="font-medium">Sin tarjeta de crédito</span>
           </div>
           <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <Clock className="w-5 h-5 text-[#ad45ff]" />
+              <Clock className="w-5 h-5 text-brand" />
             </div>
             <span className="font-medium">Plan gratis para siempre</span>
           </div>
@@ -230,7 +253,7 @@ export async function PricingSection() {
               >
                 <summary className="flex items-center justify-between cursor-pointer list-none font-semibold text-gray-900 dark:text-white">
                   {item.q}
-                  <span className="ml-4 flex-shrink-0 text-[#ad45ff] transition-transform duration-300 group-open:rotate-45 text-2xl leading-none">
+                  <span className="ml-4 flex-shrink-0 text-brand transition-transform duration-300 group-open:rotate-45 text-2xl leading-none">
                     +
                   </span>
                 </summary>

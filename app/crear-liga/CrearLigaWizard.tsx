@@ -79,9 +79,16 @@ async function readError(res: Response): Promise<string> {
 export default function CrearLigaWizard({
   initialOrg,
   userName,
+  targetPlan,
 }: {
   initialOrg: InitialOrg | null;
   userName: string | null;
+  /**
+   * Plan pago elegido en el pricing antes de llegar acá (`?plan=PRO`, N14d):
+   * la pantalla de éxito ofrece contratarlo en /admin/plan sin repetir la
+   * elección. `null` = entró sin plan en mente (el funnel de siempre).
+   */
+  targetPlan?: string | null;
 }) {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [saving, setSaving] = useState(false);
@@ -242,7 +249,7 @@ export default function CrearLigaWizard({
       {/* Título */}
       {step < 4 && (
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white px-4 py-1.5 rounded-full text-sm font-medium shadow-lg shadow-[#ad45ff]/25">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-brand to-brand-2 text-white px-4 py-1.5 rounded-full text-sm font-medium shadow-lg shadow-brand/25">
             <Sparkles className="w-4 h-4" />
             Gratis · Sin tarjeta de crédito
           </div>
@@ -270,7 +277,7 @@ export default function CrearLigaWizard({
                   <div
                     className={`h-0.5 w-6 sm:w-12 rounded-full transition-colors ${
                       isDone || isActive
-                        ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff]"
+                        ? "bg-gradient-to-r from-brand to-brand-2"
                         : "bg-gray-200 dark:bg-gray-700"
                     }`}
                   />
@@ -279,9 +286,9 @@ export default function CrearLigaWizard({
                   <div
                     className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold transition-all ${
                       isDone
-                        ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white"
+                        ? "bg-gradient-to-r from-brand to-brand-2 text-white"
                         : isActive
-                          ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white shadow-lg shadow-[#ad45ff]/30"
+                          ? "bg-gradient-to-r from-brand to-brand-2 text-white shadow-lg shadow-brand/30"
                           : "bg-gray-100 dark:bg-gray-800 text-gray-400"
                     }`}
                   >
@@ -394,7 +401,7 @@ export default function CrearLigaWizard({
               <Button
                 onClick={submitOrg}
                 disabled={saving}
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold px-6 shadow-lg shadow-[#ad45ff]/25"
+                className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white font-semibold px-6 shadow-lg shadow-brand/25"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -542,7 +549,7 @@ export default function CrearLigaWizard({
                 <Button
                   onClick={submitTournament}
                   disabled={saving}
-                  className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold px-6 shadow-lg shadow-[#ad45ff]/25 w-full sm:w-auto"
+                  className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white font-semibold px-6 shadow-lg shadow-brand/25 w-full sm:w-auto"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -580,7 +587,7 @@ export default function CrearLigaWizard({
                   </p>
                   <Link
                     href="/admin/plan"
-                    className="font-semibold text-[#ad45ff] hover:underline"
+                    className="font-semibold text-brand hover:underline"
                   >
                     Ver planes →
                   </Link>
@@ -620,7 +627,7 @@ export default function CrearLigaWizard({
               <Button
                 onClick={sendInvite}
                 disabled={saving || !!planLimitMsg}
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold shadow-lg shadow-[#ad45ff]/25"
+                className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white font-semibold shadow-lg shadow-brand/25"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -667,7 +674,7 @@ export default function CrearLigaWizard({
               <Button
                 onClick={() => setStep(4)}
                 disabled={saving}
-                className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold px-6 shadow-lg shadow-[#ad45ff]/25 w-full sm:w-auto"
+                className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white font-semibold px-6 shadow-lg shadow-brand/25 w-full sm:w-auto"
               >
                 {sentInvites.length > 0 ? "Finalizar" : "Omitir y finalizar"}
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -679,7 +686,7 @@ export default function CrearLigaWizard({
         {/* ---------------- Éxito ---------------- */}
         {step === 4 && (
           <div className="text-center space-y-6 py-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-3xl flex items-center justify-center shadow-xl shadow-[#ad45ff]/30">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-brand to-brand-2 rounded-3xl flex items-center justify-center shadow-xl shadow-brand/30">
               <PartyPopper className="w-10 h-10 text-white" />
             </div>
             <div className="space-y-2">
@@ -693,10 +700,25 @@ export default function CrearLigaWizard({
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {/* Vino del pricing con un plan pago elegido (N14d): cerrar ese
+                  funnel es lo primero; el resto pasa a secundario. */}
+              {targetPlan && (
+                <Button
+                  asChild
+                  variant="brand"
+                  className="font-semibold px-6 w-full sm:w-auto"
+                >
+                  <Link href={`/admin/plan?plan=${targetPlan}`}>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Contratar plan {targetPlan}
+                  </Link>
+                </Button>
+              )}
               {createdTournament && (
                 <Button
                   asChild
-                  className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold px-6 shadow-lg shadow-[#ad45ff]/25 w-full sm:w-auto"
+                  variant={targetPlan ? "outline" : "brand"}
+                  className="font-semibold px-6 w-full sm:w-auto"
                 >
                   <Link href={`/admin/torneos/${createdTournament.id}`}>
                     <Trophy className="w-4 h-4 mr-2" />
@@ -706,12 +728,8 @@ export default function CrearLigaWizard({
               )}
               <Button
                 asChild
-                variant={createdTournament ? "outline" : "default"}
-                className={
-                  createdTournament
-                    ? "w-full sm:w-auto"
-                    : "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold px-6 shadow-lg shadow-[#ad45ff]/25 w-full sm:w-auto"
-                }
+                variant={targetPlan || createdTournament ? "outline" : "brand"}
+                className="font-semibold px-6 w-full sm:w-auto"
               >
                 <Link href="/admin/dashboard">Ir a mi panel</Link>
               </Button>
