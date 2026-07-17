@@ -30,6 +30,7 @@ import { getTournamentCanonicalPath } from "@modules/torneos/actions/getTorneoBy
 import { getTournamentStats } from "@modules/torneos/actions/getTournamentStats";
 import { getAdvancedStats } from "@modules/torneos/actions/getAdvancedStats";
 import { ShareButton } from "@modules/torneos/components/ShareButton";
+import { ExportMenu } from "@modules/torneos/components/ExportMenu";
 import { AdvancedStats } from "@modules/torneos/components/stats/AdvancedStats";
 import { HeadToHead } from "@modules/torneos/components/stats/HeadToHead";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
@@ -204,11 +205,14 @@ export default async function TournamentDetailView({
         <HeaderTorneo
           tournamentData={tournamentData}
           shareButton={
-            <ShareButton
-              canonicalPath={sharePath}
-              qrPath={canonicalPath ? `${canonicalPath}/qr` : null}
-              tournamentName={tournamentData.name}
-            />
+            <>
+              <ExportMenu tournamentId={tournamentData.id} />
+              <ShareButton
+                canonicalPath={sharePath}
+                qrPath={canonicalPath ? `${canonicalPath}/qr` : null}
+                tournamentName={tournamentData.name}
+              />
+            </>
           }
           followButton={
             <FollowButton
