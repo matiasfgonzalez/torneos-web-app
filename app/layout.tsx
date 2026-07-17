@@ -7,6 +7,7 @@ import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 
 // Premium Golazo Theme for Clerk
 const clerkAppearance = {
@@ -168,6 +169,12 @@ const geistMono = Geist_Mono({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // La barra del navegador móvil sigue el tema: neutra clara / negra en oscuro.
+  // (El violeta de marca vive en el manifest, para el standalone instalado.)
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -176,10 +183,17 @@ export const metadata: Metadata = {
     "Plataforma líder en gestión de torneos deportivos con tablas de posiciones, equipos, jugadores, noticias y contenido multimedia integrado.",
   keywords:
     "torneos, deportes, gestión, tablas de posiciones, equipos, jugadores, noticias deportivas",
+  applicationName: "GOLAZO",
   authors: [{ name: "GOLAZO Team" }],
   creator: "GOLAZO",
   publisher: "GOLAZO",
   generator: "",
+  // PWA: instalable en iOS con barra de estado translúcida y nombre corto.
+  appleWebApp: {
+    capable: true,
+    title: "GOLAZO",
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
     title: "GOLAZO - Gestión Profesional de Torneos",
     description:
@@ -195,7 +209,11 @@ export const metadata: Metadata = {
   },
   robots: "index, follow",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
@@ -220,6 +238,7 @@ export default function RootLayout({
           >
             <NextTopLoader height={5} speed={800} />
             <Suspense fallback={null}>{children}</Suspense>
+            <ServiceWorkerRegister />
             <Analytics />
           </ThemeProvider>
         </body>

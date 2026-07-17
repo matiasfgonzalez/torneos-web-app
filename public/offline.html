@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ad45ff" />
+    <title>Sin conexión — GOLAZO</title>
+    <style>
+      :root {
+        --brand: #ad45ff;
+        --brand-2: #a3b3ff;
+        --brand-mid: #c77dff;
+        --bg: #ffffff;
+        --fg: #1a0a2e;
+        --muted: #6b7280;
+        --card: rgba(255, 255, 255, 0.75);
+        --border: rgba(173, 69, 255, 0.15);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a0a0a;
+          --fg: #f5f5f5;
+          --muted: #9ca3af;
+          --card: rgba(23, 23, 23, 0.75);
+          --border: rgba(173, 69, 255, 0.25);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(1200px 600px at 50% -10%, rgba(173, 69, 255, 0.14), transparent 60%),
+          var(--bg);
+        color: var(--fg);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-align: center;
+      }
+      .card {
+        max-width: 380px;
+        width: 100%;
+        padding: 40px 28px;
+        border-radius: 24px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 20px 50px -12px rgba(173, 69, 255, 0.25);
+      }
+      .icon {
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 22px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--brand), var(--brand-mid) 55%, var(--brand-2));
+        box-shadow: 0 10px 25px -6px rgba(173, 69, 255, 0.5);
+      }
+      .icon svg { width: 40px; height: 40px; }
+      h1 { font-size: 1.4rem; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+      p { color: var(--muted); line-height: 1.55; margin: 0 0 24px; font-size: 0.95rem; }
+      button {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 600;
+        color: #fff;
+        padding: 13px 24px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--brand), var(--brand-mid));
+        box-shadow: 0 8px 20px -6px rgba(173, 69, 255, 0.5);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        min-height: 44px;
+      }
+      button:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -6px rgba(173, 69, 255, 0.6); }
+      button:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+      .brand { margin-top: 20px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; color: var(--brand); }
+      @media (prefers-reduced-motion: reduce) {
+        button { transition: none; }
+        button:hover { transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+        </svg>
+      </div>
+      <h1>Estás sin conexión</h1>
+      <p>
+        No pudimos cargar esta página. Revisá tu señal — apenas vuelva la
+        conexión vas a poder seguir viendo los resultados.
+      </p>
+      <button type="button" onclick="location.reload()">Reintentar</button>
+      <div class="brand">GOLAZO</div>
+    </main>
+    <script>
+      // Reintenta solo cuando el navegador avisa que volvió la red.
+      window.addEventListener("online", function () {
+        location.reload();
+      });
+    </script>
+  </body>
+</html>

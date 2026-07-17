@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/sections/hero-section";
 import { ValuePropositionSection } from "@/components/sections/value-proposition-section";
 import { FeaturesSection } from "@/components/sections/features-section";
+import { InstallAppSection } from "@/components/sections/install-app-section";
 import { SocialProofSection } from "@/components/sections/social-proof-section";
 import { SponsorsSection } from "@/components/sections/sponsors-section";
 import { PricingSection } from "@/components/sections/pricing-section";
@@ -64,6 +65,9 @@ export default async function HomePage() {
 
       {/* Features - Capacidades principales */}
       <FeaturesSection />
+
+      {/* Instalar app (PWA) - el pitch al hincha: llevá la liga en el bolsillo */}
+      <InstallAppSection />
 
       {/* Social Proof - Testimonios y confianza */}
       <SocialProofSection />
