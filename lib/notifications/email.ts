@@ -1,4 +1,5 @@
 import type { RenderedNotification } from "@/lib/notifications/catalog";
+import { getBaseUrl } from "@/lib/urls";
 
 /**
  * Envío de email de las notificaciones (S5), vía Resend.
@@ -20,15 +21,12 @@ const FROM = process.env.RESEND_FROM ?? "GOLAZO <onboarding@resend.dev>";
 
 /**
  * Base para los links del email. En el email no sirve una URL relativa: se
- * abre fuera de la app.
+ * abre fuera de la app. Acepta `null` (una notificación sin destino) y lo
+ * propaga; la lógica de la URL base vive en `lib/urls.ts`, compartida con S4.
  */
 export function appUrl(path: string | null): string | null {
   if (!path) return null;
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ??
-    "http://localhost:3000";
-  return `${base.replace(/\/$/, "")}${path}`;
+  return `${getBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 /** ¿Está configurado el envío? Falso en local sin cuenta: se saltea y ya. */

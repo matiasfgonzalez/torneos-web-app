@@ -24,6 +24,7 @@ import {
 interface PropsHeaderTorneo {
   tournamentData: ITorneo;
   followButton?: ReactNode;
+  shareButton?: ReactNode;
 }
 
 // Colores de estado
@@ -42,7 +43,7 @@ const statusColors: Record<string, string> = {
 };
 
 const HeaderTorneo = (props: PropsHeaderTorneo) => {
-  const { tournamentData, followButton } = props;
+  const { tournamentData, followButton, shareButton } = props;
   const diasRestantes = tournamentData.endDate
     ? Math.max(
         0,
@@ -125,7 +126,12 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
                     Ida y Vuelta
                   </Badge>
                 )}
-                {followButton && <div className="ml-auto">{followButton}</div>}
+                {(followButton || shareButton) && (
+                  <div className="ml-auto flex items-center gap-2">
+                    {shareButton}
+                    {followButton}
+                  </div>
+                )}
               </div>
 
               {/* Title */}

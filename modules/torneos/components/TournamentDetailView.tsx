@@ -26,7 +26,9 @@ import {
 } from "lucide-react";
 
 import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
+import { getTournamentCanonicalPath } from "@modules/torneos/actions/getTorneoBySlug";
 import { getTournamentStats } from "@modules/torneos/actions/getTournamentStats";
+import { ShareButton } from "@modules/torneos/components/ShareButton";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
 import { SuspensionsList } from "@modules/torneos/components/SuspensionsList";
 import { notFound } from "next/navigation";
@@ -122,16 +124,22 @@ const getStatusColor = (status: MatchStatus): string => {
 export default async function TournamentDetailView({
   id,
 }: Readonly<{ id: string }>) {
-  const [tournamentData, stats, suspensions, user, favoritedIds] =
+  const [tournamentData, stats, suspensions, user, favoritedIds, canonicalPath] =
     await Promise.all([
       getTorneoById(id),
       getTournamentStats(id),
       getTournamentSuspensions(id),
       checkUser(),
       getFavoritedIds(),
+      // `/liga/[slug]/[torneo]` si el torneo tiene slug; null si todavía no.
+      getTournamentCanonicalPath(id),
     ]);
 
   if (!tournamentData) return notFound();
+
+  // Para compartir sirve cualquier ruta pública; el QR solo la canónica (su
+  // cartel vive bajo `/liga/...`). Sin slug se comparte la URL por id igual.
+  const sharePath = canonicalPath ?? `/torneos/${id}`;
 
   // Filtrar partidos próximos (no jugados)
   const upcomingMatches =
@@ -184,6 +192,13 @@ export default async function TournamentDetailView({
         {/* Tournament Header */}
         <HeaderTorneo
           tournamentData={tournamentData}
+          shareButton={
+            <ShareButton
+              canonicalPath={sharePath}
+              qrPath={canonicalPath ? `${canonicalPath}/qr` : null}
+              tournamentName={tournamentData.name}
+            />
+          }
           followButton={
             <FollowButton
               type="tournament"

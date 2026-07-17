@@ -129,6 +129,8 @@ torneos-web-app/
 │   ├── utils.ts                 # Utilidades generales
 │   ├── checkUser.ts             # Verificación de usuario
 │   ├── formatDate.ts            # Formateo de fechas
+│   ├── urls.ts                  # getBaseUrl/absoluteUrl (email, OG, QR)
+│   ├── qr.ts                    # QR SVG del torneo (S4, lib qrcode)
 │   └── notifications/           # Emisión de notificaciones (S5)
 │       ├── catalog.ts           # puro: qué dice y adónde lleva cada una
 │       ├── dispatch.ts          # notify() + destinatarios por rol

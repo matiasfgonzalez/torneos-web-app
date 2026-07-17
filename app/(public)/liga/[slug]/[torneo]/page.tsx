@@ -23,6 +23,9 @@ export async function generateMetadata({
     meta.description ??
     `Seguí ${meta.name} en GOLAZO: tabla de posiciones, fixture, resultados y goleadores en tiempo real.`;
 
+  // La imagen NO se declara acá a propósito: `opengraph-image.tsx` en esta
+  // misma carpeta la genera dinámicamente y Next la inyecta sola. Repetir
+  // `openGraph.images` la pisaría con algo estático.
   return {
     title,
     description,
@@ -30,7 +33,6 @@ export async function generateMetadata({
       title,
       description,
       type: "website",
-      images: meta.logoUrl ? [{ url: meta.logoUrl }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
