@@ -11,6 +11,7 @@ import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ITorneo } from "@modules/torneos/types";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
 import { DeleteTournamentButton } from "@modules/torneos/components/admin/DeleteTournamentButton";
+import { ExportMenu } from "@modules/torneos/components/ExportMenu";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import {
@@ -183,6 +184,7 @@ const Header = ({ tournamentData, canDelete = false }: PropsHeader) => {
 
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <ExportMenu tournamentId={tournamentData.id} variant="surface" />
               <DialogAddTournaments tournament={tournamentData} />
               {canDelete && (
                 <DeleteTournamentButton
