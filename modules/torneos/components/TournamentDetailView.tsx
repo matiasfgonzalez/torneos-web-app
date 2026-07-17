@@ -28,7 +28,10 @@ import {
 import { getTorneoById } from "@modules/torneos/actions/getTorneoById";
 import { getTournamentCanonicalPath } from "@modules/torneos/actions/getTorneoBySlug";
 import { getTournamentStats } from "@modules/torneos/actions/getTournamentStats";
+import { getAdvancedStats } from "@modules/torneos/actions/getAdvancedStats";
 import { ShareButton } from "@modules/torneos/components/ShareButton";
+import { AdvancedStats } from "@modules/torneos/components/stats/AdvancedStats";
+import { HeadToHead } from "@modules/torneos/components/stats/HeadToHead";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
 import { SuspensionsList } from "@modules/torneos/components/SuspensionsList";
 import { notFound } from "next/navigation";
@@ -124,16 +127,24 @@ const getStatusColor = (status: MatchStatus): string => {
 export default async function TournamentDetailView({
   id,
 }: Readonly<{ id: string }>) {
-  const [tournamentData, stats, suspensions, user, favoritedIds, canonicalPath] =
-    await Promise.all([
-      getTorneoById(id),
-      getTournamentStats(id),
-      getTournamentSuspensions(id),
-      checkUser(),
-      getFavoritedIds(),
-      // `/liga/[slug]/[torneo]` si el torneo tiene slug; null si todavía no.
-      getTournamentCanonicalPath(id),
-    ]);
+  const [
+    tournamentData,
+    stats,
+    advancedStats,
+    suspensions,
+    user,
+    favoritedIds,
+    canonicalPath,
+  ] = await Promise.all([
+    getTorneoById(id),
+    getTournamentStats(id),
+    getAdvancedStats(id),
+    getTournamentSuspensions(id),
+    checkUser(),
+    getFavoritedIds(),
+    // `/liga/[slug]/[torneo]` si el torneo tiene slug; null si todavía no.
+    getTournamentCanonicalPath(id),
+  ]);
 
   if (!tournamentData) return notFound();
 
@@ -987,6 +998,13 @@ export default async function TournamentDetailView({
                 </CardContent>
               </Card>
             </div>
+
+            {/* Estadísticas avanzadas (S7): fair play, racha y cara a cara */}
+            <AdvancedStats
+              fairPlay={advancedStats.fairPlay}
+              form={advancedStats.form}
+            />
+            <HeadToHead tournamentId={tournamentData.id} teams={advancedStats.teams} />
           </TabsContent>
         </Tabs>
       </div>

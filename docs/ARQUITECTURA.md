@@ -131,6 +131,11 @@ torneos-web-app/
 │   ├── formatDate.ts            # Formateo de fechas
 │   ├── urls.ts                  # getBaseUrl/absoluteUrl (email, OG, QR)
 │   ├── qr.ts                    # QR SVG del torneo (S4, lib qrcode)
+│   ├── stats/                   # Estadísticas avanzadas (S7, puro + tests)
+│   │   ├── fair-play.ts         # ranking de fair play por equipo
+│   │   ├── form.ts              # forma reciente + racha
+│   │   ├── head-to-head.ts      # historial entre dos equipos
+│   │   └── match-outcome.ts     # W/D/L por marcador (= tabla)
 │   └── notifications/           # Emisión de notificaciones (S5)
 │       ├── catalog.ts           # puro: qué dice y adónde lleva cada una
 │       ├── dispatch.ts          # notify() + destinatarios por rol
