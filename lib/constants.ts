@@ -9,6 +9,8 @@ import {
   Foot,
   UserStatus,
   PayStatus,
+  OrgRole,
+  UserRole,
 } from "@prisma/client";
 import { supportsFixture } from "@/lib/fixture/formats";
 
@@ -175,6 +177,21 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   INACTIVO: "Inactivo",
   SUSPENDIDO: "Suspendido",
   PENDIENTE: "Pendiente",
+};
+
+// ============================================
+// ROLES DE ORGANIZACIÓN Y PLATAFORMA (N1/N14a)
+// ============================================
+
+export const ORG_ROLE_LABELS: Record<OrgRole, string> = {
+  OWNER: "Dueño",
+  ORGANIZADOR: "Organizador",
+  COLABORADOR: "Colaborador",
+};
+
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+  ADMINISTRADOR: "Administrador",
+  USUARIO: "Usuario",
 };
 
 // ============================================

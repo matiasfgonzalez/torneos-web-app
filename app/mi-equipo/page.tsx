@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { checkUser } from "@/lib/checkUser";
 import { Header } from "@/components/layout/header";
+import { getUserNavLinks } from "@/lib/userHats";
 import { Footer } from "@/components/layout/footer";
 import {
   getMyRosters,
@@ -35,7 +36,7 @@ export default async function MiEquipoPage() {
 
   return (
     <div className="flex min-h-screen flex-col premium-gradient-bg">
-      <Header isLogued />
+      <Header isLogued userLinks={await getUserNavLinks()} />
       <main className="mx-auto w-full max-w-3xl flex-grow px-4 py-10">
         <MiEquipoClient
           requests={requests.map((r) => ({

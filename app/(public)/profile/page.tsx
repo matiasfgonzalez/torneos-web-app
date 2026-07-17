@@ -24,6 +24,9 @@ import ProfileForm from "./components/ProfileForm";
 import ActivityHistory from "./components/ActivityHistory";
 import { getUserFavorites } from "@modules/favoritos/actions/favorites";
 import { FavoritesTab } from "@modules/usuarios/components/FavoritesTab";
+import { HatsHub } from "@modules/usuarios/components/HatsHub";
+import { getUserHats } from "@/lib/userHats";
+import { USER_ROLE_LABELS } from "@/lib/constants";
 
 export default async function ProfilePage() {
   const user = await checkUser();
@@ -32,7 +35,10 @@ export default async function ProfilePage() {
     redirect("/sign-in");
   }
 
-  const favorites = await getUserFavorites();
+  const [favorites, hats] = await Promise.all([
+    getUserFavorites(),
+    getUserHats(user),
+  ]);
 
   // Calculate quick stats
   const joinedDate = new Date(user.createdAt).toLocaleDateString("es-AR", {
@@ -46,16 +52,16 @@ export default async function ProfilePage() {
         {/* Profile Header */}
         <div className="glass-card rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 border-0 shadow-2xl relative overflow-hidden">
           {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#ad45ff]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand to-brand-2 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
             <Avatar className="w-32 h-32 md:w-40 md:h-40 border-4 border-white dark:border-gray-900 shadow-xl relative z-10">
               <AvatarImage
                 src={user.imageUrl || ""}
                 alt={user.name || "User"}
               />
-              <AvatarFallback className="text-4xl bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] text-white">
+              <AvatarFallback className="text-4xl bg-gradient-to-br from-brand to-brand-2 text-white">
                 {user.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -76,9 +82,9 @@ export default async function ProfilePage() {
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                 <Badge
                   variant="outline"
-                  className="border-[#ad45ff]/40 text-[#ad45ff] bg-[#ad45ff]/5 px-3 py-1"
+                  className="border-brand/40 text-brand bg-brand/5 px-3 py-1"
                 >
-                  {user.role}
+                  {USER_ROLE_LABELS[user.role]}
                 </Badge>
                 <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                   <CalendarIcon className="w-3 h-3" />
@@ -89,12 +95,12 @@ export default async function ProfilePage() {
 
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-600 dark:text-gray-300">
               <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700/50">
-                <Mail className="w-4 h-4 text-[#ad45ff]" />
+                <Mail className="w-4 h-4 text-brand" />
                 {user.email}
               </div>
               {user.location && (
                 <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700/50">
-                  <MapPin className="w-4 h-4 text-[#a3b3ff]" />
+                  <MapPin className="w-4 h-4 text-brand-2" />
                   {user.location}
                 </div>
               )}
@@ -114,6 +120,9 @@ export default async function ProfilePage() {
           </div>
         </div>
 
+        {/* Mis vínculos (N14a): las 4 puertas con su estado real */}
+        {hats && <HatsHub hats={hats} />}
+
         {/* Content Tabs */}
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
@@ -121,7 +130,7 @@ export default async function ProfilePage() {
               <TabsList className="grid w-full grid-cols-3 bg-white/40 dark:bg-gray-900/40 p-1 rounded-xl mb-6 backdrop-blur-md border border-white/20">
                 <TabsTrigger
                   value="info"
-                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-[#ad45ff] transition-all duration-300"
+                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-brand transition-all duration-300"
                 >
                   <UserIcon className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Información Personal</span>
@@ -129,14 +138,14 @@ export default async function ProfilePage() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="favorites"
-                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-[#ad45ff] transition-all duration-300"
+                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-brand transition-all duration-300"
                 >
                   <Heart className="w-4 h-4 mr-2" />
                   Favoritos
                 </TabsTrigger>
                 <TabsTrigger
                   value="activity"
-                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-[#ad45ff] transition-all duration-300"
+                  className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg data-[state=active]:text-brand transition-all duration-300"
                 >
                   <Briefcase className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Historial y Actividad</span>
@@ -199,7 +208,7 @@ export default async function ProfilePage() {
           <div className="space-y-6">
             <Card className="glass-card border-0">
               <CardHeader>
-                <CardTitle className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent">
+                <CardTitle className="bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
                   Estado de Cuenta
                 </CardTitle>
                 <CardDescription>Resumen de tu suscripción</CardDescription>
@@ -219,7 +228,7 @@ export default async function ProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="glass-card border-0 bg-gradient-to-br from-[#ad45ff]/10 to-transparent">
+            <Card className="glass-card border-0 bg-gradient-to-br from-brand/10 to-transparent">
               <CardContent className="p-6">
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2">
                   ¿Necesitas ayuda?
@@ -228,7 +237,7 @@ export default async function ProfilePage() {
                   Si tienes problemas con tu cuenta o necesitas cambiar tu rol,
                   contacta a soporte.
                 </p>
-                <button className="w-full py-2 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium text-[#ad45ff] shadow-sm hover:shadow-md transition-all">
+                <button className="w-full py-2 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium text-brand shadow-sm hover:shadow-md transition-all">
                   Contactar Soporte
                 </button>
               </CardContent>

@@ -36,6 +36,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
+import { ORG_ROLE_LABELS } from "@/lib/constants";
 
 // ============================================================
 // Tipos (respuesta de GET /api/org/members)
@@ -69,11 +70,8 @@ interface MembersData {
   invites: Invite[];
 }
 
-const ROLE_LABELS: Record<OrgRole, string> = {
-  OWNER: "Dueño",
-  ORGANIZADOR: "Organizador",
-  COLABORADOR: "Colaborador",
-};
+// Labels canónicos en lib/constants (N14a) — el hub del perfil usa los mismos
+const ROLE_LABELS: Record<OrgRole, string> = ORG_ROLE_LABELS;
 
 const ROLE_BADGE_CLASSES: Record<OrgRole, string> = {
   OWNER:

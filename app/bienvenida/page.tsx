@@ -6,6 +6,7 @@ import { ArrowRight, Heart, Shield, Trophy, UserCircle } from "lucide-react";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
 import { Header } from "@/components/layout/header";
+import { getUserNavLinks } from "@/lib/userHats";
 import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
@@ -89,7 +90,7 @@ export default async function BienvenidaPage() {
 
   return (
     <div className="flex min-h-screen flex-col premium-gradient-bg">
-      <Header isLogued />
+      <Header isLogued userLinks={await getUserNavLinks(user)} />
 
       <main className="mx-auto w-full max-w-5xl flex-grow px-4 py-12 sm:py-16">
         <div className="mb-10 text-center">

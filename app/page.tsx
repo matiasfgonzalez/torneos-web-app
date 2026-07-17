@@ -12,6 +12,7 @@ import { checkUser } from "@/lib/checkUser";
 import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { getUserFavorites } from "@modules/favoritos/actions/favorites";
+import { getUserNavLinks } from "@/lib/userHats";
 import { FanHome } from "@modules/usuarios/components/FanHome";
 
 export default async function HomePage() {
@@ -29,17 +30,18 @@ export default async function HomePage() {
   // USUARIO logueado (N10): home personalizado con torneos/equipos seguidos
   // en vez de la landing de marketing, que ya cumplió su función de conversión.
   if (isLogued && user) {
-    const [membership, favorites] = await Promise.all([
+    const [membership, favorites, userLinks] = await Promise.all([
       db.organizationMember.findFirst({
         where: { userId: user.id },
         select: { id: true },
       }),
       getUserFavorites(),
+      getUserNavLinks(user),
     ]);
 
     return (
       <div className="min-h-screen flex flex-col premium-gradient-bg">
-        <Header isLogued={isLogued} />
+        <Header isLogued={isLogued} userLinks={userLinks} />
         <FanHome
           name={user.name || "campeón"}
           hasOrganization={!!membership}

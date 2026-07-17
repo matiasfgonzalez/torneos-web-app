@@ -14,6 +14,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 interface HeaderProps {
   isLogued?: boolean;
+  /**
+   * Links del usuario según sus sombreros reales (N14a) — los calcula el
+   * server con `getUserNavLinks()`. Sin este prop, un logueado cae al par
+   * histórico "Mi Panel"/"Mi Perfil" (mentía para hinchas y delegados).
+   */
+  userLinks?: { href: string; label: string }[];
 }
 
 /**
@@ -22,7 +28,7 @@ interface HeaderProps {
  * de sección activa por ruta, mobile-first y dark/light.
  */
 export function Header(props: Readonly<HeaderProps>) {
-  const { isLogued } = props;
+  const { isLogued, userLinks } = props;
   const { isOpen, toggle, close } = useMobileMenu();
   const pathname = usePathname();
 
@@ -31,10 +37,10 @@ export function Header(props: Readonly<HeaderProps>) {
   const links: { href: string; label: string }[] = [
     ...siteLinks,
     ...(isLogued
-      ? [
+      ? (userLinks ?? [
           { href: "/admin/dashboard", label: "Mi Panel" },
           { href: "/profile", label: "Mi Perfil" },
-        ]
+        ])
       : [...anonLinks]),
   ];
 
