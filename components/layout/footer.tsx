@@ -14,9 +14,13 @@ import {
 import { getSiteSettings } from "@modules/configuracion/actions/siteSettings";
 import { siteLinks } from "@/lib/constants/navigation";
 
-// Sin páginas propias todavía (ver TODO.md A10) — se muestran como texto,
-// no como links muertos a "#".
-const legalItems = ["Términos de Servicio", "Política de Privacidad", "Cookies"];
+// Páginas legales reales (A10/N14b, 2026-07-17). "Cookies" es una sección
+// dentro de la política de privacidad, no una página propia.
+const legalItems = [
+  { label: "Términos y Condiciones", href: "/terminos" },
+  { label: "Política de Privacidad", href: "/privacidad" },
+  { label: "Cookies", href: "/privacidad#cookies" },
+];
 
 const DEFAULT_DESCRIPTION =
   "La plataforma líder para la gestión profesional de torneos deportivos. Organiza, gestiona y haz crecer tus competencias.";
@@ -157,8 +161,13 @@ export async function Footer() {
                 </h3>
                 <ul className="space-y-3">
                   {legalItems.map((item) => (
-                    <li key={item} className="text-gray-500">
-                      {item}
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                      >
+                        {item.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>

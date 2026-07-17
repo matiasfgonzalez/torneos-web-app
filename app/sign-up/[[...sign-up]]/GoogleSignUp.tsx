@@ -39,11 +39,11 @@ export default function GoogleSignUp() {
   if (!isLoaded) {
     return (
       <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center mx-auto animate-pulse">
+        <div className="w-16 h-16 bg-gradient-to-r from-brand to-brand-2 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
           <Trophy className="w-8 h-8 text-white" />
         </div>
         <div className="space-y-2">
-          <Loader2 className="w-6 h-6 animate-spin text-[#ad45ff] mx-auto" />
+          <Loader2 className="w-6 h-6 animate-spin text-brand mx-auto" />
           <p className="text-gray-600 dark:text-gray-300 font-medium">
             Iniciando GOLAZO...
           </p>
@@ -57,7 +57,7 @@ export default function GoogleSignUp() {
       {/* Header con branding mejorado */}
       <div className="text-center space-y-4">
         <Link href="/" className="inline-flex items-center space-x-3 group">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
             <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
           </div>
           <div className="text-left">
@@ -91,25 +91,25 @@ export default function GoogleSignUp() {
 
         <CardContent className="space-y-6 px-4 sm:px-6 pb-6">
           {/* Beneficios destacados */}
-          <div className="bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 rounded-xl p-4 border border-[#ad45ff]/20 dark:border-[#ad45ff]/30">
+          <div className="bg-gradient-to-r from-brand/5 to-brand-2/5 dark:from-brand/10 dark:to-brand-2/10 rounded-xl p-4 border border-brand/20 dark:border-brand/30">
             <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-3 text-center">
               ✨ Lo que obtienes gratis:
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm text-gray-700 dark:text-gray-300">
               <div className="flex items-center space-x-3">
-                <Trophy className="w-4 h-4 text-[#ad45ff] flex-shrink-0" />
+                <Trophy className="w-4 h-4 text-brand flex-shrink-0" />
                 <span>Gestión completa de torneos</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Users className="w-4 h-4 text-[#ad45ff] flex-shrink-0" />
+                <Users className="w-4 h-4 text-brand flex-shrink-0" />
                 <span>Administración de equipos y jugadores</span>
               </div>
               <div className="flex items-center space-x-3">
-                <BarChart3 className="w-4 h-4 text-[#ad45ff] flex-shrink-0" />
+                <BarChart3 className="w-4 h-4 text-brand flex-shrink-0" />
                 <span>Estadísticas y reportes avanzados</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Shield className="w-4 h-4 text-[#ad45ff] flex-shrink-0" />
+                <Shield className="w-4 h-4 text-brand flex-shrink-0" />
                 <span>Seguridad y respaldos automáticos</span>
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function GoogleSignUp() {
           >
             <Button
               size="lg"
-              className="cursor-pointer w-full h-12 sm:h-14 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+              className="cursor-pointer w-full h-12 sm:h-14 bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
               <Shield className="w-5 h-5 mr-3" />
               Crear cuenta con Google
@@ -154,7 +154,7 @@ export default function GoogleSignUp() {
               ¿Ya tienes cuenta?{" "}
               <Link
                 href="/sign-in"
-                className="text-[#ad45ff] hover:text-[#9d35ef] font-semibold hover:underline transition-colors"
+                className="text-brand hover:text-brand-hover font-semibold hover:underline transition-colors"
               >
                 Inicia sesión
               </Link>
@@ -162,13 +162,19 @@ export default function GoogleSignUp() {
 
             <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
               Al registrarte, aceptas nuestros{" "}
-              <span className="text-[#ad45ff] font-medium">
-                Términos de Servicio
-              </span>{" "}
+              <Link
+                href="/terminos"
+                className="text-brand font-medium hover:underline"
+              >
+                Términos y Condiciones
+              </Link>{" "}
               y{" "}
-              <span className="text-[#ad45ff] font-medium">
+              <Link
+                href="/privacidad"
+                className="text-brand font-medium hover:underline"
+              >
                 Política de Privacidad
-              </span>
+              </Link>
             </p>
           </div>
         </CardContent>
@@ -178,7 +184,7 @@ export default function GoogleSignUp() {
       <div className="text-center">
         <Link
           href="/"
-          className="text-sm text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] transition-colors font-medium"
+          className="text-sm text-gray-600 dark:text-gray-300 hover:text-brand transition-colors font-medium"
         >
           ← Volver al inicio
         </Link>

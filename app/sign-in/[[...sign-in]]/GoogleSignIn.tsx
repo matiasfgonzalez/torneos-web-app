@@ -30,7 +30,7 @@ export default function GoogleSignIn() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <Loader2 className="w-6 h-6 animate-spin text-[#ad45ff] mx-auto" />
+          <Loader2 className="w-6 h-6 animate-spin text-brand mx-auto" />
           <p className="text-gray-600 dark:text-gray-300 font-medium">
             Cargando...
           </p>
@@ -57,7 +57,7 @@ export default function GoogleSignIn() {
         {/* Header con branding mejorado */}
         <div className="text-center space-y-4">
           <Link href="/" className="inline-flex items-center space-x-3 group">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
               <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
             <div className="text-left">
@@ -94,33 +94,33 @@ export default function GoogleSignIn() {
             <Button
               size="lg"
               onClick={handleGoogleSignIn}
-              className="cursor-pointer w-full h-12 sm:h-14 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+              className="cursor-pointer w-full h-12 sm:h-14 bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-mid-hover text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
               <Shield className="w-5 h-5 mr-3" />
               Continuar con Google
             </Button>
 
             {/* Beneficios rápidos */}
-            <div className="bg-gradient-to-r from-[#ad45ff]/5 to-[#a3b3ff]/5 dark:from-[#ad45ff]/10 dark:to-[#a3b3ff]/10 rounded-xl p-4 border border-[#ad45ff]/20 dark:border-[#ad45ff]/30">
+            <div className="bg-gradient-to-r from-brand/5 to-brand-2/5 dark:from-brand/10 dark:to-brand-2/10 rounded-xl p-4 border border-brand/20 dark:border-brand/30">
               <div className="text-center space-y-3">
                 <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
                   Acceso instantáneo a:
                 </h4>
                 <div className="grid grid-cols-2 gap-3 text-xs text-gray-600 dark:text-gray-300">
                   <div className="flex items-center space-x-2">
-                    <Trophy className="w-3 h-3 text-[#ad45ff] flex-shrink-0" />
+                    <Trophy className="w-3 h-3 text-brand flex-shrink-0" />
                     <span>Panel de torneos</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Shield className="w-3 h-3 text-[#ad45ff] flex-shrink-0" />
+                    <Shield className="w-3 h-3 text-brand flex-shrink-0" />
                     <span>Gestión segura</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-3 h-3 text-[#ad45ff] flex-shrink-0" />
+                    <CheckCircle className="w-3 h-3 text-brand flex-shrink-0" />
                     <span>Estadísticas</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-3 h-3 text-[#ad45ff] flex-shrink-0" />
+                    <CheckCircle className="w-3 h-3 text-brand flex-shrink-0" />
                     <span>Reportes</span>
                   </div>
                 </div>
@@ -132,13 +132,19 @@ export default function GoogleSignIn() {
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                 Plataforma segura con cifrado SSL. Al continuar, aceptas
                 nuestros{" "}
-                <span className="text-[#ad45ff] font-medium">
-                  Términos de Servicio
-                </span>{" "}
+                <Link
+                  href="/terminos"
+                  className="text-brand font-medium hover:underline"
+                >
+                  Términos y Condiciones
+                </Link>{" "}
                 y{" "}
-                <span className="text-[#ad45ff] font-medium">
+                <Link
+                  href="/privacidad"
+                  className="text-brand font-medium hover:underline"
+                >
                   Política de Privacidad
-                </span>
+                </Link>
               </p>
             </div>
           </CardContent>
@@ -148,7 +154,7 @@ export default function GoogleSignIn() {
         <div className="text-center">
           <Link
             href="/"
-            className="text-sm text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] transition-colors font-medium"
+            className="text-sm text-gray-600 dark:text-gray-300 hover:text-brand transition-colors font-medium"
           >
             ← Volver al inicio
           </Link>
