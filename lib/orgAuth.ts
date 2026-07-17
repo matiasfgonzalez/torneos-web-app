@@ -123,6 +123,25 @@ export async function isOrgOwner(
 }
 
 /**
+ * Rol del usuario en SU organización (la primera membresía, el mismo criterio
+ * que `getOrCreateOwnOrg`). `null` = sin membresía. Para ADMINISTRADOR devuelve
+ * su membresía real si la tiene (los checks de plataforma van aparte).
+ */
+export async function getMyOrgRole(
+  user?: AppUser | null,
+): Promise<OrgRole | null> {
+  const current = user ?? (await checkUser());
+  if (!current) return null;
+
+  const membership = await db.organizationMember.findFirst({
+    where: { userId: current.id },
+    select: { role: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return membership?.role ?? null;
+}
+
+/**
  * ¿Puede el usuario gestionar recursos de esta organización?
  * @param allowCollaborator - true para endpoints de carga de resultados
  */
@@ -179,6 +198,27 @@ export async function requireApiOrgContext(): Promise<
     return apiForbidden();
   }
   return { user, org };
+}
+
+/**
+ * Para endpoints reservados al OWNER de la organización (o ADMINISTRADOR):
+ * plan, pagos, miembros, y las transiciones de torneo que consumen cupo del
+ * plan — crear, eliminar, reactivar, restaurar (decisión D12/N14c: quien
+ * gestiona el plan controla lo que lo consume).
+ */
+export async function requireApiOrgOwner(
+  organizationId: string,
+  message = "Solo el dueño de la liga puede realizar esta acción",
+): Promise<{ user: AppUser; error?: never } | ApiAuthError> {
+  const user = await checkUser();
+  if (!user) return apiUnauthorized();
+
+  if (!(await isOrgOwner(user, organizationId))) {
+    return {
+      error: NextResponse.json({ error: message }, { status: 403 }),
+    };
+  }
+  return { user };
 }
 
 /**

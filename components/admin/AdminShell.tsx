@@ -34,6 +34,8 @@ const getServerSnapshot = () => false;
 
 interface AdminShellProps {
   role: string | null;
+  /** Rol en la organización (OWNER/ORGANIZADOR/COLABORADOR/null) — N14c. */
+  orgRole?: string | null;
   /** Banner de "ver como organización" (N3), renderizado en el server */
   banner?: React.ReactNode;
   children: React.ReactNode;
@@ -48,6 +50,7 @@ interface AdminShellProps {
  */
 export function AdminShell({
   role,
+  orgRole,
   banner,
   children,
 }: Readonly<AdminShellProps>) {
@@ -74,6 +77,7 @@ export function AdminShell({
     <div className="min-h-screen premium-gradient-bg">
       <AdminSidebar
         role={role}
+        orgRole={orgRole}
         collapsed={collapsed}
         onToggleCollapsed={toggle}
       />
@@ -126,6 +130,7 @@ export function AdminShell({
 
         <CommandPalette
           role={role}
+          orgRole={orgRole}
           open={paletteOpen}
           onOpenChange={setPaletteOpen}
         />

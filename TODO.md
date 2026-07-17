@@ -552,6 +552,7 @@
 - [ ] **S9. PWA (E:Medio):** manifest + service worker; los usuarios finales lo usan desde el celular en la cancha.
 - [ ] **S10. Multi-deporte (E:Alto, evaluar):** campo `sport` en Tournament con configuración de puntaje por deporte (básquet/vóley no usan 3-1-0). Solo si el negocio lo pide; diseñarlo en S2 para no migrar dos veces.
 - [ ] **S11. Billing/planes freemium:** ✅ definido y detallado en N4 (planes/límites) + N5 (pagos manuales) + Mercado Pago después. Ver sección 🧭.
+- [ ] **S12. Novedades de la liga (E:Medio, decisión D13):** publicaciones del organizador en su página pública `/liga/[slug]` — sale del pedido "el organizador puede crear noticias" (N14). **No reusar `News`** (que es de plataforma y solo ADMIN): modelo propio `OrgPost` con `organizationId`, título/contenido/portada, publicado/borrador, visible en la página de la liga y opcionalmente agregado al home del hincha que la sigue. Evaluar como feature de plan (`features.orgNews`) — es exactamente el tipo de valor que justifica PRO sin bloquear la operación deportiva.
 
 ---
 
@@ -751,7 +752,7 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
 #### N6. 🟠 Onboarding de organizador — "Creá tu liga" (E:Medio)
 
 > ✅ **Implementado (2026-07-08):** modelo `OrganizationInvite` (email + rol + estado PENDIENTE/ACEPTADA/CANCELADA, `@@unique([organizationId, email])`, migración `20260706120000_organization_invites`). **APIs:** `GET/PATCH /api/org` (perfil de la liga, PATCH solo OWNER, regenera slug al cambiar nombre); `GET/POST /api/org/members` (invitar por email — si ya tiene cuenta se suma directo, si no queda invitación pendiente); `PATCH/DELETE /api/org/members/[id]` (cambiar rol / quitar, nunca al OWNER); `DELETE /api/org/invites/[id]` (cancelar). **Guards nuevos en [lib/orgAuth.ts](lib/orgAuth.ts):** `isOrgOwner`, `acceptPendingInvites` (auto-acepta invitaciones al entrar), `uniqueSlug` exportado. **Enforcement `maxMembers`:** `assertPlanLimit(org, "addMember")` cuenta miembros + invitaciones pendientes → 402 con upsell (cierra el pendiente de N4). **Wizard [/crear-liga](app/crear-liga/CrearLigaWizard.tsx)** de 3 pasos (liga → primer torneo opcional → invitar equipo) con pantalla de éxito; `validatePanelAccess` redirige a `/crear-liga` a quien no tiene liga; sign-up ahora aterriza ahí directo. **Panel [/admin/miembros](app/admin/miembros/MembersClient.tsx)** (lista, invitar, cambiar rol, quitar, cancelar invitaciones) + link en sidebar. **Landing:** CTAs reales `→ /crear-liga` (hero "Creá tu liga gratis", CTA final), pricing dinámico con los **3 planes reales leídos de la BD** ([pricing-section.tsx](components/sections/pricing-section.tsx)) + **FAQ**; corregido el copy falso "14 días de prueba" → "Plan gratis para siempre" (coherente con freemium). Carpeta `organizaciones/logos` agregada a `ALLOWED_UPLOAD_FOLDERS`. Build ✅, 21 tests ✅, lint ✅.
-> **Pendientes/siguientes:** (1) email real de invitación (hoy la invitación existe pero no se envía email — llega con S5/Resend); (2) reenviar invitación y ver fecha de expiración; (3) el `myRole` del OWNER se usa en `/api/org` pero falta exponerlo en la UI del panel para ocultar acciones a no-OWNER del lado cliente (hoy el server ya las bloquea con 403); (4) transferir propiedad de la liga a otro miembro.
+> **Pendientes/siguientes:** (1) email real de invitación (hoy la invitación existe pero no se envía email — llega con S5/Resend); (2) reenviar invitación y ver fecha de expiración; (3) ✅ **hecho en N14c (2026-07-16):** el rol de org se expone en el panel (`getMyOrgRole` → sidebar/palette ocultan Plan/Miembros, y esas páginas redirigen a no-OWNER); (4) transferir propiedad de la liga a otro miembro.
 
 - [x] **Qué:** el camino USUARIO → OWNER con la menor fricción posible.
   - **Freemium self-service (D7):** cualquier USUARIO crea su organización GRATIS (plan FREE) sin aprobación manual. La org se auto-crea en el primer uso (`getOrCreateOwnOrg`) y el wizard la completa. Prueba con 1 torneo real y paga al chocar con los límites.
@@ -874,6 +875,123 @@ Los permisos vivían en dos ejes y **los dos son del lado de la liga**: `UserRol
   - Verificado: `tsc` limpio, **0 errores de lint**, **129 tests ✅** (+11), `next build` verde, smoke en dev (`/api/players?scope=panel` anónimo → `[]`: el aislamiento N3 sigue en pie con el scoping nuevo por participación).
 - [ ] **Pendientes menores de N13:** email al aprobar/rechazar (llega con S5/Resend); que el delegado pueda cancelar su propia solicitud; transferir la delegación a otra persona.
 
+#### N14. 🔴 Circuitos por tipo de usuario — auditoría integral y diseño (2026-07-16)
+
+> Pedido del product owner (2026-07-16): validar de punta a punta cómo deberían ser los circuitos dentro de la página para cada tipo de usuario — anónimo, registrado, jugador, delegado, organizador (con plan), colaborador invitado y admin — y decidir la mejor solución donde había dudas: ¿el colaborador paga?, ¿cómo se lo limita a un torneo?, ¿el organizador crea noticias?, ¿el plan FREE asigna el rol automáticamente?
+> Auditado contra el código real: [middleware.ts](middleware.ts), [lib/roleValidation.ts](lib/roleValidation.ts), [lib/orgAuth.ts](lib/orgAuth.ts), [lib/teamAuth.ts](lib/teamAuth.ts), [lib/playerAuth.ts](lib/playerAuth.ts), [/bienvenida](app/bienvenida/page.tsx), [/mi-ficha](modules/jugadores/actions/claims.ts), [/mi-equipo](app/mi-equipo/page.tsx), [/crear-liga](app/crear-liga/page.tsx), [pricing-section](components/sections/pricing-section.tsx) y [header](components/layout/header.tsx).
+>
+> **Conclusión general: los circuitos pedidos ya están implementados en su gran mayoría** por N1/N2 (roles), N6 (onboarding), N10 (FanHome/favoritos), N12 (ficha del jugador), N13 (delegado), S3 (inscripciones) y N4/N4b/N5 (planes/pagos). Lo que falta no son circuitos nuevos sino **cinco huecos concretos (N14a–N14e)** y **cinco decisiones de negocio que quedan fijadas (D10–D14**, sección Decisiones al final del archivo).
+
+##### El principio rector: una cuenta, varios sombreros
+
+`UserRole` solo distingue ADMINISTRADOR de USUARIO. Todo lo demás son **relaciones opcionales y acumulables** que la misma cuenta puede tener a la vez — y eso es una fortaleza del modelo, no un accidente:
+
+| Sombrero | Relación en BD | Área propia | Cómo se consigue |
+|---|---|---|---|
+| Hincha | `Favorite` | `/` (FanHome) + `/profile` | Solo, siguiendo torneos/equipos |
+| Jugador | `PlayerClaim` APROBADO | `/mi-ficha` | Reclama su ficha por DNI; aprueba el responsable de la ficha (N12) |
+| Delegado | `TeamManager` APROBADO | `/mi-equipo` | Reclama o propone un equipo; aprueba la liga (N13) |
+| Colaborador | `OrganizationMember` COLABORADOR | `/admin` (solo carga de resultados) | Invitado por email por la liga (N6) |
+| Organizador | `OrganizationMember` ORGANIZADOR | `/admin` | Invitado por email por la liga (N6) |
+| Dueño de liga | `OrganizationMember` OWNER | `/admin` + plan/pagos/miembros | Crea su liga gratis (`/crear-liga`, D7) |
+
+Un mismo USUARIO puede ser hincha de un torneo, jugador en una liga, delegado de un equipo en otra y OWNER de la suya. Las tablas son independientes y ningún circuito bloquea a otro (verificado). El único rol exclusivo es ADMINISTRADOR (product owner). **Consecuencia de diseño:** la pregunta "¿qué rol tiene este usuario?" está mal planteada — la correcta es "¿qué sombreros tiene puestos?", y la navegación debe reflejarlo (→ N14a).
+
+##### Circuito 1 — Visitante anónimo ✅ (funciona como se pidió)
+
+Navega todas las páginas públicas sin fricción y hace login cuando quiere.
+
+- **Verificado:** el middleware solo protege `/admin`, `/profile`, `/mi-equipo`, `/mi-ficha` y `/bienvenida`; los GET públicos están abiertos; toda mutación exige sesión (C8). Landing con pricing real de BD, directorio de torneos/equipos/jugadores/partidos, páginas de liga `/liga/[slug]`, ficha de partido, noticias.
+- **Sin gaps de circuito.** Los pendientes en esta superficie son de calidad, no de flujo: soft-404 (F2), SEO dinámico (M3), páginas legales (A10 — que además son prerrequisito de N14b).
+
+##### Circuito 2 — USUARIO recién registrado ✅ (las 4 puertas)
+
+`sign-up` → `/bienvenida` → elige: *sigo a mi equipo* (`/`), *juego en una liga* (`/mi-ficha`), *represento a un equipo* (`/mi-equipo`), *organizo una liga* (`/crear-liga`). Quien ya tiene un vínculo no vuelve a elegir (redirect por prioridad: membresía → delegación → reclamo de ficha).
+
+- ✅ Coincide con lo pedido: el primer perfil es `USUARIO` (default del schema), nace `ACTIVO` (N1), y desde ahí puede reclamar/crear su jugador, pedir ser delegado, crear equipos, pedir inscripciones o crear su liga.
+- ⚠️ **Gap → N14a:** `/bienvenida` es de alta (bien), pero después del alta **no hay forma visible de ponerse otro sombrero**: el header de logueados muestra siempre "Mi Panel" → `/admin/dashboard` para *cualquier* usuario ([header.tsx:35](components/layout/header.tsx#L35)). Un hincha que toca "Mi Panel" rebota por `validatePanelAccess` a `/bienvenida` (funciona, pero el label miente); un OWNER que además juega en otra liga **no tiene ningún link a `/mi-ficha`** salvo tipear la URL.
+
+##### Circuito 3 — Jugador (`/mi-ficha`) [~] (reclamo ✅, creación ❌)
+
+Hoy: busca su ficha por DNI exacto → pide vincularla → aprueba el responsable (liga/delegado/creador) → ve su trayectoria cross-liga y gestiona sus datos (N12).
+
+- ✅ Reclamo, aprobación, dueño único, trayectoria y edición auditada: implementados y correctos.
+- ⚠️ **Gap → N14b:** el pedido dice "reclamar **o crear** su jugador". Si ningún club lo cargó todavía, hoy el circuito termina en un callejón: *"Cuando tu delegado te sume a un plantel vas a poder reclamar tu ficha"* ([claims.ts:92](modules/jugadores/actions/claims.ts#L92)). Falta la creación self-service (decisión D14).
+
+##### Circuito 4 — Delegado (`/mi-equipo`) ✅ (completo)
+
+Reclama un equipo existente o propone uno nuevo → la liga aprueba (`/admin/delegados`) → carga plantel con dedupe por DNI → inscribe el equipo en torneos abiertos (cupos + fecha límite, S3) → la liga aprueba la inscripción (con control de plan en la aprobación, N4b).
+
+- ✅ Es exactamente el circuito pedido ("pedir ser delegado de equipos o crearlos y solicitar agregarlo a un torneo"). Sin huecos de flujo; quedan los pendientes menores de N13 (emails S5, cancelar solicitud propia, transferir delegación).
+
+##### Circuito 5 — Organizador (OWNER/ORGANIZADOR) ✅ (el plan FREE ya hace lo pedido)
+
+**La duda del owner ("para ser organizador debe tener contratado un plan activo y pago") queda resuelta así, y ya está implementada:** contratar el plan FREE **es** contratar un plan. `/crear-liga` (o el CTA de pricing) crea la organización, la membresía OWNER y la `Subscription` FREE **en el mismo acto** (`getOrCreateOwnOrg` + `getOrCreateSubscription`) — que es literalmente lo pedido: *"cuando selecciona el plan free se le asigna automáticamente el rol de organizador y se hace la relación con el plan para poder hacer validaciones"*. Los planes **pagos** no habilitan el rol: habilitan **capacidad** (más torneos activos, más equipos, más miembros) y features. Esta es la decisión D7 (freemium) y es la correcta para adquisición: nadie paga antes de probar; se paga al chocar el límite.
+
+- ✅ Crear torneos según el plan: `assertPlanLimit` + `isActiveTournamentStatus` cubren crear/reactivar/restaurar (N4b). Equipos por torneo: `effectiveCapacity` (S3). Miembros: `maxMembers` contando invitaciones pendientes (N6).
+- ✅ Vencimiento del pago → límites FREE sin ocultar datos; org SUSPENDIDA → mutaciones bloqueadas (`requireApiOrgContext`). Upgrade: `/admin/plan` con comprobante → admin aprueba (N5).
+- ✅ Gestiona torneos, equipos, jugadores, partidos, resultados, árbitros, fixture: todo el panel existente.
+- ⚠️ **"El organizador puede crear noticias":** hoy `News` es **global y solo ADMIN** (decisión de N1/N2, correcta: es el marketing de la plataforma). Lo que el organizador de verdad necesita es publicar **novedades de SU liga** en su página pública — eso es otra cosa y va como S12/N14f (decisión D13).
+- ⚠️ **Gap → N14c:** hoy cualquier ORGANIZADOR (no solo el OWNER) puede crear torneos, que son justamente lo que consume el cupo del plan. Decisión D12: crear/eliminar/reactivar torneos pasa a ser del OWNER.
+- ⚠️ **Gap → N14d:** el pricing de la landing manda siempre a `/crear-liga`; para un OWNER logueado que quiere hacer upgrade, el destino correcto es `/admin/plan`.
+
+##### Circuito 6 — Colaborador / organizador invitado ✅ con dos decisiones (D11 y D12)
+
+El pedido: *"asociar otros como organizador/colaborador que ayudan con los datos pero no pueden crear torneos, solo actuar sobre el torneo al que fueron invitados... no sé si cobrarle"*.
+
+**¿Se le cobra? No (decisión D11).** El colaborador/organizador invitado es un `OrganizationMember` que entra por invitación por email (N6) y **no contrata nada**: lo cubre el plan de la organización, y `maxMembers` es la palanca comercial (modelo de asientos, el estándar SaaS). Razones: (a) el valor lo captura la liga, entonces paga la liga; (b) un planillero voluntario de liga amateur jamás va a poner la tarjeta — cobrarle mata la adopción; (c) ya está implementado así y el enforcement funciona (cuenta miembros + invitaciones pendientes → 402). **Quien quiere más ayudantes, sube de plan.** No hay nada que construir acá.
+
+**¿Cómo se limita lo que puede hacer?** Dos ejes distintos que el pedido mezcla, y conviene resolver por separado:
+
+1. **Límite por acción (qué puede hacer)** — ya existe con los 3 roles: COLABORADOR solo carga resultados/goles/tarjetas (`allowCollaborator`); ORGANIZADOR gestiona todo lo deportivo. El matiz que falta es el de D12: que "crear torneos" (lo que consume plan) sea solo del OWNER → con eso el ORGANIZADOR invitado queda **exactamente** como lo describe el pedido: carga resultados, jugadores, equipos y partidos, pero no crea torneos (→ N14c).
+2. **Límite por torneo (dónde puede hacerlo)** — hoy la membresía es de toda la organización, no de un torneo. Para ligas chicas (una persona ayuda en todo) el scope org-wide es lo correcto y más simple. El scoping fino por torneo queda **diseñado pero diferido** (→ N14e): no agregarlo hasta que una liga real lo pida — cada tabla de permisos nueva es fricción de invitación y superficie de bugs.
+
+##### Circuito 7 — ADMINISTRADOR ✅ (completo)
+
+Aprueba pagos (`/admin/pagos`), gestiona organizaciones con suspender/reactivar y métricas SaaS (`/admin/organizaciones`), CRUD de planes (`/admin/planes`), noticias de plataforma, usuarios, configuración del sitio, y "ver como organización" para soporte (N3/N10). Sin gaps de circuito.
+
+##### Matriz canónica de permisos (todas las personas, no solo OrgRole)
+
+Extiende la tabla de N1 con los sombreros que no son membresía:
+
+| Acción | Anón. | USUARIO | Jugador (claim) | Delegado | COLABORADOR | ORGANIZADOR | OWNER | ADMIN |
+|---|---|---|---|---|---|---|---|---|
+| Ver páginas públicas | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Favoritos / seguir | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Reclamar/gestionar SU ficha | ❌ | ✅ | ✅ (ya la tiene) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Plantel + inscripción de SU equipo | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Cargar resultados/goles/tarjetas (su org) | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| CRUD equipos/jugadores/árbitros/partidos (su org) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Aprobar delegados/inscripciones/reclamos (su org) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Crear/eliminar/reactivar torneos | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ **(D12)** | ✅ | ✅ |
+| Novedades de la liga (S12, futuro) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Plan, pagos, miembros de la org | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Noticias de plataforma, planes, aprobar pagos | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+
+##### Tareas que salen de esta auditoría
+
+- [ ] **N14a. 🟠 Navegación por sombrero (E:Medio).** El header y el perfil deben reflejar los vínculos reales del usuario, no asumir que todos son organizadores.
+  - Header: en vez del "Mi Panel" fijo, el server (layouts que ya llaman `checkUser`) resuelve los links según sombreros: "Mi Panel" (miembro/admin), "Mi Equipo" (delegado), "Mi Ficha" (claim), y los pasa al `Header` como props (es client component). Con varios sombreros se muestran varios; sin ninguno, "Empezar" → `/bienvenida`.
+  - Hub **"Mis vínculos"** en `/profile`: las 4 puertas de `/bienvenida` con su estado real (ficha vinculada/pendiente, equipos que delega, ligas donde es miembro con su rol, favoritos) y acceso a sumar los que falten. Resuelve el caso "OWNER que además juega": hoy no tiene cómo llegar a `/mi-ficha`.
+  - `/bienvenida` queda como está (pantalla de alta): el hub es el lugar de "cambiar/sumar después", que la propia pantalla promete ("podés cambiarla cuando quieras") y hoy no existe.
+- [ ] **N14b. 🟡 Crear la propia ficha desde `/mi-ficha` (E:Medio, decisión D14).** Si el DNI no existe en la plataforma, ofrecer crear la ficha ahí mismo: nace con `createdById = él` y **claim APROBADO automático** (quien crea su propia ficha es su dueño — consistente con `canEditPlayer`, que ya incluye al creador y al dueño).
+  - **Por qué sí:** (a) completa el circuito pedido ("reclamar **o** crear"); (b) mejora el dedupe — cuando el delegado lo busque por DNI la ficha ya existe con datos que cargó el propio interesado, en vez de una ficha a medias tipeada apurado; (c) legalmente es el caso *mejor*: el titular del dato carga sus propios datos (consentimiento directo, Ley 25.326).
+  - **El riesgo real — suplantación** (alguien crea/posee la ficha del DNI de otro): existe igual hoy (un delegado puede cargar cualquier DNI); la diferencia es que el claim de un tercero lo aprueba alguien que conoce al jugador y acá no hay aprobador. Mitigación: **vía de disputa** — si otro usuario reclama una ficha cuyo dueño es quien la autocreó (no un club), el reclamo no se rechaza automático sino que queda en una cola que resuelve el ADMINISTRADOR con la evidencia de ambos. Sumar además fecha de nacimiento obligatoria al autocrear (segundo factor barato, ya contemplado como endurecimiento en N12).
+  - **Prerrequisito:** `/terminos` y `/privacidad` publicadas (A10) — al autocrear se acepta explícitamente la política de datos.
+- [x] **N14c. 🟠 Crear/eliminar/reactivar torneos = solo OWNER (E:Bajo, decisión D12).** Guard en `POST /api/tournaments`, DELETE, restore y el PATCH que reactiva (los mismos tres caminos que N4b ya unificó con `isActiveTournamentStatus` — la coherencia es esa: **toda transición que consume cupo del plan la controla quien gestiona el plan**). ORGANIZADOR sigue gestionando a fondo los torneos existentes (config deportiva, fases, fixture, equipos, resultados). La UI oculta "Nuevo torneo" a no-OWNER (el server igual bloquea con 403). Aprovechar para exponer `myRole` en el panel (pendiente 3 de N6) y ocultar también Plan/Miembros a no-OWNER en el sidebar.
+  > ✅ **Implementado (2026-07-16).**
+  > - **Guards nuevos en [lib/orgAuth.ts](lib/orgAuth.ts):** `requireApiOrgOwner(organizationId, mensaje)` (403 con mensaje específico de la acción) y `getMyOrgRole(user)` (rol en la primera membresía, el mismo criterio que `getOrCreateOwnOrg`).
+  > - **Los 4 caminos que consumen cupo, cerrados:** `POST /api/tournaments` (crear — mensaje "Solo el dueño de la liga puede crear torneos"), `DELETE /api/tournaments/[id]` (eliminar — libera cupo, la otra mitad del truco de N4b), `POST /api/tournaments/[id]/restore` (restaurar) y el `PATCH` **solo cuando la transición reactiva** (`willBeActive && !wasActive`): editar un torneo sigue siendo de ORGANIZADOR.
+  > - **Nav por rol de org:** `AdminNavItem.ownerOnly` en "Plan y Pagos" y "Miembros"; `navItemsForRole(role, orgRole)` los oculta a no-OWNER. El `orgRole` se resuelve en el layout del panel y baja por `AdminShell` → sidebar + command palette (las dos superficies comparten la fuente única de F3, así que se filtran juntas).
+  > - **Páginas alineadas a la matriz N1:** `/admin/plan` (movido a `PlanClient.tsx` + `page.tsx` server con guard) y `/admin/miembros` redirigen a dashboard a quien no es OWNER — las APIs de mutación ya lo exigían; ahora la vista coincide.
+  > - **Botones:** "Crear torneo" del listado solo para OWNER (`app/admin/torneos/page.tsx`); "Eliminar" oculto a no-OWNER en las filas del listado (`ListTournaments.canDelete`) y en el detalle (`Header.canDelete`, decidido por torneo exacto con `isOrgOwner`). Editar queda visible: sigue permitido.
+  > - Verificado: `tsc` limpio (tras `prisma generate` — errores fantasma conocidos de F2), **156 tests ✅**, 0 errores de lint (23 warnings preexistentes), `next build` verde.
+  > - ⚠️ **Pendiente de verificar a mano** (necesita sesión de Clerk con un miembro ORGANIZADOR): que el sidebar no muestre Plan/Miembros y que crear/eliminar torneo devuelva el 403 con su mensaje.
+  > - **Nota:** en el listado multi-org el flag `canDelete` sale de la primera membresía (una org por usuario en la práctica); el server valida por torneo exacto igual. El detalle sí decide por torneo.
+- [ ] **N14d. 🟢 Pricing consciente de sesión (E:Bajo).** Los CTAs de `pricing-section` hoy mandan siempre a `/crear-liga`. Con sesión y organización propia deben ir a `/admin/plan` (con el plan preseleccionado, ej. `?plan=PRO`); sin organización, a `/crear-liga`; sin sesión, a `/sign-up` con redirect a `/crear-liga` (como hoy). Cierra de paso el pendiente de N4 ("UI de upsell ante el 402": el toast puede linkear a `/admin/plan?plan=PRO`).
+- [ ] **N14e. ⚪ Scoping por torneo — diseñado, NO construir todavía (E:Medio).** Si una liga real pide limitar un miembro a UN torneo: tabla `MemberTournamentAccess (memberId, tournamentId, @@unique)` donde **la ausencia de filas = acceso a toda la org** (los miembros actuales no cambian de conducta); los guards `canManageOrg`/`allowCollaborator` ganan un parámetro opcional `tournamentId` y la consultan solo si hay filas. No se construye hasta que haya demanda real: es fricción de invitación y superficie de permisos nueva.
+- [ ] **N14f. 🟢 → S12. Novedades de la liga (E:Medio, decisión D13).** Ver S12 en la sección de producto.
+
 ---
 
 ## 📅 Roadmap sugerido
@@ -923,3 +1041,11 @@ Los permisos vivían en dos ejes y **los dos son del lado de la liga**: `UserRol
    - El modelo `Payment` nace preparado para MP (`method`, `externalId`): la integración posterior no migra datos.
 9. **Múltiples organizadores por torneo (N2): vía membresía de la organización.**
    - Todos los miembros ORGANIZADOR/COLABORADOR de la org gestionan sus torneos. Sin tabla torneo-organizador por ahora.
+
+### Decisiones agregadas el 2026-07-16 (auditoría de circuitos, N14)
+
+10. **Una cuenta, varios sombreros (N14).** Los "perfiles" no son roles excluyentes sino relaciones acumulables: la misma cuenta puede ser hincha (`Favorite`), jugador (`PlayerClaim`), delegado (`TeamManager`) y miembro/dueño de liga (`OrganizationMember`) a la vez. Ningún circuito bloquea a otro; la navegación debe reflejar los sombreros reales del usuario (N14a).
+11. **El colaborador/organizador invitado NO paga (N14).** Los miembros de una liga no contratan plan propio: los cubre el plan de la organización y `maxMembers` es la palanca comercial (modelo de asientos). El valor lo captura la liga → paga la liga; cobrarle a un planillero voluntario mata la adopción. Ya implementado así (N6): no hay nada que construir.
+12. **Crear/eliminar/reactivar torneos es del OWNER (N14c).** El torneo es lo que consume cupo del plan: quien gestiona el plan controla lo que lo consume. ORGANIZADOR gestiona a fondo los torneos existentes (config, fases, fixture, equipos, jugadores, partidos, resultados) pero no crea, elimina ni reactiva. Con esto el "organizador invitado" queda exactamente como lo describió el owner: ayuda con todos los datos, no crea torneos. Revisable si una liga real lo necesita distinto.
+13. **Noticias de plataforma ≠ novedades de liga (N14f/S12).** `News` global sigue siendo solo ADMINISTRADOR (marketing de GOLAZO). Lo que el organizador necesita es publicar novedades de SU liga en su página pública: modelo aparte `OrgPost` (S12), evaluable como feature de plan PRO.
+14. **La ficha propia se puede crear, no solo reclamar (N14b).** Si el DNI no existe, el propio jugador crea su ficha y nace dueño (claim APROBADO automático, auditado). Suplantación mitigada con fecha de nacimiento obligatoria al autocrear + vía de disputa resuelta por el ADMINISTRADOR. Prerrequisito: `/terminos` y `/privacidad` publicadas (A10/Ley 25.326).

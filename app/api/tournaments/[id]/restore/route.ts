@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireApiOrgAccess } from "@/lib/orgAuth";
+import { requireApiOrgOwner } from "@/lib/orgAuth";
 import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
 
 type tParams = Promise<{ id: string }>;
@@ -32,9 +32,12 @@ export async function POST(req: Request, { params }: { params: tParams }) {
       );
     }
 
-    // Solo gestores de la organización dueña (o admin) pueden restaurar:
-    // el mismo control que exige el DELETE.
-    const auth = await requireApiOrgAccess(existing.organizationId);
+    // Solo el OWNER (o admin) restaura: el mismo control que exige el DELETE
+    // (D12/N14c — restaurar puede volver a ocupar cupo del plan).
+    const auth = await requireApiOrgOwner(
+      existing.organizationId,
+      "Solo el dueño de la liga puede restaurar torneos",
+    );
     if (auth.error) {
       return auth.error;
     }

@@ -3,6 +3,8 @@ import ListTournaments from "@modules/torneos/components/admin/ListTournaments";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
 import { getAdminTorneos } from "@modules/torneos/actions/getTorneos";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
+import { checkUser } from "@/lib/checkUser";
+import { getMyOrgRole } from "@/lib/orgAuth";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
 import { TournamentStatus } from "@prisma/client";
 
@@ -10,7 +12,15 @@ import { TournamentStatus } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 export default async function AdminTorneos() {
-  const tournaments = await getAdminTorneos();
+  const [tournaments, user] = await Promise.all([
+    getAdminTorneos(),
+    checkUser(),
+  ]);
+
+  // Crear/eliminar torneos es del OWNER (D12/N14c): consume cupo del plan.
+  // El server igual bloquea con 403; acá solo se ocultan los botones.
+  const isOwner =
+    user?.role === "ADMINISTRADOR" || (await getMyOrgRole(user)) === "OWNER";
 
   return (
     <div className="min-h-screen">
@@ -41,7 +51,7 @@ export default async function AdminTorneos() {
                 "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
             },
           ]}
-          actions={<DialogAddTournaments />}
+          actions={isOwner ? <DialogAddTournaments /> : undefined}
         />
 
         <div className="space-y-4">
@@ -51,7 +61,7 @@ export default async function AdminTorneos() {
 
         <div className="space-y-4">
           <SectionTitle>Administración de Torneos</SectionTitle>
-          <ListTournaments tournaments={tournaments} />
+          <ListTournaments tournaments={tournaments} canDelete={isOwner} />
         </div>
       </div>
     </div>

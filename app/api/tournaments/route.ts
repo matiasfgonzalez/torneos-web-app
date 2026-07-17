@@ -2,7 +2,7 @@
 import { AgeGroup, Gender, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireApiOrgContext } from "@/lib/orgAuth";
+import { isOrgOwner, requireApiOrgContext } from "@/lib/orgAuth";
 import { assertPlanLimit } from "@/lib/planLimits";
 import { apiError } from "@/lib/apiResponse";
 import { uniqueTournamentSlug } from "@/lib/slug";
@@ -10,11 +10,18 @@ import { tournamentCreateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 
 export async function POST(req: Request) {
-  // Cualquier usuario logueado crea torneos DENTRO de su organización
-  // (se crea automáticamente en su primer uso — freemium D7)
+  // El torneo se crea DENTRO de la organización del usuario (se crea
+  // automáticamente en su primer uso — freemium D7)...
   const auth = await requireApiOrgContext();
   if (auth.error) {
     return auth.error;
+  }
+
+  // ...pero solo el OWNER crea torneos (D12/N14c): el torneo consume cupo del
+  // plan, y quien gestiona el plan controla lo que lo consume. ORGANIZADOR
+  // gestiona a fondo los torneos existentes; no los crea.
+  if (!(await isOrgOwner(auth.user, auth.org.id))) {
+    return apiError(403, "Solo el dueño de la liga puede crear torneos");
   }
 
   try {

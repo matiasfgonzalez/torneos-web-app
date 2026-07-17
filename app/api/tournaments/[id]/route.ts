@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireApiOrgAccess } from "@/lib/orgAuth";
+import { requireApiOrgAccess, requireApiOrgOwner } from "@/lib/orgAuth";
 import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
 import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentUpdateSchema } from "@/lib/validators/tournament";
@@ -77,8 +77,12 @@ export async function DELETE(
       );
     }
 
-    // Solo gestores de la organización dueña (o admin) pueden eliminar
-    const auth = await requireApiOrgAccess(existing.organizationId);
+    // Solo el OWNER (o admin) elimina torneos (D12/N14c): la baja libera cupo
+    // del plan y es la mitad del truco eliminar→crear→restaurar (N4b).
+    const auth = await requireApiOrgOwner(
+      existing.organizationId,
+      "Solo el dueño de la liga puede eliminar torneos",
+    );
     if (auth.error) {
       return auth.error;
     }
@@ -157,6 +161,15 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       : wasActive;
 
     if (willBeActive && !wasActive) {
+      // Reactivar consume cupo igual que crear → también es del OWNER (D12).
+      const ownerAuth = await requireApiOrgOwner(
+        existing.organizationId,
+        "Solo el dueño de la liga puede reactivar un torneo",
+      );
+      if (ownerAuth.error) {
+        return ownerAuth.error;
+      }
+
       const check = await assertPlanLimit(
         existing.organizationId,
         "createTournament",

@@ -5,7 +5,8 @@ import TabsTournament from "./components/TabsTournament";
 import { getAdminEquipos } from "@modules/equipos/actions/getEquipos";
 import { getTournamentTeams } from "@modules/torneos/actions/getTournamentTeams";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
-import { canViewInPanel, getPanelOrgIds } from "@/lib/orgAuth";
+import { canViewInPanel, getPanelOrgIds, isOrgOwner } from "@/lib/orgAuth";
+import { checkUser } from "@/lib/checkUser";
 import { AlertTriangle, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,11 +61,18 @@ export default async function AdminTournamentDetail({
     );
   }
 
-  const [equipos, associations, suspensions] = await Promise.all([
+  const [equipos, associations, suspensions, user] = await Promise.all([
     getAdminEquipos(),
     getTournamentTeams(id),
     getTournamentSuspensions(id),
+    checkUser(),
   ]);
+
+  // Eliminar torneos es del OWNER de la org dueña (D12/N14c); acá se decide
+  // por el torneo exacto. El server igual bloquea con 403.
+  const canDelete = user
+    ? await isOrgOwner(user, torneo.organizationId)
+    : false;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -91,7 +99,7 @@ export default async function AdminTournamentDetail({
         </nav>
 
         {/* Header mejorado */}
-        <Header tournamentData={torneo} />
+        <Header tournamentData={torneo} canDelete={canDelete} />
 
         {/* Status and Quick Stats mejoradas */}
         <QuickStats tournamentData={torneo} />

@@ -27,6 +27,8 @@ import {
 
 interface AdminSidebarProps {
   role: string | null;
+  /** Rol en la organización (OWNER/ORGANIZADOR/COLABORADOR/null) — N14c. */
+  orgRole?: string | null;
   /** Sidebar colapsado a solo íconos (desktop). Lo gobierna AdminShell. */
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
@@ -43,13 +45,14 @@ interface AdminSidebarProps {
  */
 export function AdminSidebar({
   role,
+  orgRole,
   collapsed = false,
   onToggleCollapsed,
 }: Readonly<AdminSidebarProps>) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const visibleItems = navItemsForRole(role);
+  const visibleItems = navItemsForRole(role, orgRole);
 
   return (
     <>

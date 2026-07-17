@@ -22,9 +22,11 @@ import { TournamentStatus, TournamentFormat } from "@prisma/client";
 
 interface PropsHeader {
   readonly tournamentData: ITorneo;
+  /** Eliminar torneos es del OWNER (D12/N14c); lo decide la página server. */
+  readonly canDelete?: boolean;
 }
 
-const Header = ({ tournamentData }: PropsHeader) => {
+const Header = ({ tournamentData, canDelete = false }: PropsHeader) => {
   // Status badge colors and icons
   const statusConfig: Record<
     string,
@@ -182,10 +184,12 @@ const Header = ({ tournamentData }: PropsHeader) => {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <DialogAddTournaments tournament={tournamentData} />
-              <DeleteTournamentButton
-                tournament={tournamentData}
-                redirectAfterDelete="/admin/torneos"
-              />
+              {canDelete && (
+                <DeleteTournamentButton
+                  tournament={tournamentData}
+                  redirectAfterDelete="/admin/torneos"
+                />
+              )}
             </div>
           </div>
         </div>

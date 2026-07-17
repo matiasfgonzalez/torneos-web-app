@@ -39,6 +39,11 @@ export interface AdminNavItem {
   /** `false` = ítem visible pero deshabilitado ("próximamente"). */
   enabled: boolean;
   roles: string[];
+  /**
+   * Solo para el OWNER de la organización (o ADMINISTRADOR) — plan, pagos y
+   * miembros son la relación comercial de la liga, no del staff (D12/N14c).
+   */
+  ownerOnly?: boolean;
   /** Sinónimos para que el palette encuentre la sección por lo que se escribe. */
   keywords?: string[];
 }
@@ -121,6 +126,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: UsersRound,
     enabled: true,
     roles: ["ADMINISTRADOR", "USUARIO"],
+    ownerOnly: true,
     keywords: ["equipo de trabajo", "invitaciones", "organizacion"],
   },
   {
@@ -129,6 +135,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: CreditCard,
     enabled: true,
     roles: ["ADMINISTRADOR", "USUARIO"],
+    ownerOnly: true,
     keywords: ["suscripcion", "facturacion", "limites", "upgrade"],
   },
   {
@@ -181,9 +188,19 @@ export const adminNavItems: AdminNavItem[] = [
   },
 ];
 
-/** Ítems que el rol puede ver. */
-export const navItemsForRole = (role: string | null): AdminNavItem[] =>
-  adminNavItems.filter((item) => item.roles.includes(role ?? "viewer"));
+/**
+ * Ítems que el usuario puede ver, cruzando rol de plataforma y rol de
+ * organización (`orgRole`: OWNER/ORGANIZADOR/COLABORADOR/null — N14c).
+ */
+export const navItemsForRole = (
+  role: string | null,
+  orgRole?: string | null,
+): AdminNavItem[] =>
+  adminNavItems.filter(
+    (item) =>
+      item.roles.includes(role ?? "viewer") &&
+      (!item.ownerOnly || role === "ADMINISTRADOR" || orgRole === "OWNER"),
+  );
 
 /**
  * Título de la sección que contiene una ruta (por prefijo, igual que el

@@ -20,9 +20,20 @@ import DialogAddTournaments from "./DialogAddTournaments";
 
 interface PropsListTournaments {
   tournaments: ITorneo[];
+  /**
+   * Eliminar torneos es del OWNER (D12/N14c). Con varias membresías el flag es
+   * el de la primera org (el server valida por torneo igual, con 403).
+   */
+  canDelete?: boolean;
 }
 
-function RowActions({ tournament }: { tournament: ITorneo }) {
+function RowActions({
+  tournament,
+  canDelete,
+}: {
+  tournament: ITorneo;
+  canDelete: boolean;
+}) {
   return (
     <>
       <Button
@@ -38,13 +49,16 @@ function RowActions({ tournament }: { tournament: ITorneo }) {
         </Link>
       </Button>
       <DialogAddTournaments tournament={tournament} />
-      <DeleteTournamentButton tournament={tournament} />
+      {canDelete && <DeleteTournamentButton tournament={tournament} />}
     </>
   );
 }
 
 /** Lista de torneos del panel — usa el DataTable común (F3). */
-const ListTournaments = ({ tournaments }: PropsListTournaments) => {
+const ListTournaments = ({
+  tournaments,
+  canDelete = false,
+}: PropsListTournaments) => {
   const columns: DataTableColumn<ITorneo>[] = [
     {
       id: "tournament",
@@ -118,7 +132,7 @@ const ListTournaments = ({ tournaments }: PropsListTournaments) => {
       hideOnCard: true,
       cell: (t) => (
         <div className="flex justify-end gap-2">
-          <RowActions tournament={t} />
+          <RowActions tournament={t} canDelete={canDelete} />
         </div>
       ),
     },
@@ -162,7 +176,7 @@ const ListTournaments = ({ tournaments }: PropsListTournaments) => {
         filteredTitle: "No se encontraron torneos",
         filteredDescription: "Ningún torneo coincide con los filtros aplicados.",
       }}
-      rowActions={(t) => <RowActions tournament={t} />}
+      rowActions={(t) => <RowActions tournament={t} canDelete={canDelete} />}
     />
   );
 };

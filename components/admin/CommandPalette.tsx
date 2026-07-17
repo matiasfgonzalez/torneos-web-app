@@ -69,12 +69,15 @@ const RESULT_META: Record<
 
 interface CommandPaletteProps {
   role: string | null;
+  /** Rol en la organización (OWNER/ORGANIZADOR/COLABORADOR/null) — N14c. */
+  orgRole?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function CommandPalette({
   role,
+  orgRole,
   open,
   onOpenChange,
 }: Readonly<CommandPaletteProps>) {
@@ -88,7 +91,9 @@ export function CommandPalette({
   }>({ term: "", data: [] });
   const [isSearching, startSearch] = useTransition();
 
-  const sections = navItemsForRole(role).filter((item) => item.enabled);
+  const sections = navItemsForRole(role, orgRole).filter(
+    (item) => item.enabled,
+  );
 
   // Buscar en cada tecla sería una query por letra: se debouncea. El fetch va
   // dentro de una transición y el effect NO hace setState en su cuerpo — con
