@@ -37,7 +37,12 @@ interface PlanRow {
   maxActiveTournaments: number;
   maxTeamsPerTournament: number;
   maxMembers: number;
-  features: { exportPdf?: boolean; customBranding?: boolean; liveMatch?: boolean };
+  features: {
+    exportPdf?: boolean;
+    customBranding?: boolean;
+    liveMatch?: boolean;
+    orgNews?: boolean;
+  };
   isActive: boolean;
   order: number;
   _count?: { subscriptions: number };
@@ -53,6 +58,7 @@ interface PlanFormValues {
   exportPdf: boolean;
   customBranding: boolean;
   liveMatch: boolean;
+  orgNews: boolean;
   isActive: boolean;
   order: string;
 }
@@ -67,6 +73,7 @@ const emptyForm: PlanFormValues = {
   exportPdf: false,
   customBranding: false,
   liveMatch: false,
+  orgNews: false,
   isActive: true,
   order: "0",
 };
@@ -82,6 +89,7 @@ function planToForm(plan: PlanRow): PlanFormValues {
     exportPdf: !!plan.features?.exportPdf,
     customBranding: !!plan.features?.customBranding,
     liveMatch: !!plan.features?.liveMatch,
+    orgNews: !!plan.features?.orgNews,
     isActive: plan.isActive,
     order: String(plan.order),
   };
@@ -146,6 +154,7 @@ export default function PlanesClient() {
         exportPdf: form.exportPdf,
         customBranding: form.customBranding,
         liveMatch: form.liveMatch,
+        orgNews: form.orgNews,
       },
       isActive: form.isActive,
       order: Number(form.order),
@@ -323,6 +332,27 @@ export default function PlanesClient() {
                   id="liveMatch"
                   checked={form.liveMatch}
                   onCheckedChange={(c) => update("liveMatch", c)}
+                />
+              </div>
+            </div>
+
+            {/* orgNews SÍ está gateada de verdad (S12): el alta de novedades
+                llama a hasFeature(). Se puede activar sin vender humo. */}
+            <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20">
+                <p className="text-xs text-green-800 dark:text-green-300">
+                  <b>Esta función ya está enforced.</b> Los planes que la activan
+                  habilitan las Novedades de la liga; los que no, ven el upsell.
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="orgNews" className="cursor-pointer">
+                  Novedades de la liga
+                </Label>
+                <Switch
+                  id="orgNews"
+                  checked={form.orgNews}
+                  onCheckedChange={(c) => update("orgNews", c)}
                 />
               </div>
             </div>

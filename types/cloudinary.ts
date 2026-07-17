@@ -90,6 +90,7 @@ export const ALLOWED_UPLOAD_FOLDERS = [
   "torneos/logos",
   "equipos/logos",
   "noticias/covers",
+  "novedades/covers",
   "jugadores/cuerpo",
   "jugadores/rostro",
   "pagos/comprobantes",

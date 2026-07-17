@@ -5,6 +5,7 @@ import {
   CreditCard,
   Home,
   Layers,
+  Megaphone,
   Newspaper,
   Settings,
   Shield,
@@ -104,6 +105,14 @@ export const adminNavItems: AdminNavItem[] = [
     enabled: true,
     roles: ["ADMINISTRADOR", "USUARIO"],
     keywords: ["encuentros", "fixture", "resultados", "fechas"],
+  },
+  {
+    title: "Novedades",
+    href: "/admin/novedades",
+    icon: Megaphone,
+    enabled: true,
+    roles: ["ADMINISTRADOR", "USUARIO"],
+    keywords: ["noticias", "posts", "anuncios", "comunicados", "novedades", "liga"],
   },
   {
     title: "Solicitudes",

@@ -22,6 +22,7 @@ export const planCreateSchema = z
       exportPdf: z.boolean().default(false),
       customBranding: z.boolean().default(false),
       liveMatch: z.boolean().default(false),
+      orgNews: z.boolean().default(false),
     }),
     isActive: z.boolean().default(true),
     order: z.coerce.number().int().min(0).max(999).default(0),

@@ -13,6 +13,7 @@ interface PlanFeatures {
   exportPdf?: boolean;
   customBranding?: boolean;
   liveMatch?: boolean;
+  orgNews?: boolean;
 }
 
 const HIGHLIGHT_CODE = "PRO";
@@ -60,6 +61,8 @@ function planBullets(plan: {
   if (plan.features.customBranding)
     bullets.push("Marca propia de tu liga (sin “Powered by GOLAZO”)");
   if (plan.features.liveMatch) bullets.push("Centro de partido en vivo");
+  if (plan.features.orgNews)
+    bullets.push("Novedades de la liga en tu página pública");
   return bullets;
 }
 

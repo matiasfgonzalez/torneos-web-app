@@ -9,9 +9,11 @@ import {
   MessageCircle,
   ChevronRight,
   CalendarDays,
+  Megaphone,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getOrganizationBySlug } from "@modules/organizaciones/actions/getOrganizationBySlug";
+import { getPublishedOrgPosts } from "@modules/novedades/actions/orgPosts";
 import {
   formatTournamentCategory,
   TOURNAMENT_STATUS_LABELS,
@@ -56,6 +58,8 @@ export default async function LeaguePage({
   const { slug } = await params;
   const org = await getOrganizationBySlug(slug);
   if (!org) return notFound();
+
+  const posts = await getPublishedOrgPosts(org.id, 6);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -202,6 +206,69 @@ export default async function LeaguePage({
           </div>
         )}
       </section>
+
+      {/* Novedades de la liga (S12): publicaciones del organizador */}
+      {posts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <div className="mb-6 flex items-center gap-2">
+            <Megaphone className="w-6 h-6 text-brand" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Novedades
+            </h2>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/liga/${org.slug}/novedades/${post.id}`}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:border-brand/50 hover:shadow-xl hover:shadow-brand/10 transition-all duration-300"
+              >
+                {post.coverImageUrl ? (
+                  <div className="relative h-40 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <Image
+                      src={post.coverImageUrl}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-40 w-full items-center justify-center bg-gradient-to-br from-brand/10 to-brand-2/10">
+                    <Megaphone className="h-10 w-10 text-brand/40" aria-hidden="true" />
+                  </div>
+                )}
+
+                <div className="flex flex-1 flex-col p-5">
+                  {post.publishedAt && (
+                    <span className="mb-2 inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {new Date(post.publishedAt).toLocaleDateString("es-AR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
+                  )}
+                  <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-brand transition-colors">
+                    {post.title}
+                  </h3>
+                  {post.summary && (
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                      {post.summary}
+                    </p>
+                  )}
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand">
+                    Leer más
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
