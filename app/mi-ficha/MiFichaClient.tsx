@@ -10,15 +10,22 @@ import {
   Goal,
   Loader2,
   RectangleVertical,
+  Scale,
   Search,
+  Sparkles,
   UserCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { requestPlayerClaim } from "@modules/jugadores/actions/claims";
+import {
+  createOwnPlayer,
+  requestPlayerClaim,
+} from "@modules/jugadores/actions/claims";
 import type { ApprovalStatus } from "@prisma/client";
 
 interface Career {
@@ -36,6 +43,8 @@ interface Career {
 interface Props {
   claim: {
     status: ApprovalStatus;
+    /** Reclamo sobre una ficha que ya tiene dueño: lo resuelve el admin (N14b). */
+    isDispute?: boolean;
     player: {
       name: string;
       nationalId: string;
@@ -51,15 +60,69 @@ export default function MiFichaClient({ claim, career }: Readonly<Props>) {
   const [dni, setDni] = useState("");
   const [isSending, start] = useTransition();
 
+  // Pasos siguientes que abre la búsqueda (N14b): crear la ficha si el DNI no
+  // existe, o disputar si está vinculada a quien la autocreó.
+  const [offerCreate, setOfferCreate] = useState<string | null>(null);
+  const [offerDispute, setOfferDispute] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [accepted, setAccepted] = useState(false);
+  const [evidence, setEvidence] = useState("");
+
+  const resetOffers = () => {
+    setOfferCreate(null);
+    setOfferDispute(null);
+  };
+
   const claimFicha = () => {
+    resetOffers();
     start(async () => {
       const res = await requestPlayerClaim(dni);
       if (!res.success) {
+        if (res.code === "NOT_FOUND") {
+          setOfferCreate(dni);
+          return;
+        }
+        if (res.code === "DISPUTE_AVAILABLE") {
+          setOfferDispute(dni);
+          return;
+        }
         toast.error(res.error, { duration: 7000 });
         return;
       }
       toast.success(res.message, { duration: 7000 });
       setDni("");
+      router.refresh();
+    });
+  };
+
+  const createFicha = () => {
+    if (!offerCreate) return;
+    start(async () => {
+      const res = await createOwnPlayer({
+        dni: offerCreate,
+        name,
+        birthDate,
+        acceptedPolicies: accepted,
+      });
+      if (!res.success) {
+        toast.error(res.error, { duration: 7000 });
+        return;
+      }
+      toast.success(res.message, { duration: 7000 });
+      router.refresh();
+    });
+  };
+
+  const startDispute = () => {
+    if (!offerDispute) return;
+    start(async () => {
+      const res = await requestPlayerClaim(offerDispute, evidence);
+      if (!res.success) {
+        toast.error(res.error, { duration: 7000 });
+        return;
+      }
+      toast.success(res.message, { duration: 9000 });
       router.refresh();
     });
   };
@@ -86,7 +149,10 @@ export default function MiFichaClient({ claim, career }: Readonly<Props>) {
                 id="dni"
                 value={dni}
                 inputMode="numeric"
-                onChange={(e) => setDni(e.target.value)}
+                onChange={(e) => {
+                  setDni(e.target.value);
+                  resetOffers();
+                }}
                 onKeyDown={(e) => e.key === "Enter" && claimFicha()}
                 placeholder="12345678"
                 className="h-11 bg-card"
@@ -111,6 +177,162 @@ export default function MiFichaClient({ claim, career }: Readonly<Props>) {
             </p>
           </div>
         </section>
+
+        {/* El DNI no existe → crear la propia ficha (N14b) */}
+        {offerCreate && (
+          <section
+            aria-labelledby="crear-ficha-title"
+            className="space-y-4 rounded-2xl border border-brand/40 bg-card p-5 ring-1 ring-brand/20"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-mid shadow-lg shadow-brand/25">
+                <Sparkles className="h-5 w-5 text-white" aria-hidden="true" />
+              </div>
+              <div>
+                <h2
+                  id="crear-ficha-title"
+                  className="font-bold text-gray-900 dark:text-white"
+                >
+                  Todavía no hay una ficha con el DNI {offerCreate}
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Creala vos mismo: nace vinculada a tu cuenta y cuando un club
+                  te busque por tu DNI va a encontrar tus datos, no un
+                  duplicado.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="own-name">Nombre y apellido</Label>
+                <Input
+                  id="own-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Como figurás en tu documento"
+                  className="h-11 bg-card"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="own-birth">Fecha de nacimiento</Label>
+                <Input
+                  id="own-birth"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="h-11 bg-card"
+                />
+              </div>
+              <div className="flex items-start gap-3 pt-1">
+                <Checkbox
+                  id="own-accept"
+                  checked={accepted}
+                  onCheckedChange={(value) => setAccepted(value === true)}
+                  className="mt-0.5"
+                />
+                <Label
+                  htmlFor="own-accept"
+                  className="text-sm font-normal leading-relaxed text-gray-600 dark:text-gray-300"
+                >
+                  Leí y acepto los{" "}
+                  <Link
+                    href="/terminos"
+                    target="_blank"
+                    className="font-medium text-brand hover:underline"
+                  >
+                    Términos y Condiciones
+                  </Link>{" "}
+                  y la{" "}
+                  <Link
+                    href="/privacidad"
+                    target="_blank"
+                    className="font-medium text-brand hover:underline"
+                  >
+                    Política de Privacidad
+                  </Link>
+                  , y declaro que estos datos son míos.
+                </Label>
+              </div>
+              <Button
+                type="button"
+                variant="brand"
+                onClick={createFicha}
+                disabled={
+                  isSending ||
+                  !accepted ||
+                  name.trim().length < 2 ||
+                  birthDate === ""
+                }
+                className="h-11 w-full sm:w-auto"
+              >
+                {isSending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
+                )}
+                Crear mi ficha
+              </Button>
+            </div>
+          </section>
+        )}
+
+        {/* La ficha está vinculada a quien la autocreó → disputa (N14b) */}
+        {offerDispute && (
+          <section
+            aria-labelledby="disputa-title"
+            className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/20"
+          >
+            <div className="flex items-start gap-3">
+              <Scale
+                className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+                aria-hidden="true"
+              />
+              <div>
+                <h2
+                  id="disputa-title"
+                  className="font-bold text-amber-900 dark:text-amber-200"
+                >
+                  Esa ficha ya está vinculada a otra cuenta
+                </h2>
+                <p className="text-sm text-amber-700 dark:text-amber-300/80">
+                  Quien la vinculó la creó por su cuenta, sin que un club lo
+                  confirme. Si el DNI {offerDispute} es tuyo, contanos cómo
+                  podés demostrarlo y el administrador de GOLAZO revisa la
+                  disputa con la evidencia de ambas partes.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="dispute-evidence">Tu evidencia</Label>
+                <Textarea
+                  id="dispute-evidence"
+                  value={evidence}
+                  onChange={(e) => setEvidence(e.target.value)}
+                  rows={3}
+                  placeholder="Ej: soy Juan Pérez, jugué el Clausura 2025 en Racing de Rafaela; mi delegado Carlos puede confirmarlo."
+                  className="bg-card"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="brand"
+                onClick={startDispute}
+                disabled={isSending || evidence.trim().length < 10}
+                className="h-11 w-full sm:w-auto"
+              >
+                {isSending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Scale className="h-4 w-4" aria-hidden="true" />
+                )}
+                Iniciar disputa
+              </Button>
+            </div>
+          </section>
+        )}
       </div>
     );
   }
@@ -137,17 +359,25 @@ export default function MiFichaClient({ claim, career }: Readonly<Props>) {
 
       {pending ? (
         <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-900/20">
-          <Clock
-            className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
-            aria-hidden="true"
-          />
+          {claim.isDispute ? (
+            <Scale
+              className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden="true"
+            />
+          ) : (
+            <Clock
+              className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden="true"
+            />
+          )}
           <div>
             <p className="font-semibold text-amber-900 dark:text-amber-200">
-              Esperando confirmación
+              {claim.isDispute ? "Disputa en revisión" : "Esperando confirmación"}
             </p>
             <p className="text-sm text-amber-700 dark:text-amber-300/80">
-              Tu liga o tu delegado tienen que confirmar que esta ficha es tuya.
-              Cuando lo hagan vas a ver acá tu trayectoria completa.
+              {claim.isDispute
+                ? "Esta ficha está vinculada a otra cuenta. El administrador de GOLAZO está revisando tu disputa con la evidencia de ambas partes."
+                : "Tu liga o tu delegado tienen que confirmar que esta ficha es tuya. Cuando lo hagan vas a ver acá tu trayectoria completa."}
             </p>
           </div>
         </div>

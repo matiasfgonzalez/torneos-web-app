@@ -38,6 +38,7 @@ export default async function MiFichaPage() {
             claim
               ? {
                   status: claim.status,
+                  isDispute: claim.isDispute,
                   player: {
                     name: claim.player.name,
                     nationalId: claim.player.nationalId,

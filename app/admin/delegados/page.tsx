@@ -41,6 +41,12 @@ export default async function DelegadosPage() {
         userEmail: c.user.email,
         playerName: c.player.name,
         nationalId: c.player.nationalId,
+        // Disputa (N14b): la ficha ya tiene dueño — solo el ADMINISTRADOR las
+        // recibe (getPendingPlayerClaims las excluye de las demás bandejas).
+        message: c.message,
+        currentOwner: c.currentOwner
+          ? { name: c.currentOwner.name, email: c.currentOwner.email }
+          : null,
       }))}
       inscriptions={inscriptions.map((i) => ({
         id: i.id,

@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Mail, Shield, Sparkles, UserCheck } from "lucide-react";
+import { Mail, Scale, Shield, Sparkles, UserCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
@@ -43,6 +43,10 @@ interface Claim {
   userEmail: string;
   playerName: string;
   nationalId: string;
+  /** Evidencia del solicitante (obligatoria en las disputas). */
+  message: string | null;
+  /** Dueño actual de la ficha — presente solo si el reclamo es una disputa (N14b). */
+  currentOwner: { name: string | null; email: string } | null;
 }
 
 export default function DelegadosClient({
@@ -158,15 +162,36 @@ export default function DelegadosClient({
               className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-card p-5 lg:flex-row lg:items-center dark:border-gray-700"
             >
               <div className="min-w-0 flex-1 space-y-1">
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  {claim.playerName}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {claim.playerName}
+                  </p>
+                  {claim.currentOwner && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/60 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300">
+                      <Scale className="h-3 w-3" aria-hidden="true" />
+                      Disputa de titularidad
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   <b>{claim.userName || "Sin nombre"}</b> dice ser este jugador
+                  {claim.currentOwner && (
+                    <>
+                      {" "}
+                      — la ficha está vinculada a{" "}
+                      <b>{claim.currentOwner.name || claim.currentOwner.email}</b>
+                      , que la creó por su cuenta
+                    </>
+                  )}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {claim.userEmail} · DNI {claim.nationalId}
                 </p>
+                {claim.message && (
+                  <p className="rounded-lg bg-gray-50 p-2 text-xs text-gray-600 italic dark:bg-gray-900/50 dark:text-gray-300">
+                    “{claim.message}”
+                  </p>
+                )}
               </div>
 
               <div className="flex shrink-0 gap-2">
@@ -176,12 +201,27 @@ export default function DelegadosClient({
                       Rechazar
                     </Button>
                   }
-                  title="¿Rechazar el reclamo?"
+                  title={
+                    claim.currentOwner
+                      ? "¿Rechazar la disputa?"
+                      : "¿Rechazar el reclamo?"
+                  }
                   description={
-                    <>
-                      <b>{claim.userName || claim.userEmail}</b> no va a
-                      gestionar la ficha de <b>{claim.playerName}</b>.
-                    </>
+                    claim.currentOwner ? (
+                      <>
+                        La ficha de <b>{claim.playerName}</b> sigue vinculada a{" "}
+                        <b>
+                          {claim.currentOwner.name || claim.currentOwner.email}
+                        </b>
+                        ; el reclamo de{" "}
+                        <b>{claim.userName || claim.userEmail}</b> se rechaza.
+                      </>
+                    ) : (
+                      <>
+                        <b>{claim.userName || claim.userEmail}</b> no va a
+                        gestionar la ficha de <b>{claim.playerName}</b>.
+                      </>
+                    )
                   }
                   confirmLabel="Rechazar"
                   onConfirm={() => resolve(rejectPlayerClaim, claim.id)}
@@ -194,17 +234,35 @@ export default function DelegadosClient({
                     </Button>
                   }
                   tone="warning"
-                  icon={UserCheck}
-                  title="¿Confirmás que es esa persona?"
-                  description={
-                    <>
-                      <b>{claim.userName || claim.userEmail}</b> va a poder ver y{" "}
-                      <b>editar los datos</b> de la ficha de{" "}
-                      <b>{claim.playerName}</b>, y su historial en todas las
-                      ligas. Confirmá solo si sabés que es esa persona.
-                    </>
+                  icon={claim.currentOwner ? Scale : UserCheck}
+                  title={
+                    claim.currentOwner
+                      ? "¿Transferir la titularidad?"
+                      : "¿Confirmás que es esa persona?"
                   }
-                  confirmLabel="Confirmar"
+                  description={
+                    claim.currentOwner ? (
+                      <>
+                        La ficha de <b>{claim.playerName}</b> se desvincula de{" "}
+                        <b>
+                          {claim.currentOwner.name || claim.currentOwner.email}
+                        </b>{" "}
+                        y pasa a <b>{claim.userName || claim.userEmail}</b>,
+                        que va a poder ver y <b>editar sus datos</b>. Confirmá
+                        solo si la evidencia lo respalda.
+                      </>
+                    ) : (
+                      <>
+                        <b>{claim.userName || claim.userEmail}</b> va a poder ver
+                        y <b>editar los datos</b> de la ficha de{" "}
+                        <b>{claim.playerName}</b>, y su historial en todas las
+                        ligas. Confirmá solo si sabés que es esa persona.
+                      </>
+                    )
+                  }
+                  confirmLabel={
+                    claim.currentOwner ? "Transferir" : "Confirmar"
+                  }
                   onConfirm={() => resolve(approvePlayerClaim, claim.id)}
                 />
               </div>
