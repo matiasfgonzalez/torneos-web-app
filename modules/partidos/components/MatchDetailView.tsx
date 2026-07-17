@@ -29,7 +29,8 @@ const REFEREE_ROLE_LABELS: Record<string, string> = {
 
 export default function MatchDetailView({
   match,
-}: Readonly<{ match: IPartidos }>) {
+  liveEnabled = false,
+}: Readonly<{ match: IPartidos; liveEnabled?: boolean }>) {
   const referees = match.referees ?? [];
 
   return (
@@ -46,8 +47,9 @@ export default function MatchDetailView({
           </Link>
         </Button>
 
-        {/* Marcador + cronología (se actualizan en vivo por polling) */}
-        <LiveMatch initialMatch={match} />
+        {/* Marcador + cronología (se actualizan en vivo por polling si el
+            plan de la liga incluye el centro en vivo, S6) */}
+        <LiveMatch initialMatch={match} liveEnabled={liveEnabled} />
 
         {/* Árbitros */}
         {referees.length > 0 && (

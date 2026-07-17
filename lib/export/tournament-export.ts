@@ -14,6 +14,7 @@ import { makeStandingsComparator } from "@/lib/standings/config";
  */
 const exportSelect = {
   id: true,
+  organizationId: true,
   name: true,
   logoUrl: true,
   locality: true,

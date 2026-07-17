@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MatchStatus } from "@prisma/client";
+import Link from "next/link";
 import {
   getTournamentExportData,
   buildStandings,
   type TournamentExportData,
   type ExportStandingRow,
 } from "@/lib/export/tournament-export";
+import { hasFeature } from "@/lib/planLimits";
 import { PrintToolbar } from "./PrintToolbar";
 
 export const metadata: Metadata = {
@@ -88,6 +90,28 @@ export default async function PrintTournamentPage({
 
   const data = await getTournamentExportData(id);
   if (!data) return notFound();
+
+  // Gate de plan (S8): sin `exportPdf`, no se arma el documento. Se explica en
+  // vez de 404 porque el link puede estar compartido/guardado.
+  if (!(await hasFeature(data.organizationId, "exportPdf"))) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6 text-gray-900">
+        <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
+          <h1 className="text-xl font-bold">Exportar no está disponible</h1>
+          <p className="mt-3 text-sm text-gray-600">
+            La liga organizadora de este torneo no tiene la exportación a PDF en
+            su plan.
+          </p>
+          <Link
+            href={`/torneos/${data.id}`}
+            className="mt-6 inline-block rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] px-5 py-2.5 text-sm font-semibold text-white"
+          >
+            Ver el torneo
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const showTabla = doc === "tabla" || doc === "todo";
   const showFixture = doc === "fixture" || doc === "todo";

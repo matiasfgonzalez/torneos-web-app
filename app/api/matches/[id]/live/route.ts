@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { hasFeature } from "@/lib/planLimits";
 import { buildLiveState } from "@modules/partidos/utils/liveState";
 
 /**
  * Estado en vivo de un partido (S6) — payload compacto para el polling de la
  * ficha pública. GET público, `no-store` (el marcador cambia). Solo lo que la
  * cronología necesita, nada de árbitros ni logos (esos ya están en el SSR).
+ *
+ * Gateado por la feature de plan `liveMatch`: si la liga no la tiene → 403. La
+ * ficha ya no pollea en ese caso; esto cierra la URL directa.
  */
 export async function GET(
   _req: Request,
@@ -24,6 +28,7 @@ export async function GET(
       penaltyScoreHome: true,
       penaltyScoreAway: true,
       updatedAt: true,
+      tournament: { select: { organizationId: true } },
       goals: {
         select: {
           id: true,
@@ -62,6 +67,13 @@ export async function GET(
     return NextResponse.json(
       { error: "Partido no encontrado" },
       { status: 404 },
+    );
+  }
+
+  if (!(await hasFeature(match.tournament.organizationId, "liveMatch"))) {
+    return NextResponse.json(
+      { error: "El centro en vivo no está disponible en el plan de esta liga." },
+      { status: 403 },
     );
   }
 

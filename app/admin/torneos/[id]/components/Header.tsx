@@ -25,9 +25,15 @@ interface PropsHeader {
   readonly tournamentData: ITorneo;
   /** Eliminar torneos es del OWNER (D12/N14c); lo decide la página server. */
   readonly canDelete?: boolean;
+  /** Exportar es feature de plan (`exportPdf`); lo decide la página server. */
+  readonly canExport?: boolean;
 }
 
-const Header = ({ tournamentData, canDelete = false }: PropsHeader) => {
+const Header = ({
+  tournamentData,
+  canDelete = false,
+  canExport = false,
+}: PropsHeader) => {
   // Status badge colors and icons
   const statusConfig: Record<
     string,
@@ -184,7 +190,12 @@ const Header = ({ tournamentData, canDelete = false }: PropsHeader) => {
 
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <ExportMenu tournamentId={tournamentData.id} variant="surface" />
+              {canExport && (
+                <ExportMenu
+                  tournamentId={tournamentData.id}
+                  variant="surface"
+                />
+              )}
               <DialogAddTournaments tournament={tournamentData} />
               {canDelete && (
                 <DeleteTournamentButton

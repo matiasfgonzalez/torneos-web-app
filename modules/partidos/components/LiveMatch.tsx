@@ -104,7 +104,8 @@ function EventIcon({ type }: Readonly<{ type: LiveEvent["type"] }>) {
  */
 export default function LiveMatch({
   initialMatch,
-}: Readonly<{ initialMatch: IPartidos }>) {
+  liveEnabled = false,
+}: Readonly<{ initialMatch: IPartidos; liveEnabled?: boolean }>) {
   const [state, setState] = useState<LiveMatchState>(() =>
     buildLiveState(initialMatch),
   );
@@ -117,6 +118,10 @@ export default function LiveMatch({
   );
 
   const live = isLiveStatus(state.status);
+  // Solo hay experiencia "en vivo" (polling + banner) si el plan de la liga
+  // incluye el centro en vivo. Sin la feature, el marcador se ve igual pero
+  // estático (el estado "En juego" ya lo dice el StatusBadge).
+  const showLive = live && liveEnabled;
 
   const refresh = async () => {
     try {
@@ -131,7 +136,7 @@ export default function LiveMatch({
     }
   };
 
-  useLivePoll(refresh, LIVE_POLL_MS, live);
+  useLivePoll(refresh, LIVE_POLL_MS, showLive);
 
   const isPlayed = PLAYED_STATUSES.includes(state.status);
   const homeScore = state.homeScore ?? 0;
@@ -151,7 +156,7 @@ export default function LiveMatch({
         <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
         <CardContent className="space-y-6 p-6 sm:p-8">
           {/* Barra "en vivo": pulso + minuto del último evento + auto-refresh */}
-          {live && (
+          {showLive && (
             <div className="flex items-center justify-center gap-2 rounded-xl bg-red-50 py-2 text-red-600 dark:bg-red-500/10 dark:text-red-400">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -256,7 +261,7 @@ export default function LiveMatch({
       <section className="mt-10 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <SectionTitle>Cronología</SectionTitle>
-          {live && (
+          {showLive && (
             <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
               Se actualiza sola
             </span>

@@ -34,6 +34,7 @@ import { ExportMenu } from "@modules/torneos/components/ExportMenu";
 import { AdvancedStats } from "@modules/torneos/components/stats/AdvancedStats";
 import { HeadToHead } from "@modules/torneos/components/stats/HeadToHead";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
+import { hasFeature } from "@/lib/planLimits";
 import { SuspensionsList } from "@modules/torneos/components/SuspensionsList";
 import { notFound } from "next/navigation";
 import HeaderTorneo from "@modules/torneos/components/HeaderTorneo";
@@ -149,6 +150,12 @@ export default async function TournamentDetailView({
 
   if (!tournamentData) return notFound();
 
+  // Exportar (S8) es feature de plan: solo se ofrece si la liga la tiene.
+  const canExport = await hasFeature(
+    tournamentData.organizationId,
+    "exportPdf",
+  );
+
   // Para compartir sirve cualquier ruta pública; el QR solo la canónica (su
   // cartel vive bajo `/liga/...`). Sin slug se comparte la URL por id igual.
   const sharePath = canonicalPath ?? `/torneos/${id}`;
@@ -206,7 +213,7 @@ export default async function TournamentDetailView({
           tournamentData={tournamentData}
           shareButton={
             <>
-              <ExportMenu tournamentId={tournamentData.id} />
+              {canExport && <ExportMenu tournamentId={tournamentData.id} />}
               <ShareButton
                 canonicalPath={sharePath}
                 qrPath={canonicalPath ? `${canonicalPath}/qr` : null}

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getMatchById } from "@modules/partidos/actions/getMatchById";
 import MatchDetailView from "@modules/partidos/components/MatchDetailView";
+import { hasFeature } from "@/lib/planLimits";
 import { formatDate } from "@/lib/formatDate";
 
 type Params = Promise<{ id: string }>;
@@ -38,5 +39,13 @@ export default async function MatchPage({
 
   if (!match) notFound();
 
-  return <MatchDetailView match={match} />;
+  // El centro en vivo (S6) es feature de plan: sin `liveMatch`, la ficha
+  // muestra el marcador pero no se auto-actualiza (ni polling ni banner "en
+  // vivo"). El orgId viene del torneo del partido.
+  const orgId = match.tournament.organizationId;
+  const liveEnabled = orgId
+    ? await hasFeature(orgId, "liveMatch")
+    : false;
+
+  return <MatchDetailView match={match} liveEnabled={liveEnabled} />;
 }

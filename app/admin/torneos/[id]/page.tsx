@@ -6,6 +6,7 @@ import { getAdminEquipos } from "@modules/equipos/actions/getEquipos";
 import { getTournamentTeams } from "@modules/torneos/actions/getTournamentTeams";
 import { getTournamentSuspensions } from "@modules/torneos/actions/suspensions";
 import { canViewInPanel, getPanelOrgIds, isOrgOwner } from "@/lib/orgAuth";
+import { hasFeature } from "@/lib/planLimits";
 import { checkUser } from "@/lib/checkUser";
 import { AlertTriangle, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,9 @@ export default async function AdminTournamentDetail({
     ? await isOrgOwner(user, torneo.organizationId)
     : false;
 
+  // Exportar (S8) es feature de plan: el botón solo aparece si la liga la tiene.
+  const canExport = await hasFeature(torneo.organizationId, "exportPdf");
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="space-y-8 p-6 sm:p-8 max-w-7xl mx-auto">
@@ -99,7 +103,11 @@ export default async function AdminTournamentDetail({
         </nav>
 
         {/* Header mejorado */}
-        <Header tournamentData={torneo} canDelete={canDelete} />
+        <Header
+          tournamentData={torneo}
+          canDelete={canDelete}
+          canExport={canExport}
+        />
 
         {/* Status and Quick Stats mejoradas */}
         <QuickStats tournamentData={torneo} />

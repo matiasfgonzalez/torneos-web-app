@@ -292,21 +292,20 @@ export default function PlanesClient() {
               Usá 999 para representar &quot;ilimitado&quot;.
             </p>
 
+            {/* Features CONSTRUIDAS Y GATEADAS (hasFeature): activarlas habilita
+                de verdad la función en las ligas del plan; las demás ven el
+                upsell. Se pueden tildar sin vender humo. */}
             <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
-              {/* Estas tres features se anuncian en la landing (pricing-section)
-                  pero TODAVÍA NO ESTÁN IMPLEMENTADAS (S6/S8) y nada las
-                  restringe: `hasFeature()` existe pero no lo llama nadie.
-                  Tildarlas hoy = venderlas sin poder cumplirlas. */}
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-900/20">
-                <p className="text-xs text-amber-800 dark:text-amber-300">
-                  <b>Estas funciones todavía no están construidas.</b> Si las
-                  activás acá, la página de precios las anuncia y no vas a poder
-                  cumplirlas. Dejalas apagadas hasta que existan.
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20">
+                <p className="text-xs text-green-800 dark:text-green-300">
+                  <b>Estas funciones ya están enforced.</b> Los planes que las
+                  activan las habilitan de verdad; los que no, ven el upsell o
+                  no las reciben.
                 </p>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="exportPdf" className="cursor-pointer">
-                  Exportar PDF
+                  Exportar PDF y CSV
                 </Label>
                 <Switch
                   id="exportPdf"
@@ -315,35 +314,14 @@ export default function PlanesClient() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="customBranding" className="cursor-pointer">
-                  Marca personalizada
-                </Label>
-                <Switch
-                  id="customBranding"
-                  checked={form.customBranding}
-                  onCheckedChange={(c) => update("customBranding", c)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
                 <Label htmlFor="liveMatch" className="cursor-pointer">
-                  Partido en vivo
+                  Centro de partido en vivo
                 </Label>
                 <Switch
                   id="liveMatch"
                   checked={form.liveMatch}
                   onCheckedChange={(c) => update("liveMatch", c)}
                 />
-              </div>
-            </div>
-
-            {/* orgNews SÍ está gateada de verdad (S12): el alta de novedades
-                llama a hasFeature(). Se puede activar sin vender humo. */}
-            <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20">
-                <p className="text-xs text-green-800 dark:text-green-300">
-                  <b>Esta función ya está enforced.</b> Los planes que la activan
-                  habilitan las Novedades de la liga; los que no, ven el upsell.
-                </p>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="orgNews" className="cursor-pointer">
@@ -353,6 +331,28 @@ export default function PlanesClient() {
                   id="orgNews"
                   checked={form.orgNews}
                   onCheckedChange={(c) => update("orgNews", c)}
+                />
+              </div>
+            </div>
+
+            {/* customBranding TODAVÍA NO está construida: activarla la anunciaría
+                en la landing sin poder cumplirla. */}
+            <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-900/20">
+                <p className="text-xs text-amber-800 dark:text-amber-300">
+                  <b>Esta función todavía no está construida.</b> Si la activás,
+                  la página de precios la anuncia y no vas a poder cumplirla.
+                  Dejala apagada hasta que exista.
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="customBranding" className="cursor-pointer">
+                  Marca personalizada
+                </Label>
+                <Switch
+                  id="customBranding"
+                  checked={form.customBranding}
+                  onCheckedChange={(c) => update("customBranding", c)}
                 />
               </div>
             </div>
