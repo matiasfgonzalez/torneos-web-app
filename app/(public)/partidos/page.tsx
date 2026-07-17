@@ -31,6 +31,7 @@ import { FilterChipGroup } from "@/components/shared/FilterChips";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { IPartidos, MatchStatus } from "@modules/partidos/types";
 import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
+import { LiveNowSection } from "@modules/partidos/components/LiveNowSection";
 import { formatDate } from "@/lib/formatDate";
 
 const ITEMS_PER_PAGE = 6;
@@ -118,7 +119,11 @@ export default function PartidosPage() {
 
   const stats = useMemo(() => {
     const total = matches.length;
-    const live = matches.filter((m) => m.status === MatchStatus.EN_JUEGO).length;
+    const live = matches.filter(
+      (m) =>
+        m.status === MatchStatus.EN_JUEGO ||
+        m.status === MatchStatus.ENTRETIEMPO,
+    ).length;
     const today = matches.filter((m) => isToday(new Date(m.dateTime))).length;
     const upcoming = matches.filter(
       (m) => m.status === MatchStatus.PROGRAMADO,
@@ -212,6 +217,9 @@ export default function PartidosPage() {
 
       <section className="pb-16 lg:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* En vivo ahora (S6): se puebla y actualiza solo por polling */}
+          <LiveNowSection />
+
           {/* Búsqueda y filtros (chips + estado en URL, F2) */}
           <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl mb-8">
             <CardContent className="p-6 space-y-4">
@@ -340,14 +348,18 @@ export default function PartidosPage() {
 
                       <div className="flex items-center gap-4 px-2 shrink-0">
                         {match.status === MatchStatus.FINALIZADO ||
-                        match.status === MatchStatus.EN_JUEGO ? (
+                        match.status === MatchStatus.EN_JUEGO ||
+                        match.status === MatchStatus.ENTRETIEMPO ? (
                           <div className="text-center">
                             <div className="text-3xl font-bold font-mono text-gray-800 dark:text-gray-100">
                               {match.homeScore ?? 0} - {match.awayScore ?? 0}
                             </div>
-                            {match.status === MatchStatus.EN_JUEGO && (
+                            {(match.status === MatchStatus.EN_JUEGO ||
+                              match.status === MatchStatus.ENTRETIEMPO) && (
                               <div className="text-xs text-red-600 dark:text-red-400 font-medium animate-pulse">
-                                EN VIVO
+                                {match.status === MatchStatus.ENTRETIEMPO
+                                  ? "ENTRETIEMPO"
+                                  : "EN VIVO"}
                               </div>
                             )}
                           </div>
