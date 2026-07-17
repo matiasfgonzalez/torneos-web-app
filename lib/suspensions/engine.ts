@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { MatchStatus } from "@prisma/client";
+import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
 import {
   CardInput,
   computeDesiredSuspensions,
@@ -58,11 +59,22 @@ export async function recomputeTournamentSuspensions(
     cardsByPlayer.set(c.teamPlayerId, arr);
   }
 
-  await db.$transaction(
+  const newKeys = await db.$transaction(
     async (tx) => {
       const existingAuto = await tx.suspension.findMany({
         where: { tournamentId, reason: { in: ["ACUMULACION", "ROJA"] } },
       });
+
+      // Claves de las que YA estaban. Notificar sin esto sería re-avisar la
+      // misma suspensión en cada recálculo — y el motor recalcula en cada carga
+      // de resultado. `desiredKeys - existingKeys` son las realmente nuevas.
+      const existingKeys = new Set(
+        existingAuto.map((s) =>
+          s.reason === "ROJA"
+            ? `R:${s.sourceCardId}`
+            : `A:${s.teamPlayerId}:${s.accumulationIndex}`,
+        ),
+      );
 
       // Claves de las suspensiones automáticas que DEBEN existir
       const desiredKeys = new Set<string>();
@@ -146,9 +158,83 @@ export async function recomputeTournamentSuspensions(
           });
         }
       }
+
+      return [...desiredKeys].filter((k) => !existingKeys.has(k));
     },
     { timeout: 30000 },
   );
+
+  // Fuera de la transacción a propósito: notificar adentro dejaría avisos de
+  // suspensiones que un rollback borra, y alargaría una transacción que ya
+  // tiene timeout de 30s con llamadas HTTP a Resend.
+  if (newKeys.length > 0) {
+    await notifyNewSuspensions(tournamentId, newKeys);
+  }
+}
+
+/**
+ * Avisa a los delegados de las suspensiones recién creadas (S5) — el pendiente
+ * (3) de N8.
+ *
+ * Le llega al **delegado**, no al jugador: es quien arma el equipo y quien
+ * puede evitar que lo alineen. Si el jugador además reclamó su ficha, la ve
+ * igual en el torneo.
+ */
+async function notifyNewSuspensions(
+  tournamentId: string,
+  newKeys: string[],
+): Promise<void> {
+  try {
+    const created = await db.suspension.findMany({
+      where: {
+        tournamentId,
+        OR: [
+          {
+            sourceCardId: {
+              in: newKeys
+                .filter((k) => k.startsWith("R:"))
+                .map((k) => k.slice(2)),
+            },
+          },
+          ...newKeys
+            .filter((k) => k.startsWith("A:"))
+            .map((k) => {
+              const [, teamPlayerId, index] = k.split(":");
+              return { teamPlayerId, accumulationIndex: Number(index) };
+            }),
+        ],
+      },
+      select: {
+        reason: true,
+        totalMatches: true,
+        teamPlayer: {
+          select: {
+            player: { select: { name: true } },
+            tournamentTeam: { select: { teamId: true } },
+          },
+        },
+        tournament: { select: { name: true } },
+      },
+    });
+
+    for (const s of created) {
+      await notify(
+        await getTeamManagerIdsForTeams([s.teamPlayer.tournamentTeam.teamId]),
+        {
+          type: "JUGADOR_SUSPENDIDO",
+          playerName: s.teamPlayer.player.name,
+          tournamentName: s.tournament.name,
+          tournamentId,
+          matches: s.totalMatches,
+          reason: s.reason,
+        },
+      );
+    }
+  } catch (error) {
+    // El motor no puede fallar por un aviso: la suspensión ya está guardada y
+    // es lo que decide si el jugador puede jugar.
+    console.error("[suspensiones] No se pudo notificar:", error);
+  }
 }
 
 /**

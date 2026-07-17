@@ -104,6 +104,13 @@ torneos-web-app/
 │   │   ├── types/
 │   │   └── index.ts
 │   │
+│   ├── notificaciones/          # Módulo de Notificaciones (S5)
+│   │   ├── actions/             # campana, marcar leídas, preferencias
+│   │   ├── components/          # NotificationBell/List/Row/Preferences
+│   │   ├── lib/                 # relativeTime (puro)
+│   │   ├── types/
+│   │   └── index.ts
+│   │
 │   └── shared/                   # Utilidades compartidas
 │       ├── utils/
 │       ├── types/
@@ -121,7 +128,11 @@ torneos-web-app/
 │   ├── db.ts                    # Cliente Prisma
 │   ├── utils.ts                 # Utilidades generales
 │   ├── checkUser.ts             # Verificación de usuario
-│   └── formatDate.ts            # Formateo de fechas
+│   ├── formatDate.ts            # Formateo de fechas
+│   └── notifications/           # Emisión de notificaciones (S5)
+│       ├── catalog.ts           # puro: qué dice y adónde lleva cada una
+│       ├── dispatch.ts          # notify() + destinatarios por rol
+│       └── email.ts             # Resend (no-op sin RESEND_API_KEY)
 │
 ├── prisma/                       # Base de datos
 │   ├── schema.prisma            # Schema de la BD
@@ -208,7 +219,27 @@ Usuario → Page Component → Server Action → Prisma → Base de Datos
 - **UI Components**: shadcn/ui + Tailwind CSS
 - **Tema**: next-themes (Dark/Light mode)
 - **Validación**: Zod
-- **Notificaciones**: Sonner
+- **Toasts (feedback inmediato de una acción)**: Sonner
+- **Notificaciones (S5)**: modelo `Notification` + campana in-app + email por
+  Resend. **No confundir con Sonner**: el toast le dice al que hizo clic que su
+  acción salió; la notificación le avisa a *otra* persona que algo le pasó.
+  Emisión: `notify()` de [lib/notifications](../lib/notifications/dispatch.ts).
+
+## Migraciones (Prisma)
+
+- **El timestamp de la carpeta es el orden de ejecución, no un dato cosmético.**
+  Prisma aplica en orden lexicográfico del nombre. **Nunca antedatar una
+  carpeta**: si una migración depende de otra (un tipo, una tabla), su nombre
+  tiene que ordenar después, o el historial deja de poder replayearse desde cero
+  y no se puede levantar un entorno nuevo. Pasó una vez (ver "Historial de
+  migraciones irreproducible" en TODO.md) y no se detectó por meses, porque en
+  la base real las migraciones se aplican **una sola vez y en el orden en que se
+  escriben** — el defecto solo aparece al reconstruir desde cero.
+- **Usar `migrate dev`, no solo `migrate deploy`.** `dev` replaya todo el
+  historial en una shadow DB y detecta el problema antes de commitear; `deploy`
+  solo aplica lo pendiente sobre la base real y **no lo detecta nunca**.
+- **No editar una migración ya aplicada**: el checksum cubre el archivo entero
+  (comentarios incluidos) y la base la rechaza como modificada.
 
 ## Mejores Prácticas
 

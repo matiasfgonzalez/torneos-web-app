@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { canEditPlayer, logPlayerCreate } from "@/lib/playerAuth";
 import { nationalIdSchema } from "@/lib/validators/player";
+import { getPlatformAdminIds, notify } from "@/lib/notifications";
 
 /**
  * El jugador reclama su propia ficha (N12).
@@ -162,6 +163,20 @@ export async function requestPlayerClaim(
         decidedAt: null,
       },
     });
+
+    // La disputa la resuelve solo el ADMINISTRADOR, así que se le avisa a él.
+    // El dueño actual **no** recibe aviso: todavía no hay nada resuelto, y
+    // avisarle antes de que alguien mire la evidencia lo invita a reaccionar
+    // contra el reclamante, que puede ser el titular real.
+    await notify(
+      await getPlatformAdminIds(),
+      {
+        type: "FICHA_DISPUTA_ABIERTA",
+        playerName: player.name,
+        claimantName: user.name ?? user.email,
+      },
+      { exclude: user.id },
+    );
 
     revalidatePath("/mi-ficha");
     return {
@@ -487,6 +502,19 @@ export async function approvePlayerClaim(claimId: string): Promise<ClaimResult> 
       }),
     ]);
 
+    // Los dos lados de la disputa se enteran del resultado. El que la pierde
+    // también: se quedó sin su ficha y tiene que poder saberlo.
+    await notify(
+      ctx.claim.userId,
+      { type: "FICHA_APROBADA", playerName: ctx.claim.player.name },
+      { exclude: ctx.user.id },
+    );
+    await notify(
+      ctx.currentOwner.userId,
+      { type: "FICHA_RECHAZADA", playerName: ctx.claim.player.name },
+      { exclude: ctx.user.id },
+    );
+
     revalidatePath("/admin/delegados");
     revalidatePath("/mi-ficha");
     return {
@@ -499,6 +527,12 @@ export async function approvePlayerClaim(claimId: string): Promise<ClaimResult> 
     where: { id: claimId },
     data: { status: "APROBADO", decidedById: ctx.user.id, decidedAt: new Date() },
   });
+
+  await notify(
+    ctx.claim.userId,
+    { type: "FICHA_APROBADA", playerName: ctx.claim.player.name },
+    { exclude: ctx.user.id },
+  );
 
   revalidatePath("/admin/delegados");
   revalidatePath("/mi-ficha");
@@ -516,6 +550,12 @@ export async function rejectPlayerClaim(claimId: string): Promise<ClaimResult> {
     where: { id: claimId },
     data: { status: "RECHAZADO", decidedById: ctx.user.id, decidedAt: new Date() },
   });
+
+  await notify(
+    ctx.claim.userId,
+    { type: "FICHA_RECHAZADA", playerName: ctx.claim.player.name },
+    { exclude: ctx.user.id },
+  );
 
   revalidatePath("/admin/delegados");
   revalidatePath("/mi-ficha");

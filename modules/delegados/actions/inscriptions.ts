@@ -13,6 +13,11 @@ import {
   remainingSlots,
 } from "@/lib/inscriptions";
 import { assertPlanLimit, getEffectivePlan } from "@/lib/planLimits";
+import {
+  getOrgManagerIds,
+  getTeamManagerIds,
+  notify,
+} from "@/lib/notifications";
 
 /**
  * Inscripción de un equipo a un torneo, pedida por el delegado (S3/N13).
@@ -129,8 +134,13 @@ export async function requestInscription(input: {
   tournamentId: string;
   teamId: string;
 }): Promise<InscriptionResult> {
+  // `|| !auth.user`: el estilo `{ user?: never }` de los guards no narrowea por
+  // truthiness (no son tipos unitarios), así que el chequeo va explícito —
+  // mismo motivo que el comentario de `RequestContext` en requests.ts.
   const auth = await requireActionTeamManager(input.teamId);
-  if (auth.error) return { success: false, error: auth.error };
+  if (auth.error || !auth.user) {
+    return { success: false, error: auth.error ?? "Sin permisos" };
+  }
 
   const [tournament, team] = await Promise.all([
     db.tournament.findFirst({
@@ -226,6 +236,17 @@ export async function requestInscription(input: {
     },
   });
 
+  await notify(
+    await getOrgManagerIds(tournament.organizationId),
+    {
+      type: "INSCRIPCION_RECIBIDA",
+      teamName: team.name,
+      tournamentName: tournament.name,
+      tournamentId: tournament.id,
+    },
+    { exclude: auth.user.id },
+  );
+
   revalidatePath("/mi-equipo");
   revalidatePath(`/admin/torneos/${tournament.id}`);
   return {
@@ -265,16 +286,18 @@ async function authForInscription(tournamentTeamId: string) {
     select: {
       id: true,
       registrationStatus: true,
-      team: { select: { name: true } },
-      tournament: { select: { id: true, organizationId: true } },
+      team: { select: { id: true, name: true } },
+      tournament: { select: { id: true, name: true, organizationId: true } },
     },
   });
   if (!tt) return { ok: false as const, error: "La inscripción no existe" };
 
   const auth = await requireActionOrgAccess(tt.tournament.organizationId);
-  if (auth.error) return { ok: false as const, error: auth.error };
+  if (auth.error || !auth.user) {
+    return { ok: false as const, error: auth.error ?? "Sin permisos" };
+  }
 
-  return { ok: true as const, tt };
+  return { ok: true as const, tt, user: auth.user };
 }
 
 export async function approveInscription(
@@ -327,6 +350,18 @@ export async function approveInscription(
     data: { registrationStatus: "INSCRIPTO" },
   });
 
+  // Pendiente de N13: el delegado se enteraba solo si volvía a mirar.
+  await notify(
+    await getTeamManagerIds(ctx.tt.team.id),
+    {
+      type: "INSCRIPCION_APROBADA",
+      teamName: ctx.tt.team.name,
+      tournamentName: ctx.tt.tournament.name,
+      tournamentId: ctx.tt.tournament.id,
+    },
+    { exclude: ctx.user.id },
+  );
+
   revalidatePath(`/admin/torneos/${ctx.tt.tournament.id}`);
   revalidatePath("/mi-equipo");
   return { success: true, message: `${ctx.tt.team.name} quedó inscripto.` };
@@ -345,6 +380,16 @@ export async function rejectInscription(
     where: { id: tournamentTeamId },
     data: { registrationStatus: "RECHAZADO" },
   });
+
+  await notify(
+    await getTeamManagerIds(ctx.tt.team.id),
+    {
+      type: "INSCRIPCION_RECHAZADA",
+      teamName: ctx.tt.team.name,
+      tournamentName: ctx.tt.tournament.name,
+    },
+    { exclude: ctx.user.id },
+  );
 
   revalidatePath(`/admin/torneos/${ctx.tt.tournament.id}`);
   revalidatePath("/mi-equipo");

@@ -9,8 +9,48 @@ import { recomputeTournamentSuspensions } from "@/lib/suspensions/engine";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
 
 type tParams = Promise<{ id: string }>;
+
+/**
+ * Avisa el resultado a los delegados de ambos equipos (S5).
+ *
+ * `homeTeamId`/`awayTeamId` del partido son ids de **TournamentTeam**, no de
+ * Team: hay que resolverlos para llegar a los delegados y al nombre.
+ */
+async function notifyMatchResult(
+  matchId: string,
+  match: { homeTeamId: string; awayTeamId: string; homeScore: number | null; awayScore: number | null },
+  tournamentName: string,
+  actorId: string,
+): Promise<void> {
+  // Un partido FINALIZADO sin marcador no tiene resultado que contar.
+  if (match.homeScore === null || match.awayScore === null) return;
+
+  const sides = await db.tournamentTeam.findMany({
+    where: { id: { in: [match.homeTeamId, match.awayTeamId] } },
+    select: { id: true, team: { select: { id: true, name: true } } },
+  });
+
+  const home = sides.find((s) => s.id === match.homeTeamId);
+  const away = sides.find((s) => s.id === match.awayTeamId);
+  if (!home || !away) return;
+
+  await notify(
+    await getTeamManagerIdsForTeams([home.team.id, away.team.id]),
+    {
+      type: "RESULTADO_CARGADO",
+      matchId,
+      tournamentName,
+      homeTeamName: home.team.name,
+      awayTeamName: away.team.name,
+      homeScore: match.homeScore,
+      awayScore: match.awayScore,
+    },
+    { exclude: actorId },
+  );
+}
 
 export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
   try {
@@ -37,6 +77,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         walkoverWinnerTeamId: true,
         tournament: {
           select: {
+            name: true,
             organizationId: true,
             pointsWin: true,
             pointsDraw: true,
@@ -119,6 +160,14 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const isFinalized = updatedMatch.status === "FINALIZADO";
     if (wasFinalized || isFinalized) {
       await recomputeTournamentSuspensions(updatedMatch.tournamentId);
+    }
+
+    // Aviso del resultado a los delegados de los dos equipos (S5). Solo en la
+    // **transición** a FINALIZADO: editar un partido ya finalizado (corregir un
+    // gol mal cargado) no es una novedad que merezca otro mail, y este PATCH es
+    // el mismo que usa la carga en vivo — notificar en cada uno sería spam.
+    if (!wasFinalized && isFinalized) {
+      await notifyMatchResult(id, updatedMatch, previousMatch.tournament.name, auth.user.id);
     }
 
     return NextResponse.json(updatedMatch, { status: 200 });

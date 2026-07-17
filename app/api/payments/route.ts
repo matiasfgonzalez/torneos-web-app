@@ -7,6 +7,7 @@ import { getOrCreateSubscription } from "@/lib/planLimits";
 import { apiError } from "@/lib/apiResponse";
 import { paymentCreateSchema } from "@/lib/validators/payment";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { getPlatformAdminIds, notify } from "@/lib/notifications";
 
 /**
  * POST /api/payments — informar un pago manual (D8).
@@ -68,6 +69,19 @@ export async function POST(req: Request) {
         notes: parsed.data.notes ?? null,
       },
     });
+
+    // Pendiente de N5: el pago quedaba PENDIENTE esperando que el admin se
+    // asomara a /admin/pagos. Mientras tanto la liga espera su plan.
+    await notify(
+      await getPlatformAdminIds(),
+      {
+        type: "PAGO_INFORMADO",
+        orgName: org.name,
+        planName: plan.name,
+        amount: `${plan.currency} ${amount.toFixed(2)}`,
+      },
+      { exclude: user.id },
+    );
 
     return NextResponse.json(payment, { status: 201 });
   } catch (error) {

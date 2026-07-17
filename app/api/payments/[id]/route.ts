@@ -4,6 +4,7 @@ import { validateApiRole } from "@/lib/apiRoleValidation";
 import { apiError } from "@/lib/apiResponse";
 import { paymentReviewSchema } from "@/lib/validators/payment";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { getOrgOwnerId, notify } from "@/lib/notifications";
 
 type tParams = Promise<{ id: string }>;
 
@@ -46,11 +47,34 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       reviewedAt: new Date(),
     };
 
+    // El nombre del plan es lo que la liga reconoce ("PRO"), no su uuid.
+    // `planId` es nullable (pagos viejos sin plan asociado) y no tiene relación
+    // en el schema, así que se resuelve a mano.
+    const planName = payment.planId
+      ? ((await db.plan.findUnique({
+          where: { id: payment.planId },
+          select: { name: true },
+        }))?.name ?? "tu plan")
+      : "tu plan";
+
     if (parsed.data.action === "RECHAZAR") {
       const rejected = await db.payment.update({
         where: { id },
         data: { status: "RECHAZADO", ...reviewFields },
       });
+
+      // Pendiente de N5: sin esto el OWNER no se entera de que su pago fue
+      // rechazado — ni del motivo, que es justo lo que necesita para corregirlo.
+      await notify(
+        await getOrgOwnerId(payment.subscription.organizationId),
+        {
+          type: "PAGO_RECHAZADO",
+          planName,
+          reason: parsed.data.reviewNotes ?? null,
+        },
+        { exclude: authResult.user!.id },
+      );
+
       return NextResponse.json(rejected);
     }
 
@@ -81,10 +105,24 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         },
       });
 
-      return updated;
+      return { updated, newEnd };
     });
 
-    return NextResponse.json(approved);
+    await notify(
+      await getOrgOwnerId(payment.subscription.organizationId),
+      {
+        type: "PAGO_APROBADO",
+        planName,
+        periodEnd: approved.newEnd.toLocaleDateString("es-AR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+      },
+      { exclude: authResult.user!.id },
+    );
+
+    return NextResponse.json(approved.updated);
   } catch (error) {
     console.error("Error al revisar pago:", error);
     return apiError(500, "Error al revisar el pago");

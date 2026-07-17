@@ -7,6 +7,7 @@ import type { ApprovalStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { requireActionOrgAccess } from "@/lib/orgAuth";
+import { getOrgManagerIds, notify } from "@/lib/notifications";
 
 type AppUser = NonNullable<Awaited<ReturnType<typeof checkUser>>>;
 
@@ -67,6 +68,19 @@ export async function requestTeamClaim(
       decidedAt: null,
     },
   });
+
+  // La liga se entera ahora, no cuando entra al panel: la solicitud está
+  // esperando una respuesta suya y hasta que llegue el equipo no puede jugar.
+  await notify(
+    await getOrgManagerIds(team.organizationId),
+    {
+      type: "SOLICITUD_DELEGADO_RECIBIDA",
+      teamName: team.name,
+      requesterName: user.name ?? user.email,
+      isNewTeam: false,
+    },
+    { exclude: user.id },
+  );
 
   revalidatePath("/mi-equipo");
   return {
@@ -145,6 +159,19 @@ export async function requestNewTeam(input: {
     console.error("Error al proponer equipo:", error);
     return { success: false, error: "No se pudo enviar la propuesta" };
   }
+
+  // Fuera de la transacción: si el commit falla, no se notifica un equipo que
+  // no existe (y un email ya no se puede desenviar).
+  await notify(
+    await getOrgManagerIds(org.id),
+    {
+      type: "SOLICITUD_DELEGADO_RECIBIDA",
+      teamName: name,
+      requesterName: user.name ?? user.email,
+      isNewTeam: true,
+    },
+    { exclude: user.id },
+  );
 
   revalidatePath("/mi-equipo");
   return {
@@ -229,6 +256,18 @@ export async function approveTeamRequest(
     return updated;
   });
 
+  // El pendiente de N13: hasta acá el delegado se enteraba solo si volvía a
+  // mirar /mi-equipo.
+  await notify(
+    approved.userId,
+    {
+      type: "SOLICITUD_DELEGADO_APROBADA",
+      teamName: approved.team.name,
+      teamId: approved.team.id,
+    },
+    { exclude: user.id },
+  );
+
   revalidatePath("/admin/equipos");
   revalidatePath("/admin/delegados");
   return {
@@ -254,6 +293,7 @@ export async function rejectTeamRequest(
       team: {
         select: {
           id: true,
+          name: true,
           enabled: true,
           _count: { select: { tournamentTeams: true, managers: true } },
         },
@@ -281,6 +321,15 @@ export async function rejectTeamRequest(
       await tx.team.delete({ where: { id: full.team.id } });
     }
   });
+
+  // Un rechazo silencioso deja al delegado esperando una respuesta que ya
+  // llegó. El nombre del equipo se manda aunque la propuesta se haya borrado:
+  // el texto ya está renderizado y no depende de que la fila siga viva.
+  await notify(
+    full.userId,
+    { type: "SOLICITUD_DELEGADO_RECHAZADA", teamName: full.team.name },
+    { exclude: user.id },
+  );
 
   revalidatePath("/admin/equipos");
   revalidatePath("/admin/delegados");

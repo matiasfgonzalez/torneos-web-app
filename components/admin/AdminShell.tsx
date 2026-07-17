@@ -9,6 +9,7 @@ import {
   useCommandPalette,
 } from "@/components/admin/CommandPalette";
 import ThemeToggle from "@/components/ThemeToggle";
+import { NotificationBell } from "@modules/notificaciones/components/NotificationBell";
 import { useIsMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
 
@@ -124,6 +125,7 @@ export function AdminShell({
                 {isMac ? "⌘K" : "Ctrl K"}
               </kbd>
             </button>
+            <NotificationBell />
             <ThemeToggle />
           </div>
         </header>

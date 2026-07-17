@@ -59,6 +59,9 @@ model User {
   // Ficha de jugador que esta persona reclama como propia (N12)
   playerClaims         PlayerClaim[]
   playerClaimDecisions PlayerClaim[]      @relation("PlayerClaimDecisions")
+  // Notificaciones y sus preferencias (S5)
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
 
   @@index([role, status])
 }
@@ -952,6 +955,101 @@ model Favorite {
   @@unique([userId, tournamentId])
   @@unique([userId, teamId])
   @@index([userId])
+}
+
+// ============================================================
+// NOTIFICACIONES (S5)
+// ============================================================
+
+/// Qué le pasó al usuario. El texto NO vive acá: lo arma
+/// `renderNotification()` en lib/notifications/catalog.ts a partir del tipo +
+/// sus datos. Así un cambio de redacción no necesita migración ni reescribe
+/// las notificaciones viejas.
+enum NotificationType {
+  // Al delegado (N13/S3)
+  SOLICITUD_DELEGADO_APROBADA
+  SOLICITUD_DELEGADO_RECHAZADA
+  INSCRIPCION_APROBADA
+  INSCRIPCION_RECHAZADA
+  RESULTADO_CARGADO
+  JUGADOR_SUSPENDIDO
+
+  // A la liga (organizadores/OWNER)
+  SOLICITUD_DELEGADO_RECIBIDA
+  INSCRIPCION_RECIBIDA
+  PAGO_APROBADO
+  PAGO_RECHAZADO
+
+  // A la plataforma (ADMINISTRADOR)
+  PAGO_INFORMADO
+  FICHA_DISPUTA_ABIERTA
+
+  // Al jugador (N12/N14b)
+  FICHA_APROBADA
+  FICHA_RECHAZADA
+}
+
+/// Eje de las preferencias. Se agrupa por **tema que le importa al usuario**,
+/// no por destinatario: nadie quiere apagar "las notificaciones de la liga",
+/// quiere apagar "los mails de pagos".
+enum NotificationCategory {
+  EQUIPO  // delegación e inscripciones
+  PARTIDO // resultados y suspensiones
+  PAGO    // plan y pagos
+  FICHA   // reclamos de ficha de jugador
+}
+
+/// Notificación in-app. `title`/`body`/`url` se guardan **renderizados**: la
+/// campana se lee mucho más de lo que se escribe, y resolverlos en cada lectura
+/// obligaría a consultar equipos/torneos que quizá ya no existen.
+model Notification {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type     NotificationType
+  category NotificationCategory
+
+  title String
+  body  String?
+  /// Adónde lleva el click. Null = no hay nada que abrir.
+  url   String?
+
+  readAt DateTime?
+
+  /// Cuándo salió el email. Null = no se mandó (preferencia apagada, sin
+  /// RESEND_API_KEY, o falló). Es el registro de qué pasó realmente, no la
+  /// intención — sirve para no reintentar a ciegas.
+  emailSentAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  // La campana pregunta siempre lo mismo: no leídas de este usuario.
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+/// Preferencia por usuario y categoría (S5). **La ausencia de fila significa
+/// todo encendido**: nadie tiene que configurar nada para que funcione, y no
+/// hay que crear filas al registrar un usuario ni backfillear a los existentes.
+model NotificationPreference {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category NotificationCategory
+
+  /// La campana no se apaga (es gratis y no molesta); el email sí. Se deja el
+  /// campo igual porque el día que se apague, apagarlo es una fila, no una
+  /// migración.
+  inApp Boolean @default(true)
+  email Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, category])
 }
 
 // ============================================================

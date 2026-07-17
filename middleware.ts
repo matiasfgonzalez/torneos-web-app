@@ -5,12 +5,14 @@ import { rateLimit } from "@/lib/rate-limit";
 // Páginas que requieren sesión (la validación fina de rol vive en layouts/handlers)
 // `/mi-equipo` y `/bienvenida` (N13) son de usuario logueado: sin sesión no
 // tienen ningún sentido, así que se protegen igual que el panel y el perfil.
+// `/notificaciones` (S5) es lo mismo: son datos de la sesión y de nadie más.
 const isProtectedPage = createRouteMatcher([
   "/admin(.*)",
   "/profile(.*)",
   "/mi-equipo(.*)",
   "/mi-ficha(.*)",
   "/bienvenida(.*)",
+  "/notificaciones(.*)",
 ]);
 
 // Webhooks futuros (Clerk/Mercado Pago) validan firma propia, no sesión

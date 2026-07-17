@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { User, Menu, X, ChevronRight, Trophy } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { NotificationBell } from "@modules/notificaciones/components/NotificationBell";
 
 interface HeaderProps {
   isLogued?: boolean;
@@ -102,6 +103,9 @@ export function Header(props: Readonly<HeaderProps>) {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-4">
+              <SignedIn>
+                <NotificationBell />
+              </SignedIn>
               <ThemeToggle />
               <SignedOut>
                 <SignInButton>
@@ -125,7 +129,12 @@ export function Header(props: Readonly<HeaderProps>) {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center gap-3">
+            <div className="lg:hidden flex items-center gap-1">
+              {/* La campana va fuera del menú hamburguesa: es el aviso de que
+                  algo pasó, y esconderlo detrás de dos taps lo vuelve inútil. */}
+              <SignedIn>
+                <NotificationBell />
+              </SignedIn>
               <ThemeToggle />
               <Button
                 variant="ghost"
