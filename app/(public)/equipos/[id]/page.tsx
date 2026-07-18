@@ -1,9 +1,9 @@
+import { notFound } from "next/navigation";
 import { getEquipoById } from "@modules/equipos/actions/getEquipoById";
 import PublicTeamHeader from "@modules/equipos/components/public/PublicTeamHeader";
 import PublicTabsTeam from "@modules/equipos/components/public/PublicTabsTeam";
-import { AlertTriangle, ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { checkUser } from "@/lib/checkUser";
 import { getFavoritedIds } from "@modules/favoritos/actions/favorites";
@@ -21,9 +21,12 @@ export default async function PublicTeamDetailPage({
     getFavoritedIds(),
   ]);
 
-  if (team) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+  // Equipo inexistente → 404 real (status HTTP), no una card con 200 (soft-404
+  // malo para SEO). Usa el `not-found.tsx` global, consistente con el resto.
+  if (!team) return notFound();
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="relative pb-20">
           {/* Background decorative blob */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[#ad45ff]/10 blur-3xl -z-10 rounded-full pointer-events-none" />
@@ -76,37 +79,4 @@ export default async function PublicTeamDetailPage({
         </div>
       </div>
     );
-  } else {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6">
-        <Card className="max-w-md w-full border-0 shadow-2xl bg-white dark:bg-gray-900 rounded-2xl overflow-hidden">
-          <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
-          <CardContent className="text-center p-12 space-y-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#ad45ff]/20 to-[#c77dff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="w-10 h-10 text-[#ad45ff]" />
-            </div>
-
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-                Equipo no encontrado
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400">
-                Parece que este equipo no existe o no está disponible
-                públicamente.
-              </p>
-            </div>
-
-            <div className="pt-4">
-              <Button
-                asChild
-                className="rounded-full px-8 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] hover:from-[#9d35ef] hover:to-[#b56dff] text-white shadow-lg shadow-[#ad45ff]/25 border-0"
-              >
-                <Link href="/equipos">Explorar Equipos</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 }

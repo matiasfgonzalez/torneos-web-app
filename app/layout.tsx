@@ -5,7 +5,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
 import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/next";
-import { Suspense } from "react";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 
@@ -237,7 +236,13 @@ export default function RootLayout({
             disableTransitionOnChange={false}
           >
             <NextTopLoader height={5} speed={800} />
-            <Suspense fallback={null}>{children}</Suspense>
+            {/* Sin `<Suspense>` ni `app/loading.tsx` global a propósito: ambos
+                son boundaries de streaming que hacen flush del shell con 200
+                ANTES de que las páginas de detalle lleguen a `notFound()`, y
+                dejaban un soft-404 (status 200) en todo el sitio. Las listas
+                (client) tienen su propio loading; los detalles (server) son
+                consultas rápidas y la navegación conserva la página previa. */}
+            {children}
             <ServiceWorkerRegister />
             <Analytics />
           </ThemeProvider>

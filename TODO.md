@@ -171,8 +171,7 @@
 
 ### A1b. Migrar `middleware.ts` → `proxy.ts` (hallazgo A1, 2026-07-05)
 
-- [ ] **Problema:** Next 16 avisa en cada build: `The "middleware" file convention is deprecated. Please use "proxy" instead.` Además el `config.matcher` debe ser string literal estáticamente analizable (usar `String.raw` rompe el build con "Invalid segment configuration export" — ya documentado en comentario del archivo).
-- **Solución:** Renombrar a `proxy.ts` siguiendo la guía oficial cuando se toque el middleware de nuevo (C8/C9 ya implementados ahí). **E:Bajo**
+- [x] **Hecho (2026-07-18).** `middleware.ts` → **`proxy.ts`** (con `git mv`, conserva historia). El contenido no cambió (mismo `clerkMiddleware` default export + `export const config` con el matcher string literal): en Next 16 el "proxy" es el mismo runtime del middleware, solo cambió el nombre de convención. El warning de cada build **desapareció** y la auth sigue igual — verificado: `/admin` anónimo → 307, GET público → 200, `POST /api` anónimo → 401. **E:Bajo**
 
 ### A2. Dashboard admin de torneos con contadores rotos
 
@@ -241,10 +240,11 @@
 
 ### A9. Dependencias: mismatch y sobrepeso
 
-- [ ] **Problema:** `eslint-config-next@15.3.5` con `next@16.1.5` (reglas desactualizadas); **tres** librerías de animación (framer-motion + gsap + ogl) — verificar si gsap/ogl se usan más allá de `Particles.tsx`; `ts-node` innecesario con seeds en JS.
-- **Solución:** Alinear `eslint-config-next@16`, consolidar animaciones en framer-motion (o CSS), eliminar deps sin uso (`npx depcheck`).
-- (Hallazgo 2026-07-05) `npm install` reporta **18 vulnerabilidades (4 moderate, 12 high, 2 critical)** — correr `npm audit` y evaluar `npm audit fix` al hacer esta tarea.
-- **Esfuerzo:** E:Bajo · **Beneficio:** Bundle menor, lint correcto para Next 16.
+- [x] **Hecho (2026-07-18).**
+  - **Versiones ya alineadas:** `next` y `eslint-config-next` están ambos en `^16.2.10` (se resolvió en alguna pasada previa). Nada que hacer.
+  - **Deps muertas eliminadas:** `gsap` (0 imports en todo el repo) y `ts-node` (0 usos; los seeds son JS) — `npm uninstall` sacó 16 paquetes. **`ogl` se conserva:** lo usa `Particles.tsx`, que sí se monta (perfil de jugador, 404, loading).
+  - **Vulnerabilidades: de 18 → 0.** Las 18 originales ya habían bajado a **2 moderadas** (ambas `postcss <8.5.10` anidado dentro de Next; el `npm audit fix --force` "oficial" **downgradeaba Next a v9** — inaceptable). Se cerró con un `"overrides": { "postcss": "^8.5.10" }` en package.json (patch compatible, build verde). **`npm audit` → 0 vulnerabilidades.**
+- **Esfuerzo:** E:Bajo · **Beneficio:** Bundle menor, 0 vulnerabilidades, lint correcto para Next 16.
 
 ### A10. `console.log` con datos de usuario en server
 
@@ -431,7 +431,10 @@
 
 **F2 completo.**
 
-- [ ] ⚠️ **Soft 404 en toda la app (encontrado 2026-07-14 al smoke-testear la ficha de partido):** `notFound()` renderiza la página 404 pero la respuesta sale con **HTTP 200**, no 404. No es de la ruta nueva: `/jugadores/[uuid-inexistente]` (que ya existía) hace exactamente lo mismo. Probado en dev **y** en `next start`. Sospecha principal: el middleware de Clerk envolviendo la respuesta (mismo tipo de síntoma que el bug de `redirect()` con Node 24 documentado en F2 — conviene descartar primero el entorno). Impacto real: Google indexa páginas inexistentes como si fueran válidas, y cualquier monitoreo que mire status codes no ve los 404. **E:Bajo** una vez identificada la causa.
+- [x] ⚠️ **Soft 404 en toda la app — arreglado (2026-07-18).** `notFound()` renderizaba la 404 pero con **HTTP 200**. **La sospecha (Clerk) era falsa.** La causa real era el **streaming**: dos boundaries por encima de las páginas hacían *flush* del shell con 200 **antes** de que la página de detalle llegara a `notFound()` — (1) el `<Suspense fallback={null}>` del layout raíz y (2) `app/loading.tsx` (el loading global). Aislado con método: una ruta **sin match** daba 404 nativo, pero una ruta **con match + `notFound()`** daba 200; quitando los dos boundaries → 404.
+  - **Fix:** se quitó el `<Suspense>` del layout y `app/loading.tsx` (los dos eran inocuos: **nada** usa `useSearchParams` —lo que justificaría el Suspense—, las páginas de listado son client con su propio loading, y las de detalle son consultas server rápidas donde la navegación conserva la página previa sin flash). `not-found.tsx` pasó de `"use client"` a **Server Component** (el botón "volver" se aisló en `NotFoundBackButton`), y `equipos/[id]` que renderizaba una card propia ahora llama `notFound()`. `app/admin/loading.tsx` se conserva (admin es noindex).
+  - **Verificado:** `/liga|/torneos|/partidos|/equipos|/jugadores/no-existe` → **404**; páginas reales → 200; proxy/auth intactos; 199 tests verdes.
+  - **Falta:** `noticias/[id]` sigue en 200 — es el único detalle **client-fetched** (useEffect), y `notFound()` desde el cliente no puede fijar el status (el shell ya salió 200). Su fix es un refactor a SSR (fetch server + `notFound()` server, aislando lo interactivo), queda como iteración. **E:Bajo**
 
 ### F3. Panel admin (E:Alto)
 
@@ -629,7 +632,7 @@
   - **Público:** sección "Novedades" en [/liga/[slug]](app/(public)/liga/[slug]/page.tsx) (cards con portada, ordenadas por `publishedAt`, solo publicadas) + página de detalle [/liga/[slug]/novedades/[postId]](app/(public)/liga/[slug]/novedades/[postId]/page.tsx) compartible con OG. Contenido renderizado como **texto plano** (`whitespace-pre-line`, nunca `dangerouslySetInnerHTML` — regla C5). La novedad debe pertenecer a la liga del slug (chequeo en la página **y en `generateMetadata`**: sin el segundo, el `<title>` filtraba el nombre de la novedad en una URL con slug de otra liga).
   - Verificado **de verdad** (script Prisma: crea una novedad publicada, consulta las páginas, limpia): la liga muestra la sección + el título; el detalle 200 con título/contenido/badge; slug cruzado → body 404 **y** `<title>` = "Novedad no encontrada" (sin fuga); POST anónimo → 401. `tsc` limpio, 0 errores de lint (solo warnings `<img>`/cssConflict preexistentes), build verde.
   - **Falta de S12:** (1) **NO se agregó al home del hincha** (`FanHome`) que sigue la liga — era el "opcionalmente" del enunciado; queda como follow-up (necesita cruzar favoritos con las novedades más recientes de las ligas seguidas); (2) **no se ejercitó el flujo admin con sesión real** (crear/editar/publicar desde la UII con Clerk) — se verificó la lógica pública, el gate anónimo (401) y el gate de feature por código, no el alta logueada; (3) el contenido es texto plano, sin editor rich-text (imágenes embebidas, formato) — decisión deliberada por seguridad (C5), un editor estructurado (tiptap/markdown con sanitización) sería otra iteración; (4) **`exportPdf` (S8) y `liveMatch` (S6) ya están construidas pero todavía NO gateadas con `hasFeature`** — siguen funcionando para todos; ahora que existen, gatearlas es un follow-up chico (el bloque ámbar en `/admin/planes` lo advierte).
-  - ⚠️ **Hallazgo preexistente (NO de S12):** `notFound()` devuelve **HTTP 200** en todo el proyecto (verificado también en `/liga/no-existe`), no 404 — afecta SEO/crawlers de todas las páginas de detalle. Falta un manejo de `not-found` que fije el status, o es un comportamiento de Next 16 a revisar. Documentar y encarar aparte.
+  - ⚠️ **Hallazgo preexistente (NO de S12) → ✅ arreglado (2026-07-18):** `notFound()` devolvía **HTTP 200** en todo el proyecto. La causa eran los boundaries de streaming (`<Suspense>` del layout + `app/loading.tsx`); ver el detalle en la sección 🟠 A5 ("Soft 404 en toda la app"). Todas las páginas de detalle server ahora dan 404; solo `noticias/[id]` (client-fetched) queda pendiente.
 
 ---
 

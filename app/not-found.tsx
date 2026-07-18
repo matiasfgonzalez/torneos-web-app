@@ -1,21 +1,14 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft, Trophy, Users, Newspaper, Search } from "lucide-react";
+import { Home, Trophy, Users, Newspaper, Search } from "lucide-react";
+import { NotFoundBackButton } from "./NotFoundBackButton";
 
+/**
+ * 404 global. Server Component a propósito: un `not-found` client dejaba el
+ * status HTTP en 200 (soft-404). Lo único interactivo —el botón "volver"— vive
+ * en `NotFoundBackButton`.
+ */
 export default function NotFound() {
-  const router = useRouter();
-
-  const handleGoBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/");
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center overflow-hidden relative">
       {/* Premium Gradient Background */}
@@ -136,14 +129,7 @@ export default function NotFound() {
               Volver al Inicio
             </Link>
           </Button>
-          <Button
-            onClick={handleGoBack}
-            variant="link"
-            className="border-white/20 text-white hover:bg-white/10 transition-all cursor-pointer px-6 py-5"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Página Anterior
-          </Button>
+          <NotFoundBackButton />
         </div>
 
         {/* Quick Links */}
