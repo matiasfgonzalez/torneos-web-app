@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/footer";
 import {
   getMyPlayerCareer,
   getMyPlayerClaim,
+  getMyPlayerProfile,
 } from "@modules/jugadores/actions/claims";
 import MiFichaClient from "./MiFichaClient";
 
@@ -26,8 +27,13 @@ export default async function MiFichaPage() {
   if (!user) redirect("/sign-in");
 
   const claim = await getMyPlayerClaim();
-  const career =
-    claim?.status === "APROBADO" ? await getMyPlayerCareer(claim.playerId) : [];
+  const isOwner = claim?.status === "APROBADO";
+  const [career, profile] = isOwner
+    ? await Promise.all([
+        getMyPlayerCareer(claim.playerId),
+        getMyPlayerProfile(),
+      ])
+    : [[], null];
 
   return (
     <div className="flex min-h-screen flex-col premium-gradient-bg">
@@ -49,6 +55,7 @@ export default async function MiFichaPage() {
               : null
           }
           career={career}
+          profile={profile}
         />
       </main>
       <Footer />

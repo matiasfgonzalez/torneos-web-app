@@ -25,7 +25,9 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import {
   createOwnPlayer,
   requestPlayerClaim,
+  type MyPlayerProfile,
 } from "@modules/jugadores/actions/claims";
+import EditProfileSheet from "./EditProfileSheet";
 import type { ApprovalStatus } from "@prisma/client";
 
 interface Career {
@@ -53,9 +55,15 @@ interface Props {
     };
   } | null;
   career: Career[];
+  /** Datos editables de la ficha (solo presente si es su dueño, APROBADO). */
+  profile: MyPlayerProfile | null;
 }
 
-export default function MiFichaClient({ claim, career }: Readonly<Props>) {
+export default function MiFichaClient({
+  claim,
+  career,
+  profile,
+}: Readonly<Props>) {
   const router = useRouter();
   const [dni, setDni] = useState("");
   const [isSending, start] = useTransition();
@@ -383,14 +391,17 @@ export default function MiFichaClient({ claim, career }: Readonly<Props>) {
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-2 rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-500/30 dark:bg-green-500/10">
-            <BadgeCheck
-              className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400"
-              aria-hidden="true"
-            />
-            <p className="text-sm font-medium text-green-800 dark:text-green-300">
-              Esta ficha es tuya. Los datos que cambies los ve tu liga.
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-500/30 dark:bg-green-500/10">
+            <div className="flex items-center gap-2">
+              <BadgeCheck
+                className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400"
+                aria-hidden="true"
+              />
+              <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                Esta ficha es tuya. Actualizá tus datos y los ve tu liga.
+              </p>
+            </div>
+            {profile && <EditProfileSheet player={profile} />}
           </div>
 
           {/* Resumen de carrera */}

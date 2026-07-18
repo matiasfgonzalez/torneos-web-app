@@ -330,6 +330,76 @@ export async function createOwnPlayer(input: {
   }
 }
 
+/** Datos editables de la ficha del dueño, para el formulario de /mi-ficha. */
+export interface MyPlayerProfile {
+  id: string;
+  name: string;
+  nationalId: string;
+  birthDate: Date | null;
+  birthPlace: string | null;
+  nationality: string | null;
+  height: number | null;
+  weight: number | null;
+  dominantFoot: string | null;
+  position: string | null;
+  imageUrl: string | null;
+  imagePublicId: string | null;
+  imageUrlFace: string | null;
+  imageFacePublicId: string | null;
+  description: string | null;
+  bio: string | null;
+  instagramUrl: string | null;
+  twitterUrl: string | null;
+}
+
+/**
+ * Ficha editable del dueño (N12): el jugador que reclamó su ficha (APROBADO)
+ * puede actualizar sus propios datos desde /mi-ficha. Devuelve `null` si el
+ * usuario no tiene una ficha aprobada. El DNI viaja para mostrarlo (no se edita
+ * acá: es la clave de identidad global).
+ */
+export async function getMyPlayerProfile(): Promise<MyPlayerProfile | null> {
+  const user = await checkUser();
+  if (!user) return null;
+
+  const claim = await db.playerClaim.findFirst({
+    where: { userId: user.id, status: "APROBADO" },
+    select: {
+      player: {
+        select: {
+          id: true,
+          name: true,
+          nationalId: true,
+          birthDate: true,
+          birthPlace: true,
+          nationality: true,
+          height: true,
+          weight: true,
+          dominantFoot: true,
+          position: true,
+          imageUrl: true,
+          imagePublicId: true,
+          imageUrlFace: true,
+          imageFacePublicId: true,
+          description: true,
+          bio: true,
+          instagramUrl: true,
+          twitterUrl: true,
+        },
+      },
+    },
+  });
+  if (!claim) return null;
+
+  const p = claim.player;
+  return {
+    ...p,
+    // Enums → string para cruzar el límite al client sin fricción de tipos.
+    dominantFoot: p.dominantFoot ?? null,
+    position: p.position ?? null,
+  };
+}
+
 /**
  * Trayectoria del jugador dueño de la ficha: un renglón por torneo jugado, con
  * sus goles y tarjetas. Es lo que hace que reclamar la ficha valga la pena —
