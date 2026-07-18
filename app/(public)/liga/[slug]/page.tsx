@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -14,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getOrganizationBySlug } from "@modules/organizaciones/actions/getOrganizationBySlug";
 import { getPublishedOrgPosts } from "@modules/novedades/actions/orgPosts";
+import { hasFeature } from "@/lib/planLimits";
 import {
   formatTournamentCategory,
   TOURNAMENT_STATUS_LABELS,
@@ -59,18 +61,40 @@ export default async function LeaguePage({
   const org = await getOrganizationBySlug(slug);
   if (!org) return notFound();
 
-  const posts = await getPublishedOrgPosts(org.id, 6);
+  const [posts, canBrand] = await Promise.all([
+    getPublishedOrgPosts(org.id, 6),
+    hasFeature(org.id, "customBranding"),
+  ]);
+
+  // Marca propia (feature de plan customBranding): si la liga la tiene y cargó
+  // un color, su página usa ese color de acento en vez del violeta de GOLAZO.
+  // Funciona porque `@theme inline` hace que `bg-brand`/`text-brand`/etc. usen
+  // `var(--brand)` directo, así overridear la variable acá cascada a todo el
+  // subárbol. Y sin marca propia se muestra la atribución "Hecho con GOLAZO".
+  const branded = canBrand && !!org.brandColor;
+  const brandStyle = branded
+    ? ({
+        "--brand": org.brandColor,
+        "--brand-mid": org.brandColor,
+        "--brand-2": org.brandColor,
+        "--brand-hover": org.brandColor,
+        "--brand-mid-hover": org.brandColor,
+      } as CSSProperties)
+    : undefined;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div
+      className="min-h-screen bg-gray-50 dark:bg-gray-950"
+      style={brandStyle}
+    >
       {/* Hero de la liga */}
       <section className="relative overflow-hidden border-b border-gray-100 dark:border-gray-800">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/10 via-transparent to-[#a3b3ff]/10" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#ad45ff]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-brand-2/10" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-8">
-            <Link href="/" className="hover:text-[#ad45ff] transition-colors">
+            <Link href="/" className="hover:text-brand transition-colors">
               Inicio
             </Link>
             <ChevronRight className="w-4 h-4" />
@@ -87,10 +111,10 @@ export default async function LeaguePage({
                   alt={org.name}
                   width={96}
                   height={96}
-                  className="rounded-2xl object-cover h-24 w-24 ring-2 ring-[#ad45ff]/20 shadow-lg"
+                  className="rounded-2xl object-cover h-24 w-24 ring-2 ring-brand/20 shadow-lg"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] flex items-center justify-center shadow-lg">
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand to-brand-2 flex items-center justify-center shadow-lg">
                   <Trophy className="w-10 h-10 text-white" />
                 </div>
               )}
@@ -108,12 +132,12 @@ export default async function LeaguePage({
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                 {org.locality && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-[#ad45ff]" />
+                    <MapPin className="w-4 h-4 text-brand" />
                     {org.locality}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1.5">
-                  <Trophy className="w-4 h-4 text-[#ad45ff]" />
+                  <Trophy className="w-4 h-4 text-brand" />
                   {org.tournaments.length}{" "}
                   {org.tournaments.length === 1 ? "torneo" : "torneos"}
                 </span>
@@ -155,7 +179,7 @@ export default async function LeaguePage({
                 <Link
                   key={t.id}
                   href={href}
-                  className="group relative flex flex-col rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm hover:border-[#ad45ff]/50 hover:shadow-xl hover:shadow-[#ad45ff]/10 transition-all duration-300"
+                  className="group relative flex flex-col rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm hover:border-brand/50 hover:shadow-xl hover:shadow-brand/10 transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     {t.logoUrl ? (
@@ -167,12 +191,12 @@ export default async function LeaguePage({
                         className="rounded-xl object-cover h-12 w-12"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 flex items-center justify-center">
-                        <Trophy className="w-6 h-6 text-[#ad45ff]" />
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand/20 to-brand-2/20 flex items-center justify-center">
+                        <Trophy className="w-6 h-6 text-brand" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ad45ff] transition-colors">
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-brand transition-colors">
                         {t.name}
                       </h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -182,7 +206,7 @@ export default async function LeaguePage({
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <Badge className="bg-[#ad45ff]/10 text-[#ad45ff] border-0">
+                    <Badge className="bg-brand/10 text-brand border-0">
                       {TOURNAMENT_STATUS_LABELS[t.status as TournamentStatus] ??
                         t.status}
                     </Badge>
@@ -268,6 +292,18 @@ export default async function LeaguePage({
             ))}
           </div>
         </section>
+      )}
+
+      {/* Atribución de plataforma: se oculta con marca propia (customBranding) */}
+      {!branded && (
+        <div className="border-t border-gray-100 py-8 text-center dark:border-gray-800">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-brand dark:text-gray-500"
+          >
+            Hecho con <span className="font-bold text-brand">GOLAZO</span>
+          </Link>
+        </div>
       )}
     </div>
   );

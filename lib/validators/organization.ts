@@ -13,6 +13,17 @@ export const organizationUpdateSchema = z
     phone: nullableString(30),
     logoUrl: nullableString(500),
     logoPublicId: nullableString(255),
+    // Color de marca propio (feature de plan customBranding). Hex #RRGGBB.
+    brandColor: z.preprocess(
+      (v) => (v === "" ? null : v),
+      z.union([
+        z.null(),
+        z
+          .string()
+          .trim()
+          .regex(/^#[0-9a-fA-F]{6}$/, "Usá un color en formato #RRGGBB"),
+      ]),
+    ),
   })
   .partial()
   .strict();

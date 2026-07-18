@@ -87,6 +87,7 @@ export default async function CrearLigaPage({
                   phone: org.phone,
                   logoUrl: org.logoUrl,
                   logoPublicId: org.logoPublicId,
+                  brandColor: org.brandColor,
                 }
               : null
           }

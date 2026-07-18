@@ -84,6 +84,7 @@ model Organization {
   slug         String    @unique // /liga/[slug]
   logoUrl      String?
   logoPublicId String?
+  brandColor   String? // color de marca propio (feature de plan customBranding, hex #RRGGBB)
   description  String?
   locality     String?
   phone        String? // contacto público (WhatsApp)

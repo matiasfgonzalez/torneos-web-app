@@ -45,6 +45,7 @@ interface InitialOrg {
   phone: string | null;
   logoUrl: string | null;
   logoPublicId: string | null;
+  brandColor: string | null;
 }
 
 interface SentInvite {
@@ -101,6 +102,7 @@ export default function CrearLigaWizard({
     phone: initialOrg?.phone ?? "",
     logoUrl: initialOrg?.logoUrl ?? null,
     logoPublicId: initialOrg?.logoPublicId ?? null,
+    brandColor: initialOrg?.brandColor ?? "",
   });
 
   // Paso 2 — primer torneo
@@ -144,6 +146,7 @@ export default function CrearLigaWizard({
           phone: orgForm.phone,
           logoUrl: orgForm.logoUrl,
           logoPublicId: orgForm.logoPublicId,
+          brandColor: orgForm.brandColor || null,
         }),
       });
       if (!res.ok) {
@@ -395,6 +398,46 @@ export default function CrearLigaWizard({
                   setOrgForm({ ...orgForm, logoUrl: url, logoPublicId: publicId })
                 }
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="org-color">Color de tu marca (opcional)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="org-color"
+                  type="color"
+                  value={orgForm.brandColor || "#ad45ff"}
+                  onChange={(e) =>
+                    setOrgForm({ ...orgForm, brandColor: e.target.value })
+                  }
+                  className="h-11 w-14 cursor-pointer rounded-xl border-2 border-gray-200 p-1 dark:border-gray-700"
+                  aria-label="Elegí el color de tu marca"
+                />
+                <Input
+                  value={orgForm.brandColor}
+                  placeholder="#ad45ff"
+                  maxLength={7}
+                  onChange={(e) =>
+                    setOrgForm({ ...orgForm, brandColor: e.target.value })
+                  }
+                  className="w-32 font-mono"
+                />
+                {orgForm.brandColor && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-500"
+                    onClick={() => setOrgForm({ ...orgForm, brandColor: "" })}
+                  >
+                    Quitar
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Con un plan que incluya <strong>marca propia</strong>, tu página
+                pública de liga usa este color en vez del violeta de GOLAZO.
+              </p>
             </div>
 
             <div className="flex justify-end pt-2">

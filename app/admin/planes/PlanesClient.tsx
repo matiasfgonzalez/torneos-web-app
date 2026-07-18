@@ -333,21 +333,9 @@ export default function PlanesClient() {
                   onCheckedChange={(c) => update("orgNews", c)}
                 />
               </div>
-            </div>
-
-            {/* customBranding TODAVÍA NO está construida: activarla la anunciaría
-                en la landing sin poder cumplirla. */}
-            <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-900/20">
-                <p className="text-xs text-amber-800 dark:text-amber-300">
-                  <b>Esta función todavía no está construida.</b> Si la activás,
-                  la página de precios la anuncia y no vas a poder cumplirla.
-                  Dejala apagada hasta que exista.
-                </p>
-              </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="customBranding" className="cursor-pointer">
-                  Marca personalizada
+                  Marca propia de la liga
                 </Label>
                 <Switch
                   id="customBranding"

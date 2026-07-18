@@ -20,6 +20,7 @@ export interface OrganizationPublic {
   name: string;
   slug: string;
   logoUrl: string | null;
+  brandColor: string | null;
   description: string | null;
   locality: string | null;
   phone: string | null;
@@ -41,6 +42,7 @@ export async function getOrganizationBySlug(
       name: true,
       slug: true,
       logoUrl: true,
+      brandColor: true,
       description: true,
       locality: true,
       phone: true,
@@ -71,6 +73,7 @@ export async function getOrganizationBySlug(
     name: org.name,
     slug: org.slug,
     logoUrl: org.logoUrl,
+    brandColor: org.brandColor,
     description: org.description,
     locality: org.locality,
     phone: org.phone,
