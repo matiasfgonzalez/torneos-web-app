@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { validatePanelAccess } from "@/lib/roleValidation";
 import { getMyOrgRole } from "@/lib/orgAuth";
+import { getSiteSettings } from "@modules/configuracion/actions/siteSettings";
 import PlanClient from "./PlanClient";
 
 export const metadata: Metadata = {
@@ -28,5 +29,17 @@ export default async function PlanPage({
   // PlanClient lo valida contra los planes pagos reales al renderizar.
   const { plan } = await searchParams;
 
-  return <PlanClient initialPlan={plan?.toUpperCase() ?? ""} />;
+  // Datos de cobro configurables (N5) — a dónde transfiere la liga.
+  const settings = await getSiteSettings();
+
+  return (
+    <PlanClient
+      initialPlan={plan?.toUpperCase() ?? ""}
+      paymentInfo={{
+        alias: settings.paymentAlias,
+        holder: settings.paymentHolder,
+        instructions: settings.paymentInstructions,
+      }}
+    />
+  );
 }

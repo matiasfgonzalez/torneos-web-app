@@ -1102,6 +1102,12 @@ model SiteSettings {
   twitterUrl   String?
   instagramUrl String?
 
+  // Datos de cobro para pagos manuales (N5): el organizador transfiere a esto
+  // y sube el comprobante. Los edita el ADMINISTRADOR en /admin/configuracion.
+  paymentAlias        String? // alias / CBU / CVU al que se transfiere
+  paymentHolder       String? // titular de la cuenta (para verificar)
+  paymentInstructions String? // nota libre (ej: "poné el nombre de tu liga en el concepto")
+
   updatedAt DateTime @updatedAt
 }
 

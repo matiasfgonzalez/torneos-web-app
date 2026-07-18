@@ -26,6 +26,10 @@ export const siteSettingsUpdateSchema = z
       (v) => (v === "" ? null : v),
       z.union([z.null(), z.string().trim().url().max(300)]),
     ),
+    // Datos de cobro para pagos manuales (N5)
+    paymentAlias: nullableString(120),
+    paymentHolder: nullableString(120),
+    paymentInstructions: nullableString(500),
   })
   .partial()
   .strict();

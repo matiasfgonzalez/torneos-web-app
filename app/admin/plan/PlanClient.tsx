@@ -17,7 +17,15 @@ import {
 import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
-import { CreditCard, Crown, Loader2, Receipt } from "lucide-react";
+import {
+  CreditCard,
+  Crown,
+  Loader2,
+  Receipt,
+  Clock,
+  Landmark,
+  AlertTriangle,
+} from "lucide-react";
 
 interface PlanInfo {
   id: string;
@@ -58,11 +66,20 @@ interface PaymentRow {
   reviewNotes?: string | null;
 }
 
+interface PaymentInfo {
+  alias: string | null;
+  holder: string | null;
+  instructions: string | null;
+}
+
 export default function PlanClient({
   initialPlan = "",
+  paymentInfo,
 }: Readonly<{
   /** Plan preseleccionado desde el pricing/wizard (`?plan=PRO`, N14d). */
   initialPlan?: string;
+  /** Datos de cobro configurables (N5) — a dónde transfiere la liga. */
+  paymentInfo?: PaymentInfo;
 }>) {
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [plans, setPlans] = useState<PlanInfo[]>([]);
@@ -99,6 +116,10 @@ export default function PlanClient({
   const submitPayment = async () => {
     if (!selectedPlan) {
       toast.warning("Elegí un plan");
+      return;
+    }
+    if (!receiptUrl) {
+      toast.warning("Adjuntá el comprobante de la transferencia");
       return;
     }
     try {
@@ -144,6 +165,10 @@ export default function PlanClient({
   // Derivado al renderizar (no useEffect): si `initialPlan` vino con un código
   // inexistente por la URL, simplemente no hay selección — sin estado roto.
   const selected = paidPlans.find((p) => p.code === selectedPlan);
+  // Un solo pago pendiente a la vez (el server también lo exige): mientras hay
+  // uno en revisión, no se informa otro.
+  const hasPending = payments.some((p) => p.status === "PENDIENTE");
+  const hasPaymentData = !!paymentInfo?.alias;
 
   return (
     <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
@@ -208,6 +233,18 @@ export default function PlanClient({
           <CardTitle>Contratar o renovar un plan</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {hasPending && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+              <Clock className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+              <div>
+                <p className="font-semibold">Tenés un pago en revisión</p>
+                <p>
+                  Cuando el administrador lo apruebe, tu plan se activa
+                  automáticamente. Mientras tanto no podés informar otro pago.
+                </p>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {paidPlans.map((plan) => (
               <button
@@ -277,14 +314,55 @@ export default function PlanClient({
                 </div>
               </div>
 
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-800 dark:text-blue-200">
-                Transferí el total al alias <strong>GOLAZO.PAGOS</strong> y
-                subí el comprobante. El administrador aprueba tu pago y el plan
-                se activa al instante.
-              </div>
+              {/* Datos de cobro configurables (N5): a dónde transferir. */}
+              {hasPaymentData ? (
+                <div className="space-y-3 rounded-xl bg-blue-50 p-4 text-sm text-blue-900 dark:bg-blue-900/20 dark:text-blue-100">
+                  <p className="font-semibold">
+                    Transferí ${" "}
+                    {(
+                      Number(selected.priceMonthly) * Number(months)
+                    ).toLocaleString("es-AR")}{" "}
+                    a:
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Landmark className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="font-mono text-base font-bold tracking-wide">
+                      {paymentInfo!.alias}
+                    </span>
+                  </div>
+                  {paymentInfo!.holder && (
+                    <p>
+                      Titular:{" "}
+                      <span className="font-medium">{paymentInfo!.holder}</span>
+                    </p>
+                  )}
+                  {paymentInfo!.instructions && (
+                    <p className="text-blue-800 dark:text-blue-200">
+                      {paymentInfo!.instructions}
+                    </p>
+                  )}
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    Subí el comprobante acá abajo. El administrador lo aprueba y
+                    el plan se activa.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+                  <AlertTriangle
+                    className="mt-0.5 h-5 w-5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <p>
+                    La plataforma todavía no publicó los datos para transferir.
+                    Escribinos por los canales de contacto para coordinar el pago.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
-                <p className="text-sm font-medium">Comprobante</p>
+                <p className="text-sm font-medium">
+                  Comprobante <span className="text-red-500">*</span>
+                </p>
                 <CloudinaryUpload
                   folder="pagos/comprobantes"
                   value={receiptUrl}
@@ -295,6 +373,10 @@ export default function PlanClient({
                   }}
                   placeholder="Arrastrá el comprobante de transferencia"
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Obligatorio: es lo que el administrador verifica para aprobar
+                  el pago.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -309,7 +391,9 @@ export default function PlanClient({
 
               <Button
                 onClick={submitPayment}
-                disabled={submitting}
+                disabled={
+                  submitting || hasPending || !hasPaymentData || !receiptUrl
+                }
                 className="bg-gradient-to-r from-brand to-brand-2 text-white cursor-pointer"
               >
                 {submitting ? (

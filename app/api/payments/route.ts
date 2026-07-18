@@ -53,6 +53,18 @@ export async function POST(req: Request) {
 
     const subscription = await getOrCreateSubscription(org.id);
 
+    // Un solo pago PENDIENTE a la vez (N5): evita informar el mismo pago dos
+    // veces y que el admin vea duplicados. El organizador espera la revisión.
+    const pending = await db.payment.count({
+      where: { subscriptionId: subscription.id, status: "PENDIENTE" },
+    });
+    if (pending > 0) {
+      return apiError(
+        409,
+        "Ya tenés un pago pendiente de aprobación. Esperá la revisión del administrador antes de informar otro.",
+      );
+    }
+
     // El monto lo calcula el server (nunca el cliente)
     const amount = plan.priceMonthly.mul(parsed.data.periodMonths);
 

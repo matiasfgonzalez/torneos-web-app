@@ -13,6 +13,8 @@ import {
   Facebook,
   Twitter,
   Instagram,
+  Wallet,
+  User,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,6 +37,9 @@ interface FormValues {
   facebookUrl: string;
   twitterUrl: string;
   instagramUrl: string;
+  paymentAlias: string;
+  paymentHolder: string;
+  paymentInstructions: string;
 }
 
 function settingsToForm(s: SiteSettings): FormValues {
@@ -46,6 +51,9 @@ function settingsToForm(s: SiteSettings): FormValues {
     facebookUrl: s.facebookUrl ?? "",
     twitterUrl: s.twitterUrl ?? "",
     instagramUrl: s.instagramUrl ?? "",
+    paymentAlias: s.paymentAlias ?? "",
+    paymentHolder: s.paymentHolder ?? "",
+    paymentInstructions: s.paymentInstructions ?? "",
   };
 }
 
@@ -71,6 +79,9 @@ export default function ConfiguracionClient({
         facebookUrl: form.facebookUrl || null,
         twitterUrl: form.twitterUrl || null,
         instagramUrl: form.instagramUrl || null,
+        paymentAlias: form.paymentAlias || null,
+        paymentHolder: form.paymentHolder || null,
+        paymentInstructions: form.paymentInstructions || null,
       });
       if (res.success) {
         toast.success("Configuración guardada — ya se refleja en el sitio");
@@ -212,6 +223,59 @@ export default function ConfiguracionClient({
               value={form.instagramUrl}
               onChange={(e) => update("instagramUrl", e.target.value)}
               className="rounded-xl"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-brand" />
+            Datos de cobro
+          </CardTitle>
+          <CardDescription>
+            Adónde transfieren las ligas para contratar un plan. Se muestran en
+            /admin/plan al informar un pago. Dejalos vacíos y esa pantalla avisa
+            que todavía no configuraste cómo cobrar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="paymentAlias" className="flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 text-brand" />
+              Alias / CBU / CVU
+            </Label>
+            <Input
+              id="paymentAlias"
+              placeholder="GOLAZO.PAGOS"
+              value={form.paymentAlias}
+              onChange={(e) => update("paymentAlias", e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="paymentHolder" className="flex items-center gap-2">
+              <User className="w-3.5 h-3.5 text-brand" />
+              Titular de la cuenta
+            </Label>
+            <Input
+              id="paymentHolder"
+              placeholder="Ej: Matías González"
+              value={form.paymentHolder}
+              onChange={(e) => update("paymentHolder", e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="paymentInstructions">Instrucciones (opcional)</Label>
+            <Textarea
+              id="paymentInstructions"
+              rows={2}
+              placeholder="Ej: poné el nombre de tu liga en el concepto de la transferencia."
+              value={form.paymentInstructions}
+              onChange={(e) => update("paymentInstructions", e.target.value)}
+              className="rounded-xl focus-visible:ring-brand/30"
             />
           </div>
         </CardContent>
