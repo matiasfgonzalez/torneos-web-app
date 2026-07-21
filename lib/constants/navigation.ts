@@ -4,6 +4,7 @@
  * anclas (#features/#contacto) que desaparecían al navegar a otra página.
  */
 export const siteLinks = [
+  { href: "/ligas", label: "Ligas" },
   { href: "/torneos", label: "Torneos" },
   { href: "/partidos", label: "Partidos" },
   { href: "/equipos", label: "Equipos" },
