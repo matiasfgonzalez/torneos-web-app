@@ -138,6 +138,10 @@ export async function getReferees(
  * Obtiene un árbitro por ID
  */
 export async function getRefereeById(id: string) {
+  // Devuelve PII (email, teléfono, DNI): solo miembros de la org dueña (M1).
+  const auth = await authForReferee(id);
+  if (auth.error) return { success: false, error: auth.error };
+
   try {
     const referee = await db.referee.findUnique({
       where: { id },

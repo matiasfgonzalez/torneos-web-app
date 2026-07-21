@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { INoticia } from "@modules/noticias/types";
+import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 
 /**
  * Una noticia publicada por id, para la ficha pública `/noticias/[id]` (SSR).
@@ -14,7 +15,7 @@ import { INoticia } from "@modules/noticias/types";
 export async function getNoticiaById(id: string): Promise<INoticia | null> {
   const noticia = await db.news.findFirst({
     where: { id, published: true, deletedAt: null },
-    include: { user: true },
+    include: { user: newsAuthorSelect },
   });
   return noticia as INoticia | null;
 }

@@ -2,6 +2,7 @@
 "use server";
 
 import { INoticia } from "@modules/noticias/types";
+import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 
 export async function getNoticias(): Promise<INoticia[]> {
@@ -11,7 +12,7 @@ export async function getNoticias(): Promise<INoticia[]> {
         published: true, // Solo noticias publicadas
       },
       include: {
-        user: true, // Opcional: incluye los datos del usuario creador
+        user: newsAuthorSelect, // autor sin PII (M1)
       },
       orderBy: {
         createdAt: "desc",

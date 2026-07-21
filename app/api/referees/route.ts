@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { RefereeStatus } from "@prisma/client";
-import { requireApiOrgContext } from "@/lib/orgAuth";
+import {
+  requireApiOrgContext,
+  getPanelOrgIds,
+  orgScopeWhere,
+} from "@/lib/orgAuth";
 import { refereeCreateSchema } from "@/lib/validators/referee";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -25,8 +29,13 @@ export async function GET(req: Request) {
     const includeDisabled = searchParams.get("includeDisabled") === "true";
     const statusFilter = searchParams.get("status") as RefereeStatus | null;
 
+    // Los árbitros incluyen PII (email, teléfono, DNI): el listado se scopea
+    // a las organizaciones del usuario (M1). Anónimo → [] (no ve nada);
+    // ADMINISTRADOR sin "ver como" → todas.
+    const orgIds = await getPanelOrgIds();
     const whereClause: Record<string, unknown> = {
       deletedAt: null, // Excluir eliminados lógicamente
+      ...orgScopeWhere(orgIds),
     };
 
     if (!includeDisabled) {

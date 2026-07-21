@@ -559,19 +559,6 @@ export default function AdminNoticiaDetail({
                     </div>
                     <div className="space-y-3">
                       <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Email
-                      </Label>
-                      <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <Badge
-                          variant="outline"
-                          className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-blue-300 dark:border-blue-700"
-                        >
-                          {article.user.email}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Fecha de Publicación
                       </Label>
                       <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">

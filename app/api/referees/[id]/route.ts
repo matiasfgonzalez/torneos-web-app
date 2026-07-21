@@ -20,6 +20,26 @@ export async function GET(req: Request, { params }: { params: tParams }) {
   const { id } = await params;
 
   try {
+    // El árbitro incluye PII (email, teléfono, DNI): solo miembros de la
+    // organización dueña pueden leerlo (M1). Se resuelve la org con una
+    // consulta liviana antes de exponer el detalle.
+    const owner = await db.referee.findUnique({
+      where: { id },
+      select: { organizationId: true },
+    });
+    if (!owner) {
+      return NextResponse.json(
+        { error: "Árbitro no encontrado" },
+        { status: 404 },
+      );
+    }
+    const auth = await requireApiOrgAccess(owner.organizationId, {
+      allowCollaborator: true,
+    });
+    if (auth.error) {
+      return auth.error;
+    }
+
     const referee = await db.referee.findUnique({
       where: { id },
       include: {

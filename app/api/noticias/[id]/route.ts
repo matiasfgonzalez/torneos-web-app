@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsUpdateSchema } from "@/lib/validators/news";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 
 type tParams = Promise<{ id: string }>;
 
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest, { params }: { params: tParams }) {
     const noticia = await db.news.findUnique({
       where: { id },
       include: {
-        user: true, // Opcional: incluye los datos del usuario creador
+        user: newsAuthorSelect, // autor sin PII (M1) — GET público
       },
     });
 
@@ -69,7 +70,7 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
     const updatedNoticia = await db.news.update({
       where: { id },
       data: parsed.data,
-      include: { user: true },
+      include: { user: newsAuthorSelect },
     });
 
     return NextResponse.json(updatedNoticia, { status: 200 });

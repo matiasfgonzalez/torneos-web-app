@@ -4,6 +4,7 @@ import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsCreateSchema } from "@/lib/validators/news";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
     const noticias = await db.news.findMany({
       where,
       include: {
-        user: true, // Opcional: incluye los datos del usuario creador
+        user: newsAuthorSelect, // autor sin PII (M1) — GET público
       },
       orderBy: {
         createdAt: "desc",
