@@ -179,12 +179,12 @@ export default function NoticiasPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filter Panel */}
           <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-gray-700/50 shadow-xl p-6 mb-8">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-tr-2xl rounded-bl-full" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-tr-2xl rounded-bl-full" />
 
             <div className="relative">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/20">
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20">
                     <Filter className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -201,13 +201,13 @@ export default function NoticiasPage() {
                   <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode("grid")}
-                      className={`p-2 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-gray-600 shadow-sm text-[#ad45ff]" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
+                      className={`p-2 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-gray-600 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
                     >
                       <Grid3X3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setViewMode("list")}
-                      className={`p-2 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-600 shadow-sm text-[#ad45ff]" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
+                      className={`p-2 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-600 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
                     >
                       <LayoutList className="w-4 h-4" />
                     </button>
@@ -216,7 +216,7 @@ export default function NoticiasPage() {
                   {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#ad45ff] bg-[#ad45ff]/10 rounded-lg hover:bg-[#ad45ff]/20 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                       Limpiar ({activeFiltersCount})
@@ -282,7 +282,7 @@ export default function NoticiasPage() {
           {noticiasFiltradas.length === 0 ? (
             <div className="text-center py-20">
               <div className="relative inline-block">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#ad45ff]/20 to-[#a3b3ff]/20 rounded-full blur-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-brand-2/20 rounded-full blur-2xl" />
                 <div className="relative w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                   <Newspaper className="w-12 h-12 text-gray-400" />
                 </div>
@@ -296,7 +296,7 @@ export default function NoticiasPage() {
               </p>
               <button
                 onClick={clearFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white font-semibold rounded-xl shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand to-brand-2 text-white font-semibold rounded-xl shadow-lg shadow-brand/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
               >
                 <X className="w-4 h-4" />
                 Limpiar Filtros
@@ -307,7 +307,7 @@ export default function NoticiasPage() {
               {/* Featured Article */}
               {noticiaDestacada && viewMode === "grid" && (
                 <div className="mb-12">
-                  <h2 className="text-sm font-semibold text-[#ad45ff] uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-brand uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Zap className="w-4 h-4" />
                     Noticia Destacada
                   </h2>
@@ -330,7 +330,7 @@ export default function NoticiasPage() {
                         </div>
                         <div className="p-8 flex flex-col justify-center">
                           <div className="flex items-center gap-3 mb-4">
-                            <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0">
+                            <Badge className="bg-gradient-to-r from-brand to-brand-2 text-white border-0">
                               {noticiaDestacada.user?.name || "Anónimo"}
                             </Badge>
                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -341,13 +341,13 @@ export default function NoticiasPage() {
                               )}
                             </div>
                           </div>
-                          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors mb-4 line-clamp-2">
+                          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white group-hover:text-brand transition-colors mb-4 line-clamp-2">
                             {noticiaDestacada.title}
                           </h3>
                           <p className="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3">
                             {noticiaDestacada.summary}
                           </p>
-                          <div className="flex items-center text-[#ad45ff] font-semibold group-hover:gap-3 gap-2 transition-all">
+                          <div className="flex items-center text-brand font-semibold group-hover:gap-3 gap-2 transition-all">
                             <span>Leer artículo completo</span>
                             <ChevronRight className="w-5 h-5" />
                           </div>
@@ -369,7 +369,7 @@ export default function NoticiasPage() {
                         className="group block h-full"
                       >
                         <Card className="h-full border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:-translate-y-1">
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-brand-2 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
 
                           <div className="relative h-48">
                             <img
@@ -393,7 +393,7 @@ export default function NoticiasPage() {
                               </div>
                             </div>
 
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors mb-3 line-clamp-2">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-brand transition-colors mb-3 line-clamp-2">
                               {noticia.title}
                             </h3>
 
@@ -405,7 +405,7 @@ export default function NoticiasPage() {
                               <div className="text-xs text-gray-400">
                                 {formatDate(noticia.updatedAt, "dd/MM/yyyy")}
                               </div>
-                              <div className="flex items-center gap-1 text-[#ad45ff] group-hover:text-[#c77dff] transition-colors">
+                              <div className="flex items-center gap-1 text-brand group-hover:text-brand-mid transition-colors">
                                 <Eye className="w-4 h-4" />
                                 <ChevronRight className="w-4 h-4" />
                               </div>
@@ -435,7 +435,7 @@ export default function NoticiasPage() {
                           </div>
                           <div className="flex-1 p-6">
                             <div className="flex items-center gap-3 mb-3">
-                              <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0">
+                              <Badge className="bg-gradient-to-r from-brand to-brand-2 text-white border-0">
                                 {noticia.user?.name || "Anónimo"}
                               </Badge>
                               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -444,7 +444,7 @@ export default function NoticiasPage() {
                               </div>
                             </div>
 
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors mb-3">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-brand transition-colors mb-3">
                               {noticia.title}
                             </h3>
 
@@ -457,7 +457,7 @@ export default function NoticiasPage() {
                                 Actualizada:{" "}
                                 {formatDate(noticia.updatedAt, "dd/MM/yyyy")}
                               </div>
-                              <div className="flex items-center gap-2 text-[#ad45ff] font-medium group-hover:gap-3 transition-all">
+                              <div className="flex items-center gap-2 text-brand font-medium group-hover:gap-3 transition-all">
                                 <span>Leer más</span>
                                 <ChevronRight className="w-4 h-4" />
                               </div>
@@ -476,7 +476,7 @@ export default function NoticiasPage() {
 
       {/* CTA Section */}
       <section className="py-16 lg:py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] opacity-95" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand to-brand-2 opacity-95" />
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
@@ -496,7 +496,7 @@ export default function NoticiasPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-white text-[#ad45ff] px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300"
+              className="inline-flex items-center justify-center gap-2 bg-white text-brand px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300"
             >
               <TrendingUp className="w-5 h-5" />
               Publicar Noticia

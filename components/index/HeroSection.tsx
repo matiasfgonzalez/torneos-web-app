@@ -18,12 +18,12 @@ const HeroSection = () => {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link href="/torneos">
-            <button className="cursor-pointer px-6 py-3 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] font-semibold shadow-lg hover:scale-105 transition text-white">
+            <button className="cursor-pointer px-6 py-3 rounded-xl bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2-hover font-semibold shadow-lg hover:scale-105 transition text-white">
               Ver Torneos Activos
             </button>{" "}
           </Link>
           <Link href="/noticias">
-            <button className="cursor-pointer px-6 py-3 rounded-xl border border-[#ad45ff]/30 bg-[#ad45ff]/10 hover:bg-[#ad45ff]/20 font-semibold text-white">
+            <button className="cursor-pointer px-6 py-3 rounded-xl border border-brand/30 bg-brand/10 hover:bg-brand/20 font-semibold text-white">
               Últimas Noticias
             </button>
           </Link>

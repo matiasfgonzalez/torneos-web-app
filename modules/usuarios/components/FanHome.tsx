@@ -42,13 +42,13 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
     <div className="min-h-screen premium-gradient-bg">
       <section className="relative overflow-hidden py-16 lg:py-20">
         <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#ad45ff]/15 to-[#a3b3ff]/15 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-brand/15 to-brand-2/15 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
         </div>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Saludo */}
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white px-4 py-1.5 rounded-full shadow-lg shadow-[#ad45ff]/25 text-sm font-medium">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-brand to-brand-2 text-white px-4 py-1.5 rounded-full shadow-lg shadow-brand/25 text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               Tu resumen en GOLAZO
             </div>
@@ -58,7 +58,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
           </div>
 
           {/* CTA permanente */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] p-6 sm:p-8 shadow-xl shadow-[#ad45ff]/20">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand to-brand-2 p-6 sm:p-8 shadow-xl shadow-brand/20">
             <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
             <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -75,7 +75,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
               </div>
               <Link
                 href={hasOrganization ? "/admin/dashboard" : "/crear-liga"}
-                className="inline-flex items-center justify-center gap-2 bg-white text-[#ad45ff] px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shrink-0 whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-2 bg-white text-brand px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shrink-0 whitespace-nowrap"
               >
                 <Trophy className="w-4 h-4" />
                 {hasOrganization ? "Ir a mi panel" : "Creá tu liga gratis"}
@@ -87,7 +87,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
           {/* Torneos seguidos */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-7 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+              <div className="w-1 h-7 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Torneos que seguís
               </h2>
@@ -110,16 +110,16 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
                         href={tournamentPublicPath(t)}
                         className="flex items-center gap-3 min-w-0 flex-1"
                       >
-                        <div className="w-11 h-11 rounded-xl overflow-hidden border border-[#ad45ff]/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
+                        <div className="w-11 h-11 rounded-xl overflow-hidden border border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {t.logoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={t.logoUrl} alt={t.name} className="w-full h-full object-cover" />
                           ) : (
-                            <Trophy className="w-5 h-5 text-[#ad45ff]" />
+                            <Trophy className="w-5 h-5 text-brand" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ad45ff] transition-colors">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-brand transition-colors">
                             {t.name}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -144,7 +144,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
           {/* Equipos seguidos */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-7 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+              <div className="w-1 h-7 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Equipos que seguís
               </h2>
@@ -167,16 +167,16 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
                         href={`/equipos/${t.id}`}
                         className="flex items-center gap-3 min-w-0 flex-1"
                       >
-                        <div className="w-11 h-11 rounded-xl overflow-hidden border border-[#ad45ff]/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
+                        <div className="w-11 h-11 rounded-xl overflow-hidden border border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {t.logoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={t.logoUrl} alt={t.name} className="w-full h-full object-cover" />
                           ) : (
-                            <Shield className="w-5 h-5 text-[#ad45ff]" />
+                            <Shield className="w-5 h-5 text-brand" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-[#ad45ff] transition-colors">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-brand transition-colors">
                             {t.name}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -201,7 +201,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
           {/* Descubrir */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-7 bg-gradient-to-b from-[#ad45ff] to-[#a3b3ff] rounded-full" />
+              <div className="w-1 h-7 bg-gradient-to-b from-brand to-brand-2 rounded-full" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Descubrir
               </h2>
@@ -213,7 +213,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
                   href={link.href}
                   className="group flex flex-col items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-5 border border-white/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/20 group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand to-brand-2 rounded-xl flex items-center justify-center shadow-lg shadow-brand/20 group-hover:scale-110 transition-transform">
                     <link.icon className="w-5 h-5 text-white" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -255,7 +255,7 @@ function EmptyFollowState({
       </div>
       <Link
         href={href}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#ad45ff] hover:text-[#c77dff] transition-colors shrink-0"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-mid transition-colors shrink-0"
       >
         {cta}
         <ArrowRight className="w-4 h-4" />

@@ -81,7 +81,7 @@ export default async function TorneosPage() {
               <Badge
                 key={cat}
                 variant="outline"
-                className="px-4 py-2 text-sm font-medium border-2 border-[#ad45ff]/30 text-[#ad45ff] hover:bg-[#ad45ff] hover:text-white transition-all cursor-pointer"
+                className="px-4 py-2 text-sm font-medium border-2 border-brand/30 text-brand hover:bg-brand hover:text-white transition-all cursor-pointer"
               >
                 {AGE_GROUP_LABELS[cat]}
               </Badge>
@@ -98,7 +98,7 @@ export default async function TorneosPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-r from-brand to-brand-2 relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
@@ -120,7 +120,7 @@ export default async function TorneosPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="inline-flex items-center justify-center gap-2 bg-white text-[#ad45ff] font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5">
+            <button className="inline-flex items-center justify-center gap-2 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5">
               <Trophy className="w-5 h-5" />
               Crear Torneo Gratis
             </button>

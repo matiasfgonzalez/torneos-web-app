@@ -5,9 +5,9 @@
 ## 1. Paleta de marca
 
 - **Gradiente principal:** `#ad45ff → #a3b3ff` (violeta a lila-azulado). Con un tercer stop opcional `#c77dff` para gradientes de 3 puntos, usado en títulos hero, barras de acento e íconos destacados.
-- **Tokens CSS (F0, 2026-07-13):** la marca vive como variables en `app/globals.css` — `--brand` (#ad45ff), `--brand-2` (#a3b3ff), `--brand-mid` (#c77dff), `--brand-hover`, `--brand-mid-hover`, `--gradient-brand` — expuestas a Tailwind vía `@theme inline`. **Código nuevo usa los tokens, no los hex:** `bg-brand`, `text-brand`, `border-brand/30`, `from-brand via-brand-mid to-brand-2`, `shadow-brand/25`, `.bg-gradient-brand`. Cambiar la marca = tocar solo el bloque de tokens.
+- **Tokens CSS (F0, 2026-07-13):** la marca vive como variables en `app/globals.css` — `--brand` (#ad45ff), `--brand-2` (#a3b3ff), `--brand-mid` (#c77dff), `--brand-hover`, `--brand-2-hover`, `--brand-mid-hover`, `--gradient-brand` — expuestas a Tailwind vía `@theme inline`. **Código nuevo usa los tokens, no los hex:** `bg-brand`, `text-brand`, `border-brand/30`, `from-brand via-brand-mid to-brand-2`, `shadow-brand/25`, `.bg-gradient-brand`. Cambiar la marca = tocar solo el bloque de tokens.
 - **Nunca** usar paletas Tailwind nombradas (`violet-600`, `indigo-600`, `amber-400`, etc.) como color primario/de marca de una pantalla. Los colores nombrados de Tailwind sí se usan, y solo se usan, para **semántica de estado** (ver §4).
-- El hex literal `#ad45ff` sigue presente en ~90 archivos legacy (deuda M6, migración progresiva) — al tocar uno de esos archivos, migrá sus clases de marca a los tokens; no agregues hex nuevos.
+- **M6 cerrado (2026-07-21):** las clases bracket `[#ad45ff]` de los 34 archivos legacy ya están migradas a tokens. El hex literal solo sobrevive donde es correcto que lo haga (PWA `manifest.ts`, `global-error.tsx` inline, assets `public/*.svg|html`, default del color-picker de `customBranding`) y en las sombras `rgba(173,69,255,α)` del bloque Clerk `.cl-*` (deuda menor, ver M6). Igual la regla sigue firme: **nunca escribas `[#ad45ff]` en código nuevo**, usá el token.
 
 ## 2. Utilidades CSS (`app/globals.css`)
 

@@ -42,23 +42,23 @@ export function FeaturesSection() {
             return (
               <div key={index} className="group relative">
                 {/* Card con efecto glassmorphism */}
-                <div className="relative h-full p-8 rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-2xl hover:shadow-[#ad45ff]/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                <div className="relative h-full p-8 rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-2xl hover:shadow-brand/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
                   {/* Decoración de fondo en hover */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-full blur-3xl translate-x-16 -translate-y-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-full blur-3xl translate-x-16 -translate-y-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                   {/* Icono premium */}
                   <div className="relative mb-6">
-                    <div className="relative w-16 h-16 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-lg shadow-[#ad45ff]/25 group-hover:shadow-xl group-hover:shadow-[#ad45ff]/30 transition-all duration-300 group-hover:scale-110">
+                    <div className="relative w-16 h-16 bg-gradient-to-br from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-lg shadow-brand/25 group-hover:shadow-xl group-hover:shadow-brand/30 transition-all duration-300 group-hover:scale-110">
                       <Icon className="w-8 h-8 text-white" />
                     </div>
                     {/* Número de feature */}
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-[#ad45ff] shadow-md border border-gray-100 dark:border-gray-600">
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-brand shadow-md border border-gray-100 dark:border-gray-600">
                       {(index + 1).toString().padStart(2, "0")}
                     </div>
                   </div>
 
                   {/* Contenido */}
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#ad45ff] dark:group-hover:text-[#a3b3ff] transition-colors duration-300">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-brand dark:group-hover:text-brand-2 transition-colors duration-300">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
@@ -66,13 +66,13 @@ export function FeaturesSection() {
                   </p>
 
                   {/* Link sutil */}
-                  <div className="flex items-center text-sm font-medium text-[#ad45ff] opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                  <div className="flex items-center text-sm font-medium text-brand opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                     Saber más
                     <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </div>
 
                   {/* Línea decorativa inferior */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-brand to-brand-2 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                 </div>
               </div>
             );

@@ -28,7 +28,7 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-[#ad45ff]" />
+          <Trophy className="w-5 h-5 text-brand" />
           Torneos Organizados
         </h3>
         {tournaments.length > 0 ? (
@@ -53,7 +53,7 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-[#ad45ff] transition-colors">
+                        <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-brand transition-colors">
                           {tournament.name}
                         </h4>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -84,7 +84,7 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
       {/* Placeholder for future sections like "Equipos", "Partidos", etc. */}
       <div>
         <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-[#a3b3ff]" />
+          <Shield className="w-5 h-5 text-brand-2" />
           Equipos (Próximamente)
         </h3>
         <Card className="glass-card border-dashed border-2 border-gray-200 dark:border-gray-800 bg-transparent shadow-none">

@@ -74,12 +74,12 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
       <div className="relative overflow-hidden rounded-3xl mb-8">
         {/* Background with gradient and pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/20 via-transparent to-[#a3b3ff]/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand/20 via-transparent to-brand-2/20" />
 
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#ad45ff]/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#a3b3ff]/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#c77dff]/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-2/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-mid/10 rounded-full blur-3xl" />
 
         {/* Grid pattern */}
         <div
@@ -96,7 +96,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
             {/* Logo */}
             <div className="flex-shrink-0">
               <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] rounded-3xl blur-lg opacity-50" />
+                <div className="absolute -inset-2 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur-lg opacity-50" />
                 <div className="relative w-32 h-32 lg:w-40 lg:h-40 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-4 border-white/20 overflow-hidden flex items-center justify-center">
                   {tournamentData.logoUrl ? (
                     <img
@@ -105,7 +105,7 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
                       className="w-full h-full object-contain p-2"
                     />
                   ) : (
-                    <Trophy className="w-16 h-16 lg:w-20 lg:h-20 text-[#ad45ff]" />
+                    <Trophy className="w-16 h-16 lg:w-20 lg:h-20 text-brand" />
                   )}
                 </div>
               </div>
@@ -149,16 +149,16 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
               {/* Meta Info Pills */}
               <div className="flex flex-wrap gap-3">
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-sm text-white">
-                  <Award className="w-4 h-4 text-[#ad45ff]" />
+                  <Award className="w-4 h-4 text-brand" />
                   <span className="font-medium">{categoryLabel}</span>
                 </div>
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-sm text-white">
-                  <Gamepad2 className="w-4 h-4 text-[#a3b3ff]" />
+                  <Gamepad2 className="w-4 h-4 text-brand-2" />
                   <span className="font-medium">{formatLabel}</span>
                 </div>
                 {tournamentData.locality && (
                   <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-sm text-white">
-                    <MapPin className="w-4 h-4 text-[#c77dff]" />
+                    <MapPin className="w-4 h-4 text-brand-mid" />
                     <span>{tournamentData.locality}</span>
                   </div>
                 )}
@@ -197,10 +197,10 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
       {/* Stats Cards - Premium Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <Card className="group bg-white dark:bg-gray-800 shadow-xl border-0 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-          <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] to-[#c77dff]" />
+          <div className="h-1.5 bg-gradient-to-r from-brand to-brand-mid" />
           <CardContent className="p-5 lg:p-6 text-center">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#ad45ff]/10 to-[#c77dff]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <Users className="h-7 w-7 text-[#ad45ff]" />
+            <div className="w-14 h-14 bg-gradient-to-br from-brand/10 to-brand-mid/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <Users className="h-7 w-7 text-brand" />
             </div>
             <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-1">
               {tournamentData.tournamentTeams?.length || 0}
@@ -212,10 +212,10 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
         </Card>
 
         <Card className="group bg-white dark:bg-gray-800 shadow-xl border-0 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-          <div className="h-1.5 bg-gradient-to-r from-[#c77dff] to-[#a3b3ff]" />
+          <div className="h-1.5 bg-gradient-to-r from-brand-mid to-brand-2" />
           <CardContent className="p-5 lg:p-6 text-center">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#c77dff]/10 to-[#a3b3ff]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <TrendingUp className="h-7 w-7 text-[#c77dff]" />
+            <div className="w-14 h-14 bg-gradient-to-br from-brand-mid/10 to-brand-2/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-7 w-7 text-brand-mid" />
             </div>
             <div className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-1">
               {tournamentData.matches?.length || 0}

@@ -58,7 +58,7 @@ export function ExportMenu({
         <DropdownMenuLabel>Descargar / imprimir</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <a href={printHref("tabla")} target="_blank" rel="noopener noreferrer">
-            <Table2 className="mr-2 h-4 w-4 text-[#ad45ff]" aria-hidden="true" />
+            <Table2 className="mr-2 h-4 w-4 text-brand" aria-hidden="true" />
             Tabla de posiciones (PDF)
           </a>
         </DropdownMenuItem>
@@ -69,7 +69,7 @@ export function ExportMenu({
             rel="noopener noreferrer"
           >
             <FileText
-              className="mr-2 h-4 w-4 text-[#ad45ff]"
+              className="mr-2 h-4 w-4 text-brand"
               aria-hidden="true"
             />
             Fixture y resultados (PDF)

@@ -87,8 +87,8 @@ export default async function ResponsiveHeader({
                       href={item.href}
                       className={
                         currentPage === item.key
-                          ? "nav-neon-link-active text-foreground dark:text-white hover:text-primary dark:hover:text-[#ad45ff]"
-                          : "nav-neon-link text-foreground dark:text-gray-300 hover:text-primary dark:hover:text-[#ad45ff]"
+                          ? "nav-neon-link-active text-foreground dark:text-white hover:text-primary dark:hover:text-brand"
+                          : "nav-neon-link text-foreground dark:text-gray-300 hover:text-primary dark:hover:text-brand"
                       }
                     >
                       {item.label}
@@ -139,8 +139,8 @@ export default async function ResponsiveHeader({
                         href={item.href}
                         className={`block px-6 py-4 transition-all duration-300 relative group ${
                           currentPage === item.key
-                            ? "text-primary dark:text-[#ad45ff] font-semibold bg-primary/10 dark:bg-[#ad45ff]/10 border-l-4 border-primary dark:border-[#ad45ff] shadow-neon-sm"
-                            : "text-foreground dark:text-gray-300 hover:text-primary dark:hover:text-[#ad45ff] hover:bg-primary/5 dark:hover:bg-gray-700 hover:shadow-neon-sm"
+                            ? "text-primary dark:text-brand font-semibold bg-primary/10 dark:bg-brand/10 border-l-4 border-primary dark:border-brand shadow-neon-sm"
+                            : "text-foreground dark:text-gray-300 hover:text-primary dark:hover:text-brand hover:bg-primary/5 dark:hover:bg-gray-700 hover:shadow-neon-sm"
                         }`}
                         style={{
                           animationDelay: `${index * 50}ms`,
@@ -150,7 +150,7 @@ export default async function ResponsiveHeader({
                           {item.label}
                         </span>
                         {currentPage !== item.key && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 dark:from-[#ad45ff]/0 dark:via-[#ad45ff]/5 dark:to-[#ad45ff]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 dark:from-brand/0 dark:via-brand/5 dark:to-brand/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         )}
                       </Link>
                     )

@@ -57,7 +57,7 @@ export function ShareCard({
   return (
     <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
       <h3 className="mb-4 flex items-center gap-2 font-bold text-gray-900 dark:text-white">
-        <Share2 className="h-5 w-5 text-[#ad45ff]" />
+        <Share2 className="h-5 w-5 text-brand" />
         Compartir artículo
       </h3>
 
@@ -103,7 +103,7 @@ export function ShareCard({
         <Button
           variant="outline"
           size="sm"
-          className={`transition-all ${copied ? "border-green-500 bg-green-50 text-green-500 dark:bg-green-500/10" : "border-gray-300 text-gray-600 hover:border-[#ad45ff] hover:text-[#ad45ff] dark:border-gray-700 dark:text-gray-400"}`}
+          className={`transition-all ${copied ? "border-green-500 bg-green-50 text-green-500 dark:bg-green-500/10" : "border-gray-300 text-gray-600 hover:border-brand hover:text-brand dark:border-gray-700 dark:text-gray-400"}`}
           onClick={handleCopyLink}
         >
           <LinkIcon className="mr-1.5 h-4 w-4" />
@@ -112,7 +112,7 @@ export function ShareCard({
       </div>
 
       <Button
-        className="w-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white shadow-lg shadow-[#ad45ff]/25 hover:from-[#9d35ef] hover:to-[#93a3ef]"
+        className="w-full bg-gradient-to-r from-brand to-brand-2 text-white shadow-lg shadow-brand/25 hover:from-brand-hover hover:to-brand-2-hover"
         onClick={handleShare}
       >
         <Share2 className="mr-2 h-4 w-4" />

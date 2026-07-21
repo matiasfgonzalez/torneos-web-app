@@ -14,7 +14,7 @@ export function SectionBadge({
   return (
     <Badge
       className={cn(
-        "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0",
+        "bg-gradient-to-r from-brand to-brand-2 text-white border-0",
         className
       )}
     >

@@ -86,8 +86,8 @@ export function FollowButton({
         title={favorited ? "Dejar de seguir" : "Seguir"}
         className={`rounded-full transition-colors ${
           favorited
-            ? "border-[#ad45ff] text-[#ad45ff] bg-[#ad45ff]/10 hover:bg-[#ad45ff]/20"
-            : "border-gray-200 dark:border-gray-700 text-gray-500 hover:text-[#ad45ff] hover:border-[#ad45ff]/50"
+            ? "border-brand text-brand bg-brand/10 hover:bg-brand/20"
+            : "border-gray-200 dark:border-gray-700 text-gray-500 hover:text-brand hover:border-brand/50"
         } ${className ?? ""}`}
       >
         {icon}
@@ -104,7 +104,7 @@ export function FollowButton({
         aria-pressed={favorited}
         className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium backdrop-blur-sm border transition-all ${
           favorited
-            ? "bg-gradient-to-r from-[#ad45ff] to-[#c77dff] border-transparent text-white shadow-lg shadow-[#ad45ff]/30"
+            ? "bg-gradient-to-r from-brand to-brand-mid border-transparent text-white shadow-lg shadow-brand/30"
             : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30"
         } ${className ?? ""}`}
       >
@@ -123,8 +123,8 @@ export function FollowButton({
       aria-pressed={favorited}
       className={`gap-2 rounded-xl transition-colors ${
         favorited
-          ? "border-[#ad45ff] text-[#ad45ff] bg-[#ad45ff]/10 hover:bg-[#ad45ff]/20"
-          : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-[#ad45ff] hover:border-[#ad45ff]/50"
+          ? "border-brand text-brand bg-brand/10 hover:bg-brand/20"
+          : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-brand hover:border-brand/50"
       } ${className ?? ""}`}
     >
       {icon}

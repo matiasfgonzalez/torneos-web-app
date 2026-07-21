@@ -35,12 +35,12 @@ export function ValuePropositionSection() {
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
 
       {/* Background pattern sutil */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#ad45ff]/5 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand/5 via-transparent to-transparent" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Encabezado centrado */}
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#ad45ff] mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand mb-4">
             ¿Por qué elegir GOLAZO?
           </p>
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
@@ -60,17 +60,17 @@ export function ValuePropositionSection() {
             return (
               <div key={index} className="group relative">
                 {/* Card con efecto hover premium */}
-                <div className="relative h-full p-8 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:border-[#ad45ff]/30 dark:hover:border-[#ad45ff]/30 transition-all duration-300 hover:shadow-xl hover:shadow-[#ad45ff]/5 hover:-translate-y-1">
+                <div className="relative h-full p-8 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:border-brand/30 dark:hover:border-brand/30 transition-all duration-300 hover:shadow-xl hover:shadow-brand/5 hover:-translate-y-1">
                   {/* Línea decorativa superior */}
-                  <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-[#ad45ff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   {/* Icono */}
                   <div className="relative mb-6">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 dark:from-[#ad45ff]/20 dark:to-[#a3b3ff]/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-7 h-7 text-[#ad45ff]" />
+                    <div className="w-14 h-14 bg-gradient-to-br from-brand/10 to-brand-2/10 dark:from-brand/20 dark:to-brand-2/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-7 h-7 text-brand" />
                     </div>
                     {/* Glow en hover */}
-                    <div className="absolute inset-0 bg-[#ad45ff]/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-brand/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
                   </div>
 
                   {/* Contenido */}
@@ -89,8 +89,8 @@ export function ValuePropositionSection() {
         {/* Línea visual de conexión entre secciones */}
         <div className="flex justify-center mt-20">
           <div className="flex flex-col items-center">
-            <div className="w-px h-16 bg-gradient-to-b from-[#ad45ff]/50 to-transparent" />
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff]" />
+            <div className="w-px h-16 bg-gradient-to-b from-brand/50 to-transparent" />
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-brand to-brand-2" />
           </div>
         </div>
       </div>

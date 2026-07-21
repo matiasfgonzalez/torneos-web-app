@@ -68,7 +68,7 @@ export function SuspensionsList({
                 className="rounded-full object-cover shrink-0 h-10 w-10"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20 flex items-center justify-center text-sm font-semibold text-[#ad45ff] shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-brand/20 to-brand-2/20 flex items-center justify-center text-sm font-semibold text-brand shrink-0">
                 {s.player.name.charAt(0).toUpperCase()}
               </div>
             )}

@@ -21,21 +21,21 @@ export default function ErrorPage({ error, reset }: Readonly<ErrorPageProps>) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#0f051a] via-[#1a0a2e] to-[#0f051a]" />
 
       {/* Subtle Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#ad45ff]/10 via-transparent to-[#a3b3ff]/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand/10 via-transparent to-brand-2/10" />
 
       {/* Ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ad45ff]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 max-w-lg w-full mx-4 text-center">
         {/* Logo */}
         <div className="relative mb-8 inline-block">
           <div
-            className="absolute inset-0 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl blur-2xl opacity-30"
+            className="absolute inset-0 bg-gradient-to-r from-brand to-brand-2 rounded-2xl blur-2xl opacity-30"
             style={{ animation: "pulse-glow 3s ease-in-out infinite" }}
           />
           <div
-            className="relative w-24 h-24 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#ad45ff]/30 mx-auto"
+            className="relative w-24 h-24 bg-gradient-to-br from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-2xl shadow-brand/30 mx-auto"
             style={{ animation: "float 4s ease-in-out infinite" }}
           >
             <span className="text-5xl">⚽</span>
@@ -43,7 +43,7 @@ export default function ErrorPage({ error, reset }: Readonly<ErrorPageProps>) {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-brand via-brand-mid to-brand-2 bg-clip-text text-transparent mb-4">
             ¡Se nos escapó la pelota!
           </h1>
           <p className="text-white/60 text-lg leading-relaxed max-w-md mx-auto">
@@ -60,7 +60,7 @@ export default function ErrorPage({ error, reset }: Readonly<ErrorPageProps>) {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
           <Button
             onClick={reset}
-            className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white shadow-lg shadow-[#ad45ff]/25 hover:shadow-[#ad45ff]/40 transition-all px-6 py-5 cursor-pointer"
+            className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2-hover text-white shadow-lg shadow-brand/25 hover:shadow-brand/40 transition-all px-6 py-5 cursor-pointer"
           >
             <RefreshCw className="w-5 h-5 mr-2" />
             Reintentar

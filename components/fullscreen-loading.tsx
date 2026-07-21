@@ -28,13 +28,13 @@ export function FullscreenLoading({
       <div className="absolute inset-0 bg-gradient-to-br from-[#0f051a] via-[#1a0a2e] to-[#0f051a]" />
 
       {/* Subtle Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#ad45ff]/10 via-transparent to-[#a3b3ff]/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand/10 via-transparent to-brand-2/10" />
 
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Particle 1 */}
         <div
-          className="absolute w-2 h-2 bg-[#ad45ff]/60 rounded-full blur-[1px]"
+          className="absolute w-2 h-2 bg-brand/60 rounded-full blur-[1px]"
           style={{
             left: "20%",
             top: "30%",
@@ -43,7 +43,7 @@ export function FullscreenLoading({
         />
         {/* Particle 2 */}
         <div
-          className="absolute w-1.5 h-1.5 bg-[#c77dff]/50 rounded-full blur-[1px]"
+          className="absolute w-1.5 h-1.5 bg-brand-mid/50 rounded-full blur-[1px]"
           style={{
             left: "70%",
             top: "25%",
@@ -53,7 +53,7 @@ export function FullscreenLoading({
         />
         {/* Particle 3 */}
         <div
-          className="absolute w-1 h-1 bg-[#a3b3ff]/70 rounded-full"
+          className="absolute w-1 h-1 bg-brand-2/70 rounded-full"
           style={{
             left: "15%",
             top: "70%",
@@ -63,7 +63,7 @@ export function FullscreenLoading({
         />
         {/* Particle 4 */}
         <div
-          className="absolute w-2 h-2 bg-[#ad45ff]/40 rounded-full blur-[2px]"
+          className="absolute w-2 h-2 bg-brand/40 rounded-full blur-[2px]"
           style={{
             left: "80%",
             top: "60%",
@@ -73,7 +73,7 @@ export function FullscreenLoading({
         />
         {/* Particle 5 */}
         <div
-          className="absolute w-1.5 h-1.5 bg-[#c77dff]/60 rounded-full"
+          className="absolute w-1.5 h-1.5 bg-brand-mid/60 rounded-full"
           style={{
             left: "40%",
             top: "80%",
@@ -83,7 +83,7 @@ export function FullscreenLoading({
         />
         {/* Particle 6 */}
         <div
-          className="absolute w-1 h-1 bg-[#a3b3ff]/50 rounded-full"
+          className="absolute w-1 h-1 bg-brand-2/50 rounded-full"
           style={{
             left: "60%",
             top: "15%",
@@ -93,7 +93,7 @@ export function FullscreenLoading({
         />
 
         {/* Subtle ambient glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#ad45ff]/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand/5 rounded-full blur-3xl" />
       </div>
 
       {/* Loading Content - Minimalista */}
@@ -102,13 +102,13 @@ export function FullscreenLoading({
         <div className="relative mb-8">
           {/* Glow behind logo */}
           <div
-            className="absolute inset-0 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-2xl blur-2xl opacity-30"
+            className="absolute inset-0 bg-gradient-to-r from-brand to-brand-2 rounded-2xl blur-2xl opacity-30"
             style={{ animation: "pulse-glow 3s ease-in-out infinite" }}
           />
 
           {/* Logo Container */}
           <div
-            className="relative w-20 h-20 bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#ad45ff]/30"
+            className="relative w-20 h-20 bg-gradient-to-br from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-2xl shadow-brand/30"
             style={{ animation: "float 4s ease-in-out infinite" }}
           >
             {/* Trophy emoji */}
@@ -117,17 +117,17 @@ export function FullscreenLoading({
 
           {/* Orbital ring */}
           <div
-            className="absolute -inset-4 border border-[#ad45ff]/20 rounded-full"
+            className="absolute -inset-4 border border-brand/20 rounded-full"
             style={{ animation: "spin-slow 12s linear infinite" }}
           >
             {/* Orbital dot */}
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#ad45ff] rounded-full shadow-lg shadow-[#ad45ff]/50" />
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand rounded-full shadow-lg shadow-brand/50" />
           </div>
         </div>
 
         {/* Brand Name */}
         <div className="mb-6 text-center">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent tracking-tight">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-brand via-brand-mid to-brand-2 bg-clip-text text-transparent tracking-tight">
             GOLAZO
           </h2>
         </div>
@@ -145,7 +145,7 @@ export function FullscreenLoading({
           {/* Progress bar */}
           <div className="relative h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-full"
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-brand to-brand-2 rounded-full"
               style={{ animation: "progress-slide 1.5s ease-in-out infinite" }}
             />
           </div>
@@ -153,18 +153,18 @@ export function FullscreenLoading({
           {/* Loading dots - Suave */}
           <div className="flex justify-center items-center gap-3">
             <div
-              className="w-1.5 h-1.5 bg-[#ad45ff] rounded-full"
+              className="w-1.5 h-1.5 bg-brand rounded-full"
               style={{ animation: "pulse-dot 1.2s ease-in-out infinite" }}
             />
             <div
-              className="w-1.5 h-1.5 bg-[#c77dff] rounded-full"
+              className="w-1.5 h-1.5 bg-brand-mid rounded-full"
               style={{
                 animation: "pulse-dot 1.2s ease-in-out infinite",
                 animationDelay: "0.2s",
               }}
             />
             <div
-              className="w-1.5 h-1.5 bg-[#a3b3ff] rounded-full"
+              className="w-1.5 h-1.5 bg-brand-2 rounded-full"
               style={{
                 animation: "pulse-dot 1.2s ease-in-out infinite",
                 animationDelay: "0.4s",

@@ -32,7 +32,7 @@ export function PrintToolbar({ title }: { title: string }) {
         <button
           type="button"
           onClick={() => window.print()}
-          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] px-5 text-sm font-semibold text-white shadow-lg shadow-[#ad45ff]/25 transition-transform hover:-translate-y-0.5"
+          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-brand to-brand-mid px-5 text-sm font-semibold text-white shadow-lg shadow-brand/25 transition-transform hover:-translate-y-0.5"
         >
           <Printer className="h-4 w-4" />
           Imprimir / Guardar PDF

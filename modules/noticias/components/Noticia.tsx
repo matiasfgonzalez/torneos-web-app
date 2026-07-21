@@ -29,7 +29,7 @@ const Noticia = (props: NoticiaProps) => {
           {news.title}
         </h3>
         <Link href={`/noticias/${news.id}`}>
-          <button className="w-full cursor-pointer mt-4 px-6 py-2 rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] font-semibold hover:scale-105 transition text-white">
+          <button className="w-full cursor-pointer mt-4 px-6 py-2 rounded-xl bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2-hover font-semibold hover:scale-105 transition text-white">
             Leer más
           </button>
         </Link>

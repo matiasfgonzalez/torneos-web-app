@@ -11,12 +11,12 @@ export function ContactSection() {
       className="relative py-24 bg-white dark:bg-gray-900 overflow-hidden"
     >
       {/* Elemento decorativo */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#ad45ff]/5 to-transparent" />
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand/5 to-transparent" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#ad45ff] mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand mb-4">
             Contacto
           </p>
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
@@ -39,8 +39,8 @@ export function ContactSection() {
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4 group">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Mail className="h-5 w-5 text-[#ad45ff]" />
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Mail className="h-5 w-5 text-brand" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
@@ -53,8 +53,8 @@ export function ContactSection() {
                 </div>
 
                 <div className="flex items-start gap-4 group">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Phone className="h-5 w-5 text-[#ad45ff]" />
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Phone className="h-5 w-5 text-brand" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
@@ -70,8 +70,8 @@ export function ContactSection() {
                 </div>
 
                 <div className="flex items-start gap-4 group">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#ad45ff]/10 to-[#a3b3ff]/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <MapPin className="h-5 w-5 text-[#ad45ff]" />
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-brand/10 to-brand-2/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <MapPin className="h-5 w-5 text-brand" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
@@ -88,9 +88,9 @@ export function ContactSection() {
             {/* Card de Demo */}
             <div className="relative overflow-hidden rounded-3xl">
               {/* Glow */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/30 to-[#a3b3ff]/30 blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-brand/30 to-brand-2/30 blur-xl" />
 
-              <div className="relative bg-gradient-to-br from-[#ad45ff] to-[#a3b3ff] rounded-3xl p-8 text-white">
+              <div className="relative bg-gradient-to-br from-brand to-brand-2 rounded-3xl p-8 text-white">
                 <div className="flex items-center gap-3 mb-4">
                   <Calendar className="w-6 h-6" />
                   <h4 className="font-bold text-xl">¿Necesitas una Demo?</h4>
@@ -127,7 +127,7 @@ export function ContactSection() {
                       id="nombre"
                       type="text"
                       placeholder="Tu nombre"
-                      className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-[#ad45ff]/20"
+                      className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-brand focus:ring-brand/20"
                     />
                   </div>
                   <div>
@@ -141,7 +141,7 @@ export function ContactSection() {
                       id="email"
                       type="email"
                       placeholder="tu@email.com"
-                      className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-[#ad45ff]/20"
+                      className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-brand focus:ring-brand/20"
                     />
                   </div>
                 </div>
@@ -157,7 +157,7 @@ export function ContactSection() {
                     id="empresa"
                     type="text"
                     placeholder="Nombre de tu empresa"
-                    className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-[#ad45ff]/20"
+                    className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-brand focus:ring-brand/20"
                   />
                 </div>
 
@@ -172,7 +172,7 @@ export function ContactSection() {
                     id="asunto"
                     type="text"
                     placeholder="¿En qué podemos ayudarte?"
-                    className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-[#ad45ff]/20"
+                    className="h-12 rounded-xl border-gray-200 dark:border-gray-600 focus:border-brand focus:ring-brand/20"
                   />
                 </div>
 
@@ -187,13 +187,13 @@ export function ContactSection() {
                     id="mensaje"
                     rows={5}
                     placeholder="Cuéntanos más detalles sobre tu consulta..."
-                    className="rounded-xl border-gray-200 dark:border-gray-600 focus:border-[#ad45ff] focus:ring-[#ad45ff]/20 resize-none"
+                    className="rounded-xl border-gray-200 dark:border-gray-600 focus:border-brand focus:ring-brand/20 resize-none"
                   />
                 </div>
 
                 <GradientButton
                   type="submit"
-                  className="w-full py-4 text-lg shadow-lg shadow-[#ad45ff]/25"
+                  className="w-full py-4 text-lg shadow-lg shadow-brand/25"
                 >
                   <Send className="w-5 h-5 mr-2" />
                   Enviar Mensaje

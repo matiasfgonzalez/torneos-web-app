@@ -13,7 +13,7 @@ export function GradientText({
   return (
     <span
       className={cn(
-        "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] bg-clip-text text-transparent",
+        "bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent",
         className
       )}
     >

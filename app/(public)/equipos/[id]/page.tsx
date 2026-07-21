@@ -29,18 +29,18 @@ export default async function PublicTeamDetailPage({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="relative pb-20">
           {/* Background decorative blob */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[#ad45ff]/10 blur-3xl -z-10 rounded-full pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-brand/10 blur-3xl -z-10 rounded-full pointer-events-none" />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-              <Link href="/" className="hover:text-[#ad45ff] transition-colors">
+              <Link href="/" className="hover:text-brand transition-colors">
                 Inicio
               </Link>
               <ChevronRight className="w-4 h-4" />
               <Link
                 href="/equipos"
-                className="hover:text-[#ad45ff] transition-colors"
+                className="hover:text-brand transition-colors"
               >
                 Equipos
               </Link>
@@ -53,7 +53,7 @@ export default async function PublicTeamDetailPage({
             {/* Back Button - Premium Style */}
             <Button
               variant="ghost"
-              className="hover:bg-[#ad45ff]/10 hover:text-[#ad45ff] border border-gray-200 dark:border-gray-700"
+              className="hover:bg-brand/10 hover:text-brand border border-gray-200 dark:border-gray-700"
               asChild
             >
               <Link href="/equipos">

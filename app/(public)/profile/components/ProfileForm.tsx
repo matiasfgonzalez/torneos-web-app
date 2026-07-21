@@ -30,7 +30,7 @@ function SubmitButton() {
     <Button
       type="submit"
       disabled={pending}
-      className="w-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9c3ce6] hover:to-[#8f9fe6] text-white border-none shadow-md hover:shadow-lg transition-all duration-300"
+      className="w-full bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2-hover text-white border-none shadow-md hover:shadow-lg transition-all duration-300"
     >
       {pending ? (
         <>
@@ -76,7 +76,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             name="name"
             defaultValue={user.name || ""}
             placeholder="Tu nombre"
-            className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-[#ad45ff] focus:border-[#ad45ff] transition-all"
+            className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-brand focus:border-brand transition-all"
           />
           {state.errors?.name && (
             <p className="text-sm text-red-500">
@@ -97,7 +97,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             name="phone"
             defaultValue={user.phone || ""}
             placeholder="+54 9 11 ..."
-            className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-[#ad45ff] focus:border-[#ad45ff] transition-all"
+            className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-brand focus:border-brand transition-all"
           />
           {state.errors?.phone && (
             <p className="text-sm text-red-500">
@@ -119,7 +119,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           name="location"
           defaultValue={user.location || ""}
           placeholder="Ej: Buenos Aires, Argentina"
-          className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-[#ad45ff] focus:border-[#ad45ff] transition-all"
+          className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-brand focus:border-brand transition-all"
         />
         {state.errors?.location && (
           <p className="text-sm text-red-500">
@@ -140,7 +140,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           name="bio"
           defaultValue={user.bio || ""}
           placeholder="Cuéntanos un poco sobre ti..."
-          className="min-h-[100px] bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-[#ad45ff] focus:border-[#ad45ff] transition-all resize-none"
+          className="min-h-[100px] bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 focus:ring-brand focus:border-brand transition-all resize-none"
         />
         {state.errors?.bio && (
           <p className="text-sm text-red-500">{state.errors.bio.join(", ")}</p>

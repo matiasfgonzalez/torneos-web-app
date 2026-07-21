@@ -61,14 +61,14 @@ export default function ThemeToggle() {
         variant="ghost"
         size="sm"
         onClick={() => setShowMenu(!showMenu)}
-        className="h-9 w-9 p-0 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-[#ad45ff]/10 hover:to-[#a3b3ff]/10 hover:border-[#ad45ff]/20 hover:shadow-lg group"
+        className="h-9 w-9 p-0 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-brand/10 hover:to-brand-2/10 hover:border-brand/20 hover:shadow-lg group"
         aria-label={themeConfig[theme]?.description || "Cambiar tema"}
       >
         <div className="relative">
-          <CurrentIcon className="h-4 w-4 text-gray-600 dark:text-gray-300 transition-all duration-300 group-hover:text-[#ad45ff] group-hover:scale-110" />
+          <CurrentIcon className="h-4 w-4 text-gray-600 dark:text-gray-300 transition-all duration-300 group-hover:text-brand group-hover:scale-110" />
 
           {/* Indicador de estado activo */}
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-gradient-to-r from-brand to-brand-2 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
       </Button>
 
@@ -88,14 +88,14 @@ export default function ThemeToggle() {
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-r from-[#ad45ff]/10 to-[#a3b3ff]/10 border border-[#ad45ff]/20 text-[#ad45ff] font-medium shadow-sm"
+                    ? "bg-gradient-to-r from-brand/10 to-brand-2/10 border border-brand/20 text-brand font-medium shadow-sm"
                     : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200"
                 }`}
               >
                 <div
                   className={`p-1.5 rounded-md transition-all duration-200 ${
                     isActive
-                      ? "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] shadow-md"
+                      ? "bg-gradient-to-r from-brand to-brand-2 shadow-md"
                       : "bg-gray-100 dark:bg-gray-700"
                   }`}
                 >
@@ -112,7 +112,7 @@ export default function ThemeToggle() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{config.label}</span>
                     {isActive && (
-                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] rounded-full animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-brand to-brand-2 rounded-full animate-pulse"></div>
                     )}
                   </div>
                 </div>
@@ -124,7 +124,7 @@ export default function ThemeToggle() {
           <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center px-2 py-1">
               Tema actual:{" "}
-              <span className="font-medium text-[#ad45ff]">
+              <span className="font-medium text-brand">
                 {themeConfig[theme]?.label}
               </span>
             </p>

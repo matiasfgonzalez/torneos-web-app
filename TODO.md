@@ -302,7 +302,7 @@
 
 > ✅ **Núcleo implementado en F0 (2026-07-13):** tokens `--brand`/`--brand-2`/`--brand-mid`/`--gradient-brand` en globals.css + `@theme inline` → `bg-brand`, `from-brand`, etc., y `<Button variant="brand">`. **Pendiente de este ítem:** solo la migración progresiva de los ~90 archivos legacy (regla en AGENT_RULES: al tocar un archivo, migrar sus clases de marca; código nuevo solo tokens).
 
-- [~] **Problema:** El design system de globals.css define `--primary/--secondary` pero la marca real (`#ad45ff → #a3b3ff`) está copiada a mano en 93 archivos; el modo oscuro define un `--primary` blanco que casi no se usa.
+- [x] **Problema:** El design system de globals.css define `--primary/--secondary` pero la marca real (`#ad45ff → #a3b3ff`) está copiada a mano en 93 archivos; el modo oscuro define un `--primary` blanco que casi no se usa.
 - **Solución:**
   ```css
   :root {
@@ -313,6 +313,16 @@
   @theme inline { --color-brand: var(--brand); --color-brand-2: var(--brand-2); }
   ```
   Clases utilitarias `bg-brand`, `text-brand`, `bg-gradient-brand` y reemplazo progresivo (empezar por componentes compartidos). **E:Medio** · Cambiar la marca pasa de tocar 93 archivos a tocar 2 líneas.
+- **Implementado (2026-07-21) — migración masiva completa:** 514 clases bracket (`from-[#ad45ff]`, `bg-[#ad45ff]/60`, `shadow-[#ad45ff]/30`, etc.) en 34 archivos `.tsx` migradas a tokens vía reemplazo dirigido (solo la forma `[#hex]`, que es exclusiva de Tailwind arbitrary values — los hex sin bracket no se tocaron). Se agregó el token faltante `--brand-2-hover` (#93a3ef) a globals.css para cubrir los gradientes de hover legacy; los hex de hover ad-hoc (`#9d35ef`, `#9c3ce6`, `#b56dff`, `#8f9fe6`) se snappearon al token cercano (`brand-hover`/`brand-mid-hover`/`brand-2-hover`) — diferencia visual imperceptible. Los 6 literales internos de globals.css (`.golazo-border`, bloque Clerk `.cl-*`) pasaron a `var(--brand)`/`var(--gradient-brand)`. `tsc` + `build` + `eslint` en verde (solo warnings preexistentes de `<img>`).
+- **Literales que quedan a propósito (NO son deuda):** `app/manifest.ts` (`theme_color`, la PWA exige hex), `app/global-error.tsx` (inline styles — el CSS del root puede no haber cargado), `public/offline.html` y `public/placeholder.svg` (assets standalone sin Tailwind), `app/crear-liga/CrearLigaWizard.tsx` (default del color-picker de `customBranding`, es un dato), y el comentario legacy de `components/ui/button.tsx`.
+- **Deuda M6 restante (menor):** el bloque Clerk `.cl-*` de globals.css usa la marca en forma `rgba(173, 69, 255, α)` para sombras/bordes/fondos con alpha. Tokenizar eso requiere un token de canal (`--brand-rgb: 173 69 255` → `rgb(var(--brand-rgb) / α)`) o `color-mix`; se dejó fuera de este pase por ser difícil de verificar visualmente (necesita sesión de Clerk) y estar contenido en un solo bloque. Con eso, cambiar la marca ya es "2 líneas" salvo esas sombras del auth UI.
+
+### M6b. `customBranding`: falta editar la marca de la liga desde el panel (hallazgo 2026-07-21)
+
+- [ ] **Problema:** La marca propia (`brandColor` + logo de la `Organization`) solo se puede cargar/editar en el wizard de `/crear-liga` (que corre en modo edición si ya hay liga y hace `PATCH /api/org`). **No hay ningún ítem en `adminNavItems` para "Perfil de la liga / Marca"** — `/admin/configuracion` es solo ADMINISTRADOR de plataforma (contacto/redes/sitio), no el editor de la liga. Resultado: el organizador crea su liga y después **no encuentra dónde cambiar el color/logo** (tiene que volver a tipear `/crear-liga` a mano). El endpoint `PATCH /api/org` ya existe y funciona (solo OWNER); falta la pantalla.
+- **Nota importante — el branding es por LIGA, no por TORNEO.** No existe personalización por torneo: `brandColor` vive en `Organization` y se aplica a la página pública `/liga/[slug]` (override de las CSS vars `--brand*`). Si un usuario espera "personalizar un torneo", la respuesta de producto es que se personaliza la liga entera.
+- **Además está gateado por plan:** la página `/liga/[slug]` solo usa el color propio si `hasFeature(org, "customBranding")` **y** hay `brandColor` cargado (`const branded = canBrand && !!org.brandColor`, [app/(public)/liga/[slug]/page.tsx:74](<app/(public)/liga/[slug]/page.tsx#L74>)). Con plan FREE (sin la feature), aunque el organizador cargue un color, la página pública sigue con el violeta GOLAZO + atribución "Hecho con GOLAZO". Verificar que el plan del usuario que reportó tenga `customBranding: true` en `/admin/planes`.
+- **Solución:** agregar un ítem `ownerOnly` "Mi liga" / "Marca" en `lib/constants/admin-nav.ts` → pantalla `/admin/mi-liga` (o similar) que reuse el paso de marca del wizard (o un `<FormSheet>` con logo + color) contra `PATCH /api/org`. Gatear el color con `hasFeature(customBranding)` y mostrar upsell si el plan no lo incluye. **E:Bajo-Medio**
 
 ### M7. Paginación, búsqueda y filtros server-side en admin
 

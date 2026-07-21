@@ -15,19 +15,19 @@ export default function PublicTeamHeader({
   return (
     <div className="relative">
       {/* Main Card with dark gradient for Premium Golazo */}
-      <div className="relative bg-gradient-to-br from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e] rounded-3xl shadow-2xl overflow-hidden border border-[#ad45ff]/20">
+      <div className="relative bg-gradient-to-br from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e] rounded-3xl shadow-2xl overflow-hidden border border-brand/20">
         {/* Decorative blur orbs */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#ad45ff]/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-56 h-56 bg-[#c77dff]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-brand/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-56 h-56 bg-brand-mid/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         {/* Gradient top accent */}
-        <div className="h-1.5 bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff]" />
+        <div className="h-1.5 bg-gradient-to-r from-brand via-brand-mid to-brand-2" />
 
         <div className="relative px-6 sm:px-8 lg:px-12 py-8 sm:py-10">
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
             {/* Logo with glow effect */}
             <div className="relative group flex-shrink-0">
-              <div className="absolute -inset-2 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+              <div className="absolute -inset-2 bg-gradient-to-r from-brand to-brand-mid rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative w-36 h-36 sm:w-44 sm:h-44 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-4 flex items-center justify-center border-4 border-white/10">
                 {team.logoUrl ? (
                   <img
@@ -36,7 +36,7 @@ export default function PublicTeamHeader({
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <Shield className="w-20 h-20 text-[#ad45ff]" />
+                  <Shield className="w-20 h-20 text-brand" />
                 )}
               </div>
             </div>
@@ -50,7 +50,7 @@ export default function PublicTeamHeader({
                     {team.name}
                   </h1>
                   {team.shortName && (
-                    <Badge className="bg-gradient-to-r from-[#ad45ff] to-[#c77dff] text-white border-0 text-sm px-3 py-1 w-fit mx-auto sm:mx-0">
+                    <Badge className="bg-gradient-to-r from-brand to-brand-mid text-white border-0 text-sm px-3 py-1 w-fit mx-auto sm:mx-0">
                       {team.shortName}
                     </Badge>
                   )}
@@ -63,14 +63,14 @@ export default function PublicTeamHeader({
               {/* Info Pills */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10">
-                  <MapPin className="w-4 h-4 text-[#ad45ff]" />
+                  <MapPin className="w-4 h-4 text-brand" />
                   <span className="text-white/90 text-sm">
                     {team.homeCity || "Ciudad no definida"}
                   </span>
                 </div>
                 {team.yearFounded && (
                   <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10">
-                    <Calendar className="w-4 h-4 text-[#c77dff]" />
+                    <Calendar className="w-4 h-4 text-brand-mid" />
                     <span className="text-white/90 text-sm">
                       Fundado: {team.yearFounded}
                     </span>
@@ -78,7 +78,7 @@ export default function PublicTeamHeader({
                 )}
                 {team.coach && (
                   <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10">
-                    <User className="w-4 h-4 text-[#a3b3ff]" />
+                    <User className="w-4 h-4 text-brand-2" />
                     <span className="text-white/70 text-sm">DT:</span>
                     <span className="text-white font-semibold text-sm">
                       {team.coach}
@@ -112,8 +112,8 @@ export default function PublicTeamHeader({
 
             {/* Stats Cards */}
             <div className="flex flex-row lg:flex-col gap-4 flex-shrink-0">
-              <div className="bg-gradient-to-br from-[#ad45ff]/20 to-[#c77dff]/10 backdrop-blur-sm rounded-2xl p-4 border border-[#ad45ff]/20 text-center min-w-[100px]">
-                <Users className="w-6 h-6 text-[#ad45ff] mx-auto mb-2" />
+              <div className="bg-gradient-to-br from-brand/20 to-brand-mid/10 backdrop-blur-sm rounded-2xl p-4 border border-brand/20 text-center min-w-[100px]">
+                <Users className="w-6 h-6 text-brand mx-auto mb-2" />
                 <div className="text-2xl font-black text-white">
                   {team.jugadores?.length || 0}
                 </div>
@@ -121,8 +121,8 @@ export default function PublicTeamHeader({
                   Jugadores
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-[#c77dff]/20 to-[#a3b3ff]/10 backdrop-blur-sm rounded-2xl p-4 border border-[#c77dff]/20 text-center min-w-[100px]">
-                <Shield className="w-6 h-6 text-[#c77dff] mx-auto mb-2" />
+              <div className="bg-gradient-to-br from-brand-mid/20 to-brand-2/10 backdrop-blur-sm rounded-2xl p-4 border border-brand-mid/20 text-center min-w-[100px]">
+                <Shield className="w-6 h-6 text-brand-mid mx-auto mb-2" />
                 <div className="text-2xl font-black text-white">
                   {team.tournamentTeams?.length || 0}
                 </div>

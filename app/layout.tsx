@@ -45,9 +45,9 @@ const clerkAppearance = {
     // User Button (avatar)
     userButtonBox: "hover:opacity-90 transition-opacity",
     userButtonTrigger:
-      "focus:shadow-none focus:ring-2 focus:ring-[#ad45ff]/50 rounded-full",
+      "focus:shadow-none focus:ring-2 focus:ring-brand/50 rounded-full",
     userButtonAvatarBox:
-      "w-10 h-10 ring-2 ring-[#ad45ff]/30 hover:ring-[#ad45ff] transition-all",
+      "w-10 h-10 ring-2 ring-brand/30 hover:ring-brand transition-all",
     userButtonAvatarImage: "rounded-full",
 
     // User Button Popover (modal de opciones)
@@ -56,31 +56,31 @@ const clerkAppearance = {
     userButtonPopoverMain: "p-0",
     userButtonPopoverActions: "p-2",
     userButtonPopoverActionButton:
-      "w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-[#ad45ff]/10 hover:to-[#a3b3ff]/10 rounded-xl transition-all duration-200 font-medium",
-    userButtonPopoverActionButtonIcon: "w-5 h-5 text-[#ad45ff]",
+      "w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-brand/10 hover:to-brand-2/10 rounded-xl transition-all duration-200 font-medium",
+    userButtonPopoverActionButtonIcon: "w-5 h-5 text-brand",
     userButtonPopoverActionButtonText: "text-sm",
     userButtonPopoverFooter: "hidden",
 
     // User Preview (info del usuario en el popover)
     userPreviewMainIdentifier: "font-semibold text-gray-900 dark:text-white",
     userPreviewSecondaryIdentifier: "text-sm text-gray-500 dark:text-gray-400",
-    userPreviewAvatarBox: "w-12 h-12 ring-2 ring-[#ad45ff]/20",
+    userPreviewAvatarBox: "w-12 h-12 ring-2 ring-brand/20",
     userPreviewTextContainer: "gap-0.5",
 
     // Botones principales
     formButtonPrimary:
-      "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] hover:from-[#9d35ef] hover:to-[#93a3ef] text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-[#ad45ff]/25 hover:shadow-xl hover:shadow-[#ad45ff]/30 transition-all duration-300 border-0",
-    formButtonReset: "text-[#ad45ff] hover:text-[#9d35ef] font-medium",
+      "bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2-hover text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 transition-all duration-300 border-0",
+    formButtonReset: "text-brand hover:text-brand-hover font-medium",
 
     // Inputs
     formFieldLabel: "text-sm font-medium text-gray-700 dark:text-gray-300 mb-1",
     formFieldInput:
-      "w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#ad45ff]/50 focus:border-[#ad45ff] transition-all",
-    formFieldInputShowPasswordButton: "text-gray-400 hover:text-[#ad45ff]",
+      "w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand/50 focus:border-brand transition-all",
+    formFieldInputShowPasswordButton: "text-gray-400 hover:text-brand",
 
     // Social buttons
     socialButtonsBlockButton:
-      "border border-gray-200 dark:border-gray-700 hover:border-[#ad45ff]/50 hover:bg-[#ad45ff]/5 rounded-xl py-3 transition-all duration-200",
+      "border border-gray-200 dark:border-gray-700 hover:border-brand/50 hover:bg-brand/5 rounded-xl py-3 transition-all duration-200",
     socialButtonsBlockButtonText:
       "font-medium text-gray-700 dark:text-gray-200",
 
@@ -90,11 +90,11 @@ const clerkAppearance = {
 
     // Links
     footerActionLink:
-      "text-[#ad45ff] hover:text-[#9d35ef] font-medium transition-colors",
+      "text-brand hover:text-brand-hover font-medium transition-colors",
 
     // Identity preview
     identityPreviewText: "text-gray-900 dark:text-white",
-    identityPreviewEditButton: "text-[#ad45ff] hover:text-[#9d35ef]",
+    identityPreviewEditButton: "text-brand hover:text-brand-hover",
 
     // Alerts
     alertText: "text-sm",
@@ -104,14 +104,14 @@ const clerkAppearance = {
     profileSectionTitleText: "font-semibold",
     profileSectionContent: "mt-4",
     profileSectionPrimaryButton:
-      "bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white rounded-xl px-4 py-2 font-medium hover:shadow-lg transition-all",
+      "bg-gradient-to-r from-brand to-brand-2 text-white rounded-xl px-4 py-2 font-medium hover:shadow-lg transition-all",
 
     // Navbar (para el UserProfile)
     navbar:
       "bg-gray-50 dark:bg-gray-800/50 border-r border-gray-100 dark:border-gray-800",
     navbarButton:
-      "hover:bg-[#ad45ff]/10 text-gray-700 dark:text-gray-200 rounded-xl transition-colors",
-    navbarButtonIcon: "text-[#ad45ff]",
+      "hover:bg-brand/10 text-gray-700 dark:text-gray-200 rounded-xl transition-colors",
+    navbarButtonIcon: "text-brand",
 
     // Page (para el UserProfile)
     pageScrollBox: "p-6",
@@ -119,27 +119,27 @@ const clerkAppearance = {
 
     // Badge
     badge:
-      "bg-[#ad45ff]/10 text-[#ad45ff] font-medium px-2 py-1 rounded-lg text-xs",
+      "bg-brand/10 text-brand font-medium px-2 py-1 rounded-lg text-xs",
 
     // Menu items
-    menuButton: "hover:bg-[#ad45ff]/10 rounded-xl transition-colors",
-    menuItem: "hover:bg-[#ad45ff]/10 rounded-xl transition-colors px-3 py-2",
+    menuButton: "hover:bg-brand/10 rounded-xl transition-colors",
+    menuItem: "hover:bg-brand/10 rounded-xl transition-colors px-3 py-2",
 
     // Avatar uploader
-    avatarImageActionsUpload: "text-[#ad45ff] hover:text-[#9d35ef]",
+    avatarImageActionsUpload: "text-brand hover:text-brand-hover",
     avatarImageActionsRemove: "text-red-500 hover:text-red-600",
 
     // Form
     form: "gap-4",
     formHeader: "mb-4",
-    formResendCodeLink: "text-[#ad45ff] hover:text-[#9d35ef]",
+    formResendCodeLink: "text-brand hover:text-brand-hover",
 
     // OTP input
     otpCodeFieldInput:
-      "border-gray-200 dark:border-gray-700 focus:border-[#ad45ff] focus:ring-[#ad45ff]/50 rounded-xl",
+      "border-gray-200 dark:border-gray-700 focus:border-brand focus:ring-brand/50 rounded-xl",
 
     // Buttons section
-    formFieldAction: "text-[#ad45ff] hover:text-[#9d35ef] text-sm font-medium",
+    formFieldAction: "text-brand hover:text-brand-hover text-sm font-medium",
   },
   layout: {
     socialButtonsPlacement: "bottom" as const,

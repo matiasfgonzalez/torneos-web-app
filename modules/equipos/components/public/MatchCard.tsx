@@ -58,7 +58,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
   const hasDetails = (allGoals.length > 0 || allCards.length > 0) && isPlayed;
 
   return (
-    <Card className="group relative bg-white dark:bg-gray-900 overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-[#ad45ff]/50 transition-all duration-300 hover:shadow-lg rounded-2xl">
+    <Card className="group relative bg-white dark:bg-gray-900 overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-brand/50 transition-all duration-300 hover:shadow-lg rounded-2xl">
       {/* Top Banner Status Strip */}
       <div
         className={`h-1.5 w-full ${
@@ -87,7 +87,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
           {partido.torneoNombre && (
             <Badge
               variant="outline"
-              className="text-[10px] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-[#ad45ff] font-bold px-2 py-0.5"
+              className="text-[10px] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-brand font-bold px-2 py-0.5"
             >
               <Trophy className="w-3 h-3 mr-1" />
               {partido.torneoNombre}
@@ -320,7 +320,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
-              className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-[#ad45ff] hover:bg-gray-100 dark:hover:bg-gray-800 h-8 rounded-none border-t border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors"
+              className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-brand hover:bg-gray-100 dark:hover:bg-gray-800 h-8 rounded-none border-t border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors"
             >
               {isOpen ? "Ocultar detalles" : "Ver detalles"}
               {isOpen ? (

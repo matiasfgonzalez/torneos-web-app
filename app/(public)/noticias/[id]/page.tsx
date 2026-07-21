@@ -71,7 +71,7 @@ export default async function NoticiaIndividualPage({
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/90 to-gray-950/60" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#ad45ff]/20 to-[#a3b3ff]/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand/20 to-brand-2/20" />
         </div>
 
         <div className="relative mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
@@ -107,7 +107,7 @@ export default async function NoticiaIndividualPage({
 
           <header className="max-w-4xl space-y-6">
             <div className="flex items-center gap-3">
-              <Badge className="border-0 bg-gradient-to-r from-[#ad45ff] to-[#c77dff] px-4 py-1.5 text-sm font-medium text-white shadow-lg shadow-[#ad45ff]/30">
+              <Badge className="border-0 bg-gradient-to-r from-brand to-brand-mid px-4 py-1.5 text-sm font-medium text-white shadow-lg shadow-brand/30">
                 <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                 Noticia Destacada
               </Badge>
@@ -125,7 +125,7 @@ export default async function NoticiaIndividualPage({
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/20 pt-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] shadow-lg">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-2 shadow-lg">
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <span className="font-medium text-white">
@@ -166,7 +166,7 @@ export default async function NoticiaIndividualPage({
 
                 <div className="p-6 sm:p-8 lg:p-10">
                   {/* Texto plano (whitespace-pre-line): nunca dangerouslySetInnerHTML (C5) */}
-                  <div className="prose prose-lg max-w-none whitespace-pre-line dark:prose-invert prose-headings:font-bold prose-headings:text-gray-900 prose-p:leading-relaxed prose-p:text-gray-700 prose-a:text-[#ad45ff] prose-a:no-underline prose-strong:text-gray-900 prose-img:rounded-xl prose-img:shadow-lg hover:prose-a:underline dark:prose-headings:text-white dark:prose-p:text-gray-300 dark:prose-strong:text-white">
+                  <div className="prose prose-lg max-w-none whitespace-pre-line dark:prose-invert prose-headings:font-bold prose-headings:text-gray-900 prose-p:leading-relaxed prose-p:text-gray-700 prose-a:text-brand prose-a:no-underline prose-strong:text-gray-900 prose-img:rounded-xl prose-img:shadow-lg hover:prose-a:underline dark:prose-headings:text-white dark:prose-p:text-gray-300 dark:prose-strong:text-white">
                     {noticia.content}
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default async function NoticiaIndividualPage({
               <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900 sm:p-8">
                 <div className="flex items-start gap-5">
                   <div className="flex-shrink-0">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] p-0.5 shadow-lg shadow-[#ad45ff]/20 sm:h-20 sm:w-20">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-brand via-brand-mid to-brand-2 p-0.5 shadow-lg shadow-brand/20 sm:h-20 sm:w-20">
                       <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-gray-900">
                         {noticia.user.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -200,7 +200,7 @@ export default async function NoticiaIndividualPage({
                             className="h-full w-full rounded-2xl object-cover"
                           />
                         ) : (
-                          <User className="h-8 w-8 text-[#ad45ff]" />
+                          <User className="h-8 w-8 text-brand" />
                         )}
                       </div>
                     </div>
@@ -211,7 +211,7 @@ export default async function NoticiaIndividualPage({
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                         {noticia.user.name || "Autor Anónimo"}
                       </h3>
-                      <Badge className="border-0 bg-[#ad45ff]/10 text-xs text-[#ad45ff]">
+                      <Badge className="border-0 bg-brand/10 text-xs text-brand">
                         Autor
                       </Badge>
                     </div>
@@ -245,8 +245,8 @@ export default async function NoticiaIndividualPage({
       <section className="mt-16 py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e] p-8 sm:p-12 lg:p-16">
-            <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-[#ad45ff]/20 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-[#a3b3ff]/20 blur-3xl" />
+            <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-brand/20 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-brand-2/20 blur-3xl" />
 
             <div className="relative z-10 space-y-6 text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/80 backdrop-blur-sm">
@@ -256,7 +256,7 @@ export default async function NoticiaIndividualPage({
 
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 ¿Te gustó esta{" "}
-                <span className="bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-brand via-brand-mid to-brand-2 bg-clip-text text-transparent">
                   noticia
                 </span>
                 ?
@@ -271,7 +271,7 @@ export default async function NoticiaIndividualPage({
                 <Link href="/noticias">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] px-8 text-lg text-white shadow-xl shadow-[#ad45ff]/30 hover:from-[#9d35ef] hover:to-[#93a3ef]"
+                    className="bg-gradient-to-r from-brand to-brand-2 px-8 text-lg text-white shadow-xl shadow-brand/30 hover:from-brand-hover hover:to-brand-2-hover"
                   >
                     <Newspaper className="mr-2 h-5 w-5" />
                     Ver más noticias

@@ -282,7 +282,7 @@ export default function PartidosPage() {
           {/* Matches Grid */}
           {isLoading ? (
             <div className="text-center py-20">
-              <div className="w-16 h-16 border-4 border-[#ad45ff]/30 border-t-[#ad45ff] rounded-full animate-spin mx-auto" />
+              <div className="w-16 h-16 border-4 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
               <p className="mt-4 text-gray-500 dark:text-gray-400">
                 Cargando partidos...
               </p>
@@ -306,7 +306,7 @@ export default function PartidosPage() {
                   key={match.id}
                   className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden group"
                 >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-brand-2 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <Badge className={`${getStatusColor(match.status)} gap-1`}>
@@ -315,7 +315,7 @@ export default function PartidosPage() {
                       </Badge>
                       <Badge
                         variant="outline"
-                        className="border-[#ad45ff]/30 text-[#ad45ff]"
+                        className="border-brand/30 text-brand"
                       >
                         {match.tournament.name}
                       </Badge>
@@ -325,7 +325,7 @@ export default function PartidosPage() {
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-[#ad45ff]/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
+                        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {match.homeTeam.team.logoUrl ? (
                             <img
                               src={match.homeTeam.team.logoUrl}
@@ -381,7 +381,7 @@ export default function PartidosPage() {
                             {match.awayTeam.team.shortName || match.awayTeam.team.name}
                           </p>
                         </div>
-                        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-[#ad45ff]/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
+                        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {match.awayTeam.team.logoUrl ? (
                             <img
                               src={match.awayTeam.team.logoUrl}
@@ -399,16 +399,16 @@ export default function PartidosPage() {
 
                     <div className="grid grid-cols-2 gap-3 text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-[#ad45ff]" />
+                        <CalendarIcon className="h-4 w-4 text-brand" />
                         <span>{formatDate(match.dateTime, "dd MMM yyyy")}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-[#ad45ff]" />
+                        <Clock className="h-4 w-4 text-brand" />
                         <span>{formatDate(match.dateTime, "HH:mm")}</span>
                       </div>
                       {match.stadium && (
                         <div className="flex items-center gap-2 col-span-2 truncate">
-                          <MapPin className="h-4 w-4 text-[#a3b3ff] shrink-0" />
+                          <MapPin className="h-4 w-4 text-brand-2 shrink-0" />
                           <span className="truncate">
                             {match.stadium}
                             {match.city ? ` · ${match.city}` : ""}
@@ -477,7 +477,7 @@ export default function PartidosPage() {
                             disabled={currentPage === page}
                             className={
                               currentPage === page
-                                ? "rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#a3b3ff] text-white border-0"
+                                ? "rounded-xl bg-gradient-to-r from-brand to-brand-2 text-white border-0"
                                 : "rounded-xl"
                             }
                           >

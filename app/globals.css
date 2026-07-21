@@ -12,6 +12,7 @@
   --brand-2: #a3b3ff; /* lila-azulado (fin de gradiente) */
   --brand-mid: #c77dff; /* stop intermedio para gradientes de 3 puntos */
   --brand-hover: #9c3ee6; /* hover del violeta */
+  --brand-2-hover: #93a3ef; /* hover del lila-azulado (fin de gradiente) */
   --brand-mid-hover: #b66de6; /* hover del stop intermedio */
   --gradient-brand: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
 
@@ -112,6 +113,7 @@
   --color-brand-2: var(--brand-2);
   --color-brand-mid: var(--brand-mid);
   --color-brand-hover: var(--brand-hover);
+  --color-brand-2-hover: var(--brand-2-hover);
   --color-brand-mid-hover: var(--brand-mid-hover);
 
   /* Movimiento (F4) → habilita `ease-brand` como utilidad de Tailwind */
@@ -233,7 +235,7 @@
   }
 
   .golazo-border {
-    border-image: linear-gradient(135deg, #ad45ff 0%, #a3b3ff 100%) 1;
+    border-image: var(--gradient-brand) 1;
   }
 }
 
@@ -559,12 +561,12 @@
     rgba(173, 69, 255, 0.1) 0%,
     rgba(163, 179, 255, 0.1) 100%
   ) !important;
-  color: #ad45ff !important;
+  color: var(--brand) !important;
   transform: translateX(4px) !important;
 }
 
 .cl-userButtonPopoverActionButtonIcon {
-  color: #ad45ff !important;
+  color: var(--brand) !important;
   width: 1.25rem !important;
   height: 1.25rem !important;
 }
@@ -632,7 +634,7 @@
 
 /* Primary buttons */
 .cl-formButtonPrimary {
-  background: linear-gradient(135deg, #ad45ff 0%, #a3b3ff 100%) !important;
+  background: var(--gradient-brand) !important;
   border: none !important;
   border-radius: 0.75rem !important;
   font-weight: 600 !important;
@@ -641,7 +643,7 @@
 }
 
 .cl-formButtonPrimary:hover {
-  background: linear-gradient(135deg, #9d35ef 0%, #93a3ef 100%) !important;
+  background: linear-gradient(135deg, var(--brand-hover) 0%, var(--brand-2-hover) 100%) !important;
   box-shadow: 0 8px 25px rgba(173, 69, 255, 0.4) !important;
   transform: translateY(-2px) !important;
 }
@@ -654,7 +656,7 @@
 }
 
 .cl-formFieldInput:focus {
-  border-color: #ad45ff !important;
+  border-color: var(--brand) !important;
   box-shadow: 0 0 0 3px rgba(173, 69, 255, 0.15) !important;
 }
 

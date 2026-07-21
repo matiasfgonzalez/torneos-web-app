@@ -104,7 +104,7 @@ export default async function PrintTournamentPage({
           </p>
           <Link
             href={`/torneos/${data.id}`}
-            className="mt-6 inline-block rounded-xl bg-gradient-to-r from-[#ad45ff] to-[#c77dff] px-5 py-2.5 text-sm font-semibold text-white"
+            className="mt-6 inline-block rounded-xl bg-gradient-to-r from-brand to-brand-mid px-5 py-2.5 text-sm font-semibold text-white"
           >
             Ver el torneo
           </Link>
@@ -156,7 +156,7 @@ export default async function PrintTournamentPage({
       <div className="print-doc mx-auto my-6 max-w-4xl bg-white p-8 shadow-xl sm:p-10">
         {/* Encabezado branded de la liga */}
         <header className="mb-8 overflow-hidden rounded-2xl">
-          <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-[#ad45ff] via-[#c77dff] to-[#a3b3ff] p-6 text-white">
+          <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-brand via-brand-mid to-brand-2 p-6 text-white">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/15 ring-1 ring-white/30">
               {data.logoUrl || data.organization.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -191,7 +191,7 @@ export default async function PrintTournamentPage({
         {/* Tabla de posiciones */}
         {showTabla && (
           <section className="mb-10">
-            <h2 className="mb-4 border-b-2 border-[#ad45ff] pb-2 text-lg font-bold text-gray-900">
+            <h2 className="mb-4 border-b-2 border-brand pb-2 text-lg font-bold text-gray-900">
               Tabla de posiciones
             </h2>
             {standings.every((g) => g.rows.length === 0) ? (
@@ -206,7 +206,7 @@ export default async function PrintTournamentPage({
                     className="print-section"
                   >
                     {group.group && (
-                      <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-[#ad45ff]">
+                      <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-brand">
                         Grupo {group.group}
                       </h3>
                     )}
@@ -221,7 +221,7 @@ export default async function PrintTournamentPage({
         {/* Fixture y resultados */}
         {showFixture && (
           <section className={showTabla ? "page-break" : ""}>
-            <h2 className="mb-4 border-b-2 border-[#ad45ff] pb-2 text-lg font-bold text-gray-900">
+            <h2 className="mb-4 border-b-2 border-brand pb-2 text-lg font-bold text-gray-900">
               Fixture y resultados
             </h2>
             {data.matches.length === 0 ? (
@@ -246,7 +246,7 @@ export default async function PrintTournamentPage({
         {/* Pie */}
         <footer className="mt-10 flex items-center justify-between border-t border-gray-200 pt-4 text-xs text-gray-400">
           <span>
-            Generado con <span className="font-bold text-[#ad45ff]">GOLAZO</span>
+            Generado con <span className="font-bold text-brand">GOLAZO</span>
           </span>
           <span>golazo · gestión de torneos</span>
         </footer>
@@ -272,7 +272,7 @@ function StandingsTablePrint({ rows }: { rows: ExportStandingRow[] }) {
           <th className={th}>GF</th>
           <th className={th}>GC</th>
           <th className={th}>DG</th>
-          <th className={`${th} text-[#ad45ff]`}>Pts</th>
+          <th className={`${th} text-brand`}>Pts</th>
         </tr>
       </thead>
       <tbody>
