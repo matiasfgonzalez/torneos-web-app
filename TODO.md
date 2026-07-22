@@ -49,7 +49,6 @@
 - **M11** — Reglas de negocio de torneo (casos borde) · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
-- **M14** (parcial) — Equipos compartidos entre ligas: Fase 1 hecha. Falta **avisar al delegado** cuando otra liga inscribe su club · `E:Bajo`
 
 **🟢 Bajo**
 - **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
@@ -69,7 +68,7 @@
 - **M3** — falta OG dinámica del **resultado de partido** (menor); redirect legacy 307→308
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (fases 1 y 2). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -400,7 +399,13 @@
   - **Usar ≠ editar, y no hizo falta tocar permisos.** `PATCH /api/teams/[id]` ya exigía liga dueña **o** delegado aprobado; un tercero que use el equipo no entra por ninguno de los dos → 403.
   - **Por qué NO se hizo global como los jugadores:** el jugador tiene **DNI**, una identidad única y verificable — por eso N12 pudo sacarle el `organizationId`. Los equipos no tienen equivalente, y un registro global sin clave de identidad se llena de homónimos ("River Plate" de dos provincias) sin forma de distinguirlos. **`Team.organizationId` se queda**: define quién es responsable de los datos.
   - **Verificado contra la BD** con una segunda liga descartable: con el alcance viejo veía 0 equipos; con el nuevo y sin torneos, 0 (no filtra de más); tras inscribir un equipo ajeno en su torneo, **1 — solo el que usa**, no el padrón entero. Base restaurada sin restos. `tsc` + `eslint` + `next build` en verde.
-- [ ] **Fase 2 — avisar al delegado (E:Bajo).** Cuando una liga inscribe en su torneo un equipo que **tiene delegado aprobado**, avisarle: ese club es su representación y merece enterarse. **Decisión tomada: avisar, no pedir aprobación** — un club que juega en dos ligas quiere estar en las dos, y exigir aprobación le mete fricción al caso normal para cubrir uno raro, dejando al organizador esperando a alguien que capaz no entra en una semana. Si el delegado no está de acuerdo, la liga lo saca del torneo. Necesita un valor nuevo en `NotificationType` (migración aditiva chica).
+- [x] **Fase 2 — hecha (2026-07-22): aviso al delegado.**
+  - **Decisión: avisar, no pedir aprobación.** Un club que juega en dos ligas quiere estar en las dos; exigir aprobación le mete fricción al caso normal para cubrir uno raro, y deja al organizador esperando a alguien que capaz no entra en una semana. Si el delegado no está de acuerdo, la liga lo saca del torneo.
+  - **Migración `aviso_equipo_inscripto_otra_liga`**: un solo `ALTER TYPE ... ADD VALUE` (`EQUIPO_INSCRIPTO_POR_OTRA_LIGA`), puramente aditivo.
+  - Payload + texto en [catalog.ts](lib/notifications/catalog.ts) (categoría `EQUIPO`, así el usuario lo apaga junto al resto de avisos de equipo), y disparo en [POST /api/tournament-teams](app/api/tournament-teams/route.ts). Se avisa **solo** si el equipo es de otra liga **y** tiene delegado aprobado. Es best-effort: si falla, no rompe la inscripción — el equipo ya quedó anotado y un aviso perdido no justifica devolverle un error al organizador.
+  - **El camino del delegado no notifica, a propósito:** en `inscriptions.ts` el delegado inscribe **su propio** equipo, así que avisarle de su propia acción sería ruido (ese flujo ya notifica a la liga, que es quien tiene que enterarse).
+  - **Verificado end-to-end** contra la BD: con una liga descartable y el equipo que sí tiene delegado, se comprobó que las dos guardas dan verdadero, que la BD acepta el valor nuevo del enum y que la notificación queda con el título correcto. Base restaurada sin restos.
+  - ⚠️ **Un test preexistente lo agarró**: `tests/notifications/catalog.test.ts` verifica que **ningún tipo del enum quede sin muestra** en el catálogo, y falló al agregar el tipo nuevo sin su sample. Se agregó. 220 tests verdes.
 - [ ] **Fase 3 — opcional:** mostrar en la ficha pública del equipo en qué ligas juega. Hoy sus estadísticas ya agregan todos sus torneos; conviene que se vea de dónde sale cada uno.
 
 ### M9. Limpieza de imágenes huérfanas en Cloudinary

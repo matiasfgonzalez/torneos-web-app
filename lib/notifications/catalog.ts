@@ -49,6 +49,14 @@ export type NotificationPayload =
       matches: number;
       reason: string;
     }
+  | {
+      type: "EQUIPO_INSCRIPTO_POR_OTRA_LIGA";
+      teamName: string;
+      tournamentName: string;
+      tournamentId: string;
+      /** Liga que lo inscribió — no es la dueña del equipo. */
+      organizationName: string;
+    }
   // ── A la liga ──────────────────────────────────────────────
   | {
       type: "SOLICITUD_DELEGADO_RECIBIDA";
@@ -97,6 +105,7 @@ export const NOTIFICATION_CATEGORY: Record<
   INSCRIPCION_RECIBIDA: "EQUIPO",
   RESULTADO_CARGADO: "PARTIDO",
   JUGADOR_SUSPENDIDO: "PARTIDO",
+  EQUIPO_INSCRIPTO_POR_OTRA_LIGA: "EQUIPO",
   PAGO_INFORMADO: "PAGO",
   PAGO_APROBADO: "PAGO",
   PAGO_RECHAZADO: "PAGO",
@@ -170,6 +179,17 @@ export function renderNotification(
         title: `La liga rechazó tu solicitud para ${payload.teamName}`,
         body: "Si creés que hay un error, hablá con la liga antes de volver a pedirlo.",
         url: "/mi-equipo",
+      };
+
+    case "EQUIPO_INSCRIPTO_POR_OTRA_LIGA":
+      return {
+        ...base,
+        title: `${payload.teamName} fue inscripto en ${payload.tournamentName}`,
+        // Se avisa, no se pide permiso: el club puede jugar en varias ligas y
+        // exigir aprobación trabaría el caso normal. Pero el delegado tiene que
+        // enterarse, porque es su representación la que entra a ese torneo.
+        body: `Lo inscribió ${payload.organizationName}, que no es la liga que administra al equipo. Si no corresponde, hablá con esa liga.`,
+        url: `/torneos/${payload.tournamentId}`,
       };
 
     case "INSCRIPCION_APROBADA":

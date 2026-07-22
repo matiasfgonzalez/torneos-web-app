@@ -31,6 +31,13 @@ const SAMPLES: NotificationPayload[] = [
     tournamentName: "Apertura",
   },
   {
+    type: "EQUIPO_INSCRIPTO_POR_OTRA_LIGA",
+    teamName: "Racing",
+    tournamentName: "Apertura",
+    tournamentId: "to1",
+    organizationName: "Liga del Sur",
+  },
+  {
     type: "RESULTADO_CARGADO",
     matchId: "m1",
     tournamentName: "Apertura",

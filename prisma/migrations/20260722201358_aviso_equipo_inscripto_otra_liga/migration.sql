@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "NotificationType" ADD VALUE 'EQUIPO_INSCRIPTO_POR_OTRA_LIGA';

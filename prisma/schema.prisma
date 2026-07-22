@@ -1036,6 +1036,10 @@ enum NotificationType {
   INSCRIPCION_RECHAZADA
   RESULTADO_CARGADO
   JUGADOR_SUSPENDIDO
+  /// Otra liga inscribió en su torneo un equipo que este usuario representa
+  /// (M14 fase 2). Se avisa, no se pide aprobación: un club que juega en dos
+  /// ligas quiere estar en las dos.
+  EQUIPO_INSCRIPTO_POR_OTRA_LIGA
 
   // A la liga (organizadores/OWNER)
   SOLICITUD_DELEGADO_RECIBIDA
