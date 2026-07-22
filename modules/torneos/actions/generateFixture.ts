@@ -36,8 +36,15 @@ export interface GenerateFixtureInput {
   startDate: string;
   /** Días entre jornadas. 7 = una fecha por semana. */
   intervalDays: number;
-  /** Cantidad de grupos. Solo se usa en formato GRUPOS. */
+  /** Cantidad de grupos. Solo se usa en formato GRUPOS y si NO se respetan los ya asignados. */
   groupCount?: number;
+  /**
+   * Respetar el grupo que cada equipo ya tiene asignado en vez de repartirlos.
+   * Para sorteos que hizo la liga (bombos, acto público, o cargar a mano los
+   * grupos reales de un torneo existente). Sin esto, generar **pisa** esa
+   * asignación y los partidos salen armados sobre los grupos nuevos.
+   */
+  useExistingGroups?: boolean;
   /** Sortear el orden de los equipos antes de armar el fixture. */
   randomize: boolean;
   /** Confirmación explícita para borrar un fixture previo sin resultados. */
@@ -70,7 +77,8 @@ export async function generateTournamentFixture(
       // haya dicho que sí.
       tournamentTeams: {
         where: { registrationStatus: "INSCRIPTO" },
-        select: { id: true },
+        // `group` para poder respetar la asignación que ya hizo la liga.
+        select: { id: true, group: true },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -152,6 +160,14 @@ export async function generateTournamentFixture(
     plan = buildPlan(tournament.format, teamIds, {
       homeAndAway: tournament.homeAndAway,
       groupCount: input.groupCount,
+      // Si se respetan los grupos ya asignados, el plan no devuelve
+      // `groupAssignments` y más abajo no se escribe nada: esa es la garantía
+      // de que no se pisa el sorteo de la liga.
+      existingGroups: input.useExistingGroups
+        ? Object.fromEntries(
+            tournament.tournamentTeams.map((t) => [t.id, t.group ?? ""]),
+          )
+        : undefined,
       // La semilla se deriva del momento del sorteo: cada generación da un
       // orden distinto, pero el algoritmo sigue siendo puro y testeable.
       seed: input.randomize ? Date.now() % 2147483647 : undefined,

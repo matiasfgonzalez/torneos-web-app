@@ -1,5 +1,5 @@
 import { TournamentFormat } from "@prisma/client";
-import { distributeIntoGroups, groupName } from "./groups";
+import { distributeIntoGroups, groupByExisting, groupName } from "./groups";
 import { knockoutFirstRound } from "./knockout";
 import { roundRobinRounds } from "./round-robin";
 import { shuffle } from "./shuffle";
@@ -60,14 +60,20 @@ export function generateFixture(
   }
 
   if (strategy === "GROUPS") {
-    const groupCount = options.groupCount ?? 2;
-    const groups = distributeIntoGroups(drawn, groupCount);
+    // Dos caminos: o los grupos ya están asignados y se respetan, o el sistema
+    // los reparte. La diferencia importa: repartir **pisa** la asignación
+    // existente, y como los partidos se arman sobre los grupos resultantes,
+    // corregirlos después no arregla el fixture.
+    const zonas = options.existingGroups
+      ? groupByExisting(drawn, options.existingGroups)
+      : distributeIntoGroups(drawn, options.groupCount ?? 2).map(
+          (teamIds, index) => ({ name: groupName(index), teamIds }),
+        );
 
     const groupAssignments: Record<string, string> = {};
     const matches: PlannedMatch[] = [];
 
-    groups.forEach((groupTeams, index) => {
-      const name = groupName(index);
+    zonas.forEach(({ name, teamIds: groupTeams }) => {
       groupTeams.forEach((teamId) => {
         groupAssignments[teamId] = name;
       });
@@ -91,7 +97,9 @@ export function generateFixture(
           matches,
         },
       ],
-      groupAssignments,
+      // Si los grupos ya venían asignados no se devuelven: el server no tiene
+      // nada que reescribir, y no mandarlos es la garantía de que no los pise.
+      groupAssignments: options.existingGroups ? undefined : groupAssignments,
       byes: [],
       totalMatches: matches.length,
     };

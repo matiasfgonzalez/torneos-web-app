@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
@@ -55,6 +55,7 @@ const fixtureFormSchema = z.object({
     .max(16, "Máximo 16 grupos")
     .optional(),
   randomize: z.boolean(),
+  useExistingGroups: z.boolean(),
 });
 
 type FixtureFormValues = z.infer<typeof fixtureFormSchema>;
@@ -86,6 +87,16 @@ export default function GenerateFixtureSheet({
   const format = tournamentData.format as TournamentFormat;
   const strategy = strategyFor(format);
 
+  // Cuántos equipos ya tienen grupo asignado. Si la liga ya hizo el sorteo
+  // —bombos, acto público, o los grupos reales de un torneo existente—,
+  // respetarlos viene activado: repartir de nuevo le borraría el trabajo, y
+  // como los partidos se arman sobre los grupos resultantes, corregirlos
+  // después no arreglaría el fixture.
+  const conGrupo = (tournamentData.tournamentTeams ?? []).filter((t) =>
+    t.group?.trim(),
+  ).length;
+  const todosTienenGrupo = teamCount > 0 && conGrupo === teamCount;
+
   const form = useForm<FixtureFormValues>({
     resolver: zodResolver(fixtureFormSchema),
     defaultValues: {
@@ -93,7 +104,15 @@ export default function GenerateFixtureSheet({
       intervalDays: 7,
       groupCount: strategy === "GROUPS" ? 2 : undefined,
       randomize: true,
+      useExistingGroups: todosTienenGrupo,
     },
+  });
+
+  // `useWatch` y no `form.watch()`: el segundo devuelve una función que el
+  // React Compiler no puede memoizar (convención ya usada en team-form.tsx).
+  const useExistingGroups = useWatch({
+    control: form.control,
+    name: "useExistingGroups",
   });
 
   // Formato sin generador: se explica en vez de ofrecer un botón muerto
@@ -110,7 +129,11 @@ export default function GenerateFixtureSheet({
       tournamentId: tournamentData.id,
       startDate: new Date(data.startDate).toISOString(),
       intervalDays: data.intervalDays,
-      groupCount: strategy === "GROUPS" ? data.groupCount : undefined,
+      groupCount:
+        strategy === "GROUPS" && !data.useExistingGroups
+          ? data.groupCount
+          : undefined,
+      useExistingGroups: strategy === "GROUPS" && data.useExistingGroups,
       randomize: data.randomize,
       replaceExisting,
     });
@@ -199,16 +222,32 @@ export default function GenerateFixtureSheet({
 
         {strategy === "GROUPS" && (
           <FormSection icon={Layers} title="Zonas">
-            <NumberField
-              control={form.control}
-              name="groupCount"
-              label="Cantidad de grupos"
-              icon={Layers}
-              required
-              min={2}
-              max={Math.max(2, Math.floor(teamCount / 2))}
-              description="Los equipos se reparten parejo entre las zonas. Esto reescribe el grupo de cada equipo inscripto."
-            />
+            {conGrupo > 0 && (
+              <SwitchField
+                control={form.control}
+                name="useExistingGroups"
+                label="Usar los grupos ya asignados"
+                onText={
+                  todosTienenGrupo
+                    ? `Se respetan los grupos que pusiste en los ${teamCount} equipos. No se sortea nada.`
+                    : `⚠️ Solo ${conGrupo} de ${teamCount} equipos tienen grupo. Asignáselo a todos o desactivá esta opción.`
+                }
+                offText="El sistema reparte los equipos y reescribe el grupo de cada uno."
+              />
+            )}
+
+            {!useExistingGroups && (
+              <NumberField
+                control={form.control}
+                name="groupCount"
+                label="Cantidad de grupos"
+                icon={Layers}
+                required
+                min={2}
+                max={Math.max(2, Math.floor(teamCount / 2))}
+                description="Los equipos se reparten parejo entre las zonas. Esto reescribe el grupo de cada equipo inscripto."
+              />
+            )}
           </FormSection>
         )}
 

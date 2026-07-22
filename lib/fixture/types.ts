@@ -51,6 +51,14 @@ export interface FixtureOptions {
   homeAndAway: boolean;
   /** Cantidad de grupos. Solo aplica al formato GRUPOS. */
   groupCount?: number;
+  /**
+   * Grupo ya asignado a cada equipo (`TournamentTeam.id` → "A"). Si viene, el
+   * generador **no sortea ni reparte**: arma el todos contra todos dentro de
+   * los grupos que ya están, y el plan no devuelve `groupAssignments` para que
+   * el server no los pise. Para sorteos hechos por la liga (bombos, acto
+   * público, o cargar a mano los grupos reales de un torneo existente).
+   */
+  existingGroups?: Readonly<Record<string, string>>;
   /** Semilla para el sorteo. Misma semilla = mismo fixture (tests estables). */
   seed?: number;
 }
