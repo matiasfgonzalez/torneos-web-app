@@ -401,7 +401,8 @@
 
 ### M10. Estados vacíos y skeletons consistentes
 
-- [ ] Crear componentes `<EmptyState icon título descripción acción/>` y `<SkeletonTable/>`, `<SkeletonCards/>` reutilizables (hoy cada página improvisa o no tiene). **E:Medio**
+- [x] **Componentes creados (F0):** `<EmptyState>`, `<SkeletonTable>`, `<SkeletonCards>` en [components/shared/](components/shared/).
+- [ ] **Falta la adopción pareja.** Queda una pantalla con `loading.tsx` propio hecho a mano: [app/admin/usuarios/loading.tsx](app/admin/usuarios/loading.tsx) — ~150 líneas de skeleton manual con el wrapper legacy `bg-gradient-to-br ... to-blue-50/30` (azul, no es color de marca) y una grilla de 7 columnas escrita a mano. **Es la única del panel que no hereda [app/admin/loading.tsx](app/admin/loading.tsx)** (`FullscreenLoading`), así que su transición se ve distinta a la de todas las demás. El mismo caso se corrigió en `/admin/noticias` el 2026-07-22 borrando su `loading.tsx`: la ruta pasó a heredar el global y el estado de carga de datos quedó en `<SkeletonTable>` dentro de la página. Repetir acá. **E:Bajo**
 
 ### M11. Reglas de negocio de torneo incompletas (casos borde)
 
