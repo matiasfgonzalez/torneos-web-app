@@ -22,12 +22,16 @@ export async function generateMetadata({
       ? ` (${match.homeScore}-${match.awayScore})`
       : "";
 
+  // La imagen NO se declara acá a propósito: `opengraph-image.tsx` en esta
+  // misma carpeta la genera con el marcador del momento y Next la inyecta sola.
+  // Declarar `openGraph.images` la pisaría con algo estático (M3).
   return {
     title: `${versus}${score} · ${match.tournament.name}`,
     description: `${versus} — ${match.tournament.name}, ${formatDate(
       match.dateTime,
       "dd MMM yyyy",
     )}${match.stadium ? ` en ${match.stadium}` : ""}.`,
+    alternates: { canonical: `/partidos/${id}` },
   };
 }
 
