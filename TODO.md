@@ -49,6 +49,7 @@
 - **M11** — Reglas de negocio de torneo (casos borde) · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
+- **M14** (parcial) — Equipos compartidos entre ligas: Fase 1 hecha. Falta **avisar al delegado** cuando otra liga inscribe su club · `E:Bajo`
 
 **🟢 Bajo**
 - **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
@@ -387,6 +388,20 @@
 ### M8. Integrar AuditLog (modelo existe, uso = 0)
 
 - [ ] Registrar en `AuditLog` todas las mutaciones sensibles (delete de torneo, cambio de rol, edición de resultado) desde los helpers de autorización, y una vista `/admin/auditoria` para ADMINISTRADOR. **E:Medio**
+
+### M14. Equipos compartidos entre ligas (decisión de producto, 2026-07-22)
+
+> **El problema, reportado por el usuario:** cargó las 48 selecciones en su liga y, al entrar con otro usuario que organiza otra liga, **no podía usarlas**. Y el caso general: dos organizadores arman torneos distintos con los mismos clubes.
+
+- [x] **Fase 1 — hecha (2026-07-22): poseer un equipo y poder usarlo son cosas distintas.**
+  - **El diagnóstico:** `getAdminEquipos` filtraba con `orgScopeWhere` (propiedad). Pero el producto **ya aceptaba** equipos cross-liga: `searchTeamsToClaim` (el buscador del delegado) recorre todas las ligas activas desde N13. El único que había quedado atado a "solo lo mío" era el organizador. Y la restricción **provocaba la duplicación que parecía evitar**: si el organizador B no encuentra el club de A, lo recrea → dos "Talleres", dos escudos, historial partido.
+  - **Nuevo `teamOrgScopeWhere`** en [lib/teamAuth.ts](lib/teamAuth.ts): una liga ve un equipo si es suyo **o si juega en alguno de sus torneos**. Es el mismo criterio que N12 aplicó a los jugadores (`playerOrgScopeWhere`) — visibilidad derivada de la participación. Enchufado en `getAdminEquipos`, que es el único punto que alimenta **el listado del panel y el selector de inscripción**.
+  - **Buscador cross-liga al inscribir** ([SharedTeamPicker.tsx](app/admin/torneos/[id]/components/SharedTeamPicker.tsx) + [searchTeams.ts](modules/equipos/actions/searchTeams.ts)): el organizador busca clubes en otras ligas y los inscribe. Muestra a qué liga pertenece cada uno (para no confundir homónimos) y **si tiene delegado**. Solo para quien gestiona alguna liga: un usuario suelto no barre el padrón de clubes de la plataforma.
+  - **Usar ≠ editar, y no hizo falta tocar permisos.** `PATCH /api/teams/[id]` ya exigía liga dueña **o** delegado aprobado; un tercero que use el equipo no entra por ninguno de los dos → 403.
+  - **Por qué NO se hizo global como los jugadores:** el jugador tiene **DNI**, una identidad única y verificable — por eso N12 pudo sacarle el `organizationId`. Los equipos no tienen equivalente, y un registro global sin clave de identidad se llena de homónimos ("River Plate" de dos provincias) sin forma de distinguirlos. **`Team.organizationId` se queda**: define quién es responsable de los datos.
+  - **Verificado contra la BD** con una segunda liga descartable: con el alcance viejo veía 0 equipos; con el nuevo y sin torneos, 0 (no filtra de más); tras inscribir un equipo ajeno en su torneo, **1 — solo el que usa**, no el padrón entero. Base restaurada sin restos. `tsc` + `eslint` + `next build` en verde.
+- [ ] **Fase 2 — avisar al delegado (E:Bajo).** Cuando una liga inscribe en su torneo un equipo que **tiene delegado aprobado**, avisarle: ese club es su representación y merece enterarse. **Decisión tomada: avisar, no pedir aprobación** — un club que juega en dos ligas quiere estar en las dos, y exigir aprobación le mete fricción al caso normal para cubrir uno raro, dejando al organizador esperando a alguien que capaz no entra en una semana. Si el delegado no está de acuerdo, la liga lo saca del torneo. Necesita un valor nuevo en `NotificationType` (migración aditiva chica).
+- [ ] **Fase 3 — opcional:** mostrar en la ficha pública del equipo en qué ligas juega. Hoy sus estadísticas ya agregan todos sus torneos; conviene que se vea de dónde sale cada uno.
 
 ### M9. Limpieza de imágenes huérfanas en Cloudinary
 

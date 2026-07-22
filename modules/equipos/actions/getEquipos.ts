@@ -2,7 +2,8 @@
 
 import { ITeam } from "@modules/equipos/types/types";
 import { db } from "@/lib/db";
-import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
+import { getPanelOrgIds } from "@/lib/orgAuth";
+import { teamOrgScopeWhere } from "@/lib/teamAuth";
 
 /** Listado PÚBLICO de equipos (difusión: todas las organizaciones). */
 export async function getEquipos(): Promise<ITeam[]> {
@@ -21,14 +22,15 @@ export async function getEquipos(): Promise<ITeam[]> {
 }
 
 /**
- * Listado del PANEL admin (N3): solo equipos de las organizaciones del
- * usuario (ADMINISTRADOR ve todos, salvo "ver como organización" activo).
+ * Listado del PANEL admin (N3): equipos propios **más** los que juegan en
+ * torneos de la liga aunque los haya cargado otra (`teamOrgScopeWhere`).
+ * ADMINISTRADOR ve todos, salvo "ver como organización" activo.
  */
 export async function getAdminEquipos(): Promise<ITeam[]> {
   try {
     const orgIds = await getPanelOrgIds();
     const equipos = await db.team.findMany({
-      where: orgScopeWhere(orgIds),
+      where: teamOrgScopeWhere(orgIds),
       orderBy: {
         createdAt: "desc",
       },

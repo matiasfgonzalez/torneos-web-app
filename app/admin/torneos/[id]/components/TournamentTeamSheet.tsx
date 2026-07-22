@@ -18,6 +18,8 @@ import {
   TextField,
   TextareaField,
 } from "@/components/shared/form/fields";
+import type { SharedTeam } from "@modules/equipos/actions/searchTeams";
+import SharedTeamPicker from "./SharedTeamPicker";
 import type { ITeam } from "@modules/equipos/types/types";
 import type { ITorneo } from "@modules/torneos/types";
 import type { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
@@ -72,9 +74,16 @@ export default function TournamentTeamSheet({
 
   const teamId = useWatch({ control: form.control, name: "teamId" });
 
+  /**
+   * Equipos de otras ligas que el organizador trajo con el buscador. Se suman
+   * a las opciones del select para poder elegirlos, pero no se guardan en
+   * ningún lado: la inscripción es la que crea el vínculo.
+   */
+  const [extraTeams, setExtraTeams] = useState<SharedTeam[]>([]);
+
   const teamOptions = useMemo(() => {
     const used = new Set(usedTeamIds);
-    return equipos
+    const propios = equipos
       .filter((team) => {
         if (isEdit) return team.id === tournamentTeam?.teamId;
         // Un equipo deshabilitado (baja lógica) conserva su historial pero no se
@@ -82,7 +91,16 @@ export default function TournamentTeamSheet({
         return !used.has(team.id) && team.enabled;
       })
       .map((team) => ({ value: team.id, label: team.name }));
-  }, [equipos, usedTeamIds, isEdit, tournamentTeam?.teamId]);
+
+    if (isEdit) return propios;
+
+    const yaListados = new Set(propios.map((o) => o.value));
+    const ajenos = extraTeams
+      .filter((t) => !yaListados.has(t.id) && !used.has(t.id))
+      .map((t) => ({ value: t.id, label: `${t.name} · ${t.organizationName}` }));
+
+    return [...propios, ...ajenos];
+  }, [equipos, usedTeamIds, isEdit, tournamentTeam?.teamId, extraTeams]);
 
   const selectedTeam = equipos.find((team) => team.id === teamId);
 
@@ -199,6 +217,21 @@ export default function TournamentTeamSheet({
                 ? `${selectedTeam.name} · ${selectedTeam.homeCity}`
                 : "Solo aparecen los equipos habilitados que todavía no están en el torneo."
             }
+          />
+        )}
+
+        {/* Buscador cross-liga: el mismo club puede jugar en varias ligas y
+            antes había que recrearlo en cada una. Solo al inscribir: editar
+            una inscripción no cambia de equipo. */}
+        {!isEdit && (
+          <SharedTeamPicker
+            usedTeamIds={usedTeamIds}
+            onPick={(team) => {
+              setExtraTeams((prev) =>
+                prev.some((t) => t.id === team.id) ? prev : [...prev, team],
+              );
+              form.setValue("teamId", team.id, { shouldDirty: true });
+            }}
           />
         )}
       </FormSection>
