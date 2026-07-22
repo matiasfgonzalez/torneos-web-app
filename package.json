@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:seed": "node prisma/seed.js",
-    "db:reset": "node scripts/reset-db.mjs"
+    "db:reset": "node scripts/reset-db.mjs",
+    "db:seed:mundial": "node scripts/seed-mundial-2026.mjs"
   },
   "type": "module",
   "dependencies": {
