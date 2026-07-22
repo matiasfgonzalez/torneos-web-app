@@ -5,6 +5,8 @@ import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsUpdateSchema } from "@/lib/validators/news";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { newsAuthorSelect } from "@modules/noticias/authorSelect";
+import { safeDeleteAssets } from "@/lib/cloudinary";
+import { extractPublicId } from "@/lib/cloudinary-orphans";
 
 type tParams = Promise<{ id: string }>;
 
@@ -108,6 +110,14 @@ export async function DELETE(
     const deletedNoticia = await db.news.delete({
       where: { id },
     });
+
+    // Prevención de huérfanos (M9): la noticia se borra físicamente, así que su
+    // portada ya no la referencia nadie. Best-effort — si Cloudinary falla, el
+    // borrado de la noticia igual es válido y el panel de huérfanos la limpia.
+    await safeDeleteAssets([
+      deletedNoticia.coverImagePublicId,
+      extractPublicId(deletedNoticia.coverImageUrl),
+    ]);
 
     return NextResponse.json(
       { message: "Noticia eliminada correctamente", deletedNoticia },

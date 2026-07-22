@@ -139,6 +139,79 @@ export async function deleteImages(
   }
 }
 
+/**
+ * Best-effort: borra los assets indicados (ignora vacíos) sin propagar errores.
+ * Pensada como efecto secundario al eliminar una entidad (prevención de
+ * huérfanos, M9): si Cloudinary falla, la mutación de negocio NO debe romperse
+ * — el panel de imágenes huérfanas queda como red de seguridad.
+ */
+export async function safeDeleteAssets(
+  publicIds: (string | null | undefined)[],
+): Promise<void> {
+  const ids = publicIds.filter((id): id is string => Boolean(id));
+  if (ids.length === 0) return;
+  try {
+    await cloudinary.api.delete_resources(ids);
+  } catch (error) {
+    console.error("No se pudieron borrar assets al eliminar la entidad:", error);
+  }
+}
+
+// ============================================================================
+// FUNCIONES DE LISTADO (ADMIN API)
+// ============================================================================
+
+/** Recurso de Cloudinary devuelto por el listado del Admin API */
+export interface CloudinaryResource {
+  public_id: string;
+  secure_url: string;
+  bytes: number;
+  width?: number;
+  height?: number;
+  format?: string;
+  created_at: string;
+  folder?: string;
+}
+
+/**
+ * Lista TODOS los assets `image/upload` cuyo public_id empieza con `prefix`.
+ * Pagina automáticamente con `next_cursor` (Cloudinary devuelve máx. 500/página).
+ *
+ * ⚠️ Usa el Admin API (rate-limited): pensada para tareas de gestión/limpieza,
+ * no para el render de páginas públicas.
+ */
+export async function listResourcesByPrefix(
+  prefix: string,
+): Promise<CloudinaryResource[]> {
+  const resources: CloudinaryResource[] = [];
+  let nextCursor: string | undefined = undefined;
+
+  do {
+    const res = await cloudinary.api.resources({
+      type: "upload",
+      resource_type: "image",
+      prefix,
+      max_results: 500,
+      next_cursor: nextCursor,
+    });
+    for (const r of res.resources ?? []) {
+      resources.push({
+        public_id: r.public_id,
+        secure_url: r.secure_url,
+        bytes: r.bytes ?? 0,
+        width: r.width,
+        height: r.height,
+        format: r.format,
+        created_at: r.created_at,
+        folder: r.folder ?? r.asset_folder,
+      });
+    }
+    nextCursor = res.next_cursor;
+  } while (nextCursor);
+
+  return resources;
+}
+
 // ============================================================================
 // FUNCIONES DE SUBIDA (SERVER-SIDE)
 // ============================================================================

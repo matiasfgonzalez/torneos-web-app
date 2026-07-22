@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { requireActionOrgAccess } from "@/lib/orgAuth";
 import { getOrgManagerIds, notify } from "@/lib/notifications";
+import { safeDeleteAssets } from "@/lib/cloudinary";
 
 type AppUser = NonNullable<Awaited<ReturnType<typeof checkUser>>>;
 
@@ -295,6 +296,7 @@ export async function rejectTeamRequest(
           id: true,
           name: true,
           enabled: true,
+          logoPublicId: true,
           _count: { select: { tournamentTeams: true, managers: true } },
         },
       },
@@ -302,25 +304,31 @@ export async function rejectTeamRequest(
   });
   if (!full) return { success: false, error: "La solicitud no existe" };
 
+  // Rechazar una propuesta de equipo nuevo borra el equipo: nació para esta
+  // solicitud, nunca se habilitó y no tiene historial. Se comprueba igual que
+  // no juegue ningún torneo ni lo pida otra persona — si algo de eso pasó,
+  // el equipo se queda (deshabilitado) y lo resuelve la liga a mano.
+  const isUnusedProposal =
+    !full.team.enabled &&
+    full.team._count.tournamentTeams === 0 &&
+    full.team._count.managers === 1;
+
   await db.$transaction(async (tx) => {
     await tx.teamManager.update({
       where: { id: requestId },
       data: { status: "RECHAZADO", decidedById: user.id, decidedAt: new Date() },
     });
 
-    // Rechazar una propuesta de equipo nuevo borra el equipo: nació para esta
-    // solicitud, nunca se habilitó y no tiene historial. Se comprueba igual que
-    // no juegue ningún torneo ni lo pida otra persona — si algo de eso pasó,
-    // el equipo se queda (deshabilitado) y lo resuelve la liga a mano.
-    const isUnusedProposal =
-      !full.team.enabled &&
-      full.team._count.tournamentTeams === 0 &&
-      full.team._count.managers === 1;
-
     if (isUnusedProposal) {
       await tx.team.delete({ where: { id: full.team.id } });
     }
   });
+
+  // Prevención de huérfanos (M9): si se borró la propuesta, su logo ya no lo
+  // referencia nadie. Best-effort, fuera de la transacción.
+  if (isUnusedProposal) {
+    await safeDeleteAssets([full.team.logoPublicId]);
+  }
 
   // Un rechazo silencioso deja al delegado esperando una respuesta que ya
   // llegó. El nombre del equipo se manda aunque la propuesta se haya borrado:

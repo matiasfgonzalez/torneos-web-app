@@ -335,8 +335,18 @@
 
 ### M9. Limpieza de imágenes huérfanas en Cloudinary
 
-- [ ] Al eliminar torneo/equipo/jugador/noticia no se borra su imagen (`logoPublicId` queda huérfano). Borrar el asset en la misma operación (o job diferido) usando los `publicId` ya guardados. **E:Bajo**
-- [ ] (Hallazgo C3, 2026-07-04) `News.coverImagePublicId` y `Team.logoPublicId` nunca se persistían: las rutas los descartaban del body. Los validators Zod ahora los aceptan, pero falta verificar que los formularios los envíen al subir imagen; sin ese dato la limpieza de huérfanos es imposible. **E:Bajo**
+- [x] **Prevención al borrar — hecho (2026-07-21).** El borrado físico de una entidad ahora borra su asset:
+  - Noticias (hard delete) → borra la portada ([app/api/noticias/[id]/route.ts](app/api/noticias/[id]/route.ts) usa `safeDeleteAssets`).
+  - Equipos y jugadores → **ya** borraban su logo/fotos en `deleteTeam`/`deletePlayer` (verificado).
+  - Rechazo de inscripción que borra la propuesta de equipo → borra su logo ([modules/delegados/actions/requests.ts](modules/delegados/actions/requests.ts)).
+  - Torneos = **soft delete** (`deletedAt`, recuperable) → a propósito NO se borra el asset.
+  - Helper `safeDeleteAssets(publicIds)` en [lib/cloudinary.ts](lib/cloudinary.ts): best-effort, no rompe la mutación si Cloudinary falla.
+- [x] **Panel de limpieza retroactiva — hecho (2026-07-21).** `/admin/imagenes` (solo ADMINISTRADOR, ítem en el nav) lista los assets de las carpetas gestionadas que ninguna fila de la BD referencia, agrupados por carpeta, con miniatura/tamaño/fecha, selección múltiple y borrado con confirmación. Lógica en [lib/cloudinary-orphans.ts](lib/cloudinary-orphans.ts) + `listResourcesByPrefix` (Admin API paginado) en [lib/cloudinary.ts](lib/cloudinary.ts); borrado por la action [app/admin/imagenes/actions.ts](app/admin/imagenes/actions.ts).
+  - **Seguridad del cálculo:** el set "referenciado" combina las columnas `*PublicId` **y** el publicId extraído de las `*Url` (`extractPublicId`), e incluye filas soft-deleted. Así, aunque un formulario viejo no haya persistido el `publicId` (ver bullet siguiente), la imagen viva NO se marca como huérfana. `deleteOrphans` re-verifica contra la BD antes de tocar Cloudinary (evita borrar un asset referenciado entre listar y confirmar).
+  - Los **comprobantes de pago** (`pagos/comprobantes`) se incluyen en el panel (decisión del usuario, 2026-07-21): si un Payment no los referencia, aparecen y se pueden borrar.
+- [ ] (Hallazgo C3, 2026-07-04) `News.coverImagePublicId` y `Team.logoPublicId` no se persistían en su momento: las rutas los descartaban del body. Los validators Zod ya los aceptan; falta **verificar que los formularios los envíen** al subir imagen. El panel de huérfanos es robusto a esto (usa la URL como respaldo), pero sin el `publicId` guardado la prevención automática al reemplazar imagen no puede borrar el asset viejo. **E:Bajo**
+- [ ] **Prevención al REEMPLAZAR/QUITAR imagen (hallazgo 2026-07-21).** Los PATCH de entidades no borran el asset anterior cuando el usuario sube una imagen nueva encima o la quita: el viejo queda huérfano hasta que lo limpie el panel. Fuente principal de huérfanos nuevos. Detectar en cada PATCH `oldPublicId !== newPublicId` y llamar `safeDeleteAssets([oldPublicId])`. **E:Bajo-Medio**
+- [ ] **Árbitros sin carpeta gestionada (hallazgo 2026-07-21).** `Referee.imageUrl` no tiene columna `*PublicId` ni carpeta en `ALLOWED_UPLOAD_FOLDERS`, así que sus imágenes no las cubre el panel de huérfanos. Registrar la carpeta + persistir el publicId si se suben fotos de árbitro por el uploader firmado. **E:Bajo**
 
 ### M10. Estados vacíos y skeletons consistentes
 
