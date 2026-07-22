@@ -125,20 +125,49 @@ npm install
 
 ### 3) Variables de entorno
 
-Crear archivo .env con las variables necesarias (ejemplo):
+Copiar la plantilla y completar los valores:
 
-```env
-DATABASE_URL=
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+```bash
+cp .env.example .env
 ```
+
+`.env` esta en `.gitignore`; `.env.example` no. Nunca poner un valor real en la
+plantilla, ni siquiera recortado: el prefijo de un secreto tambien es una pista.
+
+#### Obligatorias
+
+| Variable | Para que sirve | Donde se saca | Si falta |
+|---|---|---|---|
+| `DATABASE_URL` | Conexion a PostgreSQL. | Neon, Supabase o tu Postgres local. | La app no arranca. Es la unica variable sin la que no funciona absolutamente nada. |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clave publica de Clerk (la usa el navegador). | Dashboard de Clerk → Developers → API keys. | No se puede iniciar sesion. |
+| `CLERK_SECRET_KEY` | Clave privada de Clerk (solo server). | Idem anterior. | No se puede iniciar sesion; todo `/admin` queda inaccesible. |
+| `ADMIN_EMAIL` | Email que recibe el rol **ADMINISTRADOR** al iniciar sesion (bootstrap, ver `lib/checkUser.ts`). Se compara sin distinguir mayusculas y se aplica aunque el usuario ya existiera sin el rol. | Lo elegis vos: tu propio email. | **Nadie es administrador.** No hay forma de entrar a planes, usuarios ni organizaciones. Es lo primero a configurar en una instalacion nueva. |
+
+#### Obligatorias si se suben imagenes (escudos, fotos, portadas)
+
+| Variable | Para que sirve | Si falta |
+|---|---|---|
+| `CLOUDINARY_CLOUD_NAME` | Nombre de la cuenta de Cloudinary. | No se pueden subir imagenes. |
+| `CLOUDINARY_API_KEY` | Firma de subidas. | Idem. |
+| `CLOUDINARY_API_SECRET` | Firma de subidas y borrado. **Nunca se expone al cliente.** | Idem. |
+
+Las tres son solo server-side. No hace falta una `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`:
+el navegador recibe el cloud name en la respuesta de `/api/cloudinary/sign`.
+
+#### Opcionales
+
+| Variable | Para que sirve | Si falta |
+|---|---|---|
+| `CLERK_WEBHOOK_SECRET` | Verifica la firma del webhook de Clerk, que sincroniza usuario, email, foto y ultimo login con la BD. | La app anda igual, pero `lastLoginAt` y los cambios hechos en Clerk no se reflejan en la base. |
+| `RESEND_API_KEY` | Envio de notificaciones por email (S5). | No se manda ningun mail. La campana dentro de la app sigue funcionando igual. |
+| `RESEND_FROM` | Remitente de esos emails. Requiere dominio verificado en Resend. | Usa `onboarding@resend.dev`, que solo entrega a tu propia casilla. |
+| `NEXT_PUBLIC_APP_URL` | Base absoluta para links de email, imagenes OG, QR y sitemap (un mail o un QR no pueden usar rutas relativas). | En Vercel se deduce de `VERCEL_URL`; en local asume `http://localhost:3000`. Configurala en produccion con el dominio real. |
+
+#### Rutas de Clerk (no son secretos)
+
+`NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL` y los dos
+`..._FALLBACK_REDIRECT_URL` apuntan a paginas de la propia app. Los valores de la
+plantilla ya son los correctos: cambialos solo si moves esas paginas.
 
 ### 4) Prisma
 
@@ -147,10 +176,10 @@ npx prisma generate
 npx prisma migrate dev --name init
 ```
 
-Opcional seed:
+Sembrar el catalogo de planes (necesario: sin planes no se puede crear una liga):
 
 ```bash
-npm run prisma db seed
+npm run db:seed
 ```
 
 ### 5) Levantar entorno de desarrollo
@@ -166,6 +195,11 @@ npm run dev
 - npm run build: build de produccion (incluye prisma generate)
 - npm run start: iniciar app buildada
 - npm run lint: validacion de codigo
+- npm run test: tests con Vitest (`npm run test:watch` para el modo interactivo)
+- npm run db:seed: siembra el catalogo de planes (idempotente)
+- npm run db:reset: **vacia toda la base** y vuelve a sembrar los planes, para
+  arrancar de cero. Pide confirmar escribiendo el nombre de la base y se niega a
+  correr con `NODE_ENV=production` (ver `scripts/reset-db.mjs`)
 
 ## API (Resumen)
 

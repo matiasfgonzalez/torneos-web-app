@@ -52,8 +52,6 @@
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
 
 **🟢 Bajo**
-- **B1** (parcial) — quedan 2 excepciones de nombres como decisión: `/profile` → `/perfil` (URL pública) y `/api/noticias` → `/api/news` · `E:Bajo`
-- **B2** — `.env_example` → `.env.example` + documentar variables · `E:Bajo`
 - **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
 - **B5** — Estrategia de migraciones (CI + seeds idempotentes) · `E:Bajo`
 - **B6** — TypeScript más estricto (`noUncheckedIndexedAccess`, `z.infer`) · `E:Medio`
@@ -71,7 +69,7 @@
 - **N13** — falta: que el delegado cancele su propia solicitud; transferir delegación
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **DX:** B1, B2, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
 
 ---
 
@@ -434,11 +432,14 @@
   - **Comentarios en inglés → español** (regla nueva del usuario, ahora en AGENT_RULES): `PublicTabsTeam.tsx` (3), `lib/apiRoleValidation.ts` (2). Se **borró** el bloque de `ActivityHistory.tsx`, que además de estar en inglés **mentía dos veces**: afirmaba que "no existe una relación de delegado con equipos en el schema" —`TeamManager` existe desde N13— y que "Tournaments have userId", cuando la query de arriba filtra por membresía de organización. Era el autor pensando en voz alta ("checking schema might be useful but let's stick to what we know"). Se reemplazó por una línea que describe lo que la query hace de verdad.
   - **Carpetas español/inglés: NO era una mezcla, es una convención de facto** que nadie había escrito — y por eso se rompía. Quedó documentada en [AGENT_RULES](docs/AGENT_RULES.md): rutas públicas en **español** (son URLs que se comparten e indexan), rutas de API en **inglés** (superficie técnica), módulos en **español** (lenguaje del dominio).
   - `tsc` + `eslint` + `next build` en verde.
-- [ ] **B1 — dos excepciones a la convención (decisión, no limpieza).** No las toqué solo porque las dos tienen costo y una es visible al usuario:
-  1. **`app/(public)/profile` → `/perfil`** (10 call sites). Es la única ruta pública en inglés; el menú ya la llama "Mi Perfil". Consistente con `/equipos`, `/jugadores`, `/torneos`… pero **es una URL pública**: cambiarla rompe bookmarks y links externos salvo que se agregue un redirect permanente desde `/profile`. Decisión de producto.
-  2. **`app/api/noticias` → `/api/news`** y `org-posts` (12 call sites). Es la única API en español. Sin impacto en SEO ni en usuarios (superficie interna), pero toca 12 lugares para ganar solo consistencia. Barato pero de valor bajo.
-  **E:Bajo** cada una.
-- [ ] **B2. Renombrar `.env_example` → `.env.example`** (convención estándar que las herramientas detectan) y documentar cada variable en README. **E:Bajo**
+- [x] **B1 — las dos excepciones se quedan como están (decisión del usuario, 2026-07-22).** `app/(public)/profile` (única ruta pública en inglés) y `app/api/noticias` + `org-posts` (únicas APIs en español) **no se renombran**. `/profile` es una URL pública: cambiarla rompe bookmarks y links externos y obligaría a mantener un redirect permanente, a cambio de nada que el usuario perciba. `/api/noticias` es superficie interna: tocar 12 call sites para ganar solo consistencia no se paga. Quedan documentadas como excepciones conocidas en AGENT_RULES, no como deuda. **B1 cerrada del todo.**
+- [x] **B2. `.env_example` → `.env.example` + variables documentadas — hecho (2026-07-22).**
+  - Renombrado con `git mv` (conserva historia). Verificado lo que suele romper este cambio: `.gitignore` ignora `.env` a secas, **no** `.env*`, así que la plantilla sigue versionada (`git check-ignore` confirma que no queda ignorada) y el `.env` real quedó intacto.
+  - ⚠️ **La plantilla tenía prefijos de credenciales REALES** recortados con `...`: `CLOUDINARY_API_SECRET=qvulEykd1hDd...`, `CLERK_WEBHOOK_SECRET=whsec_o...`, la API key y el cloud name de verdad. Cortados no sirven, pero es un archivo **commiteado** y el prefijo de un secreto reduce el espacio de búsqueda. Reemplazados por placeholders genéricos, con la advertencia escrita en el propio archivo.
+  - **Faltaba `ADMIN_EMAIL`**, que no estaba en la plantilla pero sí en el código ([lib/checkUser.ts](lib/checkUser.ts)): es la que otorga el rol ADMINISTRADOR al iniciar sesión. **En una instalación nueva, sin ella nadie es administrador** y no hay forma de entrar a planes, usuarios ni organizaciones. Agregada y marcada como lo primero a configurar.
+  - **Sacadas dos variables que no hacían nada:** `DIRECT_URL` (nadie la lee — `schema.prisma` solo declara `url = env("DATABASE_URL")`) y `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` (0 usos en el repo: el navegador recibe el cloud name en la respuesta de `/api/cloudinary/sign`, no de una variable propia). Documentarlas como obligatorias era mandar a configurar algo inerte.
+  - **README**: la sección de variables pasó de una lista pelada de `VAR=` a tablas por categoría (obligatorias / obligatorias-si-hay-imágenes / opcionales / rutas de Clerk) con **qué hace cada una, de dónde se saca y qué pasa si falta**. Se corrigió de paso el comando de seed, que documentaba `npm run prisma db seed` (no existe) → `npm run db:seed`, y se sumaron a la lista de scripts `test`, `db:seed` y `db:reset`.
+  - **Contraste automatizado** entre `process.env.*` del código y las claves de la plantilla: la única diferencia que queda son `NODE_ENV` y `VERCEL_URL`, que las pone el runtime y no corresponde declarar. `tsc` + `next build` en verde.
 - [ ] **B3. Documentar contratos de API** (`docs/api/*.md` o OpenAPI generado desde los esquemas Zod). **E:Medio**
 - [~] **B4. Código muerto (2026-07-21).** Corrido `npx knip` (ruidoso: muchos falsos positivos — barrels `index.ts`, primitivas UI, `sw.js` runtime). Borrados **13 archivos** verificados con 0 imports:
   - `components/admin/match-dialog.tsx` y `modules/torneos/components/ListTorneos.tsx` → **ya no existían** (borrados en pasadas anteriores).
