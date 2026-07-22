@@ -92,7 +92,7 @@ Referencia: `app/admin/plan/page.tsx`, `app/admin/pagos/page.tsx`, `app/admin/or
 
 **Cuál elegir:** Variante A para listados de gestión de alto volumen con acción de "crear" prominente y quick-stats operativos. Variante B para pantallas más acotadas (configuración, cuenta, aprobaciones). Es una decisión ya tomada implícitamente por el código existente — replicá la variante de la pantalla más parecida a la que estás construyendo, no mezcles ambas en una misma pantalla. Unificar en un único patrón queda pendiente (`TODO.md` F3).
 
-**El listado en sí va en `<DataTable>`** (`components/shared/DataTable.tsx`, F3) — ver §4 de COMPONENT_LIBRARY.md. La página aporta el `<PageHeader>` y los KPIs; el `DataTable` aporta la Card con búsqueda, filtros de chips, orden, paginación, cards de mobile y estado vacío. No armes una `<Table>` a mano ni reimplementes la búsqueda/los filtros por fuera: la Card del DataTable ya los trae.
+**El listado en sí va en `<DataTable>`** (`components/shared/DataTable.tsx`, F3) — ver §4 de COMPONENT_LIBRARY.md. La página aporta el `<PageHeader>` y los KPIs; el `DataTable` aporta la Card con búsqueda, filtros desplegables, orden, paginación, cards de mobile y estado vacío. No armes una `<Table>` a mano ni reimplementes la búsqueda/los filtros por fuera: la Card del DataTable ya los trae.
 
 **Cargar/refrescar los datos:** si el listado es client-side (`app/admin/arbitros`, `app/admin/noticias`, `TabsMatches`), el fetch inicial va en un `useEffect` **sin `setState` síncrono en el cuerpo** — o el estado arranca ya en "cargando" (`useState(true)`), o el fetch va envuelto en `startTransition` y el pendiente de la transición hace de loading. `react-hooks/set-state-in-effect` rechaza lo otro. Mientras carga: `<SkeletonTable>`, no un spinner de pantalla completa.
 
@@ -125,21 +125,28 @@ Reutilizá los componentes de formulario ya existentes (`ManageGoals`, `ManageCa
 
 ## 6. Panel de filtros (público y admin)
 
-> **F2 (2026-07-13):** en los **listados públicos** los filtros ya no son `<Select>`/`<select>` — son **chips** (`<FilterChipGroup>`, `components/shared/FilterChips.tsx`) con el estado en la **URL** (`useUrlFilters`, `hooks/use-url-filters.ts`). Referencia: `modules/torneos/components/FiltroTorneos.tsx`. Los 5 listados (`/torneos`, `/equipos`, `/jugadores`, `/noticias`, `/partidos`) usan este patrón.
+> **2026-07-22 — los filtros son desplegables, ya no chips.** `<FilterSelect>` + `<FilterGrid>` (`components/shared/FilterSelect.tsx`), con el estado en la **URL** (`useUrlFilters`, `hooks/use-url-filters.ts`). Referencia: `modules/torneos/components/FiltroTorneos.tsx`. Lo usan los 5 listados públicos (`/torneos`, `/equipos`, `/jugadores`, `/noticias`, `/partidos`) **y** el `DataTable` del panel.
+>
+> **Por qué cambió.** F2 (2026-07-13) los había puesto como chips y con pocas opciones funcionaba bien. Pero `/torneos` llegó a **14 categorías + 9 estados**: veintipico de píldoras siempre visibles que en el celular se comían la pantalla antes de que apareciera un solo resultado. Y la fila con scroll horizontal, que parecía la solución mobile, en realidad **escondía** opciones sin avisar que había más. El disparador ocupa una línea, dice cuál es el filtro activo sin abrirlo, y muestra las opciones recién cuando se las pide.
 
 Estructura del panel:
 ```tsx
 <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl">
   <CardContent className="p-6 space-y-4">
     Search input con ícono absoluto a la izquierda
-    <FilterChipGroup label="Estado" icon={...} value={...} onChange={...} options={[...]} />   {/* uno por dimensión */}
+    <FilterGrid>                                    {/* apila en mobile, columnas en sm/lg */}
+      <FilterSelect label="Estado" icon={...} value={...} onChange={...} options={[...]} />
+    </FilterGrid>
     botón "Limpiar" (solo si hay filtros activos) con contador en un Badge
   </CardContent>
 </Card>
 ```
 
 Reglas:
-- **Chips, no selects:** en mobile scrollean en una sola fila horizontal (`overflow-x-auto scrollbar-hide`, patrón app deportiva) y en desktop hacen wrap. Cada chip mide 44px de alto (objetivo táctil mínimo) y expone `aria-pressed`; el grupo expone `role="group"` + `aria-label`.
+- **Desplegable, no chips ni `<select>` nativo:** disparador de 44px (objetivo táctil) que muestra el valor activo, y `Popover` + `Command` con la lista. A partir de 8 opciones aparece un buscador dentro del panel — en 14 categorías, tipear "vet" gana a barrer con el ojo.
+- **No declares `role="combobox"` en el disparador:** ese rol exige `aria-controls` apuntando a un listbox, y el panel es un diálogo de Radix. `PopoverTrigger` ya pone `aria-haspopup`/`aria-expanded`/`aria-controls` correctos; declararlo a mano los contradice.
+- El ancho del panel sale de `w-(--radix-popover-trigger-width)`: en mobile no se sale de la pantalla ni queda desalineado.
+- La primera opción es la neutra ("Todas"/"Todos"/"all"); el disparador se resalta con la marca solo cuando el valor **no** es esa.
 - **Estado en la URL:** `useUrlFilters(DEFAULTS)` devuelve `{ values, setFilter, clearFilters, hasActiveFilters }`. Un filtro en su valor por defecto **no** aparece en la query (`/torneos`, no `/torneos?estado=Todos`). Usa `router.replace(..., { scroll: false })`: cambiar un filtro no salta al tope ni ensucia el historial, pero la búsqueda queda compartible/bookmarkeable y "atrás" deshace el último filtro.
 - Las opciones se derivan de los **datos reales** (localidades/ciudades/autores/torneos presentes en el listado), nunca de una lista hardcodeada.
 - Si el listado pagina, resetear a la página 1 al cambiar un filtro **ajustando el estado durante el render** (comparando una `filterKey` con la anterior), no con un `useEffect` + `setState` — el lint `react-hooks/set-state-in-effect` lo rechaza y provoca renders en cascada. Ver `app/(public)/partidos/page.tsx`.

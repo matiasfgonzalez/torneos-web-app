@@ -26,7 +26,7 @@ import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { formatDate } from "@/lib/formatDate";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
-import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { INoticia } from "@modules/noticias/types";
 
@@ -247,33 +247,36 @@ export default function NoticiasPage() {
                   </div>
                 </div>
 
-                {/* Chips: scrollean en mobile, wrap en desktop */}
-                <FilterChipGroup
-                  label="Autor"
-                  icon={User}
-                  value={selectedAuthor}
-                  onChange={(v) => setFilter("autor", v)}
-                  options={[
-                    { value: "", label: "Todos" },
-                    ...autoresDisponibles.map((a) => ({
-                      value: a ?? "",
-                      label: a ?? "",
-                    })),
-                  ]}
-                />
+                {/* Filtros desplegables: el disparador muestra el valor
+                    activo y las opciones se abren al pedirlas. */}
+                <FilterGrid>
+                  <FilterSelect
+                    label="Autor"
+                    icon={User}
+                    value={selectedAuthor}
+                    onChange={(v) => setFilter("autor", v)}
+                    options={[
+                      { value: "", label: "Todos" },
+                      ...autoresDisponibles.map((a) => ({
+                        value: a ?? "",
+                        label: a ?? "",
+                      })),
+                    ]}
+                  />
 
-                <FilterChipGroup
-                  label="Ordenar por"
-                  icon={SortAsc}
-                  value={sortBy}
-                  onChange={(v) => setFilter("orden", v)}
-                  options={[
-                    { value: "date-desc", label: "Más recientes" },
-                    { value: "date-asc", label: "Más antiguas" },
-                    { value: "title-asc", label: "Título (A-Z)" },
-                    { value: "title-desc", label: "Título (Z-A)" },
-                  ]}
-                />
+                  <FilterSelect
+                    label="Ordenar por"
+                    icon={SortAsc}
+                    value={sortBy}
+                    onChange={(v) => setFilter("orden", v)}
+                    options={[
+                      { value: "date-desc", label: "Más recientes" },
+                      { value: "date-asc", label: "Más antiguas" },
+                      { value: "title-asc", label: "Título (A-Z)" },
+                      { value: "title-desc", label: "Título (Z-A)" },
+                    ]}
+                  />
+                </FilterGrid>
               </div>
             </div>
           </div>

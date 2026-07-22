@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { isToday } from "date-fns";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
-import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { IPartidos, MatchStatus } from "@modules/partidos/types";
 import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
@@ -251,31 +251,33 @@ export default function PartidosPage() {
                 )}
               </div>
 
-              <FilterChipGroup
-                label="Estado"
-                icon={Filter}
-                value={filters.status}
-                onChange={(v) => setFilter("estado", v)}
-                options={[
-                  { value: "all", label: "Todos" },
-                  { value: MatchStatus.PROGRAMADO, label: "Programado" },
-                  { value: MatchStatus.EN_JUEGO, label: "En juego" },
-                  { value: MatchStatus.FINALIZADO, label: "Finalizado" },
-                  { value: MatchStatus.SUSPENDIDO, label: "Suspendido" },
-                  { value: MatchStatus.POSTERGADO, label: "Postergado" },
-                ]}
-              />
+              <FilterGrid>
+                <FilterSelect
+                  label="Estado"
+                  icon={Filter}
+                  value={filters.status}
+                  onChange={(v) => setFilter("estado", v)}
+                  options={[
+                    { value: "all", label: "Todos" },
+                    { value: MatchStatus.PROGRAMADO, label: "Programado" },
+                    { value: MatchStatus.EN_JUEGO, label: "En juego" },
+                    { value: MatchStatus.FINALIZADO, label: "Finalizado" },
+                    { value: MatchStatus.SUSPENDIDO, label: "Suspendido" },
+                    { value: MatchStatus.POSTERGADO, label: "Postergado" },
+                  ]}
+                />
 
-              <FilterChipGroup
-                label="Torneo"
-                icon={Trophy}
-                value={filters.tournamentId}
-                onChange={(v) => setFilter("torneo", v)}
-                options={[
-                  { value: "all", label: "Todos" },
-                  ...tournaments.map((t) => ({ value: t.id, label: t.name })),
-                ]}
-              />
+                <FilterSelect
+                  label="Torneo"
+                  icon={Trophy}
+                  value={filters.tournamentId}
+                  onChange={(v) => setFilter("torneo", v)}
+                  options={[
+                    { value: "all", label: "Todos" },
+                    ...tournaments.map((t) => ({ value: t.id, label: t.name })),
+                  ]}
+                />
+              </FilterGrid>
             </CardContent>
           </Card>
 
@@ -309,7 +311,9 @@ export default function PartidosPage() {
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-brand-2 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
-                      <Badge className={`${getStatusColor(match.status)} gap-1`}>
+                      <Badge
+                        className={`${getStatusColor(match.status)} gap-1`}
+                      >
                         {getStatusIcon(match.status)}
                         {match.status.replace("_", " ")}
                       </Badge>
@@ -341,7 +345,8 @@ export default function PartidosPage() {
                             {match.homeTeam.team.name}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {match.homeTeam.team.shortName || match.homeTeam.team.name}
+                            {match.homeTeam.team.shortName ||
+                              match.homeTeam.team.name}
                           </p>
                         </div>
                       </div>
@@ -378,7 +383,8 @@ export default function PartidosPage() {
                             {match.awayTeam.team.name}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {match.awayTeam.team.shortName || match.awayTeam.team.name}
+                            {match.awayTeam.team.shortName ||
+                              match.awayTeam.team.name}
                           </p>
                         </div>
                         <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
@@ -445,7 +451,10 @@ export default function PartidosPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredMatches.length)}{" "}
+                    {Math.min(
+                      currentPage * ITEMS_PER_PAGE,
+                      filteredMatches.length,
+                    )}{" "}
                     de {filteredMatches.length} partidos
                   </div>
 
@@ -453,7 +462,9 @@ export default function PartidosPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(1, prev - 1))
+                      }
                       disabled={currentPage === 1}
                       className="rounded-xl"
                     >
@@ -462,29 +473,35 @@ export default function PartidosPage() {
                     </Button>
 
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let page = i + 1;
-                        if (totalPages > 5) {
-                          if (currentPage > 3) page = currentPage - 2 + i;
-                          if (currentPage > totalPages - 2) page = totalPages - 4 + i;
-                        }
-                        return (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            disabled={currentPage === page}
-                            className={
-                              currentPage === page
-                                ? "rounded-xl bg-gradient-to-r from-brand to-brand-2 text-white border-0"
-                                : "rounded-xl"
-                            }
-                          >
-                            {page}
-                          </Button>
-                        );
-                      })}
+                      {Array.from(
+                        { length: Math.min(5, totalPages) },
+                        (_, i) => {
+                          let page = i + 1;
+                          if (totalPages > 5) {
+                            if (currentPage > 3) page = currentPage - 2 + i;
+                            if (currentPage > totalPages - 2)
+                              page = totalPages - 4 + i;
+                          }
+                          return (
+                            <Button
+                              key={page}
+                              variant={
+                                currentPage === page ? "default" : "outline"
+                              }
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              disabled={currentPage === page}
+                              className={
+                                currentPage === page
+                                  ? "rounded-xl bg-gradient-to-r from-brand to-brand-2 text-white border-0"
+                                  : "rounded-xl"
+                              }
+                            >
+                              {page}
+                            </Button>
+                          );
+                        },
+                      )}
                     </div>
 
                     <Button

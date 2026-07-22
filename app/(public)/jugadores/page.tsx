@@ -23,7 +23,7 @@ import {
 import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { PlayerCard } from "@modules/jugadores/components/public/PlayerCard";
 import { IPlayer } from "@modules/jugadores/types";
@@ -48,7 +48,11 @@ const PlayersListInterface = () => {
   // Filtros en la URL (F2)
   const { values, setFilter, clearFilters, hasActiveFilters } =
     useUrlFilters(DEFAULTS);
-  const { q: searchTerm, posicion: filterPosition, estado: filterStatus } = values;
+  const {
+    q: searchTerm,
+    posicion: filterPosition,
+    estado: filterStatus,
+  } = values;
   const sortBy = values.orden as SortOption;
 
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -280,47 +284,50 @@ const PlayersListInterface = () => {
                   </div>
                 </div>
 
-                {/* Chips: scrollean en mobile, wrap en desktop */}
-                <FilterChipGroup
-                  label="Posición"
-                  icon={Target}
-                  value={filterPosition}
-                  onChange={(v) => setFilter("posicion", v)}
-                  options={[
-                    { value: "", label: "Todas" },
-                    ...PLAYER_POSITION_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: o.label,
-                    })),
-                  ]}
-                />
+                {/* Filtros desplegables: el disparador muestra el valor
+                    activo y las opciones se abren al pedirlas. */}
+                <FilterGrid>
+                  <FilterSelect
+                    label="Posición"
+                    icon={Target}
+                    value={filterPosition}
+                    onChange={(v) => setFilter("posicion", v)}
+                    options={[
+                      { value: "", label: "Todas" },
+                      ...PLAYER_POSITION_OPTIONS.map((o) => ({
+                        value: o.value,
+                        label: o.label,
+                      })),
+                    ]}
+                  />
 
-                <FilterChipGroup
-                  label="Estado"
-                  icon={Activity}
-                  value={filterStatus}
-                  onChange={(v) => setFilter("estado", v)}
-                  options={[
-                    { value: "", label: "Todos" },
-                    ...PLAYER_STATUS_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: o.label,
-                    })),
-                  ]}
-                />
+                  <FilterSelect
+                    label="Estado"
+                    icon={Activity}
+                    value={filterStatus}
+                    onChange={(v) => setFilter("estado", v)}
+                    options={[
+                      { value: "", label: "Todos" },
+                      ...PLAYER_STATUS_OPTIONS.map((o) => ({
+                        value: o.value,
+                        label: o.label,
+                      })),
+                    ]}
+                  />
 
-                <FilterChipGroup
-                  label="Ordenar por"
-                  icon={SortAsc}
-                  value={sortBy}
-                  onChange={(v) => setFilter("orden", v)}
-                  options={[
-                    { value: "name-asc", label: "Nombre (A-Z)" },
-                    { value: "name-desc", label: "Nombre (Z-A)" },
-                    { value: "number-asc", label: "Número ↑" },
-                    { value: "number-desc", label: "Número ↓" },
-                  ]}
-                />
+                  <FilterSelect
+                    label="Ordenar por"
+                    icon={SortAsc}
+                    value={sortBy}
+                    onChange={(v) => setFilter("orden", v)}
+                    options={[
+                      { value: "name-asc", label: "Nombre (A-Z)" },
+                      { value: "name-desc", label: "Nombre (Z-A)" },
+                      { value: "number-asc", label: "Número ↑" },
+                      { value: "number-desc", label: "Número ↓" },
+                    ]}
+                  />
+                </FilterGrid>
               </div>
             </div>
           </div>

@@ -28,7 +28,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { FilterChipGroup, type ChipOption } from "@/components/shared/FilterChips";
+import {
+  FilterSelect,
+  FilterGrid,
+  type FilterOption,
+} from "@/components/shared/FilterSelect";
 import { cn } from "@/lib/utils";
 
 /**
@@ -66,8 +70,8 @@ export interface DataTableFilter<T> {
   id: string;
   label: string;
   icon?: LucideIcon;
-  options: ChipOption[];
-  /** `value` es el `ChipOption.value` elegido; se llama solo si no es el default. */
+  options: FilterOption[];
+  /** `value` es el `FilterOption.value` elegido; se llama solo si no es el default. */
   test: (row: T, value: string) => boolean;
   /** Valor "sin filtrar". Default: "all". */
   defaultValue?: string;
@@ -110,11 +114,13 @@ export interface DataTableProps<T> {
 
 type SortState = { columnId: string; dir: "asc" | "desc" } | null;
 
-const HIDE_BELOW: Record<NonNullable<DataTableColumn<unknown>["hideBelow"]>, string> =
-  {
-    lg: "hidden lg:table-cell",
-    xl: "hidden xl:table-cell",
-  };
+const HIDE_BELOW: Record<
+  NonNullable<DataTableColumn<unknown>["hideBelow"]>,
+  string
+> = {
+  lg: "hidden lg:table-cell",
+  xl: "hidden xl:table-cell",
+};
 
 const ALIGN: Record<NonNullable<DataTableColumn<unknown>["align"]>, string> = {
   left: "text-left",
@@ -149,7 +155,11 @@ export function DataTable<T>({
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return rows.filter((row) => {
-      if (term && searchable && !searchable.getText(row).toLowerCase().includes(term)) {
+      if (
+        term &&
+        searchable &&
+        !searchable.getText(row).toLowerCase().includes(term)
+      ) {
         return false;
       }
       for (const f of filters ?? []) {
@@ -170,12 +180,14 @@ export function DataTable<T>({
     return [...filtered].sort((a, b) => {
       const va = col.sortValue!(a);
       const vb = col.sortValue!(b);
-      if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
+      if (typeof va === "number" && typeof vb === "number")
+        return (va - vb) * dir;
       return String(va).localeCompare(String(vb), "es") * dir;
     });
   }, [filtered, sort, columns]);
 
-  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
+  const totalPages =
+    pageSize > 0 ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
   // Ajuste durante el render (no useEffect): si al filtrar la página actual
   // dejó de existir, volver a la 1 sin disparar un render en cascada.
   const currentPage = Math.min(page, totalPages);
@@ -277,19 +289,23 @@ export function DataTable<T>({
             </div>
           )}
 
-          {filters?.map((f) => (
-            <FilterChipGroup
-              key={f.id}
-              label={f.label}
-              icon={f.icon}
-              value={filterValues[f.id] ?? f.defaultValue ?? "all"}
-              onChange={(v) => {
-                setFilterValues((prev) => ({ ...prev, [f.id]: v }));
-                setPage(1);
-              }}
-              options={f.options}
-            />
-          ))}
+          {!!filters?.length && (
+            <FilterGrid>
+              {filters.map((f) => (
+                <FilterSelect
+                  key={f.id}
+                  label={f.label}
+                  icon={f.icon}
+                  value={filterValues[f.id] ?? f.defaultValue ?? "all"}
+                  onChange={(v) => {
+                    setFilterValues((prev) => ({ ...prev, [f.id]: v }));
+                    setPage(1);
+                  }}
+                  options={f.options}
+                />
+              ))}
+            </FilterGrid>
+          )}
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">

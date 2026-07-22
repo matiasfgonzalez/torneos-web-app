@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Trophy, Search, Filter, MapPin, X } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { TournamentCard } from "@modules/torneos/components/TournamentCard";
 import { ITorneo } from "@modules/torneos/types";
@@ -103,9 +103,11 @@ const FiltroTorneos = ({ tournaments }: PropsFiltroTorneos) => {
               />
             </div>
 
-            {/* Chips: scrollean en mobile, wrap en desktop */}
-            <div className="space-y-4">
-              <FilterChipGroup
+            {/* Filtros desplegables en grilla: apilados en mobile, en columnas
+                cuando hay lugar. Antes eran ~25 chips siempre visibles (14
+                categorías + 9 estados) que tapaban los resultados. */}
+            <FilterGrid>
+              <FilterSelect
                 label="Categoría"
                 icon={Filter}
                 value={categoria}
@@ -119,7 +121,7 @@ const FiltroTorneos = ({ tournaments }: PropsFiltroTorneos) => {
                 ]}
               />
 
-              <FilterChipGroup
+              <FilterSelect
                 label="Estado"
                 icon={Trophy}
                 value={estado}
@@ -133,7 +135,7 @@ const FiltroTorneos = ({ tournaments }: PropsFiltroTorneos) => {
                 ]}
               />
 
-              <FilterChipGroup
+              <FilterSelect
                 label="Localidad"
                 icon={MapPin}
                 value={localidad}
@@ -143,7 +145,7 @@ const FiltroTorneos = ({ tournaments }: PropsFiltroTorneos) => {
                   ...localities.map((l) => ({ value: l, label: l })),
                 ]}
               />
-            </div>
+            </FilterGrid>
           </div>
         </div>
       </div>

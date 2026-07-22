@@ -6,7 +6,7 @@ import TeamCard from "./TeamCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { FilterChipGroup } from "@/components/shared/FilterChips";
+import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import {
   Search,
@@ -162,33 +162,36 @@ export default function TeamsList({ initialTeams }: TeamsListProps) {
               </div>
             </div>
 
-            {/* Chips: scrollean en mobile, wrap en desktop */}
-            <FilterChipGroup
-              label="Ciudad"
-              icon={MapPin}
-              value={selectedCity}
-              onChange={(v) => setFilter("ciudad", v)}
-              options={[
-                { value: "", label: "Todas" },
-                ...ciudadesDisponibles.map((c) => ({
-                  value: c ?? "",
-                  label: c ?? "",
-                })),
-              ]}
-            />
+            {/* Filtros desplegables: el disparador muestra el valor activo y
+                las opciones se abren al pedirlas. */}
+            <FilterGrid>
+              <FilterSelect
+                label="Ciudad"
+                icon={MapPin}
+                value={selectedCity}
+                onChange={(v) => setFilter("ciudad", v)}
+                options={[
+                  { value: "", label: "Todas" },
+                  ...ciudadesDisponibles.map((c) => ({
+                    value: c ?? "",
+                    label: c ?? "",
+                  })),
+                ]}
+              />
 
-            <FilterChipGroup
-              label="Ordenar por"
-              icon={SortAsc}
-              value={sortBy}
-              onChange={(v) => setFilter("orden", v)}
-              options={[
-                { value: "name-asc", label: "Nombre (A-Z)" },
-                { value: "name-desc", label: "Nombre (Z-A)" },
-                { value: "city-asc", label: "Ciudad (A-Z)" },
-                { value: "city-desc", label: "Ciudad (Z-A)" },
-              ]}
-            />
+              <FilterSelect
+                label="Ordenar por"
+                icon={SortAsc}
+                value={sortBy}
+                onChange={(v) => setFilter("orden", v)}
+                options={[
+                  { value: "name-asc", label: "Nombre (A-Z)" },
+                  { value: "name-desc", label: "Nombre (Z-A)" },
+                  { value: "city-asc", label: "Ciudad (A-Z)" },
+                  { value: "city-desc", label: "Ciudad (Z-A)" },
+                ]}
+              />
+            </FilterGrid>
           </div>
         </div>
       </div>
