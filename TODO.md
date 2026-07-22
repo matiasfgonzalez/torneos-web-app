@@ -53,7 +53,7 @@
 
 **🟢 Bajo**
 - **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
-- **B5** — Estrategia de migraciones (CI + seeds idempotentes) · `E:Bajo`
+- **B5b** — Migrar `package.json#prisma` → `prisma.config.ts` (bloquea el upgrade a Prisma 7) · `E:Bajo`
 - **B6** — TypeScript más estricto (`noUncheckedIndexedAccess`, `z.infer`) · `E:Medio`
 - **B7** — DevOps base (Sentry, backups, Docker opcional) · `E:Medio`
 - **N14e** — Scoping por torneo (diseñado, NO construir hasta demanda real) · `E:Medio`
@@ -69,7 +69,7 @@
 - **N13** — falta: que el delegado cancele su propia solicitud; transferir delegación
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **DX:** B1, B2, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
 
 ---
 
@@ -449,9 +449,19 @@
   - `tsc` + `next build` en verde tras el borrado.
 - [x] **B4 — `app/admin/partidos`: se queda (resuelto 2026-07-21).** NO es código muerto ni redundante. `page.tsx` (399 líneas) es el hub org-scoped (N3) que lista partidos de las ligas del usuario y enlaza cada uno a `/admin/partidos/[id]/cargar` (la **carga rápida de resultados mobile-first**, feature de 2026-07-12) y a la vista pública. La duda original ("¿pantalla global vs gestión dentro del torneo?") queda resuelta: coexisten con propósitos distintos (entrada rápida a cargar resultado vs gestión completa del torneo), y el diálogo "roto de raíz" que documentó A1 ya se arregló al unificar en `MatchFormSheet`.
 - [ ] **B4 — candidatos knip por revisar (no borrados, requieren criterio).** Posible código muerto pero fuera de alta confianza: `components/{RedirectPage,responsive-header}.tsx`, `components/index/{HeroSection,StatsSection}.tsx`, `components/reactbits/particles/Particles.tsx`, `app/admin/usuarios/components/*` (RoleSelector/StatusBadge/UserCard/UserFilters/UserStats + index), `modules/*/index.ts` (barrels sin uso), `modules/jugadores/components/player-card.{tsx,css}`, `modules/equipos/actions/getEquiposByTorneo.ts`, `modules/partidos/{actions/match.ts, types/match.ts}`, `prisma/backfill-tournament-slugs.js`. Deps que knip marca sin uso (verificar antes de desinstalar; puede haber uso indirecto): `framer-motion`, `next-themes`, `ogl`, `react-day-picker`. También `server-only` está sin declarar en package.json ([lib/export/tournament-export.ts](lib/export/tournament-export.ts)). **E:Medio**
-- [ ] **B5. Estrategia de migraciones:** checklist para PRs con migración + `prisma migrate diff` en CI. **E:Bajo**
+- [x] **B5. Estrategia de migraciones — hecho (2026-07-22).**
+  - **Job `migrations` nuevo en CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)), con un Postgres 16 descartable como `service` (estas comprobaciones no se pueden hacer sin una base, y jamás contra la de producción). Tres pasos:
+    1. **`prisma migrate deploy` sobre una base limpia** — ¿aplican las migraciones desde cero? Importa especialmente acá porque **varias están escritas a mano** (la de identidad global del jugador, entre otras): un SQL inválido o fuera de orden no se nota hasta que alguien levanta el proyecto de cero o se despliega.
+    2. **`prisma migrate diff --exit-code` (drift)** — atrapa el error clásico: tocar `schema.prisma`, correr `generate`/`db push`, y no crear el archivo de migración. En local anda (la BD de desarrollo ya tiene el cambio) y explota al desplegar.
+    3. **`npm run db:seed`** — el seed tiene que seguir corriendo: lo usan una instalación nueva y `npm run db:reset`.
+  - **Lint pasó a bloqueante.** El `continue-on-error: true` tenía un TODO que decía "volver bloqueante cuando se limpien los errores preexistentes" — ya se limpiaron: `npx eslint app components lib modules` (el comando exacto del CI) da **0 errores**, solo warnings de `<img>` (deuda de M2). Cierra el pendiente de "lint bloqueante" de A8.
+  - **Checklist de PR** ([.github/pull_request_template.md](.github/pull_request_template.md)): solo lo que el CI **no** puede saber — que la migración se haya generado con `migrate dev` y no `db push`, que el archivo esté commiteado, si es destructiva qué pasa con las filas existentes, si hace falta backfill, y las dos reglas propias del proyecto (carpeta en `ALLOWED_UPLOAD_FOLDERS` al sumar imágenes, `deletedAt: null` en los listados). Los ejemplos salen de casos reales del repo, no son genéricos.
+  - **Verificado que el check falla cuando tiene que fallar** (un check que nunca falla no sirve): se agregó un campo de prueba a `schema.prisma`, el diff lo detectó con **exit 2** y el detalle del cambio; se restauró el schema y volvió a dar **exit 0**. También corrió el seed y se confirmó que las 16 migraciones tienen su `migration.sql`.
+  - ⚠️ **Lo que NO pude ensayar localmente:** el paso `migrate deploy` sobre una base limpia. El engine de Docker Desktop no estaba corriendo y no hay Postgres local, así que ese paso se estrena en el primer PR. Los otros dos (drift y seed) sí se corrieron de verdad.
+  - (Hallazgo) Prisma avisa que `package.json#prisma` está deprecado y se elimina en Prisma 7 → migrar a `prisma.config.ts`. Anotado abajo en B-nuevos.
   - ✅ **Seeds: ya resuelto (verificado 2026-07-22).** La nota vieja decía que el seed era `phase-seed.js` del modelo legacy: eso quedó desactualizado — ese archivo ya no existe (murió con `Phase` en A6). El seed actual es [prisma/seed.js](prisma/seed.js), catálogo de planes con `upsert` por `code` (idempotente), ahora expuesto como `npm run db:seed`.
   - ✅ **Reset de entorno (2026-07-22):** `npm run db:reset` ([scripts/reset-db.mjs](scripts/reset-db.mjs)) vacía todas las tablas y resiembra los planes, para arrancar el sistema de cero. Enumera las tablas desde `pg_tables` (no una lista escrita a mano, que se desactualiza al agregar un modelo), preserva `_prisma_migrations`, y **se protege del error real —borrar la base equivocada—**: bloquea `NODE_ENV=production`, imprime host/nombre/conteo antes de tocar nada y exige tipear el nombre de la base para confirmar. `--force` saltea la confirmación (sigue bloqueado en producción).
+- [ ] **B5b. Migrar `package.json#prisma` → `prisma.config.ts` (hallazgo 2026-07-22).** Prisma lo avisa en cada comando: la clave `prisma` de `package.json` está deprecada y **se elimina en Prisma 7**. El repo está en 6.19 y hay un 7.9 disponible, así que esto bloquea el upgrade mayor. **E:Bajo**
 - [ ] **B6. TypeScript más estricto:** 48 usos de `: any`; activar `noUncheckedIndexedAccess`, tipar respuestas de API con los tipos inferidos de Zod (`z.infer`). **E:Medio**
 - [ ] **B7. DevOps base:** GitHub Actions (ver A8), `Dockerfile` multi-stage opcional para portabilidad, Sentry (error tracking) + logs estructurados, política de backups de la BD (pg_dump programado o PITR del proveedor), y documento breve de recuperación ante desastres. **E:Medio**
 

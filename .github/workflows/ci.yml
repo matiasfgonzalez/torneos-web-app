@@ -32,12 +32,27 @@ jobs:
       - name: Tests
         run: npm test
 
-  lint:
-    name: Lint (no bloqueante)
+  migrations:
+    name: Migraciones
     runs-on: ubuntu-latest
-    # TODO: volver bloqueante cuando se limpien los errores preexistentes
-    # (unused imports + any en partidos/usuarios/match-dialog, ver TODO.md A8)
-    continue-on-error: true
+    # Postgres de verdad y descartable: las comprobaciones de abajo no se pueden
+    # hacer sin una base, y nunca deben correr contra la de producción.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: golazo_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/golazo_ci"
     steps:
       - uses: actions/checkout@v4
 
@@ -49,5 +64,46 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # 1) ¿Las migraciones aplican desde cero? Importa especialmente porque
+      #    varias de este repo están escritas a mano (la de identidad global del
+      #    jugador, entre otras): un SQL inválido o fuera de orden no se nota
+      #    hasta que alguien levanta el proyecto de cero o se despliega.
+      - name: Aplicar migraciones sobre una base limpia
+        run: npx prisma migrate deploy
+
+      # 2) ¿Quedó algo del schema sin migrar? Es el error clásico: se toca
+      #    `schema.prisma`, se corre `prisma generate` o `db push`, y el archivo
+      #    de migración nunca se crea. En local anda —la BD de desarrollo ya
+      #    tiene el cambio— y explota al desplegar. `--exit-code` devuelve 2 si
+      #    hay diferencia, y eso hace fallar el job.
+      - name: Verificar que no falten migraciones (drift)
+        run: |
+          npx prisma migrate diff \
+            --from-schema-datasource prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code
+
+      # 3) El seed tiene que seguir corriendo: es idempotente y lo usan tanto una
+      #    instalación nueva como `npm run db:reset`.
+      - name: Correr el seed
+        run: npm run db:seed
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Bloqueante desde 2026-07-22: los ~26 errores preexistentes que
+      # justificaban el `continue-on-error` ya se limpiaron. Quedan solo
+      # warnings (casi todos `<img>` vs `next/image`, deuda de M2).
       - name: ESLint
         run: npx eslint app components lib modules
