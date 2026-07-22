@@ -1,7 +1,9 @@
 // app/api/teams/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { requireApiOrgAccess } from "@/lib/orgAuth";
+import { checkUser } from "@/lib/checkUser";
+import { canManageOrg } from "@/lib/orgAuth";
+import { canManageTeam } from "@/lib/teamAuth";
 import { teamUpdateSchema } from "@/lib/validators/team";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -30,9 +32,27 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       );
     }
 
-    const auth = await requireApiOrgAccess(existing.organizationId);
-    if (auth.error) {
-      return auth.error;
+    // Dos caminos válidos y distintos (los dos ejes de permisos de N13):
+    // el **staff de la liga** por su membresía, y el **delegado aprobado** del
+    // equipo, que no es miembro de la organización y por eso no pasa por
+    // `orgAuth`. Los campos que acepta `teamUpdateSchema` son todos de
+    // identidad/presentación del club (nombre, escudo, colores, entrenador…):
+    // `enabled`, `deletedAt` y `organizationId` no están en el esquema, así que
+    // habilitar al delegado no le abre nada administrativo de la liga.
+    const user = await checkUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
+    const allowed =
+      (await canManageTeam(user, id)) ||
+      (await canManageOrg(user, existing.organizationId));
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "No tenés permisos para editar este equipo" },
+        { status: 403 },
+      );
     }
 
     const body = await req.json();

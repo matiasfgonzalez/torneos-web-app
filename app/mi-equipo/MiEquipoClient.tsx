@@ -35,6 +35,7 @@ import {
 } from "@modules/delegados/actions/queries";
 import RosterSection, { type Roster } from "./RosterSection";
 import InscriptionsSection, { type OpenTournament } from "./InscriptionsSection";
+import EditTeamSheet from "./EditTeamSheet";
 import type { ApprovalStatus } from "@prisma/client";
 
 interface MyRequest {
@@ -46,6 +47,14 @@ interface MyRequest {
     logoUrl: string | null;
     homeCity: string | null;
     enabled: boolean;
+    shortName: string | null;
+    description: string | null;
+    history: string | null;
+    coach: string | null;
+    yearFounded: number | null;
+    homeColor: string | null;
+    awayColor: string | null;
+    logoPublicId: string | null;
     organizationName: string;
     tournamentCount: number;
   };
@@ -173,8 +182,20 @@ export default function MiEquipoClient({
                 className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-card p-4 sm:flex-row sm:items-center dark:border-gray-700"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-mid">
-                    <Shield className="h-6 w-6 text-white" aria-hidden="true" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-brand to-brand-mid">
+                    {request.team.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={request.team.logoUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Shield
+                        className="h-6 w-6 text-white"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-gray-900 dark:text-white">
@@ -187,12 +208,19 @@ export default function MiEquipoClient({
                   </div>
                 </div>
 
-                <span
-                  className={`inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border px-3 py-1 text-xs font-medium sm:self-auto ${ui.className}`}
-                >
-                  <ui.icon className="h-3.5 w-3.5" aria-hidden="true" />
-                  {ui.label}
-                </span>
+                <div className="flex shrink-0 flex-wrap items-center gap-2 self-start sm:self-auto">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${ui.className}`}
+                  >
+                    <ui.icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    {ui.label}
+                  </span>
+                  {/* Editar solo con la delegación APROBADA: mientras la
+                      solicitud está pendiente todavía no representa al club. */}
+                  {request.status === "APROBADO" && (
+                    <EditTeamSheet team={request.team} />
+                  )}
+                </div>
               </article>
             );
           })}

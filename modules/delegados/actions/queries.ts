@@ -87,6 +87,17 @@ export async function getMyTeamRequests() {
           logoUrl: true,
           homeCity: true,
           enabled: true,
+          // Campos que el delegado puede editar desde `/mi-equipo` (la ficha
+          // de su club). No se traen `enabled`/`deletedAt`/`organizationId`
+          // como editables: eso lo maneja la liga.
+          shortName: true,
+          description: true,
+          history: true,
+          coach: true,
+          yearFounded: true,
+          homeColor: true,
+          awayColor: true,
+          logoPublicId: true,
           organization: { select: { name: true, slug: true } },
           _count: { select: { tournamentTeams: true } },
         },
