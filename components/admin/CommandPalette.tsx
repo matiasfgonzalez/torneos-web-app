@@ -22,7 +22,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { navItemsForRole } from "@/lib/constants/admin-nav";
-import type { AdminSearchResult } from "@/app/api/admin/search/route";
+import type { AdminSearchResult } from "@/types/admin-search";
 
 /**
  * Command palette del panel (F3) — Ctrl/⌘+K.

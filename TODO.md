@@ -62,7 +62,6 @@
 - **S10** — Multi-deporte (solo si el negocio lo pide) · `E:Alto`
 
 ### 🟨 Parcialmente hechas — falta el remate
-- **A1** — falta la regla ESLint `no-restricted-imports` (anti-regresión de duplicados)
 - **A4** — falta quitar `clerkUserId: temp_` de `POST /api/users`
 - **A6** — falta `publishedAt` nullable + eliminar `nextMatch` derivable
 - **A7** — falta migrar los éxitos de todas las rutas al envelope `{success,data}`
@@ -72,7 +71,7 @@
 - **N13** — falta: que el delegado cancele su propia solicitud; transferir delegación
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
 
 ---
 
@@ -217,7 +216,13 @@
   - Utils: canónico queda en `lib/` (convención ShadCN `@/lib/utils` + ~80 imports existentes; desviación deliberada de la solución original). Borrados los muertos `modules/shared/utils/{utils,calcularEdad,formatDate}.ts` (0 imports los usaban; el `formatDate` de modules era además una versión vieja con bug de timezone).
   - Verificado con `next build` completo en verde (31 páginas).
 - **Unificación de los diálogos de partido: hecha (2026-07-14, F3).** `components/admin/match-dialog.tsx` y `DialogAddEditMatch.tsx` se fusionaron en [MatchFormSheet](modules/partidos/components/admin/MatchFormSheet.tsx) (ver F3 "Formularios y diálogos"): el de `/admin/partidos` estaba además roto de raíz (pedía equipos a una ruta inexistente y mandaba ids de la entidad equivocada).
-- **Pendiente:** regla ESLint `no-restricted-imports` para prevenir regresiones.
+- [x] **Regla ESLint `no-restricted-imports` — hecha (2026-07-22). A1 cerrado.** Nada impedía que los duplicados volvieran: TypeScript compila igual un import a una copia nueva. [eslint.config.mjs](eslint.config.mjs) fija ahora las tres decisiones que tomó A1:
+  1. **Utils → `lib/`**: prohibido `@modules/shared/utils/*` (la carpeta que se borró por duplicar `lib/`, con un `formatDate` que además tenía bug de timezone).
+  2. **Componentes del panel → `modules/<entidad>/components/admin`**: prohibido `@/app/admin/*/components/*`, que es donde vivían las copias byte a byte de jugadores y torneos. El patrón está afinado a propósito: `*` no cruza la barra, así que **no** alcanza a `app/admin/torneos/[id]/components/*` — los componentes colocados de una página siguen siendo válidos y el reuso deliberado de `QuickMatchLoader` (`ManageGoals`/`ManageCards`, elogiado en AGENT_RULES) no se rompe.
+  3. **Dirección de dependencias** (regla nueva, la raíz del problema): `modules/`, `components/`, `lib/` y `hooks/` no pueden importar desde `app/`. Un componente compartido que depende de una ruta deja de ser reutilizable, y ese es el primer paso hacia duplicarlo.
+  - **Se arregló la única violación existente:** `components/admin/CommandPalette.tsx` importaba el tipo `AdminSearchResult` desde `app/api/admin/search/route.ts`. El tipo se movió a [types/admin-search.ts](types/admin-search.ts) y la ruta lo reexporta.
+  - ⚠️ **Trampa de la flat config que costó un intento:** ESLint **no fusiona** la config de una misma regla — el bloque más específico la reemplaza. La primera versión declaraba los duplicados en un bloque global y las capas en otro scopeado a `modules/**`, y el resultado fue que **dentro de `modules/` dejaba de detectarse el import a los utils borrados**. Se arregló componiendo los patrones en el bloque scopeado. Lo agarró la prueba de la regla, no la revisión.
+  - **Verificado disparando la regla** (archivos sonda temporales con las tres violaciones, en `modules/` y en `app/`): 4/4 errores con su mensaje. Repo completo en **0 errores** de lint (61 warnings preexistentes de `<img>`), `tsc` limpio, `next build` verde.
 - **Esfuerzo:** E:Medio · **Beneficio:** −30% superficie de mantenimiento.
 
 ### A1b. Migrar `middleware.ts` → `proxy.ts` (hallazgo A1, 2026-07-05)

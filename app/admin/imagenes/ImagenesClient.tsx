@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
@@ -65,15 +65,19 @@ export default function ImagenesClient({
   const [deleting, setDeleting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Al re-fetchear el server component (router.refresh), sincronizar la lista
-  // local y limpiar la selección de assets que ya no existen.
-  useEffect(() => {
+  // Al re-fetchear el server component (router.refresh) llega una lista nueva:
+  // hay que resincronizar la local y descartar de la selección los assets que
+  // ya no están. Se ajusta **durante el render** comparando con la prop
+  // anterior, no en un `useEffect` — un setState en el cuerpo del efecto
+  // encadena renders (AGENT_RULES, `react-hooks/set-state-in-effect`).
+  const [prevOrphans, setPrevOrphans] = useState(orphans);
+  if (orphans !== prevOrphans) {
+    setPrevOrphans(orphans);
     setItems(orphans);
-    setSelected((prev) => {
-      const live = new Set(orphans.map((o) => o.public_id));
-      return new Set([...prev].filter((id) => live.has(id)));
-    });
-  }, [orphans]);
+    const live = new Set(orphans.map((o) => o.public_id));
+    setSelected((prev) => new Set([...prev].filter((id) => live.has(id))));
+    setRefreshing(false);
+  }
 
   const groups = useMemo(() => {
     const map = new Map<string, OrphanImage[]>();
@@ -122,8 +126,8 @@ export default function ImagenesClient({
   const refresh = () => {
     setRefreshing(true);
     router.refresh();
-    // El estado de refresh se apaga al llegar props nuevas (useEffect) o por
-    // timeout de seguridad si no hay cambios.
+    // Se apaga arriba, al llegar la lista nueva. El timeout es la red por si
+    // el refresh no cambia nada (misma prop → no hay re-sincronización).
     setTimeout(() => setRefreshing(false), 1200);
   };
 

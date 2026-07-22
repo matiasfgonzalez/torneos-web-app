@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
 import { playerOrgScopeWhere } from "@/lib/playerAuth";
+import type { AdminSearchResult } from "@/types/admin-search";
 
 /**
  * GET /api/admin/search?q=… — buscador del command palette (F3).
@@ -18,12 +19,9 @@ import { playerOrgScopeWhere } from "@/lib/playerAuth";
 /** Techo por entidad: el palette muestra un puñado, no un listado. */
 const LIMIT = 5;
 
-export interface AdminSearchResult {
-  id: string;
-  type: "tournament" | "team" | "player";
-  title: string;
-  subtitle?: string | null;
-}
+// `AdminSearchResult` vive en `types/admin-search.ts`: lo consume el
+// CommandPalette, y `components/` no puede importar desde `app/` (regla A1).
+export type { AdminSearchResult };
 
 export async function GET(req: NextRequest) {
   try {
