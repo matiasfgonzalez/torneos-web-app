@@ -1,43 +1,26 @@
 // Seed de planes (N4). Idempotente: upsert por code.
-// Precios placeholder — editarlos acá o directo en la BD cuando se definan.
+// Las definiciones viven en `plans.mjs` para que un test pueda verificarlas sin
+// escribir en la base (ver tests/plans/features.test.ts).
 import { PrismaClient } from "@prisma/client";
+import { PLANS } from "./plans.mjs";
 
 const db = new PrismaClient();
 
-const PLANS = [
-  {
-    code: "FREE",
-    name: "Gratis",
-    priceMonthly: 0,
-    maxActiveTournaments: 1,
-    maxTeamsPerTournament: 12,
-    maxMembers: 2,
-    features: { exportPdf: false, customBranding: false, liveMatch: false },
-    order: 0,
-  },
-  {
-    code: "PRO",
-    name: "Pro",
-    priceMonthly: 15000,
-    maxActiveTournaments: 999,
-    maxTeamsPerTournament: 30,
-    maxMembers: 10,
-    features: { exportPdf: true, customBranding: false, liveMatch: false },
-    order: 1,
-  },
-  {
-    code: "PREMIUM",
-    name: "Premium",
-    priceMonthly: 25000,
-    maxActiveTournaments: 999,
-    maxTeamsPerTournament: 999,
-    maxMembers: 999,
-    features: { exportPdf: true, customBranding: true, liveMatch: true },
-    order: 2,
-  },
-];
-
 for (const plan of PLANS) {
+  const existente = await db.plan.findUnique({
+    where: { code: plan.code },
+    select: { features: true },
+  });
+
+  // Las features se **fusionan**, no se pisan: si el admin prendió algo desde
+  // /admin/planes, resembrar no se lo apaga. Lo que sí hace el seed es
+  // completar las claves que falten —el caso de `orgNews`, que no existía en
+  // los planes ya guardados y por eso quedaba en `false` para todos—.
+  const features = { ...plan.features, ...(existente?.features ?? {}) };
+  const faltaban = Object.keys(plan.features).filter(
+    (k) => existente && !(k in existente.features),
+  );
+
   await db.plan.upsert({
     where: { code: plan.code },
     update: {
@@ -45,13 +28,17 @@ for (const plan of PLANS) {
       maxActiveTournaments: plan.maxActiveTournaments,
       maxTeamsPerTournament: plan.maxTeamsPerTournament,
       maxMembers: plan.maxMembers,
-      features: plan.features,
+      features,
       order: plan.order,
       // priceMonthly NO se pisa en update: el precio vigente se gestiona en BD
     },
     create: plan,
   });
-  console.log(`Plan ${plan.code} listo`);
+
+  const detalle = faltaban.length
+    ? ` (se agregaron features faltantes: ${faltaban.join(", ")})`
+    : "";
+  console.log(`Plan ${plan.code} listo${detalle}`);
 }
 
 await db.$disconnect();

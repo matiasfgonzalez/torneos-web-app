@@ -1,5 +1,6 @@
 import { Plan, Subscription } from "@prisma/client";
 import { db } from "@/lib/db";
+import type { FeatureKey } from "@/lib/constants/plan-features";
 
 /**
  * Límites por plan (N4).
@@ -169,10 +170,21 @@ export async function assertPlanLimit(
   }
 }
 
-/** ¿El plan efectivo incluye la feature? (exportPdf, customBranding, liveMatch) */
+/**
+ * ¿El plan efectivo incluye la feature?
+ *
+ * `feature` está tipada con `FeatureKey` (catálogo en
+ * `lib/constants/plan-features.ts`) y no como `string`: un nombre mal escrito
+ * era antes un `false` silencioso —la feature simplemente no andaba para
+ * nadie— y ahora no compila.
+ *
+ * Una clave ausente en el JSON del plan sigue siendo `false`, que es lo
+ * correcto: lo que no está declarado no se concede. Para que ninguna quede
+ * ausente por olvido, el seed las escribe todas con `withAllFeatures`.
+ */
 export async function hasFeature(
   organizationId: string,
-  feature: string,
+  feature: FeatureKey,
 ): Promise<boolean> {
   const plan = await getEffectivePlan(organizationId);
   const features = plan.features as Record<string, boolean> | null;
