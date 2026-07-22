@@ -3,8 +3,8 @@ import { checkUser } from "@/lib/checkUser";
 import { UserRole } from "@prisma/client";
 
 /**
- * Validates that the current user has one of the required roles
- * Returns the user if authorized, or an error response if not
+ * Valida que el usuario actual tenga alguno de los roles requeridos.
+ * Devuelve el usuario si está autorizado, o la respuesta de error si no.
  */
 export async function validateApiRole(
   requiredRoles: UserRole[]
@@ -51,7 +51,7 @@ const ROLE_HIERARCHY: Record<UserRole, number> = {
 };
 
 /**
- * Check if the current user can manage a target user based on hierarchy
+ * Indica si el usuario actual puede gestionar a otro, según la jerarquía de roles.
  */
 export function canManageUserApi(currentUserRole: UserRole, targetUserRole: UserRole): boolean {
   return ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole];

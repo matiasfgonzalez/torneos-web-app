@@ -10,7 +10,8 @@ interface ActivityHistoryProps {
 }
 
 export default async function ActivityHistory({ user }: ActivityHistoryProps) {
-  // Fetch tournaments created by user (if admin/organizer)
+  // Torneos de las ligas a las que pertenece el usuario (por membresía, no por
+  // quién los creó): es lo que tiene sentido mostrar en su perfil.
   const tournaments = await db.tournament.findMany({
     where: {
       deletedAt: null,
@@ -19,10 +20,6 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
     orderBy: { startDate: "desc" },
     take: 5,
   });
-
-  // Since we don't have a direct 'manager' relation for teams yet in the schema shown earlier (except ownerId maybe?),
-  // we will focus on tournaments for now or generic stats.
-  // Actually, checking schema might be useful but let's stick to what we know: Tournaments have userId.
 
   return (
     <div className="space-y-6">

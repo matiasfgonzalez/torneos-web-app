@@ -62,16 +62,16 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       return validationErrorResponse(parsed.error);
     }
 
-    const updatedTournament = await db.team.update({
+    const updatedTeam = await db.team.update({
       where: { id },
       data: parsed.data,
     });
 
-    return NextResponse.json(updatedTournament, { status: 200 });
+    return NextResponse.json(updatedTeam, { status: 200 });
   } catch (error) {
-    console.error("Error en PATCH /api/tournaments:", error);
+    console.error("Error en PATCH /api/teams/[id]:", error);
     return NextResponse.json(
-      { error: "Error al actualizar el torneo" },
+      { error: "Error al actualizar el equipo" },
       { status: 500 },
     );
   }

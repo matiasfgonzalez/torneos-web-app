@@ -23,13 +23,13 @@ interface PropsTabsTeam {
 }
 
 export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
-  // Get position label in Spanish from constants
+  // Etiqueta de la posición en español, desde el mapa único de constantes
   const getPositionLabel = (position: string | null): string => {
     if (!position) return "Jugador";
     return PLAYER_POSITION_LABELS[position as PlayerPosition] || position;
   };
 
-  // Get position abbreviation
+  // Abreviatura de la posición (para los espacios chicos de la card)
   const getPositionAbbr = (position: string | null): string => {
     if (!position) return "JUG";
     const positionMap: Record<string, string> = {
@@ -55,7 +55,7 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
     return positionMap[position] || position.substring(0, 3).toUpperCase();
   };
 
-  // Get position color based on category
+  // Color de la posición según su categoría (arquero/defensa/medio/delantero)
   const getPositionColor = (position: string | null): string => {
     if (!position) return "bg-gray-500";
     if (position === "ARQUERO") return "from-yellow-500 to-amber-600";

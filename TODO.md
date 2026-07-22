@@ -52,7 +52,7 @@
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
 
 **🟢 Bajo**
-- **B1** — Naming y comentarios engañosos (español/inglés) · `E:Bajo`
+- **B1** (parcial) — quedan 2 excepciones de nombres como decisión: `/profile` → `/perfil` (URL pública) y `/api/noticias` → `/api/news` · `E:Bajo`
 - **B2** — `.env_example` → `.env.example` + documentar variables · `E:Bajo`
 - **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
 - **B5** — Estrategia de migraciones (CI + seeds idempotentes) · `E:Bajo`
@@ -428,7 +428,16 @@
 
 ## 🟢 BAJO — Refinamiento y DX
 
-- [ ] **B1. Naming y comentarios engañosos:** comentario `// app/api/teams/[id]/route.ts` dentro de `players/[id]/route.ts`; variable `updatedPlayer` en rutas de teams; "Torneo eliminada"; mezcla español/inglés en carpetas (`equipos` vs `teams` en API). Unificar convención. **E:Bajo**
+- [x] **B1. Naming y comentarios engañosos — hecho (2026-07-22).**
+  - **Ya estaban corregidos** (verificado archivo por archivo): el comentario de ruta equivocada al tope de `players/[id]/route.ts` y el texto "Torneo eliminada". El barrido no encontró ningún otro comentario de ruta que no coincida con su archivo.
+  - **Copy-paste entre rutas hermanas — corregido:** `app/api/teams/[id]/route.ts` tenía `const updatedTournament = await db.team.update(...)`, logueaba `"Error en PATCH /api/tournaments"` y devolvía al cliente `"Error al actualizar el torneo"` — todo heredado de la ruta de torneos. El mensaje era el peor de los tres: un delegado que fallaba al guardar su equipo leía que había fallado un torneo.
+  - **Comentarios en inglés → español** (regla nueva del usuario, ahora en AGENT_RULES): `PublicTabsTeam.tsx` (3), `lib/apiRoleValidation.ts` (2). Se **borró** el bloque de `ActivityHistory.tsx`, que además de estar en inglés **mentía dos veces**: afirmaba que "no existe una relación de delegado con equipos en el schema" —`TeamManager` existe desde N13— y que "Tournaments have userId", cuando la query de arriba filtra por membresía de organización. Era el autor pensando en voz alta ("checking schema might be useful but let's stick to what we know"). Se reemplazó por una línea que describe lo que la query hace de verdad.
+  - **Carpetas español/inglés: NO era una mezcla, es una convención de facto** que nadie había escrito — y por eso se rompía. Quedó documentada en [AGENT_RULES](docs/AGENT_RULES.md): rutas públicas en **español** (son URLs que se comparten e indexan), rutas de API en **inglés** (superficie técnica), módulos en **español** (lenguaje del dominio).
+  - `tsc` + `eslint` + `next build` en verde.
+- [ ] **B1 — dos excepciones a la convención (decisión, no limpieza).** No las toqué solo porque las dos tienen costo y una es visible al usuario:
+  1. **`app/(public)/profile` → `/perfil`** (10 call sites). Es la única ruta pública en inglés; el menú ya la llama "Mi Perfil". Consistente con `/equipos`, `/jugadores`, `/torneos`… pero **es una URL pública**: cambiarla rompe bookmarks y links externos salvo que se agregue un redirect permanente desde `/profile`. Decisión de producto.
+  2. **`app/api/noticias` → `/api/news`** y `org-posts` (12 call sites). Es la única API en español. Sin impacto en SEO ni en usuarios (superficie interna), pero toca 12 lugares para ganar solo consistencia. Barato pero de valor bajo.
+  **E:Bajo** cada una.
 - [ ] **B2. Renombrar `.env_example` → `.env.example`** (convención estándar que las herramientas detectan) y documentar cada variable en README. **E:Bajo**
 - [ ] **B3. Documentar contratos de API** (`docs/api/*.md` o OpenAPI generado desde los esquemas Zod). **E:Medio**
 - [~] **B4. Código muerto (2026-07-21).** Corrido `npx knip` (ruidoso: muchos falsos positivos — barrels `index.ts`, primitivas UI, `sw.js` runtime). Borrados **13 archivos** verificados con 0 imports:
