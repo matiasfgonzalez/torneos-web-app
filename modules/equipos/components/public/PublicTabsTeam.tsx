@@ -8,7 +8,16 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Trophy, Calendar, Play, TrendingUp, Goal } from "lucide-react";
+import Link from "next/link";
+import {
+  Users,
+  Trophy,
+  Calendar,
+  Play,
+  TrendingUp,
+  Goal,
+  Building2,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
@@ -16,6 +25,7 @@ import { formatTournamentCategory } from "@/lib/constants";
 import { PLAYER_POSITION_LABELS } from "@/lib/constants";
 import { PlayerPosition } from "@prisma/client";
 import MatchCard from "./MatchCard";
+import { ligasDelEquipo } from "@modules/equipos/utils/ligas";
 import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
 
 interface PropsTabsTeam {
@@ -23,6 +33,11 @@ interface PropsTabsTeam {
 }
 
 export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
+  // Ligas distintas en las que participa el club (M14). La lógica vive en
+  // `utils/ligas.ts`: el contenido de esta pestaña no se renderiza en el
+  // servidor, así que separada se puede testear.
+  const ligas = ligasDelEquipo(teamData.tournamentTeams);
+
   // Etiqueta de la posición en español, desde el mapa único de constantes
   const getPositionLabel = (position: string | null): string => {
     if (!position) return "Jugador";
@@ -190,8 +205,30 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
       {/* TORNEOS - Premium Golazo Style */}
       <TabsContent
         value="torneos"
-        className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2"
+        className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2 space-y-6"
       >
+        {/* Resumen de ligas. Solo aparece si el club juega en más de una: con
+            una sola sería repetir lo que ya dice cada card, y el dato recién
+            vale cuando hay que entender que las estadísticas de arriba suman
+            torneos de ligas distintas (M14). */}
+        {ligas.length > 1 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-200 bg-card p-4 dark:border-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Juega en {ligas.length} ligas:
+            </span>
+            {ligas.map((liga) => (
+              <Link
+                key={liga.slug}
+                href={`/liga/${liga.slug}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-medium text-brand transition-colors hover:bg-brand/20"
+              >
+                <Building2 className="h-3 w-3" aria-hidden="true" />
+                {liga.name}
+              </Link>
+            ))}
+          </div>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2">
           {teamData.tournamentTeams.length === 0 ? (
             <Card className="col-span-full relative bg-white dark:bg-gray-900/80 shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden rounded-2xl">
@@ -240,19 +277,37 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
                       <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-brand transition-colors truncate">
                         {tt.tournament.name}
                       </CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-1">
-                        <Badge
-                          variant="secondary"
-                          className="text-xs bg-brand/10 text-brand border-0"
-                        >
-                          {formatTournamentCategory(tt.tournament)}
-                        </Badge>
-                        <span className="text-gray-400 dark:text-gray-500">
-                          •
+                      <CardDescription className="mt-1 space-y-1">
+                        <span className="flex items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs bg-brand/10 text-brand border-0"
+                          >
+                            {formatTournamentCategory(tt.tournament)}
+                          </Badge>
+                          <span className="text-gray-400 dark:text-gray-500">
+                            •
+                          </span>
+                          <span className="text-sm truncate">
+                            {tt.tournament.locality}
+                          </span>
                         </span>
-                        <span className="text-sm truncate">
-                          {tt.tournament.locality}
-                        </span>
+                        {/* La liga organizadora: un club puede jugar en varias
+                            y sus estadísticas suman todas (M14). */}
+                        {tt.tournament.organization && (
+                          <Link
+                            href={`/liga/${tt.tournament.organization.slug}`}
+                            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand dark:text-gray-400"
+                          >
+                            <Building2
+                              className="h-3 w-3 shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span className="truncate">
+                              {tt.tournament.organization.name}
+                            </span>
+                          </Link>
+                        )}
                       </CardDescription>
                     </div>
                   </div>

@@ -12,7 +12,14 @@ import type { Prisma, Team } from "@prisma/client";
 const teamDetailInclude = {
   tournamentTeams: {
     include: {
-      tournament: true,
+      // La liga de cada torneo: un club puede jugar en varias (M14) y sus
+      // estadísticas agregan todas, así que hay que poder ver de dónde sale
+      // cada una. El `slug` es para poder enlazar a la página de la liga.
+      tournament: {
+        include: {
+          organization: { select: { name: true, slug: true } },
+        },
+      },
       teamPlayer: {
         include: {
           player: true,

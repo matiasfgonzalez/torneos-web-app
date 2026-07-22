@@ -68,7 +68,7 @@
 - **M3** — falta OG dinámica del **resultado de partido** (menor); redirect legacy 307→308
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (fases 1 y 2). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -406,7 +406,11 @@
   - **El camino del delegado no notifica, a propósito:** en `inscriptions.ts` el delegado inscribe **su propio** equipo, así que avisarle de su propia acción sería ruido (ese flujo ya notifica a la liga, que es quien tiene que enterarse).
   - **Verificado end-to-end** contra la BD: con una liga descartable y el equipo que sí tiene delegado, se comprobó que las dos guardas dan verdadero, que la BD acepta el valor nuevo del enum y que la notificación queda con el título correcto. Base restaurada sin restos.
   - ⚠️ **Un test preexistente lo agarró**: `tests/notifications/catalog.test.ts` verifica que **ningún tipo del enum quede sin muestra** en el catálogo, y falló al agregar el tipo nuevo sin su sample. Se agregó. 220 tests verdes.
-- [ ] **Fase 3 — opcional:** mostrar en la ficha pública del equipo en qué ligas juega. Hoy sus estadísticas ya agregan todos sus torneos; conviene que se vea de dónde sale cada uno.
+- [x] **Fase 3 — hecha (2026-07-22): las ligas del club en su ficha pública.**
+  - `getEquipoById` ahora trae la `organization` de cada torneo (antes solo `tournament: true`, por eso no había forma de saber de qué liga era cada uno).
+  - En la pestaña **Torneos**, cada card muestra su liga con link a `/liga/[slug]`. Arriba, un resumen "Juega en N ligas" con chips enlazados — **solo si son más de una**: con una sola repetiría lo que ya dice cada card, y el dato recién importa cuando hay que entender que las estadísticas de arriba suman torneos de ligas distintas.
+  - ⚠️ **Corrección de método:** la primera verificación por `curl` "encontró" los nombres de liga y la di por buena. Estaba mal: **el contenido de esa pestaña no se renderiza en el servidor** (Radix monta solo la pestaña activa, que es Plantel) — lo que había matcheado era el payload serializado de RSC, no HTML renderizado. Al detectarlo, la única parte con lógica real (deduplicar ligas conservando el orden) se extrajo a [modules/equipos/utils/ligas.ts](modules/equipos/utils/ligas.ts) con **5 tests**: repetidas, orden de aparición, torneos sin organización y lista vacía. **Lección reutilizable: un `curl` sobre una página con tabs no prueba el contenido de las pestañas inactivas.**
+  - 225 tests verdes, `tsc` + `eslint` + `build` limpios.
 
 ### M9. Limpieza de imágenes huérfanas en Cloudinary
 
