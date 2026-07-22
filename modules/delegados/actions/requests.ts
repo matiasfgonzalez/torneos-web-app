@@ -182,6 +182,211 @@ export async function requestNewTeam(input: {
 }
 
 // ============================================================
+// Lado del delegado: cancelar, transferir, renunciar (N13)
+// ============================================================
+
+/**
+ * Cancelar una solicitud propia que todavía está PENDIENTE.
+ *
+ * Se **borra la fila** en vez de marcarla RECHAZADO: la liga no rechazó nada, y
+ * dejarla como rechazada ensuciaría su auditoría con una decisión que nunca
+ * tomó. Al borrarla, además, el `@@unique([userId, teamId])` queda libre y la
+ * persona puede volver a pedirlo más adelante.
+ */
+export async function cancelMyTeamRequest(
+  teamId: string,
+): Promise<DelegateActionResult> {
+  const user = await checkUser();
+  if (!user) return { success: false, error: "Necesitás iniciar sesión" };
+
+  const request = await db.teamManager.findUnique({
+    where: { userId_teamId: { userId: user.id, teamId } },
+    select: {
+      id: true,
+      status: true,
+      team: {
+        select: {
+          id: true,
+          name: true,
+          enabled: true,
+          logoPublicId: true,
+          _count: { select: { tournamentTeams: true, managers: true } },
+        },
+      },
+    },
+  });
+
+  if (!request) return { success: false, error: "No tenés una solicitud para este equipo" };
+  if (request.status === "APROBADO") {
+    return {
+      success: false,
+      error: "Ya sos el delegado de este equipo. Si querés dejar el rol, usá «Dejar de ser delegado».",
+    };
+  }
+  if (request.status !== "PENDIENTE") {
+    return { success: false, error: "Esta solicitud ya fue resuelta" };
+  }
+
+  // Misma regla que al rechazar: si era una propuesta de equipo nuevo que nunca
+  // se habilitó, no tiene historial y nadie más la pidió, el equipo se va con
+  // la solicitud. Si algo de eso cambió, el equipo se queda y lo resuelve la liga.
+  const isUnusedProposal =
+    !request.team.enabled &&
+    request.team._count.tournamentTeams === 0 &&
+    request.team._count.managers === 1;
+
+  await db.$transaction(async (tx) => {
+    await tx.teamManager.delete({ where: { id: request.id } });
+    if (isUnusedProposal) {
+      await tx.team.delete({ where: { id: request.team.id } });
+    }
+  });
+
+  if (isUnusedProposal) {
+    // Prevención de huérfanos (M9), fuera de la transacción.
+    await safeDeleteAssets([request.team.logoPublicId]);
+  }
+
+  // A la liga no se le notifica: la solicitud desaparece de su bandeja y un
+  // aviso de "alguien se arrepintió" es ruido, no información que la haga actuar.
+  revalidatePath("/mi-equipo");
+  revalidatePath("/admin/delegados");
+  return {
+    success: true,
+    message: isUnusedProposal
+      ? `Se canceló la propuesta de ${request.team.name}.`
+      : `Se canceló tu solicitud para ${request.team.name}.`,
+  };
+}
+
+/**
+ * Proponer a otra persona como delegado del equipo (transferencia, N13).
+ *
+ * **La liga sigue aprobando.** Es la regla que sostiene todo N13 —"si no,
+ * cualquiera se declara delegado de cualquier equipo"—: si un delegado pudiera
+ * pasarle el rol a quien quiera, alcanzaría con reclamar un equipo, ser
+ * aprobado y transferírselo a un tercero para saltearse el control.
+ *
+ * El delegado actual **mantiene su rol** hasta que resuelva la liga: así el
+ * equipo nunca queda sin nadie a cargo si la transferencia se rechaza o se
+ * demora. Cuando el sucesor queda aprobado, el saliente usa `resignMyDelegation`.
+ */
+export async function transferMyDelegation(
+  teamId: string,
+  email: string,
+): Promise<DelegateActionResult> {
+  const user = await checkUser();
+  if (!user) return { success: false, error: "Necesitás iniciar sesión" };
+
+  const mine = await db.teamManager.findUnique({
+    where: { userId_teamId: { userId: user.id, teamId } },
+    select: { status: true, team: { select: { id: true, name: true, organizationId: true } } },
+  });
+  if (mine?.status !== "APROBADO") {
+    return { success: false, error: "No representás a este equipo" };
+  }
+
+  const target = email.trim().toLowerCase();
+  if (!target) return { success: false, error: "Escribí el email de la persona" };
+  if (target === user.email.toLowerCase()) {
+    return { success: false, error: "Ese es tu propio email" };
+  }
+
+  const nuevo = await db.user.findUnique({
+    where: { email: target },
+    select: { id: true, name: true, email: true },
+  });
+  if (!nuevo) {
+    return {
+      success: false,
+      error: "No hay ninguna cuenta con ese email. La persona tiene que registrarse en GOLAZO antes de que puedas pasarle el equipo.",
+    };
+  }
+
+  const existing = await db.teamManager.findUnique({
+    where: { userId_teamId: { userId: nuevo.id, teamId } },
+    select: { status: true },
+  });
+  if (existing?.status === "APROBADO") {
+    return { success: false, error: "Esa persona ya es delegada de este equipo" };
+  }
+  if (existing?.status === "PENDIENTE") {
+    return { success: false, error: "Esa persona ya tiene una solicitud pendiente para este equipo" };
+  }
+
+  await db.teamManager.upsert({
+    where: { userId_teamId: { userId: nuevo.id, teamId } },
+    create: {
+      userId: nuevo.id,
+      teamId,
+      message: `Transferencia propuesta por ${user.name ?? user.email}, delegado actual.`,
+    },
+    update: {
+      status: "PENDIENTE",
+      message: `Transferencia propuesta por ${user.name ?? user.email}, delegado actual.`,
+      decidedById: null,
+      decidedAt: null,
+    },
+  });
+
+  await notify(
+    await getOrgManagerIds(mine.team.organizationId),
+    {
+      type: "SOLICITUD_DELEGADO_RECIBIDA",
+      teamName: mine.team.name,
+      requesterName: nuevo.name ?? nuevo.email,
+      isNewTeam: false,
+    },
+    { exclude: user.id },
+  );
+
+  revalidatePath("/mi-equipo");
+  revalidatePath("/admin/delegados");
+  return {
+    success: true,
+    message: `Le propusiste el equipo a ${nuevo.name ?? nuevo.email}. Cuando la liga lo apruebe vas a poder dejar tu rol.`,
+  };
+}
+
+/** Dejar de ser delegado de un equipo. Completa la transferencia. */
+export async function resignMyDelegation(
+  teamId: string,
+): Promise<DelegateActionResult> {
+  const user = await checkUser();
+  if (!user) return { success: false, error: "Necesitás iniciar sesión" };
+
+  const mine = await db.teamManager.findUnique({
+    where: { userId_teamId: { userId: user.id, teamId } },
+    select: {
+      id: true,
+      status: true,
+      team: {
+        select: { name: true, _count: { select: { managers: true } } },
+      },
+    },
+  });
+  if (mine?.status !== "APROBADO") {
+    return { success: false, error: "No representás a este equipo" };
+  }
+
+  await db.teamManager.delete({ where: { id: mine.id } });
+
+  // Se permite aunque sea el último: el equipo queda sin delegado y la liga
+  // puede aprobar a otro cuando aparezca. Bloquearlo dejaría a alguien atado a
+  // un rol que ya no quiere, que es peor.
+  const quedaSolo = mine.team._count.managers <= 1;
+
+  revalidatePath("/mi-equipo");
+  revalidatePath("/admin/delegados");
+  return {
+    success: true,
+    message: quedaSolo
+      ? `Dejaste de ser delegado de ${mine.team.name}. El equipo queda sin delegado hasta que la liga apruebe a otra persona.`
+      : `Dejaste de ser delegado de ${mine.team.name}.`,
+  };
+}
+
+// ============================================================
 // Lado de la liga: aprobar / rechazar
 // ============================================================
 

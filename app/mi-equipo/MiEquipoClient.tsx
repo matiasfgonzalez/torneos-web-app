@@ -36,6 +36,7 @@ import {
 import RosterSection, { type Roster } from "./RosterSection";
 import InscriptionsSection, { type OpenTournament } from "./InscriptionsSection";
 import EditTeamSheet from "./EditTeamSheet";
+import DelegationActions from "./DelegationActions";
 import type { ApprovalStatus } from "@prisma/client";
 
 interface MyRequest {
@@ -220,6 +221,11 @@ export default function MiEquipoClient({
                   {request.status === "APROBADO" && (
                     <EditTeamSheet team={request.team} />
                   )}
+                  <DelegationActions
+                    teamId={request.team.id}
+                    teamName={request.team.name}
+                    status={request.status}
+                  />
                 </div>
               </article>
             );

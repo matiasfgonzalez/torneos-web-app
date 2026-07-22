@@ -63,13 +63,12 @@
 - **A4** — falta quitar `clerkUserId: temp_` de `POST /api/users`
 - **A6** — falta `publishedAt` nullable + eliminar `nextMatch` derivable
 - **A7** — falta migrar los éxitos de todas las rutas al envelope `{success,data}`
-- **A8** — faltan tests de validadores Zod, Playwright E2E y lint bloqueante
+- **A8** — faltan tests de validadores Zod y Playwright E2E (el **lint bloqueante** se resolvió en B5)
 - **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
 - **M3** — falta OG dinámica del **resultado de partido** (menor); redirect legacy 307→308
-- **N13** — falta: que el delegado cancele su propia solicitud; transferir delegación
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -1114,7 +1113,12 @@ Los permisos vivían en dos ejes y **los dos son del lado de la liga**: `UserRol
   - **La regla que el schema no garantizaba:** un jugador **no puede estar en dos equipos del mismo torneo** (podría jugar contra sí mismo y sumar goles para los dos lados). El único índice, `@@unique([playerId, tournamentTeamId])`, solo evitaba cargarlo dos veces en el *mismo* equipo. Ahora se valida en `addPlayerToRoster`. Sí puede jugar varios torneos distintos — que es exactamente el motivo de que la ficha sea única y el `TeamPlayer` sea por torneo.
   - **Sacar del plantel** se niega si el jugador ya tiene goles o tarjetas en ese torneo (misma regla que §8b: `onDelete: Cascade` se los llevaría).
   - Verificado: `tsc` limpio, **0 errores de lint**, **129 tests ✅** (+11), `next build` verde, smoke en dev (`/api/players?scope=panel` anónimo → `[]`: el aislamiento N3 sigue en pie con el scoping nuevo por participación).
-- [ ] **Pendientes menores de N13:** ✅ **hecho en S5 (2026-07-17):** aviso (campana + email) al aprobar/rechazar la delegación y la inscripción — antes el delegado se enteraba solo si volvía a mirar `/mi-equipo`. **Siguen pendientes:** que el delegado pueda cancelar su propia solicitud; transferir la delegación a otra persona.
+- [x] **Pendientes menores de N13 — cerrados (2026-07-22).** El aviso al aprobar/rechazar ya se había hecho en S5 (2026-07-17). Ahora se sumaron las tres acciones que el delegado tiene sobre su propio vínculo, en [requests.ts](modules/delegados/actions/requests.ts) + [DelegationActions.tsx](app/mi-equipo/DelegationActions.tsx):
+  - **Cancelar la solicitud propia** (solo PENDIENTE). Se **borra la fila**, no se marca RECHAZADO: la liga no rechazó nada y dejarla así ensuciaría su auditoría con una decisión que nunca tomó. Al borrarla queda libre el `@@unique([userId, teamId])` y la persona puede volver a pedirlo. Si era una **propuesta de equipo nuevo** sin uso (no habilitado, 0 torneos, único delegado) el equipo se va con la solicitud —misma regla que al rechazar— y se limpia su logo de Cloudinary (M9). A la liga no se le notifica: la solicitud desaparece de su bandeja y avisar que "alguien se arrepintió" es ruido.
+  - **Transferir la delegación** = *proponer un sucesor*. **La liga sigue aprobando**, y eso no es un detalle: es la regla que sostiene todo N13 —"si no, cualquiera se declara delegado de cualquier equipo"—. Si un delegado pudiera pasarle el rol a quien quisiera, alcanzaría con reclamar un equipo, ser aprobado y transferirlo a un tercero para saltear el control. El delegado actual **mantiene su rol hasta que la liga resuelva**, así el equipo nunca queda sin nadie a cargo si la transferencia se rechaza o se demora. Reusa el tipo de notificación `SOLICITUD_DELEGADO_RECIBIDA` (sin migración) y el `message` deja asentado que fue una transferencia y quién la propuso.
+  - **Dejar de ser delegado**, que es lo que completa la transferencia. Se permite aunque sea el último delegado: bloquearlo ataría a alguien a un rol que ya no quiere, y la liga puede aprobar a otro cuando aparezca. El mensaje avisa que el equipo queda sin delegado.
+  - **UI en `/mi-equipo`:** con la solicitud PENDIENTE aparece "Cancelar"; con la delegación APROBADA, un menú con "Pasarle el equipo a otra persona" y "Dejar de ser delegado". Las dos destructivas van por `<ConfirmDialog>`.
+  - **Verificado con round-trip contra la BD:** se creó una propuesta de equipo nuevo + solicitud PENDIENTE, se corrió la misma transacción de la acción y se confirmó que **borra las dos filas**; y que sobre un equipo ya existente (habilitado, con torneos) la rama destructiva **no** se activa. Base restaurada al estado original (1 equipo, 1 delegación, sin restos). `tsc` + `eslint` + `next build` en verde. No se ejercitó el flujo con sesión Clerk real (misma limitación que el resto de lo auth-gated).
 
 #### N14. 🔴 Circuitos por tipo de usuario — auditoría integral y diseño (2026-07-16)
 
