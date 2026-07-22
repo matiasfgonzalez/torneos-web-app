@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  Calendar,
-  User,
   BookOpen,
-  Newspaper,
+  Calendar,
   ChevronRight,
+  Newspaper,
   Trophy,
-  Sparkles,
+  User,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/formatDate";
 import { getNoticiaById } from "@modules/noticias/actions/getNoticiaById";
+import { getNoticiasRelacionadas } from "@modules/noticias/actions/getNoticiasRelacionadas";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ShareCard } from "./ShareCard";
 
@@ -33,10 +33,12 @@ export async function generateMetadata({
   return {
     title: `${noticia.title} | GOLAZO`,
     description,
+    alternates: { canonical: `/noticias/${id}` },
     openGraph: {
       title: noticia.title,
       description,
       type: "article",
+      publishedTime: new Date(noticia.publishedAt).toISOString(),
       images: noticia.coverImageUrl
         ? [{ url: noticia.coverImageUrl }]
         : undefined,
@@ -45,10 +47,12 @@ export async function generateMetadata({
 }
 
 /**
- * Ficha pública de una noticia (`/noticias/[id]`). Server Component: la noticia
- * se trae en el server y, si no existe (o es borrador/eliminada), `notFound()`
- * devuelve un **404 real** — antes esto era client-fetched y quedaba en 200
- * (soft-404, malo para SEO). Lo interactivo (compartir) vive en `ShareCard`.
+ * Ficha pública de una noticia (`/noticias/[id]`) — patrón §2 de UI_PATTERNS.
+ *
+ * Server Component: la noticia se trae en el server y, si no existe (o es
+ * borrador/eliminada), `notFound()` devuelve un **404 real** — antes esto era
+ * client-fetched y quedaba en 200 (soft-404, malo para SEO). Lo interactivo
+ * (compartir) vive en `ShareCard`.
  */
 export default async function NoticiaIndividualPage({
   params,
@@ -57,8 +61,11 @@ export default async function NoticiaIndividualPage({
   const noticia = await getNoticiaById(id);
   if (!noticia) return notFound();
 
+  const relacionadas = await getNoticiasRelacionadas(noticia.id);
+
   const wordCount = noticia.content.split(/\s+/).length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+  const cover = noticia.coverImageUrl;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -67,7 +74,7 @@ export default async function NoticiaIndividualPage({
     description: noticia.summary ?? noticia.content.slice(0, 160),
     datePublished: new Date(noticia.publishedAt).toISOString(),
     dateModified: new Date(noticia.updatedAt).toISOString(),
-    image: noticia.coverImageUrl ? [noticia.coverImageUrl] : undefined,
+    image: cover ? [cover] : undefined,
     author: { "@type": "Person", name: noticia.user?.name ?? "GOLAZO" },
     publisher: { "@type": "Organization", name: "GOLAZO" },
   };
@@ -75,87 +82,100 @@ export default async function NoticiaIndividualPage({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <JsonLd data={jsonLd} />
-      {/* Hero */}
-      <section className="relative">
-        <div className="absolute inset-0 h-[650px] sm:h-[550px] lg:h-[600px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={noticia.coverImageUrl || "/placeholder.svg"}
-            alt={noticia.title}
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/90 to-gray-950/60" />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand/20 to-brand-2/20" />
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Hero. La altura la define el CONTENIDO (padding + texto), no un
+          `h-[650px]` fijo: la versión anterior era más alta en mobile (650px)
+          que en desktop (600px) — más que la pantalla de un teléfono — y si el
+          título era largo, el texto se salía del fondo. `isolate` + `-z-10`
+          dejan la foto detrás sin sacarla del flujo. */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="relative isolate overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          {cover ? (
+            <Image
+              src={cover}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          ) : (
+            // Sin portada no se muestra un placeholder gris: la marca es un
+            // fondo digno por sí sola y evita que la nota "se vea rota".
+            <div className="h-full w-full bg-gradient-to-br from-brand via-brand-mid to-brand-2" />
+          )}
+          {/* Velo: garantiza contraste AA del texto blanco sobre cualquier foto */}
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/85 to-gray-950/60" />
         </div>
 
-        <div className="relative mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
-          <nav className="mb-8 flex items-center gap-2 text-sm text-white/70">
+        <div className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+          <nav
+            aria-label="Migas de pan"
+            className="mb-6 flex items-center gap-1.5 text-sm text-white/70 sm:gap-2"
+          >
             <Link href="/" className="transition-colors hover:text-white">
               Inicio
             </Link>
-            <ChevronRight className="h-4 w-4" />
-            <Link
-              href="/noticias"
-              className="transition-colors hover:text-white"
-            >
+            <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <Link href="/noticias" className="transition-colors hover:text-white">
               Noticias
             </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="line-clamp-1 font-medium text-white/90">
-              {noticia.title.length > 40
-                ? noticia.title.substring(0, 40) + "..."
-                : noticia.title}
+            <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {/* `line-clamp-1` ya recorta: el `substring(0,40)` anterior cortaba
+                a mitad de palabra y encima duplicaba el trabajo del CSS. */}
+            <span
+              aria-current="page"
+              className="line-clamp-1 font-medium text-white/90"
+            >
+              {noticia.title}
             </span>
           </nav>
 
-          <Link href="/noticias" className="mb-8 inline-block">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="border border-white/20 text-white/80 backdrop-blur-sm hover:bg-white/10 hover:text-white"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver a Noticias
-            </Button>
-          </Link>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="mb-8 border border-white/20 text-white/80 backdrop-blur-sm hover:bg-white/10 hover:text-white"
+          >
+            <Link href="/noticias">
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Volver a noticias
+            </Link>
+          </Button>
 
-          <header className="max-w-4xl space-y-6">
-            <div className="flex items-center gap-3">
-              <Badge className="border-0 bg-gradient-to-r from-brand to-brand-mid px-4 py-1.5 text-sm font-medium text-white shadow-lg shadow-brand/30">
-                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                Noticia Destacada
-              </Badge>
-            </div>
-
+          <header className="max-w-4xl space-y-5">
             <h1 className="text-balance text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
               {noticia.title}
             </h1>
 
+            {/* El resumen es lo que engancha: antes estaba `hidden sm:block`,
+                así que en mobile —donde se lee la mayoría de las noticias— el
+                hero ocupaba media pantalla para mostrar solo el título. */}
             {noticia.summary && (
-              <p className="hidden max-w-3xl text-pretty text-lg leading-relaxed text-white/90 sm:block lg:text-xl">
+              <p className="max-w-3xl text-pretty text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl">
                 {noticia.summary}
               </p>
             )}
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/20 pt-6 text-sm">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-white/20 pt-5 text-sm">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-2 shadow-lg">
-                  <User className="h-4 w-4 text-white" />
-                </div>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-2 shadow-lg">
+                  <User className="h-4 w-4 text-white" aria-hidden="true" />
+                </span>
                 <span className="font-medium text-white">
-                  {noticia.user.name || "Anónimo"}
+                  {noticia.user?.name || "Redacción GOLAZO"}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-white/70">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {noticia.publishedAt
-                    ? formatDate(noticia.publishedAt, "dd 'de' MMMM, yyyy")
-                    : "Sin fecha"}
-                </span>
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                <time dateTime={new Date(noticia.publishedAt).toISOString()}>
+                  {formatDate(noticia.publishedAt, "dd 'de' MMMM, yyyy")}
+                </time>
               </div>
               <div className="flex items-center gap-2 text-white/70">
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
                 <span>{readingTime} min de lectura</span>
               </div>
             </div>
@@ -163,78 +183,59 @@ export default async function NoticiaIndividualPage({
         </div>
       </section>
 
-      {/* Contenido */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Cuerpo */}
+      {/* ---------------------------------------------------------------- */}
       <section className="relative -mt-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <article className="lg:col-span-8">
-              <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900">
-                <div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={noticia.coverImageUrl || "/placeholder.svg"}
-                    alt={noticia.title}
-                    className="h-64 w-full object-cover lg:h-80"
-                  />
-                </div>
-
-                <div className="p-6 sm:p-8 lg:p-10">
-                  {/* Texto plano (whitespace-pre-line): nunca dangerouslySetInnerHTML (C5) */}
-                  <div className="prose prose-lg max-w-none whitespace-pre-line dark:prose-invert prose-headings:font-bold prose-headings:text-gray-900 prose-p:leading-relaxed prose-p:text-gray-700 prose-a:text-brand prose-a:no-underline prose-strong:text-gray-900 prose-img:rounded-xl prose-img:shadow-lg hover:prose-a:underline dark:prose-headings:text-white dark:prose-p:text-gray-300 dark:prose-strong:text-white">
-                    {noticia.content}
-                  </div>
-                </div>
-
-                <div className="px-6 pb-8 sm:px-8 lg:px-10">
-                  <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-6 dark:border-gray-800">
-                    {["Deportes", "Torneos", "Actualidad"].map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+              {/* La portada NO se repite acá: ya es el fondo del hero, y verla
+                  dos veces en el mismo scroll era redundante. */}
+              <div className="rounded-3xl border border-gray-100 bg-card p-6 shadow-2xl sm:p-8 lg:p-10 dark:border-gray-800">
+                {/* Texto plano con `whitespace-pre-line`: nunca
+                    `dangerouslySetInnerHTML` (C5). Se tipografía a mano y no
+                    con `prose`, porque sin etiquetas HTML los modificadores
+                    `prose-p:*` no aplicaban a nada — el color salía por
+                    herencia, de casualidad. */}
+                <div className="whitespace-pre-line text-pretty text-[1.0625rem] leading-[1.75] text-gray-700 sm:text-lg dark:text-gray-300">
+                  {noticia.content}
                 </div>
               </div>
 
-              {/* Autor */}
-              <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900 sm:p-8">
-                <div className="flex items-start gap-5">
-                  <div className="flex-shrink-0">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-brand via-brand-mid to-brand-2 p-0.5 shadow-lg shadow-brand/20 sm:h-20 sm:w-20">
-                      <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-gray-900">
-                        {noticia.user.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={noticia.user.imageUrl}
-                            alt={noticia.user.name || "Autor"}
-                            className="h-full w-full rounded-2xl object-cover"
-                          />
-                        ) : (
-                          <User className="h-8 w-8 text-brand" />
-                        )}
-                      </div>
+              {/* Autor. Sin la bio inventada que decía "Periodista deportivo
+                  especializado en…" para cualquiera: era texto falso presentado
+                  como dato real (AGENT_RULES: sin datos mock). */}
+              <div className="mt-8 rounded-2xl border border-gray-100 bg-card p-6 shadow-xl dark:border-gray-800">
+                <div className="flex items-center gap-4 sm:gap-5">
+                  <div className="h-16 w-16 shrink-0 rounded-2xl bg-gradient-to-br from-brand via-brand-mid to-brand-2 p-0.5 shadow-lg shadow-brand/20">
+                    <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[0.9rem] bg-card">
+                      {noticia.user?.imageUrl ? (
+                        <Image
+                          src={noticia.user.imageUrl}
+                          alt=""
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <User
+                          className="h-7 w-7 text-brand"
+                          aria-hidden="true"
+                        />
+                      )}
                     </div>
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                        {noticia.user.name || "Autor Anónimo"}
-                      </h3>
-                      <Badge className="border-0 bg-brand/10 text-xs text-brand">
-                        Autor
-                      </Badge>
-                    </div>
-                    <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                      Periodista deportivo especializado en cobertura de torneos
-                      y eventos deportivos locales.
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-brand">
+                      Escrito por
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
-                      Miembro desde{" "}
+                    <h2 className="truncate text-lg font-bold text-gray-900 dark:text-white">
+                      {noticia.user?.name || "Redacción GOLAZO"}
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Publicando en GOLAZO desde{" "}
                       {formatDate(noticia.user.createdAt, "MMMM yyyy")}
                     </p>
                   </div>
@@ -242,7 +243,6 @@ export default async function NoticiaIndividualPage({
               </div>
             </article>
 
-            {/* Sidebar interactiva */}
             <aside className="lg:col-span-4">
               <ShareCard
                 title={noticia.title}
@@ -255,53 +255,102 @@ export default async function NoticiaIndividualPage({
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mt-16 py-20">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e] p-8 sm:p-12 lg:p-16">
-            <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-brand/20 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-brand-2/20 blur-3xl" />
+      {/* ---------------------------------------------------------------- */}
+      {/* Seguir leyendo. Reemplaza al CTA genérico que decía "Más contenido
+          para ti" y mandaba al índice: ahora son noticias de verdad, con su
+          link. Si no hay otras publicadas, la sección no se renderiza en vez
+          de mostrar una grilla vacía. */}
+      {/* ---------------------------------------------------------------- */}
+      {relacionadas.length > 0 && (
+        <section className="mx-auto mt-16 max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 flex items-center gap-2">
+            <span className="h-6 w-1 rounded-full bg-gradient-to-b from-brand to-brand-2" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Seguí leyendo
+            </h2>
+          </div>
 
-            <div className="relative z-10 space-y-6 text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/80 backdrop-blur-sm">
-                <Newspaper className="h-4 w-4" />
-                Más contenido para ti
-              </div>
-
-              <h2 className="text-3xl font-bold text-white sm:text-4xl">
-                ¿Te gustó esta{" "}
-                <span className="bg-gradient-to-r from-brand via-brand-mid to-brand-2 bg-clip-text text-transparent">
-                  noticia
-                </span>
-                ?
-              </h2>
-
-              <p className="mx-auto max-w-2xl text-lg text-white/70">
-                Explora más contenido y mantente al día con las últimas novedades
-                deportivas de tu comunidad.
-              </p>
-
-              <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
-                <Link href="/noticias">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-brand to-brand-2 px-8 text-lg text-white shadow-xl shadow-brand/30 hover:from-brand-hover hover:to-brand-2-hover"
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {relacionadas.map((n) => (
+              <Link
+                key={n.id}
+                href={`/noticias/${n.id}`}
+                className="interactive-surface group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-card shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:border-gray-800"
+              >
+                <div className="relative aspect-[16/9] w-full bg-gray-100 dark:bg-gray-800">
+                  {n.coverImageUrl ? (
+                    <Image
+                      src={n.coverImageUrl}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 100vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand/15 to-brand-2/15">
+                      <Newspaper
+                        className="h-8 w-8 text-brand"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col gap-1.5 p-4">
+                  <time
+                    dateTime={new Date(n.publishedAt).toISOString()}
+                    className="text-xs text-gray-500 dark:text-gray-400"
                   >
-                    <Newspaper className="mr-2 h-5 w-5" />
-                    Ver más noticias
-                  </Button>
-                </Link>
+                    {formatDate(n.publishedAt, "dd 'de' MMMM, yyyy")}
+                  </time>
+                  <h3 className="line-clamp-2 font-semibold leading-snug text-gray-900 group-hover:text-brand dark:text-white">
+                    {n.title}
+                  </h3>
+                  {n.summary && (
+                    <p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
+                      {n.summary}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* CTA de cierre. El fondo sale de los tokens de marca: antes eran hex
+          crudos (`#1a0a2e`/`#2d1b4e`), que M6 prohíbe. */}
+      <section className="mx-auto mt-16 max-w-5xl px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-mid via-brand to-brand-mid p-8 text-center sm:p-12">
+          <div
+            aria-hidden="true"
+            className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl"
+          />
+          <div className="relative z-10 space-y-5">
+            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+              Seguí a tu equipo en GOLAZO
+            </h2>
+            <p className="mx-auto max-w-xl text-white/80">
+              Tabla de posiciones, fixture y resultados de tu liga, actualizados
+              en el momento.
+            </p>
+            <div className="flex flex-col justify-center gap-3 pt-1 sm:flex-row">
+              <Button asChild size="lg" variant="secondary">
                 <Link href="/torneos">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white/30 px-8 text-lg text-white hover:bg-white/10"
-                  >
-                    <Trophy className="mr-2 h-5 w-5" />
-                    Explorar torneos
-                  </Button>
+                  <Trophy className="h-5 w-5" aria-hidden="true" />
+                  Explorar torneos
                 </Link>
-              </div>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              >
+                <Link href="/noticias">
+                  <Newspaper className="h-5 w-5" aria-hidden="true" />
+                  Ver más noticias
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
