@@ -37,6 +37,7 @@
 
 **🟠 Alto**
 - **A3** — Consultas pesadas y sin paginación (N+1 / payload gigante) · `E:Alto`
+- **S13** — Liga + playoffs con doble copa (Oro/Plata) en un mismo torneo · `E:Alto` · **pedido de un cliente real**; debe ser **opt-in** (no cambia el flujo actual)
 - **S3** — Inscripción online de equipos (cupos + fecha límite; base de delegados de N13 lista) · `E:Alto`
 
 **🟡 Medio**
@@ -718,6 +719,42 @@
   - Verificado **de verdad** (script Prisma: crea una novedad publicada, consulta las páginas, limpia): la liga muestra la sección + el título; el detalle 200 con título/contenido/badge; slug cruzado → body 404 **y** `<title>` = "Novedad no encontrada" (sin fuga); POST anónimo → 401. `tsc` limpio, 0 errores de lint (solo warnings `<img>`/cssConflict preexistentes), build verde.
   - **Falta de S12:** (1) **NO se agregó al home del hincha** (`FanHome`) que sigue la liga — era el "opcionalmente" del enunciado; queda como follow-up (necesita cruzar favoritos con las novedades más recientes de las ligas seguidas); (2) **no se ejercitó el flujo admin con sesión real** (crear/editar/publicar desde la UII con Clerk) — se verificó la lógica pública, el gate anónimo (401) y el gate de feature por código, no el alta logueada; (3) el contenido es texto plano, sin editor rich-text (imágenes embebidas, formato) — decisión deliberada por seguridad (C5), un editor estructurado (tiptap/markdown con sanitización) sería otra iteración; (4) **`exportPdf` (S8) y `liveMatch` (S6) ya están construidas pero todavía NO gateadas con `hasFeature`** — siguen funcionando para todos; ahora que existen, gatearlas es un follow-up chico (el bloque ámbar en `/admin/planes` lo advierte).
   - ⚠️ **Hallazgo preexistente (NO de S12) → ✅ arreglado (2026-07-18):** `notFound()` devolvía **HTTP 200** en todo el proyecto. La causa eran los boundaries de streaming (`<Suspense>` del layout + `app/loading.tsx`); ver el detalle en la sección 🟠 A5 ("Soft 404 en toda la app"). Todas las páginas de detalle server ahora dan 404; solo `noticias/[id]` (client-fetched) queda pendiente.
+
+- [ ] **S13. 🟠 Liga + playoffs con doble copa (Oro/Plata) en un mismo torneo (E:Alto) — pedido de un cliente real (2026-07-22).**
+
+  **El formato que pide:** un torneo (ej. "Categoría A 2026 Apertura") con 10 equipos, **todos contra todos a una sola rueda**. Terminada la fase regular: los **2 últimos descienden** a otra categoría, y del **1° al 8° salen los cruces sembrados por tabla** (1v8, 2v7, 3v6, 4v5). Los **ganadores** de esos 4 cruces van a semifinales de la **Copa de Oro**; los **perdedores**, a semifinales de la **Copa de Plata**. Cada copa juega su semifinal, su final y su partido por el 3° y 4° puesto. **Todo dentro del mismo torneo** (una sola página pública, una sola historia). Son 45 partidos de liga + 12 de fase final = **57**.
+
+  > ⚠️ **REQUISITO DE DISEÑO INNEGOCIABLE: es OPT-IN.** La enorme mayoría de los torneos que hoy se crean y se están jugando usan el flujo actual (liga simple, una fase, sin cuadro). Este formato se **elige explícitamente al crear el torneo** y no puede cambiar el camino por defecto: un torneo LIGA tiene que seguir creándose, generándose y jugándose exactamente igual que hoy, sin fases extra que administrar, sin pasos nuevos en el alta y sin pantallas que aparezcan "por las dudas". La complejidad nueva solo se le muestra a quien la pidió.
+
+  **Diagnóstico (verificado contra el código, 2026-07-22 — no es una lista teórica):**
+
+  *Lo que YA funciona y no hay que tocar:*
+  - Todos contra todos a una rueda: `Tournament.homeAndAway = false` + `roundRobinRounds`. ✅
+  - La tabla que define el descenso, con desempates configurables (N7). ✅
+  - **Los cruces del cliente son exactamente la siembra estándar del sistema:** `seedOrder(8)` en [lib/fixture/knockout.ts](lib/fixture/knockout.ts) devuelve `[1,8,4,5,2,7,3,6]`. La forma del cuadro ya está resuelta. ✅
+  - El dibujo: [KnockoutBracket](modules/torneos/components/KnockoutBracket.tsx) agrupa por nombre de fase y ordena por `phase.order`, así que Cuartos → Semi → Final se renderiza solo en columnas. ✅
+  - Las fases `KNOCKOUT` no suman puntos a la tabla general (arreglado en C6). ✅
+
+  *Los bloqueantes:*
+  1. **No se puede crear una segunda fase.** `tournamentPhase.create` existe en **un solo lugar de todo el repo**: [generateFixture.ts](modules/torneos/actions/generateFixture.ts). No hay API ni pantalla de `TournamentPhase`. Este es el bloqueante de fondo: arrastra a los puntos 5 y 7.
+  2. **El generador es de una sola corrida por torneo.** Con la liga ya jugada, volver a generarlo devuelve error a propósito ("borraría sus resultados, goles y tarjetas"). Correcto como protección, pero no deja ninguna puerta para *sumar* la fase final.
+  3. **La siembra sale de un sorteo, no de la tabla.** `generateFixture` hace `shuffle(teamIds)` y los ids vienen ordenados por `createdAt`. El "1" del cuadro es un equipo al azar. Falta "tomá los primeros N de la fase X y sembralos por posición".
+  4. **La Copa de Plata (cuadro de perdedores) no tiene cómo existir.** Ya está identificado como hueco conocido en [lib/fixture/formats.ts](lib/fixture/formats.ts): `DOBLE_ELIMINACION: "Necesita un cuadro de perdedores, que el modelo de fases todavía no representa."` Un partido no sabe a dónde va el que pierde.
+  5. **Solo se genera la primera ronda del cuadro** (documentado en `knockout.ts`): `Match.homeTeamId` es obligatorio, así que no se puede crear una semifinal antes de saber quién la juega. Las rondas siguientes son carga manual.
+  6. **El descenso no existe** — cero referencias en el código. No hay jerarquía Categoría A ↔ B ni movimiento de equipos entre torneos.
+  7. **El 3°/4° puesto no existe** como concepto (sería un partido más, si hubiera fase donde ponerlo).
+
+  *⚠️ Por qué el workaround manual NO sirve (y es lo más importante de este análisis):* la salida obvia sería "que cargue los 12 partidos de playoff a mano con el formulario que ya existe". **Rompe la tabla en silencio.** En [calculate-standings.ts](lib/standings/calculate-standings.ts) un partido **sin fase suma puntos** a la tabla general (`if (!tournamentPhaseId) return true`), y la fase `LEAGUE` también; solo `KNOCKOUT` queda afuera. Como hoy el organizador **no puede crear una fase KNOCKOUT**, esos 12 partidos caen sí o sí en "Sin fase" o en "Liga" → **la final de la Copa de Oro le sumaría puntos a la tabla de la liga, que es la misma que define quién descendió.** Un error silencioso que corrige mal el descenso: peor que no tener la feature. La otra salida (dos torneos separados) rompe el pedido explícito de "todo sale del mismo torneo".
+
+  **Plan sugerido, en orden de lo que más destraba:**
+  1. **CRUD de fases** (API + pantalla en el detalle del torneo). Destraba los bloqueantes 1, 5 y 7 de una sola vez, y **la pantalla solo aparece si el torneo usa un formato con fase final** (requisito opt-in). `E:Medio`
+  2. **Sembrar un cuadro desde la tabla de una fase previa**: "tomar los primeros N de la fase X, sembrados por posición". Con eso los cruces 1v8/2v7/3v6/4v5 salen automáticos y correctos. `E:Medio`
+  3. **Ruteo del perdedor**: que una fase declare que recibe a los perdedores de otra. Es el cambio de modelo más grande y es lo que además destraba `DOBLE_ELIMINACION`, ya anotado como formato sin generador. `E:Alto`
+  4. **Descenso: dejarlo manual.** Es una regla entre temporadas y automatizarla mal cuesta caro; el organizador decide a quién inscribe en la categoría de abajo la temporada siguiente.
+
+  Los puntos 1 y 2 cubren la mayor parte del caso (liga → cuartos sembrados por tabla → semis/finales cargadas a mano, todas en fases `KNOCKOUT` que no ensucian la tabla). El punto 3 es el que completa la Copa de Plata automática.
+
+  **Nota de producto:** evaluar si entra como feature de plan (tipo `advancedFormats`) — es exactamente la clase de diferenciador que justifica un plan pago, y el gating ya tiene el mecanismo (`hasFeature`). Regla de AGENT_RULES: implementar → gatear → recién ahí habilitar el switch.
 
 ---
 
