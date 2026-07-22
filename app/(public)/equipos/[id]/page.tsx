@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getEquipoById } from "@modules/equipos/actions/getEquipoById";
+import { getEquipoMeta } from "@modules/equipos/actions/getEquipoMeta";
 import PublicTeamHeader from "@modules/equipos/components/public/PublicTeamHeader";
 import PublicTabsTeam from "@modules/equipos/components/public/PublicTabsTeam";
 import { ArrowLeft, ChevronRight } from "lucide-react";
@@ -8,6 +10,34 @@ import Link from "next/link";
 import { checkUser } from "@/lib/checkUser";
 import { getFavoritedIds } from "@modules/favoritos/actions/favorites";
 import { FollowButton } from "@modules/favoritos/components/FollowButton";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const team = await getEquipoMeta(id);
+  if (!team) return { title: "Equipo no encontrado | GOLAZO" };
+
+  const description =
+    team.description ??
+    `Plantel, historial y estadísticas de ${team.name}${
+      team.homeCity ? ` (${team.homeCity})` : ""
+    } en GOLAZO.`;
+
+  return {
+    title: `${team.name} | GOLAZO`,
+    description,
+    alternates: { canonical: `/equipos/${id}` },
+    openGraph: {
+      title: team.name,
+      description,
+      type: "website",
+      images: team.logoUrl ? [{ url: team.logoUrl }] : undefined,
+    },
+  };
+}
 
 export default async function PublicTeamDetailPage({
   params,

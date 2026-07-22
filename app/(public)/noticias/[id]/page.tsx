@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/formatDate";
 import { getNoticiaById } from "@modules/noticias/actions/getNoticiaById";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ShareCard } from "./ShareCard";
 
 type RouteParams = Promise<{ id: string }>;
@@ -59,8 +60,21 @@ export default async function NoticiaIndividualPage({
   const wordCount = noticia.content.split(/\s+/).length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: noticia.title,
+    description: noticia.summary ?? noticia.content.slice(0, 160),
+    datePublished: new Date(noticia.publishedAt).toISOString(),
+    dateModified: new Date(noticia.updatedAt).toISOString(),
+    image: noticia.coverImageUrl ? [noticia.coverImageUrl] : undefined,
+    author: { "@type": "Person", name: noticia.user?.name ?? "GOLAZO" },
+    publisher: { "@type": "Organization", name: "GOLAZO" },
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <JsonLd data={jsonLd} />
       {/* Hero */}
       <section className="relative">
         <div className="absolute inset-0 h-[650px] sm:h-[550px] lg:h-[600px]">

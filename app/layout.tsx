@@ -7,6 +7,7 @@ import NextTopLoader from "nextjs-toploader";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { getBaseUrl } from "@/lib/urls";
 
 // Premium Golazo Theme for Clerk
 const clerkAppearance = {
@@ -177,6 +178,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  // Base absoluta para resolver OG images / canonical relativos de cada
+  // `generateMetadata` (M3). Sin esto, las imágenes OG relativas no resuelven.
+  metadataBase: new URL(getBaseUrl()),
   title: "GOLAZO - Gestión Profesional de Torneos",
   description:
     "Plataforma líder en gestión de torneos deportivos con tablas de posiciones, equipos, jugadores, noticias y contenido multimedia integrado.",
@@ -198,7 +202,8 @@ export const metadata: Metadata = {
     description:
       "Plataforma líder en gestión de torneos deportivos con tablas de posiciones, equipos, jugadores, noticias y contenido multimedia integrado.",
     type: "website",
-    locale: "es_ES",
+    locale: "es_AR",
+    siteName: "GOLAZO",
   },
   twitter: {
     card: "summary_large_image",

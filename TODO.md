@@ -23,6 +23,57 @@
 | DevOps | Sin CI/CD, sin Docker, sin monitoreo, sin backups documentados |
 | Producto | Falta el corazón SaaS: multi-tenancy, inscripciones, fixture automático, notificaciones |
 
+> ⚠️ La tabla de arriba es el snapshot original de la auditoría (2026-07-03). Para el estado real y actualizado, ver el índice de abajo. Testing, CI, multi-tenancy, fixture y notificaciones ya están hechos.
+
+---
+
+## 🧭 ÍNDICE DE ESTADO (actualizado 2026-07-21)
+
+> Navegación rápida por prioridad. El **detalle completo de cada tarea** (con notas de implementación) vive en su sección más abajo — buscá el código (`A3`, `M4`, `N12`…) con Ctrl+F. Acá solo el estado para saber qué sigue.
+
+### ⏳ Pendientes — por prioridad
+
+**🔴 Crítico** — _ninguno_ (C1–C10 cerrados).
+
+**🟠 Alto**
+- **A3** — Consultas pesadas y sin paginación (N+1 / payload gigante) · `E:Alto`
+- **S3** — Inscripción online de equipos (cupos + fecha límite; base de delegados de N13 lista) · `E:Alto`
+
+**🟡 Medio**
+- **M5** — Capa de datos del cliente unificada (47 fetch dispersos) · `E:Alto`
+- **M2** — Migrar `<img>` → `next/image` (42 archivos) · `E:Medio`
+- **M4** — Accesibilidad WCAG AA · `E:Medio`
+- **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
+- **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
+- **M10** — Estados vacíos y skeletons consistentes · `E:Medio`
+- **M11** — Reglas de negocio de torneo (casos borde) · `E:Medio`
+- **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
+- **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
+
+**🟢 Bajo**
+- **B1** — Naming y comentarios engañosos (español/inglés) · `E:Bajo`
+- **B2** — `.env_example` → `.env.example` + documentar variables · `E:Bajo`
+- **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
+- **B5** — Estrategia de migraciones (CI + seeds idempotentes) · `E:Bajo`
+- **B6** — TypeScript más estricto (`noUncheckedIndexedAccess`, `z.infer`) · `E:Medio`
+- **B7** — DevOps base (Sentry, backups, Docker opcional) · `E:Medio`
+- **N12** — Carnet digital con QR (anti-suplantación en cancha) · `E:Alto`
+- **N14e** — Scoping por torneo (diseñado, NO construir hasta demanda real) · `E:Medio`
+- **S10** — Multi-deporte (solo si el negocio lo pide) · `E:Alto`
+
+### 🟨 Parcialmente hechas — falta el remate
+- **A1** — falta la regla ESLint `no-restricted-imports` (anti-regresión de duplicados)
+- **A4** — falta quitar `clerkUserId: temp_` de `POST /api/users`
+- **A6** — falta `publishedAt` nullable + eliminar `nextMatch` derivable
+- **A7** — falta migrar los éxitos de todas las rutas al envelope `{success,data}`
+- **A8** — faltan tests de validadores Zod, Playwright E2E y lint bloqueante
+- **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
+- **M3** — falta OG dinámica del **resultado de partido** (menor); redirect legacy 307→308
+- **N13** — falta: que el delegado cancele su propia solicitud; transferir delegación
+
+### ✅ Realizadas (con detalle en su sección)
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, N13 (base), N14 a–d.
+
 ---
 
 ## 🔴 CRÍTICO — Seguridad e integridad de datos (Sprint 1)
@@ -285,10 +336,11 @@
 
 ### M3. SEO real (hoy solo hay metadata en el root)
 
-- [ ] `generateMetadata` dinámico en `/torneos/[id]`, `/noticias/[id]`, `/equipos/[id]`, `/jugadores/[id]` (título, descripción, OG image con logo del torneo).
-- [ ] `app/sitemap.ts` + `app/robots.ts` (excluir `/admin`).
-- [ ] JSON-LD `SportsEvent` en partidos y `NewsArticle` en noticias.
-- [ ] OG image dinámica con `next/og` para compartir torneos/resultados. **E:Medio**
+- [x] **`generateMetadata` dinámico — hecho (2026-07-21).** Ya lo tenían noticias/[id], liga/[slug], liga/[slug]/[torneo] (la canónica del torneo; `/torneos/[id]` es legacy que redirige a ella) y partidos/[id]. **Agregados** en `/equipos/[id]` y `/jugadores/[id]` con OG image (logo/foto) y `canonical`, vía queries livianas [getEquipoMeta](modules/equipos/actions/getEquipoMeta.ts)/[getJugadorMeta](modules/jugadores/actions/getJugadorMeta.ts) (no repiten el fetch pesado). Se agregó `metadataBase` + `openGraph.siteName` al root ([app/layout.tsx](app/layout.tsx)) para resolver OG/canonical relativos.
+- [x] **`sitemap.ts` + `robots.ts` — hecho (2026-07-21).** [app/robots.ts](app/robots.ts) indexa lo público y bloquea `/admin`, `/api`, `/profile` y áreas privadas, con ref al sitemap. [app/sitemap.ts](app/sitemap.ts) (ISR 1h) = rutas estáticas + ligas ACTIVA + torneos canónicos + equipos + jugadores + noticias publicadas.
+- [x] **JSON-LD — hecho (2026-07-21).** Componente [components/seo/JsonLd.tsx](components/seo/JsonLd.tsx) (escapa `</script>`); `NewsArticle` en `/noticias/[id]` y `SportsEvent` en `/partidos/[id]`.
+- [x] **OG image dinámica (next/og)** — ya existía para torneos ([opengraph-image.tsx](<app/(public)/liga/[slug]/[torneo]/opengraph-image.tsx>) desde S4). Las demás entidades (noticias/equipos/jugadores) usan su imagen real como OG.
+- [ ] **Pendiente menor:** OG dinámica de **resultados de partido** con next/og (hoy `/partidos/[id]` no declara imagen; hereda la del root). Y `redirect()` legacy `/torneos/[id]` → canónica es 307 (temporal); evaluar 308 permanente para SEO. **E:Bajo**
 
 ### M4. Accesibilidad (WCAG AA)
 
