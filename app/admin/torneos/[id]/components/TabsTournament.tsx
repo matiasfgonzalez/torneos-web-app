@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trophy, User, Target, FileText, Settings } from "lucide-react";
+import { Trophy, User, Target, FileText, Settings, Medal } from "lucide-react";
 import { ITorneo } from "@modules/torneos/types";
 import { ITeam } from "@modules/equipos/types/types";
 import {
@@ -32,6 +32,7 @@ import { formatDate } from "@/lib/formatDate";
 import TabsOverview from "./tabs-tournament/TabsOverview";
 import TabsTeams from "./tabs-tournament/TabsTeams";
 import TabsMatches from "./tabs-tournament/TabsMatches";
+import CupsSection from "./tabs-tournament/CupsSection";
 import AdminStandingsSection from "@modules/torneos/components/admin/AdminStandingsSection";
 import { AdminSuspensionsSection } from "@modules/torneos/components/admin/AdminSuspensionsSection";
 import type { SuspensionView } from "@modules/torneos/actions/suspensions";
@@ -96,6 +97,13 @@ export default function TabsTournament({
               Partidos
             </TabsTrigger>
             <TabsTrigger
+              value="cups"
+              className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+            >
+              <Medal className="w-4 h-4 mr-2" />
+              Copas
+            </TabsTrigger>
+            <TabsTrigger
               value="stats"
               className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-brand/25 rounded-xl py-3 px-4 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
@@ -132,6 +140,12 @@ export default function TabsTournament({
               <Target className="w-4 h-4" />
             </TabsTrigger>
             <TabsTrigger
+              value="cups"
+              className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
+            >
+              <Medal className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger
               value="stats"
               className="flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand data-[state=active]:to-brand-mid data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-2.5 px-3 font-medium transition-all duration-300 text-gray-600 dark:text-gray-400"
             >
@@ -161,6 +175,12 @@ export default function TabsTournament({
         <TabsMatches tournamentData={tournamentData} />
 
         {/* Stats: uses AdminStandingsSection component */}
+        {/* Copas y fase final (S13). Opt-in: si el torneo no define ninguna,
+            esta pestaña queda con su estado vacío y nada del flujo cambia. */}
+        <TabsContent value="cups" className="space-y-6">
+          <CupsSection tournamentId={tournamentData.id} />
+        </TabsContent>
+
         <TabsContent value="stats" className="space-y-6">
           <AdminStandingsSection
             tournamentTeams={associations}

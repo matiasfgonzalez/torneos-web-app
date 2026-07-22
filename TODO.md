@@ -37,7 +37,6 @@
 
 **🟠 Alto**
 - **A3** — Consultas pesadas y sin paginación (N+1 / payload gigante) · `E:Alto`
-- **S13** — Liga + playoffs con doble copa (Oro/Plata) en un mismo torneo · `E:Alto` · **pedido de un cliente real**; debe ser **opt-in** (no cambia el flujo actual)
 - **S3** — Inscripción online de equipos (cupos + fecha límite; base de delegados de N13 lista) · `E:Alto`
 
 **🟡 Medio**
@@ -64,6 +63,7 @@
 - **A6** — falta `publishedAt` nullable + eliminar `nextMatch` derivable
 - **A7** — falta migrar los éxitos de todas las rutas al envelope `{success,data}`
 - **A8** — faltan tests de validadores Zod y Playwright E2E (el **lint bloqueante** se resolvió en B5)
+- **S13** — copas múltiples: núcleo hecho (schema + lógica + acciones + pantalla). Falta que el **cuadro público separe por copa** (`KnockoutBracket` agrupa por fase, no por `cupName`)
 - **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
 - **M3** — falta OG dinámica del **resultado de partido** (menor); redirect legacy 307→308
 
@@ -460,6 +460,7 @@
   - (Hallazgo) Prisma avisa que `package.json#prisma` está deprecado y se elimina en Prisma 7 → migrar a `prisma.config.ts`. Anotado abajo en B-nuevos.
   - ✅ **Seeds: ya resuelto (verificado 2026-07-22).** La nota vieja decía que el seed era `phase-seed.js` del modelo legacy: eso quedó desactualizado — ese archivo ya no existe (murió con `Phase` en A6). El seed actual es [prisma/seed.js](prisma/seed.js), catálogo de planes con `upsert` por `code` (idempotente), ahora expuesto como `npm run db:seed`.
   - ✅ **Reset de entorno (2026-07-22):** `npm run db:reset` ([scripts/reset-db.mjs](scripts/reset-db.mjs)) vacía todas las tablas y resiembra los planes, para arrancar el sistema de cero. Enumera las tablas desde `pg_tables` (no una lista escrita a mano, que se desactualiza al agregar un modelo), preserva `_prisma_migrations`, y **se protege del error real —borrar la base equivocada—**: bloquea `NODE_ENV=production`, imprime host/nombre/conteo antes de tocar nada y exige tipear el nombre de la base para confirmar. `--force` saltea la confirmación (sigue bloqueado en producción).
+- [ ] **B5c. `bonusPoints` existe pero no lo aplica nadie (hallazgo 2026-07-22).** La columna está en `TeamPhaseStats` y el validador de `tournament-team` documenta que "el ajuste manual de puntos va por `bonusPoints`" — pero **ningún código lo suma**: ni la tabla de posiciones, ni el cálculo de standings, ni el export. Es una feature a medio construir: la liga puede cargar una quita por sanción y no pasa nada. O se aplica en un solo lugar (el comparador) o se saca la columna. Se detectó al sembrar las copas de S13, donde había que decidir si sumarlo (se decidió NO, para que la siembra no contradiga a la tabla visible). **E:Bajo**
 - [ ] **B5b. Migrar `package.json#prisma` → `prisma.config.ts` (hallazgo 2026-07-22).** Prisma lo avisa en cada comando: la clave `prisma` de `package.json` está deprecada y **se elimina en Prisma 7**. El repo está en 6.19 y hay un 7.9 disponible, así que esto bloquea el upgrade mayor. **E:Bajo**
 - [ ] **B6. TypeScript más estricto:** 48 usos de `: any`; activar `noUncheckedIndexedAccess`, tipar respuestas de API con los tipos inferidos de Zod (`z.infer`). **E:Medio**
 - [ ] **B7. DevOps base:** GitHub Actions (ver A8), `Dockerfile` multi-stage opcional para portabilidad, Sentry (error tracking) + logs estructurados, política de backups de la BD (pg_dump programado o PITR del proveedor), y documento breve de recuperación ante desastres. **E:Medio**
@@ -747,7 +748,24 @@
   - **Falta de S12:** (1) **NO se agregó al home del hincha** (`FanHome`) que sigue la liga — era el "opcionalmente" del enunciado; queda como follow-up (necesita cruzar favoritos con las novedades más recientes de las ligas seguidas); (2) **no se ejercitó el flujo admin con sesión real** (crear/editar/publicar desde la UII con Clerk) — se verificó la lógica pública, el gate anónimo (401) y el gate de feature por código, no el alta logueada; (3) el contenido es texto plano, sin editor rich-text (imágenes embebidas, formato) — decisión deliberada por seguridad (C5), un editor estructurado (tiptap/markdown con sanitización) sería otra iteración; (4) **`exportPdf` (S8) y `liveMatch` (S6) ya están construidas pero todavía NO gateadas con `hasFeature`** — siguen funcionando para todos; ahora que existen, gatearlas es un follow-up chico (el bloque ámbar en `/admin/planes` lo advierte).
   - ⚠️ **Hallazgo preexistente (NO de S12) → ✅ arreglado (2026-07-18):** `notFound()` devolvía **HTTP 200** en todo el proyecto. La causa eran los boundaries de streaming (`<Suspense>` del layout + `app/loading.tsx`); ver el detalle en la sección 🟠 A5 ("Soft 404 en toda la app"). Todas las páginas de detalle server ahora dan 404; solo `noticias/[id]` (client-fetched) queda pendiente.
 
-- [ ] **S13. 🟠 Liga + playoffs con doble copa (Oro/Plata) en un mismo torneo (E:Alto) — pedido de un cliente real (2026-07-22).**
+- [~] **S13. 🟠 Liga + playoffs con N copas en un mismo torneo — núcleo implementado (2026-07-22).**
+
+  > **El pedido creció y eso cambió el diseño.** El cliente describió *un* caso (10 equipos → cuartos → ganadores a Oro, perdedores a Plata) y después se pidió otro (20 equipos → 1-8 Oro, 9-16 Plata, 17-20 Bronce). **Son dos mecanismos distintos**: en el primero la copa se decide por un **resultado**, en el segundo por la **posición** en la tabla. Un modelo que resolviera solo uno no servía.
+
+  **Lo implementado:**
+  - **Migración `20260722190847_copas_y_fase_final`** (aditiva, sin pérdida de datos): `TournamentPhase` gana `cupName`, `seedSource` (enum nuevo `PhaseSeedSource`: `STANDINGS` | `WINNERS` | `LOSERS`), `sourcePhaseId` (auto-relación), `seedFrom` y `seedTo`. Con esos dos orígenes, "cuartos → Oro/Plata" es simplemente una fase sembrada 1-8 más dos fases que toman sus ganadores y sus perdedores — y `WINNERS`/`LOSERS` es además el **cuadro de perdedores** que le faltaba a `DOBLE_ELIMINACION` ([formats.ts](lib/fixture/formats.ts)).
+  - **Lógica pura + 16 tests** en [lib/fixture/cups.ts](lib/fixture/cups.ts) / [tests/fixture/cups.test.ts](tests/fixture/cups.test.ts), siguiendo la regla del repo (reglas de negocio en `lib/`, testeadas sin BD). Los tests cubren **los dos escenarios reales completos**: el de 10 equipos (cuartos 1v8/4v5/2v7/3v6 → semis de Oro y Plata → finales y tercer puesto) y el de 20 (tres copas por tramo, sin equipos repetidos). Detalle que los tests fijan: con `STANDINGS` se **siembra** el cuadro, con `WINNERS`/`LOSERS` **no se re-siembra** —los equipos ya vienen en orden de cuadro y emparejarlos de a dos preserva que el 1 y el 2 solo se crucen en la final—.
+  - **Acciones** en [modules/torneos/actions/cups.ts](modules/torneos/actions/cups.ts): crear ronda de copa, generar sus cruces, eliminarla. La generación es **idempotente** (una fase con partidos no se regenera) y se niega a propagar una ronda con resultados pendientes, con un mensaje accionable. El ganador se resuelve contemplando **penales y walkover**, no solo el marcador.
+  - **Pantalla**: pestaña **Copas** en el detalle del torneo ([CupsSection.tsx](app/admin/torneos/[id]/components/tabs-tournament/CupsSection.tsx)), con estados vacíos que guían y ejemplos de las dos configuraciones. **Opt-in**: un torneo de liga simple no crea ninguna copa y su flujo no cambia en nada.
+  - **Por qué se genera ronda por ronda y no el cuadro entero:** `Match.homeTeamId` es obligatorio, así que no se puede crear una semifinal antes de saber quién la juega. Generar cuando la ronda previa terminó esquiva la limitación sin inventar partidos fantasma.
+  - Las fases de copa se crean siempre como `KNOCKOUT`, así que **no suman puntos a la tabla general** (C6) — es exactamente lo que evita que la final de la Copa de Oro mueva el descenso, que era el riesgo señalado en el diagnóstico.
+  - **Verificado:** 220 tests verdes (16 nuevos), `tsc` + `eslint` + `next build` limpios, y un round-trip contra la BD real creando una fase de copa con su auto-relación, leyéndola y borrándola.
+
+  **Falta para cerrarlo:**
+  - [ ] **Render público del cuadro por copa.** `KnockoutBracket` agrupa por nombre de fase pero todavía **no separa por `cupName`**: con dos copas dibujaría todo junto. Es lo que falta para que el hincha lo vea bien. **E:Medio**
+  - [ ] **Descenso**: sigue siendo manual y a propósito (el organizador decide a quién inscribe en la categoría de abajo la temporada siguiente). Automatizarlo es una regla entre temporadas, cara de revertir si sale mal.
+  - [ ] **No se ejercitó con sesión real** ni con un torneo con tabla cargada: la lógica está testeada y el schema probado contra la BD, pero el flujo completo desde la pantalla no se corrió.
+  - [ ] Evaluar si entra como feature de plan (`advancedFormats`) — el gating ya tiene mecanismo (`hasFeature`).
 
   **El formato que pide:** un torneo (ej. "Categoría A 2026 Apertura") con 10 equipos, **todos contra todos a una sola rueda**. Terminada la fase regular: los **2 últimos descienden** a otra categoría, y del **1° al 8° salen los cruces sembrados por tabla** (1v8, 2v7, 3v6, 4v5). Los **ganadores** de esos 4 cruces van a semifinales de la **Copa de Oro**; los **perdedores**, a semifinales de la **Copa de Plata**. Cada copa juega su semifinal, su final y su partido por el 3° y 4° puesto. **Todo dentro del mismo torneo** (una sola página pública, una sola historia). Son 45 partidos de liga + 12 de fase final = **57**.
 

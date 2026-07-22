@@ -419,6 +419,26 @@ model TournamentPhase {
   order Int
   type  PhaseType
 
+  /// Copa a la que pertenece la fase ("Copa de Oro"). Agrupa varias fases
+  /// —semifinal, final, tercer puesto— en un mismo cuadro para mostrarlas
+  /// juntas. `null` = la fase no forma parte de una copa (S13).
+  cupName String?
+
+  /// De dónde salen los equipos de esta fase (S13). `null` en las fases que
+  /// arma el generador de fixture a partir de los inscriptos.
+  seedSource PhaseSeedSource?
+
+  /// Fase de origen: la que tiene la tabla (STANDINGS) o los cruces cuyos
+  /// ganadores/perdedores alimentan a esta (WINNERS/LOSERS).
+  sourcePhaseId String?
+  sourcePhase   TournamentPhase?  @relation("PhaseSeed", fields: [sourcePhaseId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  derivedPhases TournamentPhase[] @relation("PhaseSeed")
+
+  /// Tramo de la tabla que entra a la fase, 1-based e inclusive (1..8).
+  /// Solo con `seedSource = STANDINGS`.
+  seedFrom Int?
+  seedTo   Int?
+
   matches   Match[]
   teamStats TeamPhaseStats[]
 
@@ -426,6 +446,20 @@ model TournamentPhase {
   updatedAt DateTime @updatedAt
 
   @@index([tournamentId])
+  @@index([sourcePhaseId])
+}
+
+/// Cómo se puebla una fase final (S13).
+///
+/// `STANDINGS` decide la copa por **posición** (20 equipos: 1-8 Oro, 9-16
+/// Plata, 17-20 Bronce). `WINNERS`/`LOSERS` la deciden por **resultado**: los
+/// que ganan cuartos van a la Copa de Oro y los que pierden a la de Plata.
+/// Ese segundo caso es también el cuadro de perdedores que le faltaba a
+/// `DOBLE_ELIMINACION`.
+enum PhaseSeedSource {
+  STANDINGS
+  WINNERS
+  LOSERS
 }
 
 // ============================================================
