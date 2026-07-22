@@ -8,6 +8,7 @@ import {
   BadgeCheck,
   Clock,
   Goal,
+  IdCard,
   Loader2,
   RectangleVertical,
   Scale,
@@ -401,7 +402,15 @@ export default function MiFichaClient({
                 Esta ficha es tuya. Actualizá tus datos y los ve tu liga.
               </p>
             </div>
-            {profile && <EditProfileSheet player={profile} />}
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/mi-ficha/carnet">
+                  <IdCard className="h-4 w-4" aria-hidden="true" />
+                  Mi carnet
+                </Link>
+              </Button>
+              {profile && <EditProfileSheet player={profile} />}
+            </div>
           </div>
 
           {/* Resumen de carrera */}

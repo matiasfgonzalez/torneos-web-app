@@ -57,7 +57,6 @@
 - **B5** — Estrategia de migraciones (CI + seeds idempotentes) · `E:Bajo`
 - **B6** — TypeScript más estricto (`noUncheckedIndexedAccess`, `z.infer`) · `E:Medio`
 - **B7** — DevOps base (Sentry, backups, Docker opcional) · `E:Medio`
-- **N12** — Carnet digital con QR (anti-suplantación en cancha) · `E:Alto`
 - **N14e** — Scoping por torneo (diseñado, NO construir hasta demanda real) · `E:Medio`
 - **S10** — Multi-deporte (solo si el negocio lo pide) · `E:Alto`
 
@@ -72,7 +71,7 @@
 - **N13** — falta: que el delegado cancele su propia solicitud; transferir delegación
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, N13 (base), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9. · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), N13 (base), N14 a–d.
 
 ---
 
@@ -992,7 +991,17 @@ Roles simplificados (D5), datos privados por organización (D6), freemium (D7), 
   - **El dueño ya puede EDITAR su ficha desde `/mi-ficha` (2026-07-18).** El copy prometía "los datos que cambies los ve tu liga" pero **no había ninguna UI para cambiarlos**: el estado aprobado solo mostraba nombre/DNI/trayectoria. Ahora hay un botón **"Editar mis datos"** (en el banner "esta ficha es tuya") que abre un [EditProfileSheet](app/mi-ficha/EditProfileSheet.tsx) — un `FormSheet` con un **subconjunto** de la ficha: datos personales, físicos, posición, fotos (rostro/cuerpo), redes y bio. Lo administrativo queda afuera a propósito: el **DNI** (clave de identidad global, no se cambia acá), el **estado** y la **fecha de ingreso** (los maneja la liga), y el **número** (es por torneo, lo pone el club en el plantel). Usa el **mismo endpoint que el admin** (`PATCH /api/players/[id]`), que ya autorizaba al dueño vía `canEditPlayer` y audita el cambio — solo faltaba la pantalla y traer los datos editables ([getMyPlayerProfile](modules/jugadores/actions/claims.ts)). Verificado: build/tsc/lint limpios; un edit tipo-dueño persiste + registra `AuditLog` (round-trip sobre datos reales, restaurado); rutas protegidas (mi-ficha 404 anónimo, `PATCH /api/players` 401). El flujo logueado completo no se ejercitó con sesión Clerk real (misma limitación que el resto de flujos auth-gated).
   - **Enum unificado:** `TeamManagerStatus` → **`ApprovalStatus`**, compartido por los dos flujos de aprobación (delegado de equipo y reclamo de ficha) — es el mismo concepto y merecía un solo vocabulario. Renombrado con `ALTER TYPE ... RENAME` (Prisma lo habría resuelto tirando el tipo y la columna).
   - **Cuarta puerta en `/bienvenida`:** "Juego en una liga" → `/mi-ficha`. La bandeja del panel pasó a llamarse **Solicitudes** (delegados + inscripciones + reclamos de ficha), que es lo que de verdad es.
-- [ ] **Falta de N12:** el **carnet digital con QR** (verificación anti-suplantación en la cancha). La **política de privacidad** ✅ ya existe (2026-07-17, ver A10): `/privacidad` cubre DNI de menores y mayores, Ley 25.326 y leyenda AAIP — pendiente solo la revisión por un profesional legal antes del lanzamiento.
+- [x] **Carnet digital con QR — hecho (2026-07-22). N12 cerrado.** El delegado rival o el árbitro escanean y ven, en el momento, si el que está en la cancha es quien dice ser y si puede jugar.
+  - **Dos pantallas, una para cada lado del control:**
+    - **`/mi-ficha/carnet`** — la credencial del jugador (solo el dueño, claim `APROBADO`; anónimo → 307 a sign-in). Foto, nombre, DNI completo, equipos y número, chip de estado y el QR. Se muestra desde el celular o se imprime (`print:` limpia las acciones). Entrada desde el botón **"Mi carnet"** en el banner "esta ficha es tuya" de `/mi-ficha`.
+    - **`/verificar/[id]`** — lo que abre la cámara al escanear. **Pública a propósito**: el que controla en la cancha no tiene por qué tener cuenta en GOLAZO.
+  - **El veredicto se calcula en el server** ([getCarnetData.ts](modules/jugadores/actions/getCarnetData.ts)), nunca en el cliente — si lo pintara el navegador, bastaría con editar el DOM para "habilitarse". Tres estados: 🟢 **HABILITADO** (ficha activa, habilitada, sin sanciones) · 🔴 **NO HABILITADO** (suspensión vigente, o estado `SUSPENDIDO`/`EXPULSADO`) · 🟡 **REVISAR** (lesionado, retirado, ficha deshabilitada — no es un "no" automático, pero que mire un humano). El detalle dice el motivo con las fechas que restan y en qué torneo.
+  - **Privacidad (Ley 25.326):** la página pública muestra el **DNI enmascarado** (`••.•••.678`) — alcanza para cotejar contra el documento físico que el jugador tiene en la mano, y no sirve para pescar datos de nadie. El DNI completo solo aparece en el carnet del propio dueño. `robots: noindex, nofollow` (no se disallowea en robots.txt a propósito: si se bloqueara el crawleo, el `noindex` nunca se leería). Solo se listan torneos **vigentes** (`INSCRIPCION`/`PENDIENTE`/`ACTIVO`), no la trayectoria completa.
+  - **`force-dynamic`**: el veredicto es una foto del momento (las suspensiones cambian fecha a fecha), así que nunca se sirve cacheado. La página lo dice: "consultado el {fecha} — el estado puede cambiar fecha a fecha".
+  - **Diseño:** la verificación es veredicto-first (bloque de color gigante arriba, después la foto a tamaño grande) porque el trabajo real es *comparar una cara* bajo el sol y con apuro; el carnet, en cambio, **no cambia con el tema** — una credencial no cambia de color según la hora — y el QR va sobre placa blanca siempre (los lectores necesitan negro sobre blanco). `min-h-dvh`, targets ≥44px, `aria-live` en el veredicto, y estado explícito cuando la ficha **no tiene foto** ("verificá identidad con el DNI físico"), que es justo el caso donde el carnet no puede hacer su trabajo solo.
+  - `lib/qr.ts`: `tournamentQrSvg` se generalizó a **`qrSvg`** (el alias viejo se mantiene) — el mismo QR ya no es solo de torneos.
+  - **Verificado en el server de desarrollo con datos reales:** jugador con roja vigente → 🔴 NO HABILITADO + "Suspensión vigente: 1 fecha(s) en Categoria A" (contrastado contra la BD: `status ACTIVO` pero `Suspension` activa — el veredicto no se apoya en el estado de la ficha sino en la sanción); id inexistente → **404**; `/mi-ficha/carnet` anónimo → **307**; `noindex` presente. `tsc` + `next build` en verde.
+- [ ] **Pendiente de N12 (legal, no técnico):** la **política de privacidad** ✅ ya existe (2026-07-17, ver A10): `/privacidad` cubre DNI de menores y mayores, Ley 25.326 y leyenda AAIP — falta solo la revisión por un profesional legal antes del lanzamiento.
 
 #### N13. 🔴 El delegado de equipo y el flujo de alta — prerequisito de S3 (E:Alto)
 

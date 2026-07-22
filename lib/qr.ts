@@ -14,7 +14,7 @@ import QRCode from "qrcode";
  * Se genera en el server (no expone nada, no pesa en el cliente) y no lanza:
  * ante un fallo devuelve null y la página muestra el link igual.
  */
-export async function tournamentQrSvg(url: string): Promise<string | null> {
+export async function qrSvg(url: string): Promise<string | null> {
   try {
     return await QRCode.toString(url, {
       type: "svg",
@@ -30,3 +30,6 @@ export async function tournamentQrSvg(url: string): Promise<string | null> {
     return null;
   }
 }
+
+/** Alias histórico (S4). Mismo QR; el nombre quedó de cuando solo lo usaban torneos. */
+export const tournamentQrSvg = qrSvg;
