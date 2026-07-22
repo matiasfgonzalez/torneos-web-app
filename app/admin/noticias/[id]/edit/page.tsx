@@ -43,6 +43,7 @@ import { INoticia } from "@modules/noticias/types";
 import { formatDate } from "@/lib/formatDate";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 
 export default function EditNoticia() {
   const router = useRouter();
@@ -60,6 +61,9 @@ export default function EditNoticia() {
     summary: "",
     content: "",
     coverImageUrl: "",
+    // Se guarda junto a la URL: sin el publicId, la imagen no se puede borrar
+    // de Cloudinary cuando se reemplaza o se elimina la noticia (M9).
+    coverImagePublicId: "",
     published: false,
     date: new Date().toISOString().split("T")[0],
   });
@@ -84,6 +88,7 @@ export default function EditNoticia() {
           summary: data.summary || "",
           content: data.content || "",
           coverImageUrl: data.coverImageUrl || "",
+          coverImagePublicId: data.coverImagePublicId || "",
           published: data.published || false,
           date:
             data.date?.split("T")[0] || new Date().toISOString().split("T")[0],
@@ -431,49 +436,38 @@ export default function EditNoticia() {
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="aspect-video bg-gray-100 dark:bg-gray-700/50 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-600">
-                  {formData.coverImageUrl ? (
-                    <img
-                      src={formData.coverImageUrl || "/placeholder.svg"}
-                      alt="Cover preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
-                      <div className="text-center">
-                        <Upload className="h-8 w-8 mx-auto mb-2" />
-                        <p className="text-sm">Sin imagen</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <CardContent className="space-y-3">
+                {/* Subida real a Cloudinary (carpeta `noticias/covers`), el mismo
+                    componente que usan el alta de noticias y el resto del panel.
+                    Antes acá había un input de URL suelto y un botón "Subir
+                    imagen" SIN handler: no se podía subir nada desde la PC, y
+                    pegar una URL no guardaba el publicId, así que la imagen
+                    quedaba huérfana en Cloudinary (M9). */}
+                <CloudinaryUpload
+                  folder="noticias/covers"
+                  value={formData.coverImageUrl || null}
+                  publicId={formData.coverImagePublicId || null}
+                  onChange={(url, publicId) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      coverImageUrl: url ?? "",
+                      coverImagePublicId: publicId ?? "",
+                    }));
+                    setHasChanges(true);
+                  }}
+                  placeholder="Arrastrá la imagen o hacé clic para elegirla"
+                />
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="coverImage"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    URL de Imagen
-                  </Label>
-                  <Input
-                    id="coverImage"
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                    value={formData.coverImageUrl}
-                    onChange={(e) =>
-                      handleInputChange("coverImageUrl", e.target.value)
-                    }
-                    className="bg-white dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 focus:border-brand dark:focus:border-brand-2 text-gray-900 dark:text-white rounded-xl"
-                  />
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-brand hover:text-brand dark:hover:border-brand-2 dark:hover:text-brand-2 rounded-xl"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Subir Imagen
-                </Button>
+                <p className="text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                    Tamaño recomendado: 1200 × 630 px
+                  </span>{" "}
+                  (horizontal, proporción 1.91:1). Es la medida que usan las
+                  vistas previas de WhatsApp y redes al compartir la noticia, y
+                  la portada se recorta a lo ancho: si subís una imagen vertical,
+                  se van a perder la parte de arriba y la de abajo. JPG o PNG,
+                  hasta 5 MB.
+                </p>
               </CardContent>
             </Card>
 
