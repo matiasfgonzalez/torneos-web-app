@@ -53,6 +53,12 @@ export default async function DelegadosPage() {
         teamName: i.team.name,
         tournamentName: i.tournament.name,
         playerCount: i._count.teamPlayer,
+        // Pago del arancel (S3). `paymentAmount` es Decimal en Prisma: se pasa a
+        // number acá porque un Decimal no cruza el límite a un client component.
+        paymentStatus: i.paymentStatus,
+        paymentAmount: i.paymentAmount ? Number(i.paymentAmount) : null,
+        paymentNote: i.paymentNote,
+        paymentReceiptUrl: i.paymentReceiptUrl,
       }))}
       requests={requests.map((r) => ({
         id: r.id,

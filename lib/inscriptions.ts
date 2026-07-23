@@ -59,6 +59,36 @@ export type InscriptionBlock =
   | { open: true }
   | { open: false; reason: "deadline" | "full" | "status"; message: string };
 
+// ============================================================
+// Arancel de inscripción (S3) — cobro manual
+// ============================================================
+
+/**
+ * Estado de pago con el que nace una inscripción. Sin arancel (o arancel 0) el
+ * equipo queda `EXENTO`: no hay nada que cobrar y no se le pide nada al delegado.
+ * Devuelve literales (no el enum de Prisma) para que este módulo siga puro.
+ */
+export function initialPaymentStatus(
+  fee: number | null | undefined,
+): "EXENTO" | "PENDIENTE" {
+  return fee != null && fee > 0 ? "PENDIENTE" : "EXENTO";
+}
+
+/** ¿El torneo cobra inscripción? */
+export function hasInscriptionFee(fee: number | null | undefined): boolean {
+  return fee != null && fee > 0;
+}
+
+/** Arancel en texto para el usuario ("$1.500" o "Gratis"). Moneda: ARS. */
+export function formatFee(amount: number | null | undefined): string {
+  if (amount == null || amount <= 0) return "Gratis";
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 /** Fecha límite en texto para el usuario ("viernes 20 de agosto, 23:59"). */
 export function formatDeadline(deadline: Date | string): string {
   const date = deadline instanceof Date ? deadline : new Date(deadline);

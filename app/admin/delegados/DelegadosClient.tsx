@@ -3,18 +3,29 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Mail, Scale, Shield, Sparkles, UserCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  Mail,
+  Scale,
+  Shield,
+  Sparkles,
+  UserCheck,
+  Wallet,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { formatFee } from "@/lib/inscriptions";
+import type { InscriptionPayStatus } from "@prisma/client";
 import {
   approveTeamRequest,
   rejectTeamRequest,
 } from "@modules/delegados/actions/requests";
 import {
   approveInscription,
+  confirmInscriptionPayment,
   rejectInscription,
 } from "@modules/delegados/actions/inscriptions";
 import {
@@ -35,6 +46,11 @@ interface Inscription {
   teamName: string;
   tournamentName: string;
   playerCount: number;
+  // Pago del arancel (S3). EXENTO = torneo gratis.
+  paymentStatus: InscriptionPayStatus;
+  paymentAmount: number | null;
+  paymentNote: string | null;
+  paymentReceiptUrl: string | null;
 }
 
 interface Claim {
@@ -106,6 +122,17 @@ export default function DelegadosClient({
                     ? "Todavía sin jugadores cargados"
                     : `${inscription.playerCount} ${inscription.playerCount === 1 ? "jugador cargado" : "jugadores cargados"}`}
                 </p>
+
+                {/* Pago del arancel (S3): la liga ve el estado y confirma. */}
+                {inscription.paymentStatus !== "EXENTO" && (
+                  <InscriptionPayment
+                    inscription={inscription}
+                    disabled={isPending}
+                    onConfirm={() =>
+                      resolve(confirmInscriptionPayment, inscription.id)
+                    }
+                  />
+                )}
               </div>
 
               <div className="flex shrink-0 gap-2">
@@ -390,6 +417,96 @@ export default function DelegadosClient({
             </article>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Estado del pago del arancel de una inscripción, con el botón para confirmarlo
+ * (S3). Aprobar la inscripción y confirmar el pago son cosas distintas: la liga
+ * puede aprobar sin que haya pagado, o cobrar en efectivo y confirmar sin que el
+ * delegado haya informado nada.
+ */
+function InscriptionPayment({
+  inscription,
+  disabled,
+  onConfirm,
+}: Readonly<{
+  inscription: Inscription;
+  disabled: boolean;
+  onConfirm: () => void;
+}>) {
+  const amount = formatFee(inscription.paymentAmount);
+  const paid = inscription.paymentStatus === "PAGADO";
+  const informed = inscription.paymentStatus === "INFORMADO";
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 p-2 dark:border-gray-800 dark:bg-gray-900/50">
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+          paid
+            ? "text-emerald-600 dark:text-emerald-400"
+            : informed
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-gray-500 dark:text-gray-400"
+        }`}
+      >
+        {paid ? (
+          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+        ) : (
+          <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
+        )}
+        {paid
+          ? `Arancel pagado (${amount})`
+          : informed
+            ? `Informó el pago (${amount})`
+            : `Arancel ${amount} — sin pagar`}
+      </span>
+
+      {inscription.paymentNote && (
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          · “{inscription.paymentNote}”
+        </span>
+      )}
+
+      {inscription.paymentReceiptUrl && (
+        <a
+          href={inscription.paymentReceiptUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-medium text-brand hover:underline"
+        >
+          Ver comprobante
+        </a>
+      )}
+
+      {!paid && (
+        <ConfirmDialog
+          trigger={
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              className="ml-auto h-8 border-emerald-500/40 px-3 text-xs text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+              Confirmar pago
+            </Button>
+          }
+          tone="warning"
+          icon={Wallet}
+          title="¿Confirmar el pago del arancel?"
+          description={
+            <>
+              Vas a dar por pagado el arancel de <b>{amount}</b> de{" "}
+              <b>{inscription.teamName}</b>. Confirmá solo si ya viste la
+              transferencia acreditada.
+            </>
+          }
+          confirmLabel="Confirmar pago"
+          onConfirm={onConfirm}
+        />
       )}
     </div>
   );

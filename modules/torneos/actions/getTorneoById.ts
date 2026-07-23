@@ -51,7 +51,17 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
       },
     });
 
-    return torneo as ITorneo | null;
+    if (!torneo) return null;
+
+    // `inscriptionFee` es Decimal (S3): se pasa a number acá porque este objeto
+    // termina cruzando a client components (Header, HeaderTorneo) y un Decimal
+    // no atraviesa el límite RSC.
+    return {
+      ...torneo,
+      inscriptionFee: torneo.inscriptionFee
+        ? Number(torneo.inscriptionFee)
+        : null,
+    } as unknown as ITorneo;
   } catch (error) {
     console.error("Error al obtener torneo por ID:", error);
     throw error;

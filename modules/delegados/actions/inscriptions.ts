@@ -9,6 +9,8 @@ import { requireActionOrgAccess } from "@/lib/orgAuth";
 import {
   effectiveCapacity,
   formatDeadline,
+  formatFee,
+  initialPaymentStatus,
   isRegistrationClosed,
   remainingSlots,
 } from "@/lib/inscriptions";
@@ -66,10 +68,18 @@ export async function getOpenTournamentsForMyTeams() {
       organizationId: true,
       maxTeams: true,
       registrationDeadline: true,
+      inscriptionFee: true,
+      inscriptionPaymentInfo: true,
       organization: { select: { name: true } },
       tournamentTeams: {
         where: { teamId: { in: teamIds } },
-        select: { id: true, teamId: true, registrationStatus: true },
+        select: {
+          id: true,
+          teamId: true,
+          registrationStatus: true,
+          paymentStatus: true,
+          paymentAmount: true,
+        },
       },
       // Cupos ya ocupados: solo cuentan los aprobados
       _count: {
@@ -113,15 +123,29 @@ export async function getOpenTournamentsForMyTeams() {
       deadlineLabel: t.registrationDeadline
         ? formatDeadline(t.registrationDeadline)
         : null,
+      // Arancel de inscripción (S3): monto y cómo pagarlo. `null` = gratis.
+      inscriptionFee: t.inscriptionFee ? Number(t.inscriptionFee) : null,
+      inscriptionPaymentInfo: t.inscriptionPaymentInfo,
       // Equipos míos de esa liga que todavía puedo anotar
       myTeams: teams
         .filter((team) => team.organizationId === t.organizationId)
-        .map((team) => ({
-          id: team.id,
-          name: team.name,
-          registration:
-            t.tournamentTeams.find((tt) => tt.teamId === team.id) ?? null,
-        })),
+        .map((team) => {
+          const reg = t.tournamentTeams.find((tt) => tt.teamId === team.id);
+          return {
+            id: team.id,
+            name: team.name,
+            registration: reg
+              ? {
+                  id: reg.id,
+                  registrationStatus: reg.registrationStatus,
+                  paymentStatus: reg.paymentStatus,
+                  paymentAmount: reg.paymentAmount
+                    ? Number(reg.paymentAmount)
+                    : null,
+                }
+              : null,
+          };
+        }),
       };
     })
     // Un torneo cuyas inscripciones cerraron por fecha no se ofrece: mostrar un
@@ -152,6 +176,7 @@ export async function requestInscription(input: {
         organizationId: true,
         maxTeams: true,
         registrationDeadline: true,
+        inscriptionFee: true,
       },
     }),
     db.team.findUnique({
@@ -228,11 +253,18 @@ export async function requestInscription(input: {
     };
   }
 
+  // El arancel se **congela** al inscribir: si el organizador lo cambia después,
+  // a este equipo se le sigue cobrando lo que valía cuando se anotó.
+  const fee = tournament.inscriptionFee ? Number(tournament.inscriptionFee) : null;
+  const payStatus = initialPaymentStatus(fee);
+
   await db.tournamentTeam.create({
     data: {
       tournamentId: tournament.id,
       teamId: team.id,
       registrationStatus: "PENDIENTE",
+      paymentStatus: payStatus,
+      paymentAmount: fee,
     },
   });
 
@@ -251,7 +283,10 @@ export async function requestInscription(input: {
   revalidatePath(`/admin/torneos/${tournament.id}`);
   return {
     success: true,
-    message: `Pediste inscribir a ${team.name} en ${tournament.name}. Mientras la liga responde ya podés ir armando el plantel.`,
+    message:
+      payStatus === "PENDIENTE"
+        ? `Pediste inscribir a ${team.name} en ${tournament.name}. Tiene un arancel de ${formatFee(fee)}: pagalo e informalo desde tu equipo. Mientras, ya podés ir armando el plantel.`
+        : `Pediste inscribir a ${team.name} en ${tournament.name}. Mientras la liga responde ya podés ir armando el plantel.`,
   };
 }
 
@@ -272,6 +307,10 @@ export async function getPendingInscriptions(organizationId: string) {
     select: {
       id: true,
       createdAt: true,
+      paymentStatus: true,
+      paymentAmount: true,
+      paymentNote: true,
+      paymentReceiptUrl: true,
       team: { select: { name: true, homeCity: true } },
       tournament: { select: { name: true } },
       _count: { select: { teamPlayer: true } },
@@ -394,4 +433,121 @@ export async function rejectInscription(
   revalidatePath(`/admin/torneos/${ctx.tt.tournament.id}`);
   revalidatePath("/mi-equipo");
   return { success: true, message: `Inscripción de ${ctx.tt.team.name} rechazada.` };
+}
+
+// ============================================================
+// Pago del arancel de inscripción (S3) — cobro manual
+// ============================================================
+
+/**
+ * El delegado informa que pagó el arancel. No procesa plata: registra que dice
+ * haber pagado (con una referencia opcional) y avisa a la liga para que
+ * confirme. La confirmación real la hace la liga cuando ve la transferencia.
+ */
+export async function informInscriptionPayment(input: {
+  tournamentTeamId: string;
+  note?: string;
+}): Promise<InscriptionResult> {
+  const tt = await db.tournamentTeam.findUnique({
+    where: { id: input.tournamentTeamId },
+    select: {
+      id: true,
+      paymentStatus: true,
+      paymentAmount: true,
+      team: { select: { id: true, name: true } },
+      tournament: {
+        select: { id: true, name: true, organizationId: true },
+      },
+    },
+  });
+  if (!tt) return { success: false, error: "La inscripción no existe" };
+
+  // Informar el pago es cosa del delegado del equipo, no de la liga.
+  const auth = await requireActionTeamManager(tt.team.id);
+  if (auth.error || !auth.user) {
+    return { success: false, error: auth.error ?? "Sin permisos" };
+  }
+
+  if (tt.paymentStatus === "EXENTO") {
+    return { success: false, error: "Este torneo no cobra inscripción." };
+  }
+  if (tt.paymentStatus === "PAGADO") {
+    return { success: false, error: "La liga ya confirmó este pago." };
+  }
+
+  await db.tournamentTeam.update({
+    where: { id: tt.id },
+    data: {
+      paymentStatus: "INFORMADO",
+      paymentNote: input.note?.trim() || null,
+    },
+  });
+
+  await notify(
+    await getOrgManagerIds(tt.tournament.organizationId),
+    {
+      type: "INSCRIPCION_PAGO_INFORMADO",
+      teamName: tt.team.name,
+      tournamentName: tt.tournament.name,
+      tournamentId: tt.tournament.id,
+      amount: formatFee(tt.paymentAmount ? Number(tt.paymentAmount) : null),
+    },
+    { exclude: auth.user.id },
+  );
+
+  revalidatePath("/mi-equipo");
+  revalidatePath("/admin/delegados");
+  return {
+    success: true,
+    message: `Avisaste que pagaste el arancel de ${tt.team.name}. La liga lo confirma cuando lo vea acreditado.`,
+  };
+}
+
+/**
+ * La liga confirma que recibió el arancel. Es la contraparte de "informar": el
+ * organizador vio la transferencia y da el pago por saldado. Puede confirmarlo
+ * aunque el delegado no haya informado (ej. le pagaron en efectivo).
+ */
+export async function confirmInscriptionPayment(
+  tournamentTeamId: string,
+): Promise<InscriptionResult> {
+  const ctx = await authForInscription(tournamentTeamId);
+  if (!ctx.ok) return { success: false, error: ctx.error };
+
+  const tt = await db.tournamentTeam.findUnique({
+    where: { id: tournamentTeamId },
+    select: { paymentStatus: true },
+  });
+  if (tt?.paymentStatus === "EXENTO") {
+    return { success: false, error: "Este torneo no cobra inscripción." };
+  }
+  if (tt?.paymentStatus === "PAGADO") {
+    return { success: false, error: "Este pago ya estaba confirmado." };
+  }
+
+  await db.tournamentTeam.update({
+    where: { id: tournamentTeamId },
+    data: {
+      paymentStatus: "PAGADO",
+      paymentConfirmedAt: new Date(),
+      paymentConfirmedById: ctx.user.id,
+    },
+  });
+
+  await notify(
+    await getTeamManagerIds(ctx.tt.team.id),
+    {
+      type: "INSCRIPCION_PAGO_CONFIRMADO",
+      teamName: ctx.tt.team.name,
+      tournamentName: ctx.tt.tournament.name,
+    },
+    { exclude: ctx.user.id },
+  );
+
+  revalidatePath("/admin/delegados");
+  revalidatePath("/mi-equipo");
+  return {
+    success: true,
+    message: `Pago de ${ctx.tt.team.name} confirmado.`,
+  };
 }

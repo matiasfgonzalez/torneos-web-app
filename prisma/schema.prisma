@@ -369,6 +369,15 @@ model Tournament {
   /// cierra a mano cambiando el estado del torneo.
   registrationDeadline DateTime?
 
+  /// Arancel de inscripción (S3). `null` = gratis (los torneos que ya existían
+  /// no cobran nada). El cobro es **manual**: la plataforma no procesa el pago,
+  /// solo lo registra. Se guarda el número; la moneda se muestra como ARS.
+  inscriptionFee Decimal? @db.Decimal(10, 2)
+
+  /// Cómo pagar el arancel: texto libre que escribe el organizador (alias/CBU,
+  /// titular, aclaraciones). Se le muestra al delegado cuando tiene que pagar.
+  inscriptionPaymentInfo String?
+
   // Configuración deportiva (N7): reglas de puntaje y desempate por torneo.
   // Habilita multi-deporte a futuro (básquet/vóley solo cambian estos valores).
   pointsWin     Int  @default(3)
@@ -805,6 +814,14 @@ enum RegistrationStatus {
   RECHAZADO
 }
 
+/// Estado del pago del arancel de inscripción (S3), cobro manual.
+enum InscriptionPayStatus {
+  EXENTO // el torneo no cobra, o el equipo se anotó cuando era gratis
+  PENDIENTE // hay que pagar y todavía no informó
+  INFORMADO // el delegado dice que pagó; la liga tiene que confirmar
+  PAGADO // la liga confirmó el pago
+}
+
 model TournamentTeam {
   id String @id @default(uuid())
 
@@ -818,6 +835,18 @@ model TournamentTeam {
   isEliminated       Boolean?
   notes              String?
   registrationStatus RegistrationStatus @default(INSCRIPTO)
+
+  // Pago del arancel de inscripción (S3). Manual: el delegado transfiere e
+  // "informa", la liga confirma. `EXENTO` cuando el torneo no cobra (o el
+  // equipo se anotó cuando todavía era gratis). El monto se congela al
+  // inscribir (`paymentAmount`), por si el organizador cambia la fee después.
+  paymentStatus          InscriptionPayStatus @default(EXENTO)
+  paymentAmount          Decimal?             @db.Decimal(10, 2)
+  paymentReceiptUrl      String? // comprobante (Cloudinary), opcional
+  paymentReceiptPublicId String?
+  paymentNote            String? // referencia que deja el delegado al informar
+  paymentConfirmedAt     DateTime?
+  paymentConfirmedById   String? // quién confirmó (trazabilidad, sin relación)
 
   // Stats globales acumuladas (tabla de posiciones)
   matchesPlayed  Int @default(0)
@@ -1037,6 +1066,8 @@ enum NotificationType {
   SOLICITUD_DELEGADO_RECHAZADA
   INSCRIPCION_APROBADA
   INSCRIPCION_RECHAZADA
+  /// La liga confirmó el pago del arancel de inscripción (S3)
+  INSCRIPCION_PAGO_CONFIRMADO
   RESULTADO_CARGADO
   JUGADOR_SUSPENDIDO
   /// Otra liga inscribió en su torneo un equipo que este usuario representa
@@ -1047,6 +1078,8 @@ enum NotificationType {
   // A la liga (organizadores/OWNER)
   SOLICITUD_DELEGADO_RECIBIDA
   INSCRIPCION_RECIBIDA
+  /// El delegado informó que pagó el arancel de inscripción (S3)
+  INSCRIPCION_PAGO_INFORMADO
   PAGO_APROBADO
   PAGO_RECHAZADO
 

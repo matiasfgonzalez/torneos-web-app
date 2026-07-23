@@ -17,6 +17,13 @@ export interface ITorneo {
   maxTeams?: number | null;
   /** Cierre de inscripciones (S3). `null` = no cierra por fecha. */
   registrationDeadline?: string | Date | null;
+  /**
+   * Arancel de inscripción (S3). `null`/0 = gratis. Se guarda como Decimal en la
+   * BD pero las actions lo devuelven como `number` (un Decimal no cruza el
+   * límite RSC a un client component).
+   */
+  inscriptionFee?: number | null;
+  inscriptionPaymentInfo?: string | null;
   nextMatch: string | Date;
   startDate: string | Date;
   endDate: string | Date;

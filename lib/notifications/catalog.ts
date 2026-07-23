@@ -33,6 +33,11 @@ export type NotificationPayload =
       tournamentName: string;
     }
   | {
+      type: "INSCRIPCION_PAGO_CONFIRMADO";
+      teamName: string;
+      tournamentName: string;
+    }
+  | {
       type: "RESULTADO_CARGADO";
       matchId: string;
       tournamentName: string;
@@ -70,6 +75,13 @@ export type NotificationPayload =
       tournamentName: string;
       tournamentId: string;
     }
+  | {
+      type: "INSCRIPCION_PAGO_INFORMADO";
+      teamName: string;
+      tournamentName: string;
+      tournamentId: string;
+      amount: string;
+    }
   | { type: "PAGO_APROBADO"; planName: string; periodEnd: string }
   | { type: "PAGO_RECHAZADO"; planName: string; reason: string | null }
   // ── A la plataforma ────────────────────────────────────────
@@ -103,6 +115,8 @@ export const NOTIFICATION_CATEGORY: Record<
   INSCRIPCION_APROBADA: "EQUIPO",
   INSCRIPCION_RECHAZADA: "EQUIPO",
   INSCRIPCION_RECIBIDA: "EQUIPO",
+  INSCRIPCION_PAGO_INFORMADO: "EQUIPO",
+  INSCRIPCION_PAGO_CONFIRMADO: "EQUIPO",
   RESULTADO_CARGADO: "PARTIDO",
   JUGADOR_SUSPENDIDO: "PARTIDO",
   EQUIPO_INSCRIPTO_POR_OTRA_LIGA: "EQUIPO",
@@ -206,6 +220,22 @@ export function renderNotification(
         title: `${payload.tournamentName} rechazó la inscripción de ${payload.teamName}`,
         body: "El plantel que cargaste sigue guardado. Consultá con la liga el motivo.",
         url: "/mi-equipo",
+      };
+
+    case "INSCRIPCION_PAGO_CONFIRMADO":
+      return {
+        ...base,
+        title: `La liga confirmó el pago de ${payload.teamName}`,
+        body: `El arancel de ${payload.tournamentName} quedó saldado. Ya está todo en orden.`,
+        url: "/mi-equipo",
+      };
+
+    case "INSCRIPCION_PAGO_INFORMADO":
+      return {
+        ...base,
+        title: `${payload.teamName} informó el pago de ${payload.tournamentName}`,
+        body: `Dice haber pagado el arancel (${payload.amount}). Confirmalo desde Solicitudes.`,
+        url: "/admin/delegados",
       };
 
     case "RESULTADO_CARGADO":

@@ -21,6 +21,7 @@ import {
   Shield,
   Trophy,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
@@ -98,6 +99,16 @@ const tournamentFormSchema = z
       .max(128, "El cupo máximo es 128 equipos")
       .optional(),
     registrationDeadline: z.string(),
+    // Arancel de inscripción (S3): vacío/0 = gratis
+    inscriptionFee: z
+      .number("Ingresá un número")
+      .int("Sin centavos")
+      .min(0, "No puede ser negativo")
+      .max(9999999, "Monto demasiado alto")
+      .optional(),
+    inscriptionPaymentInfo: z
+      .string()
+      .max(2000, "Máximo 2000 caracteres"),
     rules: z
       .string()
       .max(2000, "El reglamento no puede superar los 2000 caracteres"),
@@ -193,6 +204,8 @@ const emptyValues = (): TournamentFormValues => ({
   enabled: true,
   maxTeams: undefined,
   registrationDeadline: "",
+  inscriptionFee: undefined,
+  inscriptionPaymentInfo: "",
   rules: "",
   trophy: "",
   pointsWin: 3,
@@ -223,6 +236,8 @@ const valuesFromTournament = (t: ITorneo): TournamentFormValues => ({
   enabled: t.enabled ?? true,
   maxTeams: t.maxTeams ?? undefined,
   registrationDeadline: toDateTimeInput(t.registrationDeadline),
+  inscriptionFee: t.inscriptionFee ?? undefined,
+  inscriptionPaymentInfo: t.inscriptionPaymentInfo ?? "",
   rules: t.rules ?? "",
   trophy: t.trophy ?? "",
   pointsWin: t.pointsWin ?? 3,
@@ -262,6 +277,8 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
       nextMatch: dateTimeInputToISO(nextMatch),
       maxTeams: data.maxTeams ?? null,
       registrationDeadline: dateTimeInputToISO(registrationDeadline),
+      inscriptionFee: data.inscriptionFee ?? null,
+      inscriptionPaymentInfo: data.inscriptionPaymentInfo || null,
       endDate: data.endDate || null,
       division: data.division || null,
       liga: data.liga || null,
@@ -460,6 +477,30 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
             description="Vacío = no cierra por fecha."
           />
         </FieldRow>
+
+        {/* Arancel de inscripción (S3): cobro manual. El monto lo ve el
+            delegado; el instructivo le dice adónde transferir. */}
+        <FieldRow>
+          <NumberField
+            control={form.control}
+            name="inscriptionFee"
+            label="Arancel de inscripción"
+            icon={Wallet}
+            min={0}
+            max={9999999}
+            placeholder="0 = gratis"
+            description="En pesos. Vacío o 0 = torneo gratis."
+          />
+          <span className="hidden sm:block" aria-hidden="true" />
+        </FieldRow>
+        <TextareaField
+          control={form.control}
+          name="inscriptionPaymentInfo"
+          label="Cómo pagar el arancel"
+          rows={3}
+          placeholder="Ej: Transferí a alias GOLAZO.LIGA, titular Juan Pérez. Poné el nombre del equipo en el concepto."
+          description="Se le muestra al delegado cuando tiene que pagar. Solo si cobrás arancel."
+        />
       </FormSection>
 
       <FormSection

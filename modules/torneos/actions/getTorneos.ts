@@ -29,7 +29,11 @@ export async function getTorneos(): Promise<ITorneo[]> {
         createdAt: "desc",
       },
     });
-    return torneos as unknown as ITorneo[];
+    // `inscriptionFee` (Decimal) → number: la lista cruza a FiltroTorneos (client).
+    return torneos.map((t) => ({
+      ...t,
+      inscriptionFee: t.inscriptionFee ? Number(t.inscriptionFee) : null,
+    })) as unknown as ITorneo[];
   } catch (error) {
     console.error("Error al obtener torneos:", error);
     throw error;
@@ -64,7 +68,11 @@ export async function getAdminTorneos(): Promise<ITorneo[]> {
         createdAt: "desc",
       },
     });
-    return torneos as unknown as ITorneo[];
+    // `inscriptionFee` (Decimal) → number: la lista cruza a componentes cliente.
+    return torneos.map((t) => ({
+      ...t,
+      inscriptionFee: t.inscriptionFee ? Number(t.inscriptionFee) : null,
+    })) as unknown as ITorneo[];
   } catch (error) {
     console.error("Error al obtener torneos del panel:", error);
     throw error;

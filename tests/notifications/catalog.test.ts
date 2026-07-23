@@ -66,6 +66,18 @@ const SAMPLES: NotificationPayload[] = [
     tournamentName: "Apertura",
     tournamentId: "to1",
   },
+  {
+    type: "INSCRIPCION_PAGO_INFORMADO",
+    teamName: "Racing",
+    tournamentName: "Apertura",
+    tournamentId: "to1",
+    amount: "$1.500",
+  },
+  {
+    type: "INSCRIPCION_PAGO_CONFIRMADO",
+    teamName: "Racing",
+    tournamentName: "Apertura",
+  },
   { type: "PAGO_APROBADO", planName: "PRO", periodEnd: "1 de agosto de 2026" },
   { type: "PAGO_RECHAZADO", planName: "PRO", reason: "Comprobante ilegible" },
   {

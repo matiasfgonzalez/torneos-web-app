@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   canRequestInscription,
   effectiveCapacity,
+  formatFee,
+  hasInscriptionFee,
+  initialPaymentStatus,
   isRegistrationClosed,
   remainingSlots,
 } from "@/lib/inscriptions";
@@ -138,5 +141,30 @@ describe("canRequestInscription", () => {
     );
     expect(result.open).toBe(false);
     if (!result.open) expect(result.reason).toBe("status");
+  });
+});
+
+describe("arancel de inscripción (S3)", () => {
+  it("sin arancel el equipo nace EXENTO", () => {
+    expect(initialPaymentStatus(null)).toBe("EXENTO");
+    expect(initialPaymentStatus(undefined)).toBe("EXENTO");
+    expect(initialPaymentStatus(0)).toBe("EXENTO");
+  });
+
+  it("con arancel > 0 nace PENDIENTE", () => {
+    expect(initialPaymentStatus(1500)).toBe("PENDIENTE");
+  });
+
+  it("hasInscriptionFee distingue gratis de pago", () => {
+    expect(hasInscriptionFee(null)).toBe(false);
+    expect(hasInscriptionFee(0)).toBe(false);
+    expect(hasInscriptionFee(500)).toBe(true);
+  });
+
+  it("formatFee: gratis vs monto", () => {
+    expect(formatFee(null)).toBe("Gratis");
+    expect(formatFee(0)).toBe("Gratis");
+    // El símbolo y separadores dependen del locale; basta con que traiga el número.
+    expect(formatFee(1500)).toMatch(/1\.?500/);
   });
 });

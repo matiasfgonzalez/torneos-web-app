@@ -53,6 +53,9 @@ const tournamentBase = z.object({
   // Inscripción online (S3): null = sin límite / sin fecha de cierre
   maxTeams: nullableInt(2, 128),
   registrationDeadline: nullableLocalDate,
+  // Arancel de inscripción (S3): null o 0 = gratis. Cobro manual.
+  inscriptionFee: nullableInt(0, 9999999),
+  inscriptionPaymentInfo: nullableString(2000),
   rules: nullableString(20000),
   trophy: nullableString(500),
   // Configuración deportiva (N7): puntaje, walkover y desempates
@@ -85,6 +88,8 @@ export const tournamentCreateSchema = tournamentBase
     trophy: true,
     maxTeams: true,
     registrationDeadline: true,
+    inscriptionFee: true,
+    inscriptionPaymentInfo: true,
     pointsWin: true,
     pointsDraw: true,
     pointsLoss: true,
