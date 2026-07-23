@@ -22,12 +22,12 @@ export default async function TorneosPage() {
     (t) => t.status === "ACTIVO" || t.status === "INSCRIPCION",
   ).length;
   const totalEquipos = torneos.reduce(
-    (acc, t) => acc + (t.tournamentTeams?.length || 0),
+    (acc, t) => acc + (t._count?.tournamentTeams || 0),
     0,
   );
-  // Contar partidos programados
+  // Partidos programados: `_count.matches` ya viene filtrado a PROGRAMADO (A3).
   const proximosPartidos = torneos.reduce(
-    (acc, t) => acc + (t.matches?.filter((m) => m.status === "PROGRAMADO")?.length || 0),
+    (acc, t) => acc + (t._count?.matches || 0),
     0,
   );
 

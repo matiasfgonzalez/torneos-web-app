@@ -1,5 +1,6 @@
 ﻿// app/api/noticias/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsCreateSchema } from "@/lib/validators/news";
@@ -12,16 +13,27 @@ export async function GET(req: NextRequest) {
     const publishedParam = searchParams.get("published");
 
     // Solo incluir el filtro si viene el parámetro
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: Prisma.NewsWhereInput = { deletedAt: null };
     if (publishedParam !== null) {
       // Convertir string a booleano
       where.published = publishedParam === "true";
     }
 
+    // A3: `select` sin `content`. El listado solo muestra título, resumen,
+    // portada, autor y fechas; mandar el cuerpo completo de CADA noticia era
+    // payload muerto (a veces varios KB por fila). El detalle sí lo trae, por id.
     const noticias = await db.news.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        title: true,
+        summary: true,
+        coverImageUrl: true,
+        published: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
         user: newsAuthorSelect, // autor sin PII (M1) — GET público
       },
       orderBy: {

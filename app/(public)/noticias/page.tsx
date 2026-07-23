@@ -97,10 +97,11 @@ export default function NoticiasPage() {
   // Filtrar y ordenar
   const noticiasFiltradas = useMemo(() => {
     const result = noticias.filter((noticia) => {
+      // La búsqueda ya no mira `content`: el listado no lo trae (A3). Título,
+      // resumen y autor alcanzan; el cuerpo completo se busca en el detalle.
       const matchesSearch =
         noticia.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         noticia.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        noticia.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         noticia.user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesAuthor =

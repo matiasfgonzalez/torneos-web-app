@@ -98,7 +98,29 @@ export async function GET(req: Request) {
       Object.assign(where, playerOrgScopeWhere(orgIds));
     }
 
-    const players = await db.player.findMany({ where });
+    // A3 + PII (M1/OWASP A01): este GET es **público**. Antes devolvía la fila
+    // entera de cada jugador — incluido el **DNI** (`nationalId`), la bio y los
+    // publicId internos de Cloudinary. Ahora `select` mínimo: solo lo que la
+    // tarjeta pública, los filtros y el selector de plantel dibujan. El DNI y
+    // los datos sensibles NO salen por acá; el detalle por id trae el resto.
+    const players = await db.player.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        imageUrlFace: true,
+        nationality: true,
+        birthPlace: true,
+        position: true,
+        number: true,
+        status: true,
+        dominantFoot: true,
+        height: true,
+        weight: true,
+      },
+      orderBy: { name: "asc" },
+    });
     return NextResponse.json(players);
   } catch (error) {
     console.error(error);

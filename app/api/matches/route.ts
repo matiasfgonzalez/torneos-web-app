@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db"; // Asegúrate de tener este cliente configurado
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus, Prisma } from "@prisma/client";
 import {
   applyMatchResult,
   extractMatchResult,
@@ -14,41 +14,124 @@ import {
 import { matchCreateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 
-// GET /api/matches
-// Público: todos los partidos (difusión).
-// ?scope=panel (N3): solo partidos de las organizaciones del usuario
-// (ADMINISTRADOR ve todos, salvo "ver como organización" activo).
+// GET /api/matches — listado paginado y filtrado (A3).
+//
+// Antes traía **todos** los partidos de la BD con `goals` incluidos (payload
+// gigante: cada partido arrastraba su lista de goles, que la lista ni dibuja).
+// Ahora:
+//   - `select` mínimo: escalares del partido + solo los campos de equipo/torneo
+//     que la tarjeta y la hoja de edición usan. Sin `goals`/`cards`/`referees`
+//     (el detalle se pide aparte, `getMatchEvents`).
+//   - filtros en el server: `q` (equipos/torneo/estadio), `status`, `tournamentId`.
+//   - paginación `page`/`limit` → `{ data, total, page, limit, totalPages }`.
+// ?scope=panel (N3): solo partidos de las organizaciones del usuario.
+const MATCH_LIST_SELECT = {
+  id: true,
+  dateTime: true,
+  stadium: true,
+  city: true,
+  description: true,
+  status: true,
+  homeScore: true,
+  awayScore: true,
+  tournamentId: true,
+  homeTeamId: true,
+  awayTeamId: true,
+  tournamentPhaseId: true,
+  roundNumber: true,
+  penaltyWinnerTeamId: true,
+  penaltyScoreHome: true,
+  penaltyScoreAway: true,
+  walkoverWinnerTeamId: true,
+  tournament: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      organization: { select: { slug: true } },
+    },
+  },
+  homeTeam: {
+    select: {
+      id: true,
+      team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
+    },
+  },
+  awayTeam: {
+    select: {
+      id: true,
+      team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
+    },
+  },
+  tournamentPhase: { select: { id: true, name: true } },
+} as const;
+
+const DEFAULT_LIMIT = 12;
+const MAX_LIMIT = 50;
+
+/** `where` de partidos según scope + filtros de la query. Reutiliza summary. */
+async function buildMatchWhere(params: URLSearchParams) {
+  const and: Prisma.MatchWhereInput[] = [];
+
+  if (params.get("scope") === "panel") {
+    const orgIds = await getPanelOrgIds();
+    if (orgIds !== null) {
+      and.push({ tournament: { organizationId: { in: orgIds } } });
+    }
+  }
+
+  const status = params.get("status");
+  if (status && status !== "all") {
+    and.push({ status: status as MatchStatus });
+  }
+
+  const tournamentId = params.get("tournamentId");
+  if (tournamentId && tournamentId !== "all") {
+    and.push({ tournamentId });
+  }
+
+  const q = params.get("q")?.trim();
+  if (q) {
+    const contains = { contains: q, mode: "insensitive" as const };
+    and.push({
+      OR: [
+        { homeTeam: { team: { name: contains } } },
+        { awayTeam: { team: { name: contains } } },
+        { tournament: { name: contains } },
+        { stadium: contains },
+      ],
+    });
+  }
+
+  return and.length ? { AND: and } : {};
+}
+
 export async function GET(req: NextRequest) {
   try {
-    let where = {};
-    if (req.nextUrl.searchParams.get("scope") === "panel") {
-      const orgIds = await getPanelOrgIds();
-      if (orgIds !== null) {
-        where = { tournament: { organizationId: { in: orgIds } } };
-      }
-    }
+    const params = req.nextUrl.searchParams;
+    const where = await buildMatchWhere(params);
 
-    const matches = await db.match.findMany({
-      where,
-      include: {
-        // organization.slug: para enlazar a la URL canónica del torneo
-        // desde el listado público (tournamentPublicPath, F2)
-        tournament: {
-          include: { organization: { select: { slug: true } } },
-        },
-        homeTeam: {
-          include: { team: true },
-        },
-        awayTeam: {
-          include: { team: true },
-        },
-        tournamentPhase: true,
-        goals: true,
-      },
-      orderBy: { dateTime: "asc" },
-    });
+    const page = Math.max(1, Number(params.get("page")) || 1);
+    const limit = Math.min(
+      MAX_LIMIT,
+      Math.max(1, Number(params.get("limit")) || DEFAULT_LIMIT),
+    );
 
-    return NextResponse.json(matches, { status: 200 });
+    const [data, total] = await Promise.all([
+      db.match.findMany({
+        where,
+        select: MATCH_LIST_SELECT,
+        orderBy: { dateTime: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      db.match.count({ where }),
+    ]);
+
+    return NextResponse.json(
+      { data, total, page, limit, totalPages: Math.ceil(total / limit) },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error fetching matches:", error);
     return NextResponse.json(

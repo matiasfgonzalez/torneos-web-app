@@ -7,11 +7,16 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
   try {
     const torneo = await db.tournament.findFirst({
       where: { id, deletedAt: null },
+      // A3: se sacó `tournamentTeams.tournament` (el padre YA es el torneo,
+      // era dato repetido) y, de cada partido, `goals`/`cards`/`referees` —
+      // eran el mayor multiplicador del payload (3 relaciones anidadas por
+      // partido). El detalle de eventos se pide aparte al abrir el modal
+      // (`getMatchEvents`). El plantel (`teamPlayer`) se mantiene porque lo usa
+      // el panel (sanciones); la vista pública lo sobre-trae — anotado en A3.
       include: {
         tournamentTeams: {
           include: {
-            team: true, // 👈 trae los datos del equipo
-            tournament: true, // 👈 trae los datos del torneo (opcional, ya lo estás trayendo arriba)
+            team: true,
             teamPlayer: {
               include: {
                 player: true,
@@ -19,7 +24,7 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
             },
             phaseStats: {
               include: {
-                tournamentPhase: true, // 👈 incluye info de la fase para filtrar por tipo
+                tournamentPhase: true, // fase, para filtrar la tabla por tipo
               },
             },
           },
@@ -39,42 +44,7 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
                 team: true,
               },
             },
-            tournamentPhase: true, // 👈 incluye la fase del partido
-            goals: {
-              include: {
-                teamPlayer: {
-                  include: {
-                    player: true,
-                    tournamentTeam: {
-                      include: {
-                        team: true,
-                      },
-                    },
-                  },
-                },
-              },
-              orderBy: { minute: "asc" },
-            },
-            cards: {
-              include: {
-                teamPlayer: {
-                  include: {
-                    player: true,
-                    tournamentTeam: {
-                      include: {
-                        team: true,
-                      },
-                    },
-                  },
-                },
-              },
-              orderBy: { minute: "asc" },
-            },
-            referees: {
-              include: {
-                referee: true,
-              },
-            },
+            tournamentPhase: true, // fase del partido (badge)
           },
           orderBy: { dateTime: "asc" },
         },

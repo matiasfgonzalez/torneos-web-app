@@ -36,7 +36,6 @@
 **🔴 Crítico** — _ninguno_ (C1–C10 cerrados).
 
 **🟠 Alto**
-- **A3** — Consultas pesadas y sin paginación (N+1 / payload gigante) · `E:Alto`
 - **S3** — Inscripción online de equipos (cupos + fecha límite; base de delegados de N13 lista) · `E:Alto`
 
 **🟡 Medio**
@@ -234,9 +233,17 @@
 
 ### A3. Consultas pesadas y sin paginación (N+1 / payload gigante)
 
-- [ ] **Problema:** `getTorneoById` incluye 6 niveles de relaciones (torneo → teams → players + matches → goals/cards → teamPlayer → player → team) ([modules/torneos/actions/getTorneoById.ts](modules/torneos/actions/getTorneoById.ts)); `GET /api/matches` devuelve **todos** los partidos de la BD con includes profundos; players/noticias/torneos sin `page/limit`.
-- **Solución:** `select` mínimo por vista, paginación (`cursor` o `skip/take`) con metadatos `{ data, total, page }`, y dividir el detalle de torneo en queries por tab (standings / fixture / plantel se cargan al abrir cada tab).
-- **Esfuerzo:** E:Alto · **Beneficio:** Escala a torneos grandes; TTFB estable.
+- [x] **Resuelto (2026-07-23).** Los tres focos que marcaba la auditoría, atacados por el mismo criterio: **traer solo lo que la vista dibuja, y contar en la BD en vez de traer filas para contarlas.**
+  - **`getTorneoById`** ([modules/torneos/actions/getTorneoById.ts](modules/torneos/actions/getTorneoById.ts)): se sacó el `tournamentTeams.tournament` (dato repetido: el padre YA es el torneo) y, de **cada** partido, `goals`/`cards`/`referees` — 3 relaciones anidadas por partido (gol → jugador → equipo), el mayor multiplicador del payload. El detalle de eventos ahora se pide **al abrir el modal**, no antes: nuevo `getMatchEvents(matchId)` ([modules/torneos/actions/getMatchEvents.ts](modules/torneos/actions/getMatchEvents.ts), `select` mínimo) y `MatchDetailModal` lo carga on-open con su estado de carga. La lista de resultados de un torneo con 100 partidos dejó de arrastrar todos los goles/tarjetas/árbitros de los 100.
+  - **`GET /api/matches`** ([app/api/matches/route.ts](app/api/matches/route.ts)): antes devolvía **todos** los partidos de la plataforma con `goals` incluidos. Ahora `select` mínimo (escalares + solo los campos de equipo/torneo que la tarjeta y la hoja de edición usan, sin goals/cards/referees), **filtros en el server** (`q` por equipo/torneo/estadio, `status`, `tournamentId`, `scope=panel`) y **paginación** `page`/`limit` (default 12, máx 50) → `{ data, total, page, limit, totalPages }`. Las cifras de cabecera y el combo de torneos —que miran TODO el conjunto, no una página— salen de un endpoint aparte y liviano, [app/api/matches/summary/route.ts](app/api/matches/summary/route.ts) (conteos por estado + hoy + torneos distinct, 3 queries sin traer filas). Migradas las dos pantallas: [app/(public)/partidos/page.tsx](app/(public)/partidos/page.tsx) y [app/admin/partidos/page.tsx](app/admin/partidos/page.tsx) (búsqueda con debounce → server, filtros → server, paginación real, stats desde summary).
+  - **Torneos** ([modules/torneos/actions/getTorneos.ts](modules/torneos/actions/getTorneos.ts)): el listado traía **todos los equipos y todos los partidos** de cada torneo solo para contarlos en el hero. Ahora `_count` (equipos + partidos **filtrados a PROGRAMADO**) los cuenta en la BD sin traer las filas; el panel (`getAdminTorneos`) ni los usa. Se agregó `_count` opcional a `ITorneo` y el hero público lee `t._count`.
+  - **Noticias** ([app/api/noticias/route.ts](app/api/noticias/route.ts)): la lista mandaba el **`content` completo** de cada noticia (varios KB por fila) y ni lo dibujaba. `select` sin `content` (+ filtra `deletedAt: null`, que antes no hacía: devolvía borradas). La búsqueda del listado ya no mira el cuerpo (título/resumen/autor alcanzan; el detalle por id sí lo trae).
+  - **Jugadores** ([app/api/players/route.ts](app/api/players/route.ts)): **dos problemas en uno.** El GET es **público** y devolvía la fila entera — incluido el **DNI (`nationalId`)**, la bio y los `publicId` internos de Cloudinary: fuga de PII (M1/OWASP A01) además del payload. `select` mínimo con solo lo que la tarjeta pública, los filtros y el selector de plantel usan (el selector solo necesita `id`+`name`). El DNI ya **no sale** por este endpoint (verificado en la respuesta real).
+  - **Verificado:** `tsc`/`eslint` limpios (solo warnings `<img>` preexistentes), 248 tests verdes, y smoke-test contra la BD real: `/api/matches` devuelve `{data,…}` sin `goals`, `/api/matches/summary` cuenta 104 partidos, `/api/players` sin `nationalId`, `/api/noticias` sin `content`.
+
+  **Falta para cerrarlo del todo (menor, anotado):**
+  - [ ] **Partir el detalle de torneo por tab.** `getTorneoById` sigue trayendo en una sola query el plantel (`teamPlayer`) que solo usa el panel de sanciones — la vista pública lo sobre-trae. Cargar standings/fixture/plantel al abrir cada tab (como se hizo con el modal de eventos) es el siguiente paso. **E:Medio**
+  - [ ] **Paginación real en listas chico-pero-crecientes** (noticias, jugadores públicos): hoy quedan liviano por el trim, pero siguen trayendo todas las filas (el hero y los combos calculan agregados sobre el conjunto). Cuando el volumen lo pida, mismo patrón que partidos: lista paginada + endpoint `summary` para los agregados. **E:Medio**
 
 ### A4. Sincronización de usuarios Clerk↔BD incompleta
 

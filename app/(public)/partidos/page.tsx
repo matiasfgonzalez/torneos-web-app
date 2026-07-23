@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,6 @@ import {
   Zap,
   X,
 } from "lucide-react";
-import { isToday } from "date-fns";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
@@ -34,9 +33,24 @@ import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 import { LiveNowSection } from "@modules/partidos/components/LiveNowSection";
 import { formatDate } from "@/lib/formatDate";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 12;
 
 const DEFAULTS = { q: "", estado: "all", torneo: "all" };
+
+interface MatchesResponse {
+  data: IPartidos[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface MatchesSummary {
+  total: number;
+  today: number;
+  byStatus: Record<string, number>;
+  tournaments: { id: string; name: string }[];
+}
 
 export default function PartidosPage() {
   // Filtros en la URL (F2)
@@ -51,85 +65,78 @@ export default function PartidosPage() {
     [values.q, values.estado, values.torneo],
   );
 
-  const [matches, setMatches] = useState<IPartidos[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [list, setList] = useState<MatchesResponse | null>(null);
+  const [summary, setSummary] = useState<MatchesSummary | null>(null);
+  const [isPending, startFetch] = useTransition();
   const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState(values.q);
 
-  // Cambiar un filtro vuelve a la página 1. Ajuste de estado durante el
-  // render (patrón recomendado de React) en vez de un useEffect con
-  // setState, que dispara un render en cascada.
-  const filterKey = `${filters.search}|${filters.status}|${filters.tournamentId}`;
+  // Debounce del buscador: la búsqueda va al server, no filtra en memoria.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(filters.search), 350);
+    return () => clearTimeout(t);
+  }, [filters.search]);
+
+  // Cambiar un filtro vuelve a la página 1 (ajuste durante el render, no un
+  // useEffect con setState en cascada).
+  const filterKey = `${debouncedSearch}|${filters.status}|${filters.tournamentId}`;
   const [lastFilterKey, setLastFilterKey] = useState(filterKey);
   if (filterKey !== lastFilterKey) {
     setLastFilterKey(filterKey);
     setCurrentPage(1);
   }
 
-  useEffect(() => {
-    const fetchMatches = async () => {
+  // El fetch va dentro de una transición: así el setState no queda en el cuerpo
+  // del effect (react-hooks/set-state-in-effect).
+  const fetchList = useCallback(() => {
+    startFetch(async () => {
       try {
-        setIsLoading(true);
-        const response = await fetch("/api/matches");
-        const data: IPartidos[] = await response.json();
-        setMatches(Array.isArray(data) ? data : []);
+        const qs = new URLSearchParams({
+          page: String(currentPage),
+          limit: String(ITEMS_PER_PAGE),
+        });
+        if (debouncedSearch) qs.set("q", debouncedSearch);
+        if (filters.status !== "all") qs.set("status", filters.status);
+        if (filters.tournamentId !== "all")
+          qs.set("tournamentId", filters.tournamentId);
+        const res = await fetch(`/api/matches?${qs.toString()}`);
+        setList(await res.json());
       } catch (error) {
         console.error("Error fetching matches:", error);
-      } finally {
-        setIsLoading(false);
       }
-    };
-    fetchMatches();
+    });
+  }, [currentPage, debouncedSearch, filters.status, filters.tournamentId]);
+
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
+
+  const isLoading = list === null || isPending;
+
+  // El resumen (cifras del hero + torneos del filtro) mira TODO el conjunto,
+  // así que va una sola vez y no depende de la página ni de los filtros.
+  useEffect(() => {
+    fetch("/api/matches/summary")
+      .then((r) => r.json())
+      .then(setSummary)
+      .catch((e) => console.error("Error fetching summary:", e));
   }, []);
 
-  // Torneos reales derivados de los partidos cargados (antes: lista mock hardcodeada)
-  const tournaments = useMemo(() => {
-    const map = new Map<string, string>();
-    matches.forEach((m) => map.set(m.tournamentId, m.tournament.name));
-    return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
-  }, [matches]);
-
-  const filteredMatches = useMemo(() => {
-    const term = filters.search.toLowerCase();
-    return matches.filter((match) => {
-      const matchesSearch =
-        !term ||
-        match.homeTeam.team.name.toLowerCase().includes(term) ||
-        match.awayTeam.team.name.toLowerCase().includes(term) ||
-        match.tournament.name.toLowerCase().includes(term) ||
-        match.stadium?.toLowerCase().includes(term);
-      const matchesStatus =
-        filters.status === "all" || match.status === filters.status;
-      const matchesTournament =
-        filters.tournamentId === "all" ||
-        match.tournamentId === filters.tournamentId;
-      return matchesSearch && matchesStatus && matchesTournament;
-    });
-  }, [matches, filters]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredMatches.length / ITEMS_PER_PAGE),
-  );
-  const paginatedMatches = filteredMatches.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
+  const tournaments = summary?.tournaments ?? [];
+  const matches = list?.data ?? [];
+  const totalPages = list?.totalPages ?? 1;
+  const total = list?.total ?? 0;
 
   const stats = useMemo(() => {
-    const total = matches.length;
-    const live = matches.filter(
-      (m) =>
-        m.status === MatchStatus.EN_JUEGO ||
-        m.status === MatchStatus.ENTRETIEMPO,
-    ).length;
-    const today = matches.filter((m) => isToday(new Date(m.dateTime))).length;
-    const upcoming = matches.filter(
-      (m) => m.status === MatchStatus.PROGRAMADO,
-    ).length;
-    return { total, live, today, upcoming };
-  }, [matches]);
+    const bs = summary?.byStatus ?? {};
+    const live = (bs.EN_JUEGO ?? 0) + (bs.ENTRETIEMPO ?? 0);
+    return {
+      total: summary?.total ?? 0,
+      live,
+      today: summary?.today ?? 0,
+      upcoming: bs.PROGRAMADO ?? 0,
+    };
+  }, [summary]);
 
   const getStatusIcon = (status: MatchStatus) => {
     switch (status) {
@@ -188,26 +195,26 @@ export default function PartidosPage() {
         stats={[
           {
             icon: Trophy,
-            value: isLoading ? "..." : stats.total,
+            value: summary === null ? "..." : stats.total,
             label: "Total",
           },
           {
             icon: Play,
-            value: isLoading ? "..." : stats.live,
+            value: summary === null ? "..." : stats.live,
             label: "En Vivo",
             gradient: "from-red-500 to-rose-500",
             shadow: "shadow-red-500/20",
           },
           {
             icon: CalendarIcon,
-            value: isLoading ? "..." : stats.today,
+            value: summary === null ? "..." : stats.today,
             label: "Hoy",
             gradient: "from-green-500 to-emerald-500",
             shadow: "shadow-green-500/20",
           },
           {
             icon: Clock,
-            value: isLoading ? "..." : stats.upcoming,
+            value: summary === null ? "..." : stats.upcoming,
             label: "Próximos",
             gradient: "from-amber-500 to-orange-500",
             shadow: "shadow-amber-500/20",
@@ -289,7 +296,7 @@ export default function PartidosPage() {
                 Cargando partidos...
               </p>
             </div>
-          ) : paginatedMatches.length === 0 ? (
+          ) : matches.length === 0 ? (
             <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl">
               <CardContent className="p-12 text-center">
                 <Trophy className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
@@ -303,7 +310,7 @@ export default function PartidosPage() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {paginatedMatches.map((match) => (
+              {matches.map((match) => (
                 <Card
                   key={match.id}
                   className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden group"
@@ -451,11 +458,8 @@ export default function PartidosPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                    {Math.min(
-                      currentPage * ITEMS_PER_PAGE,
-                      filteredMatches.length,
-                    )}{" "}
-                    de {filteredMatches.length} partidos
+                    {Math.min(currentPage * ITEMS_PER_PAGE, total)} de {total}{" "}
+                    partidos
                   </div>
 
                   <div className="flex items-center gap-2">

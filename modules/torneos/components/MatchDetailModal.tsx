@@ -3,6 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  getMatchEvents,
+  type MatchEvents,
+} from "@modules/torneos/actions/getMatchEvents";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -59,15 +63,35 @@ const formatMatchTime = (date: Date | string) => {
   });
 };
 
+const EMPTY_EVENTS: MatchEvents = { goals: [], cards: [], referees: [] };
+
 export default function MatchDetailModal({ match }: MatchDetailModalProps) {
   const [open, setOpen] = useState(false);
+  // Los eventos NO vienen con el partido (A3): se piden al abrir el modal.
+  const [events, setEvents] = useState<MatchEvents>(EMPTY_EVENTS);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next && !loaded && !loading) {
+      setLoading(true);
+      getMatchEvents(match.id)
+        .then((data) => {
+          setEvents(data);
+          setLoaded(true);
+        })
+        .catch(() => setEvents(EMPTY_EVENTS))
+        .finally(() => setLoading(false));
+    }
+  };
 
   const homeScore = match.homeScore ?? 0;
   const awayScore = match.awayScore ?? 0;
 
-  const goals = match.goals || [];
-  const cards = match.cards || [];
-  const referees = match.referees || [];
+  const goals = events.goals;
+  const cards = events.cards;
+  const referees = events.referees;
 
   // Cronología unificada (F2): goles + tarjetas ordenados por minuto,
   // local a la izquierda y visitante a la derecha
@@ -105,7 +129,7 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -233,7 +257,12 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
           {/* Timeline Tab (F2): goles + tarjetas en orden cronológico,
               local a la izquierda / visitante a la derecha */}
           <TabsContent value="timeline" className="mt-4">
-            {timeline.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Clock className="w-12 h-12 mx-auto mb-2 opacity-50 animate-pulse" />
+                <p>Cargando eventos…</p>
+              </div>
+            ) : timeline.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No hay eventos registrados</p>
@@ -324,7 +353,12 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
 
           {/* Referees Tab */}
           <TabsContent value="referees" className="mt-4">
-            {referees.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Clock className="w-12 h-12 mx-auto mb-2 opacity-50 animate-pulse" />
+                <p>Cargando árbitros…</p>
+              </div>
+            ) : referees.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>No hay árbitros asignados</p>

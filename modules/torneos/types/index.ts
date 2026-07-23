@@ -42,6 +42,12 @@ export interface ITorneo {
   yellowsForSuspension?: number;
   matchesPerRedCard?: number;
   tournamentTeams?: ITournamentTeam[]; // Equipos que participan en el torneo
+  /**
+   * Conteos livianos para los listados (A3): en vez de traer TODOS los equipos
+   * y TODOS los partidos de cada torneo solo para contarlos, el listado pide
+   * `_count`. `matches` acá viene filtrado a los PROGRAMADO.
+   */
+  _count?: { tournamentTeams?: number; matches?: number };
   tournamentPhases?: {
     id: string;
     name: string;

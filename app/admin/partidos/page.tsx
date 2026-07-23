@@ -6,6 +6,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Search,
   Trophy,
@@ -47,57 +49,99 @@ import { toast } from "sonner";
 interface Match extends MatchToEdit {
   homeScore: number | null;
   awayScore: number | null;
-  homeTeam: {
-    team: {
-      name: string;
-      logoUrl: string | null;
-    };
-  };
-  awayTeam: {
-    team: {
-      name: string;
-      logoUrl: string | null;
-    };
-  };
-  tournament: {
-    name: string;
-  };
+  homeTeam: { team: { name: string; logoUrl: string | null } };
+  awayTeam: { team: { name: string; logoUrl: string | null } };
+  tournament: { name: string };
 }
 
+interface MatchesResponse {
+  data: Match[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface Summary {
+  total: number;
+  byStatus: Record<string, number>;
+}
+
+const PAGE_SIZE = 12;
+
 export default function PartidosPage() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [list, setList] = useState<MatchesResponse | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [, startFetch] = useTransition();
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
+  const [page, setPage] = useState(1);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | undefined>(undefined);
   const [deleteTarget, setDeleteTarget] = useState<Match | null>(null);
 
-  // Declarada ANTES del effect que la usa (si no, el effect la lee en la zona
-  // muerta temporal: react-hooks/immutability) y con el fetch dentro de una
-  // transición, para que el setState no quede en el cuerpo del effect
-  // (react-hooks/set-state-in-effect).
-  const fetchMatches = useCallback(() => {
+  // Debounce del buscador: no dispara un fetch por tecla.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 350);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  // Cambiar filtro o búsqueda vuelve a la página 1 (ajuste durante el render,
+  // no un effect con setState en cascada).
+  const filterKey = `${debouncedSearch}|${statusFilter}`;
+  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
+  if (filterKey !== lastFilterKey) {
+    setLastFilterKey(filterKey);
+    setPage(1);
+  }
+
+  // Declarada ANTES de los effects que la usan (react-hooks/immutability) y con
+  // el fetch dentro de una transición (react-hooks/set-state-in-effect).
+  const fetchList = useCallback(() => {
     startFetch(async () => {
       try {
-        // scope=panel (N3): solo partidos de las organizaciones del usuario
-        const res = await fetch("/api/matches?scope=panel");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setMatches(data);
-        }
+        const qs = new URLSearchParams({
+          scope: "panel",
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+        if (debouncedSearch) qs.set("q", debouncedSearch);
+        if (statusFilter !== "TODOS") qs.set("status", statusFilter);
+        const res = await fetch(`/api/matches?${qs.toString()}`);
+        const data: MatchesResponse = await res.json();
+        setList(data);
       } catch (error) {
         console.error("Error fetching matches:", error);
-      } finally {
-        setLoading(false);
+      }
+    });
+  }, [page, debouncedSearch, statusFilter]);
+
+  const fetchSummary = useCallback(() => {
+    startFetch(async () => {
+      try {
+        const res = await fetch("/api/matches/summary?scope=panel");
+        setSummary(await res.json());
+      } catch (error) {
+        console.error("Error fetching summary:", error);
       }
     });
   }, []);
 
   useEffect(() => {
-    fetchMatches();
-  }, [fetchMatches]);
+    fetchList();
+  }, [fetchList]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
+
+  const refreshAll = () => {
+    fetchList();
+    fetchSummary();
+  };
 
   const handleCreate = () => {
     setSelectedMatch(undefined);
@@ -117,7 +161,7 @@ export default function PartidosPage() {
       });
       if (res.ok) {
         toast.success("Partido eliminado");
-        fetchMatches();
+        refreshAll();
       } else {
         toast.error("Error al eliminar el partido");
       }
@@ -126,27 +170,14 @@ export default function PartidosPage() {
     }
   };
 
-  const filteredMatches = matches.filter((match) => {
-    const matchesSearch =
-      match.homeTeam.team.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      match.awayTeam.team.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      match.tournament.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const matches = list?.data ?? [];
+  const totalPages = list?.totalPages ?? 1;
+  const pendingCount = summary?.byStatus?.PROGRAMADO ?? 0;
+  const liveCount = summary?.byStatus?.EN_JUEGO ?? 0;
+  const finishedCount = summary?.byStatus?.FINALIZADO ?? 0;
+  const totalCount = summary?.total ?? 0;
 
-    const matchesStatus =
-      statusFilter === "TODOS" || match.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const pendingCount = matches.filter((m) => m.status === "PROGRAMADO").length;
-  const liveCount = matches.filter((m) => m.status === "EN_JUEGO").length;
-  const finishedCount = matches.filter((m) => m.status === "FINALIZADO").length;
-
-  if (loading) return <FullscreenLoading isVisible={true} />;
+  if (list === null) return <FullscreenLoading isVisible={true} />;
 
   return (
     <div className="space-y-8 p-6 sm:p-8">
@@ -154,7 +185,7 @@ export default function PartidosPage() {
       <PageHeader
         icon={CalendarIcon}
         title="Gestión de Partidos"
-        statusText={`Sistema activo - ${matches.length} partidos registrados`}
+        statusText={`Sistema activo - ${totalCount} partidos registrados`}
         description="Administra los encuentros, resultados y horarios de todos tus torneos."
         quickStats={[
           {
@@ -195,7 +226,7 @@ export default function PartidosPage() {
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar por equipo o torneo..."
+                placeholder="Buscar por equipo, torneo o estadio..."
                 className="pl-9 bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 focus:border-brand/50 focus:ring-brand/20 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -219,7 +250,7 @@ export default function PartidosPage() {
 
       {/* Matches Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredMatches.map((match) => (
+        {matches.map((match) => (
           <Card
             key={match.id}
             className="group relative overflow-hidden border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl hover:bg-white dark:hover:bg-gray-800 transition-all hover:border-brand/50 hover:shadow-lg hover:shadow-brand/10"
@@ -344,7 +375,7 @@ export default function PartidosPage() {
         ))}
       </div>
 
-      {filteredMatches.length === 0 && (
+      {matches.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="rounded-full bg-gray-100 dark:bg-gray-800 p-4 mb-4">
             <Trophy className="h-8 w-8 text-gray-400" />
@@ -359,6 +390,37 @@ export default function PartidosPage() {
         </div>
       )}
 
+      {/* Paginación (A3): la lista se pide por página al server */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Página {list.page} de {totalPages} · {list.total} partidos
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={list.page <= 1}
+              className="rounded-xl"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={list.page >= totalPages}
+              className="rounded-xl"
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* `key`: cada partido seleccionado monta un formulario nuevo, así los
           valores iniciales salen siempre del partido actual (sin resetear a
           mano en un effect). */}
@@ -368,7 +430,7 @@ export default function PartidosPage() {
         match={selectedMatch}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onSuccess={fetchMatches}
+        onSuccess={refreshAll}
       />
 
       {/* Confirmación de eliminación (F0: ConfirmDialog en vez de confirm()) */}
