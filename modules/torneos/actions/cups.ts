@@ -9,6 +9,7 @@ import { makeStandingsComparator } from "@/lib/standings/config";
 import {
   CupSeedError,
   planCupRound,
+  type CupRoundPlan,
   type RoundMatchResult,
 } from "@/lib/fixture/cups";
 
@@ -338,16 +339,24 @@ async function resultsOfPhase(phaseId: string): Promise<RoundMatchResult[]> {
   });
 }
 
+interface CupPhaseCtx {
+  id: string;
+  name: string;
+  cupName: string | null;
+  tournamentId: string;
+}
+
 /**
- * Materializa los cruces de una fase de copa a partir de su origen.
- *
- * Es idempotente por diseño: si la fase ya tiene partidos, no hace nada — un
- * segundo click no puede duplicar un cuadro ya generado.
+ * Calcula el plan de cruces de una fase (sin escribir): trae la fase, valida
+ * permisos y estado, y corre la lógica pura según de dónde salen sus equipos.
+ * Es la parte común de "previsualizar" y "guardar".
  */
-export async function generateCupRound(
+async function computeCupPlan(
   phaseId: string,
-  startDate?: string,
-): Promise<CupActionResult> {
+): Promise<
+  | { ok: true; plan: CupRoundPlan; phase: CupPhaseCtx }
+  | { ok: false; error: string }
+> {
   const phase = await db.tournamentPhase.findUnique({
     where: { id: phaseId },
     select: {
@@ -362,23 +371,23 @@ export async function generateCupRound(
       _count: { select: { matches: true } },
     },
   });
-  if (!phase) return { success: false, error: "La fase no existe" };
+  if (!phase) return { ok: false, error: "La fase no existe" };
 
   const ctx = await authForTournament(phase.tournamentId);
-  if (ctx.error !== undefined) return { success: false, error: ctx.error };
+  if (ctx.error !== undefined) return { ok: false, error: ctx.error };
 
   if (phase._count.matches > 0) {
     return {
-      success: false,
-      error: "Esta fase ya tiene partidos generados. Eliminalos si querés rehacer el cuadro.",
+      ok: false,
+      error: "Esta fase ya tiene cruces generados. Eliminalos si querés rehacerlos.",
     };
   }
   if (!phase.seedSource || !phase.sourcePhaseId) {
-    return { success: false, error: "La fase no tiene definido de dónde salen sus equipos" };
+    return { ok: false, error: "La fase no tiene definido de dónde salen sus equipos" };
   }
 
-  let plan;
   try {
+    let plan: CupRoundPlan;
     if (phase.seedSource === "STANDINGS") {
       plan = planCupRound({
         source: "STANDINGS",
@@ -409,46 +418,141 @@ export async function generateCupRound(
         results: await resultsOfPhase(phase.sourcePhaseId),
       });
     }
+    // Nos quedamos solo con los datos que necesita el resto (id, name, tournamentId…);
+    // los campos de siembra ya se consumieron para armar el `plan`.
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const { seedSource: _s, sourcePhaseId: _p, seedFrom: _f, seedTo: _t, _count, ...phaseCtx } = phase;
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    return { ok: true, plan, phase: phaseCtx };
   } catch (error) {
-    // `CupSeedError` trae un mensaje pensado para el organizador ("faltan
-    // resultados", "revisá el rango"): se muestra tal cual.
-    if (error instanceof CupSeedError) {
-      return { success: false, error: error.message };
-    }
+    // `CupSeedError` trae un mensaje pensado para el organizador.
+    if (error instanceof CupSeedError) return { ok: false, error: error.message };
     console.error("Error al planificar la ronda de copa:", error);
-    return { success: false, error: "No se pudo armar el cuadro" };
+    return { ok: false, error: "No se pudo armar el cuadro" };
+  }
+}
+
+export interface CupPreviewMatch {
+  homeTeamId: string;
+  homeName: string;
+  awayTeamId: string;
+  awayName: string;
+}
+
+export interface CupPreview {
+  roundName: string;
+  matches: CupPreviewMatch[];
+  /** Todos los clasificados, para poder reasignar cruces en la pantalla. */
+  teams: { id: string; name: string }[];
+  byes: { id: string; name: string }[];
+}
+
+/** Nombres de los equipos (por `TournamentTeam.id`). */
+async function teamNames(ids: string[]): Promise<Map<string, string>> {
+  const rows = await db.tournamentTeam.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, team: { select: { name: true } } },
+  });
+  return new Map(rows.map((r) => [r.id, r.team.name]));
+}
+
+/**
+ * Cruces **propuestos** de una ronda de copa, con nombres y **sin escribir**.
+ * El organizador los revisa y ajusta antes de confirmarlos (los siembra el
+ * sistema, pero el emparejamiento final lo decide él).
+ */
+export async function previewCupRound(phaseId: string): Promise<
+  { success: true; preview: CupPreview } | { success: false; error: string }
+> {
+  const res = await computeCupPlan(phaseId);
+  if (!res.ok) return { success: false, error: res.error };
+
+  const names = await teamNames(res.plan.teamIds);
+  const name = (id: string) => names.get(id) ?? "?";
+
+  return {
+    success: true,
+    preview: {
+      roundName: res.plan.roundName,
+      matches: res.plan.matches.map((m) => ({
+        homeTeamId: m.homeTeamId,
+        homeName: name(m.homeTeamId),
+        awayTeamId: m.awayTeamId,
+        awayName: name(m.awayTeamId),
+      })),
+      teams: res.plan.teamIds.map((id) => ({ id, name: name(id) })),
+      byes: res.plan.byes.map((id) => ({ id, name: name(id) })),
+    },
+  };
+}
+
+/**
+ * Guarda los cruces **que el organizador confirmó**, con el emparejamiento que
+ * él haya definido en la pantalla de revisión.
+ *
+ * Valida en el server que los pares usen **exactamente** los mismos equipos que
+ * la clasificación calcula: no se puede meter un equipo que no clasificó ni
+ * repetir uno, solo reordenar quién enfrenta a quién. El cliente propone; el
+ * server verifica.
+ */
+export async function saveCupRound(input: {
+  phaseId: string;
+  startDate?: string;
+  pairs: { homeTeamId: string; awayTeamId: string }[];
+}): Promise<CupActionResult> {
+  const res = await computeCupPlan(input.phaseId);
+  if (!res.ok) return { success: false, error: res.error };
+
+  const { plan, phase } = res;
+
+  // El conjunto de equipos que juegan (los byes no arman partido).
+  const esperados = new Set(plan.matches.flatMap((m) => [m.homeTeamId, m.awayTeamId]));
+  const recibidos = input.pairs.flatMap((p) => [p.homeTeamId, p.awayTeamId]);
+
+  if (recibidos.length !== esperados.size) {
+    return {
+      success: false,
+      error: "La cantidad de equipos no coincide con la clasificación. Recargá la vista previa.",
+    };
+  }
+  const vistos = new Set<string>();
+  for (const id of recibidos) {
+    if (!esperados.has(id)) {
+      return { success: false, error: "Hay un equipo que no clasificó a esta ronda." };
+    }
+    if (vistos.has(id)) {
+      return { success: false, error: "Un equipo está en dos cruces. Cada equipo juega una vez." };
+    }
+    vistos.add(id);
+  }
+  if (input.pairs.some((p) => p.homeTeamId === p.awayTeamId)) {
+    return { success: false, error: "Un equipo no puede enfrentarse a sí mismo." };
   }
 
-  const base = startDate ? new Date(startDate) : new Date();
+  const base = input.startDate ? new Date(input.startDate) : new Date();
   if (Number.isNaN(base.getTime())) {
     return { success: false, error: "La fecha de inicio no es válida" };
   }
 
   await db.match.createMany({
-    data: plan.matches.map((m, i) => ({
+    data: input.pairs.map((p, i) => ({
       tournamentId: phase.tournamentId,
       tournamentPhaseId: phase.id,
-      homeTeamId: m.homeTeamId,
-      awayTeamId: m.awayTeamId,
-      roundNumber: m.roundNumber,
-      // Todos el mismo día por defecto; el organizador reprograma cada uno con
-      // el formulario de partido, que ya existe.
+      homeTeamId: p.homeTeamId,
+      awayTeamId: p.awayTeamId,
+      roundNumber: 1,
+      // Todos el mismo día por defecto; se reprograma cada uno con el
+      // formulario de partido, que ya existe.
       dateTime: new Date(base.getTime() + i * 60 * 60 * 1000),
     })),
   });
 
   revalidatePath(`/admin/torneos/${phase.tournamentId}`);
-
-  const conBye =
-    plan.byes.length > 0
-      ? ` ${plan.byes.length} ${plan.byes.length === 1 ? "equipo pasa" : "equipos pasan"} sin jugar.`
-      : "";
-
   return {
     success: true,
-    message: `${phase.cupName ?? "Fase"} — ${phase.name}: ${plan.matches.length} ${
-      plan.matches.length === 1 ? "cruce generado" : "cruces generados"
-    }.${conBye}`,
+    message: `${phase.cupName ?? "Fase"} — ${phase.name}: ${input.pairs.length} ${
+      input.pairs.length === 1 ? "cruce confirmado" : "cruces confirmados"
+    }.`,
   };
 }
 
@@ -490,9 +594,15 @@ export async function deleteCupPhase(phaseId: string): Promise<CupActionResult> 
     };
   }
 
-  // Los partidos programados sin resultado se van con la fase (cascade).
-  await db.tournamentPhase.delete({ where: { id: phaseId } });
+  // Los partidos se borran **explícitamente**, no por cascade: la relación
+  // `Match → TournamentPhase` es `SetNull` (el campo es opcional), así que borrar
+  // solo la fase dejaba los cruces sueltos en la lista de partidos, sin fase.
+  // Era el bug reportado: se eliminaba la ronda y quedaban 16 partidos huérfanos.
+  await db.$transaction([
+    db.match.deleteMany({ where: { tournamentPhaseId: phaseId } }),
+    db.tournamentPhase.delete({ where: { id: phaseId } }),
+  ]);
 
   revalidatePath(`/admin/torneos/${phase.tournamentId}`);
-  return { success: true, message: `Se eliminó ${phase.name}.` };
+  return { success: true, message: `Se eliminó ${phase.name} y sus cruces.` };
 }

@@ -10,7 +10,6 @@ import {
   Swords,
   Trash2,
   Trophy,
-  Wand2,
 } from "lucide-react";
 import type { PhaseSeedSource } from "@prisma/client";
 
@@ -37,10 +36,10 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   createCupPhase,
   deleteCupPhase,
-  generateCupRound,
   getTournamentGroupCount,
   getTournamentPhases,
 } from "@modules/torneos/actions/cups";
+import CupRoundPreview from "./CupRoundPreview";
 
 type Phase = Awaited<ReturnType<typeof getTournamentPhases>>[number];
 
@@ -228,15 +227,12 @@ export default function CupsSection({
 
                 <div className="flex shrink-0 items-center gap-2">
                   {!generada && (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <CupRoundPreview
+                      phaseId={p.id}
+                      label={p.name}
                       disabled={isWorking}
-                      onClick={() => run(() => generateCupRound(p.id))}
-                    >
-                      <Wand2 className="h-4 w-4" aria-hidden="true" />
-                      Generar cruces
-                    </Button>
+                      onSaved={load}
+                    />
                   )}
                   <ConfirmDialog
                     title="¿Eliminar esta ronda?"
