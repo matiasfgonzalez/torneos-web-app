@@ -59,7 +59,6 @@
 - **S10** — Multi-deporte (solo si el negocio lo pide) · `E:Alto`
 
 ### 🟨 Parcialmente hechas — falta el remate
-- **A4** — falta quitar `clerkUserId: temp_` de `POST /api/users`
 - **A6** — falta `publishedAt` nullable + eliminar `nextMatch` derivable
 - **A7** — falta migrar los éxitos de todas las rutas al envelope `{success,data}`
 - **A8** — faltan tests de validadores Zod y Playwright E2E (el **lint bloqueante** se resolvió en B5)
@@ -67,7 +66,7 @@
 - **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -241,14 +240,15 @@
 
 ### A4. Sincronización de usuarios Clerk↔BD incompleta
 
-- [~] **Problema:** No existe webhook de Clerk (verificado: 0 referencias a svix/webhook). Consecuencias: `lastLoginAt` y `emailVerified` **nunca se actualizan** (la UI de usuarios muestra "Nunca"); si un usuario cambia email/foto o se elimina en Clerk, la BD queda desincronizada; `checkUser()` hace find+create sin manejar la race (dos requests simultáneas → error P2002) y corre una query por cada request de página. Además (hallazgo C3, 2026-07-04) `POST /api/users` crea usuarios con `clerkUserId: temp_${Date.now()}` — usuarios que jamás podrán loguearse ni vincularse a Clerk.
+- [x] **Problema (cerrado 2026-07-22):** No existe webhook de Clerk (verificado: 0 referencias a svix/webhook). Consecuencias: `lastLoginAt` y `emailVerified` **nunca se actualizan** (la UI de usuarios muestra "Nunca"); si un usuario cambia email/foto o se elimina en Clerk, la BD queda desincronizada; `checkUser()` hace find+create sin manejar la race (dos requests simultáneas → error P2002) y corre una query por cada request de página. Además (hallazgo C3, 2026-07-04) `POST /api/users` crea usuarios con `clerkUserId: temp_${Date.now()}` — usuarios que jamás podrán loguearse ni vincularse a Clerk.
 - **Solución:** Crear `app/api/webhooks/clerk/route.ts` (svix) para `user.created/updated/deleted` + `session.created` (actualiza `lastLoginAt`); en `checkUser` usar `upsert` y cachear con `React.cache()` por request.
 - **Implementado (2026-07-05):**
   - [app/api/webhooks/clerk/route.ts](app/api/webhooks/clerk/route.ts) con `verifyWebhook` de `@clerk/nextjs/webhooks` (secret: env `CLERK_WEBHOOK_SECRET`, ya configurado en Clerk apuntando a `https://torneos-web-app.vercel.app/api/webhooks/clerk`). Maneja `user.created` (upsert, status ACTIVO), `user.updated` (solo campos de Clerk, no pisa role/status/phone/bio), `user.deleted` (baja lógica) y `session.created` (`lastLoginAt`). Firma inválida → 400 (verificado); error de BD → 500 (Clerk reintenta); conflicto P2002 → 200 con log (reintentar no lo arregla).
   - [lib/checkUser.ts](lib/checkUser.ts): `React.cache()` (1 query por request), `upsert` con `update: {}` (no pisa datos del admin), race del primer login (P2002) manejada. Usuarios nuevos nacen con `status: ACTIVO` (decisión D5).
   - ⚠️ En el dashboard de Clerk deben estar suscriptos los eventos: `user.created`, `user.updated`, `user.deleted`, `session.created`.
-- **Pendiente:** eliminar el `clerkUserId: temp_` de `POST /api/users` (decidir si ese endpoint de alta manual sobrevive o se reemplaza por invitaciones de Clerk — probablemente muera con N1/N2).
+- [x] **Resuelto (2026-07-22): se eliminó `POST /api/users`.** La decisión que A4 anticipaba ("probablemente muera"): el endpoint no solo tenía el `clerkUserId: temp_`, era **inservible por diseño**. Un usuario creado con un `clerkUserId` inventado nunca podría loguearse —`checkUser` busca por el `clerkUserId` real de Clerk y no lo encontraría— y al registrarse esa persona se le crearía **otro** registro, dejando el `temp_` huérfano (y con riesgo de `P2002` por el email único). **No lo llamaba nadie**: el botón "Nuevo Usuario" del panel estaba muerto (sin `onClick`) y todos los fetch de `/admin/usuarios` son GET/PATCH/DELETE. Se quitó: el handler POST, el `userCreateSchema`/`UserCreateInput` que solo él usaba ([validators/user.ts](lib/validators/user.ts)), y el botón muerto ([app/admin/usuarios/page.tsx](app/admin/usuarios/page.tsx), reemplazado por un comentario que apunta a las invitaciones de `/admin/miembros`). **Las cuentas las crea Clerk** (registro → webhook `user.created` → `checkUser`); sumar gente a una liga va por invitaciones (N6). El `GET` (listado) queda intacto. `tsc` + `eslint` + `build` en verde; POST anónimo → 401 (lo corta el middleware de C8 antes del handler inexistente). **A4 cerrado del todo.**
 - **Esfuerzo:** E:Medio · **Beneficio:** Datos de usuarios reales y confiables; menos queries.
+- (Hallazgo fuera de alcance) El botón **"Exportar"** de `/admin/usuarios` **también está muerto** (sin `onClick`). No se tocó porque es otra feature —exportar el listado a CSV, como ya existe para planteles (S8)—, no parte de A4. Implementarlo o quitarlo: **E:Bajo**.
 
 ### A5. Sin manejo global de errores ni estados de carga
 

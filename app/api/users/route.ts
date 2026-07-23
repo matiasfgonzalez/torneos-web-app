@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
-import { userCreateSchema } from "@/lib/validators/user";
-import { validationErrorResponse } from "@/lib/validators/common";
+
+/**
+ * No hay `POST` para crear usuarios a mano, a propósito.
+ *
+ * Las cuentas las crea **Clerk**: la persona se registra, el webhook
+ * `user.created` dispara la sincronización con la BD (`checkUser`). Un usuario
+ * creado acá con un `clerkUserId` inventado (`temp_…`) jamás podría loguearse
+ * —`checkUser` busca por `clerkUserId` real y no lo encontraría— y quedaría
+ * como registro huérfano. Para sumar gente a una liga existen las invitaciones
+ * de organización (N6). El endpoint de alta manual se eliminó en A4 (2026-07-22).
+ */
 
 interface UserFilters {
   search?: string;
@@ -141,87 +150,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  // Validate that only ADMINISTRADOR can create users
-  const authResult = await validateApiRole(["ADMINISTRADOR"]);
-  if (authResult.error) {
-    return authResult.error;
-  }
-
-  try {
-    const body = await request.json();
-
-    const parsed = userCreateSchema.safeParse(body);
-    if (!parsed.success) {
-      return validationErrorResponse(parsed.error);
-    }
-
-    const { email, name, phone, location, bio, role, status, clerkUserId, imageUrl } =
-      parsed.data;
-
-    // Verificar si el email ya existe
-    const existingUser = await db.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Usuario ya existe",
-          message: "Ya existe un usuario con este email",
-        },
-        { status: 409 },
-      );
-    }
-
-    // Crear el usuario
-    const newUser = await db.user.create({
-      data: {
-        email,
-        name,
-        phone: phone ?? null,
-        location: location ?? null,
-        bio: bio ?? null,
-        role: role ?? UserRole.USUARIO,
-        status: status ?? UserStatus.PENDIENTE,
-        clerkUserId: clerkUserId ?? `temp_${Date.now()}`, // Temporal hasta integrar con Clerk
-        imageUrl: imageUrl ?? null,
-        emailVerified: false,
-        lastLoginAt: null,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        imageUrl: true,
-        phone: true,
-        location: true,
-        bio: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: newUser,
-        message: "Usuario creado exitosamente",
-      },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("Error creating user:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error interno del servidor",
-        message: "No se pudo crear el usuario",
-      },
-      { status: 500 },
-    );
-  }
-}

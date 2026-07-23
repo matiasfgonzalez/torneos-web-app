@@ -510,10 +510,10 @@ export default function UsersPage() {
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
-            <Button className="bg-gradient-to-r from-brand to-brand-2 dark:from-brand dark:to-brand-2 hover:from-brand-hover hover:to-brand-2 dark:hover:from-brand-hover dark:hover:to-brand-2 text-white border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-2xl px-6 py-5 text-base font-semibold">
-              <Plus className="h-5 w-5 mr-2" />
-              Nuevo Usuario
-            </Button>
+            {/* No hay "Nuevo Usuario": las cuentas las crea Clerk (registro),
+                no un alta manual desde el panel. El botón anterior no hacía
+                nada y su endpoint creaba usuarios que no podían loguearse (A4).
+                Para sumar gente a una liga → invitaciones en /admin/miembros. */}
           </div>
         </div>
 

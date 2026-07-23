@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { UserRole, UserStatus } from "@prisma/client";
-import { emptyToUndefined, nullableString } from "./common";
+import { nullableString } from "./common";
 
+// No hay `userCreateSchema`: las cuentas las crea Clerk, no un alta manual
+// (ver el comentario de `app/api/users/route.ts`, A4). Solo se editan.
 const userBase = z.object({
   name: z.string().trim().min(1).max(120),
   phone: nullableString(30),
@@ -13,25 +15,6 @@ const userBase = z.object({
   emailVerified: z.boolean(),
 });
 
-export const userCreateSchema = userBase
-  .omit({ emailVerified: true })
-  .partial({
-    phone: true,
-    location: true,
-    bio: true,
-    role: true,
-    status: true,
-    imageUrl: true,
-  })
-  .extend({
-    email: z.email().max(255),
-    clerkUserId: z.preprocess(
-      emptyToUndefined,
-      z.string().max(64).optional(),
-    ),
-  });
-
 export const userUpdateSchema = userBase.partial();
 
-export type UserCreateInput = z.infer<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
