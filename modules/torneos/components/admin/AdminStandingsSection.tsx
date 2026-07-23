@@ -9,7 +9,7 @@ import {
   IMatch,
 } from "@modules/torneos/types/tournament-teams.types";
 import { StandingsTable } from "@modules/torneos/components/StandingsTable";
-import { KnockoutBracket } from "@modules/torneos/components/KnockoutBracket";
+import { KnockoutSection } from "@modules/torneos/components/KnockoutSection";
 import {
   hasMultipleGroups,
   getTournamentDisplayType,
@@ -154,10 +154,10 @@ export function AdminStandingsSection({
             />
           )}
 
-        {/* Bracket de eliminación */}
+        {/* Fase de eliminación: cuadro (por defecto) + listado (S13c) */}
         {(viewMode === "all" || viewMode === "bracket") &&
           hasKnockoutMatches && (
-            <KnockoutBracket
+            <KnockoutSection
               matches={matches}
               title="Fase de Eliminación"
               description="Partidos de eliminación directa (no suman puntos)"

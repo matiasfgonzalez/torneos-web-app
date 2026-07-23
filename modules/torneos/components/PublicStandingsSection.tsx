@@ -9,7 +9,7 @@ import {
   StandingsTable,
   type FormResult,
 } from "@modules/torneos/components/StandingsTable";
-import { KnockoutBracket } from "@modules/torneos/components/KnockoutBracket";
+import { KnockoutSection } from "@modules/torneos/components/KnockoutSection";
 import {
   hasMultipleGroups,
   getTournamentDisplayType,
@@ -93,7 +93,7 @@ export function PublicStandingsSection({
   if (displayType === "bracket") {
     return (
       <div className="space-y-8">
-        <KnockoutBracket
+        <KnockoutSection
           matches={matches}
           title="Llaves del Torneo"
           description="Partidos de eliminación directa"
@@ -122,9 +122,9 @@ export function PublicStandingsSection({
           }
         />
 
-        {/* Bracket de eliminación (si hay partidos de knockout) */}
+        {/* Fase final: cuadro (por defecto) + listado (S13c) */}
         {hasKnockoutMatches && (
-          <KnockoutBracket
+          <KnockoutSection
             matches={matches}
             title="Fase Final"
             description="Partidos de eliminación directa"
