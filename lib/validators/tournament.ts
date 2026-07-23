@@ -69,6 +69,18 @@ const tournamentBase = z.object({
   matchesPerRedCard: z.coerce.number().int().min(0).max(20),
 });
 
+// M11: la fecha de fin no puede caer antes de la de inicio. Se valida cuando
+// las dos están en el payload (crear, o editar el form completo); el caso de
+// editar solo una fecha lo cierra el PATCH del torneo con el valor de la base.
+const endNotBeforeStart = (data: {
+  startDate?: Date | null;
+  endDate?: Date | null;
+}) => !data.endDate || !data.startDate || data.endDate >= data.startDate;
+const endNotBeforeStartError = {
+  message: "La fecha de fin no puede ser anterior a la de inicio.",
+  path: ["endDate"],
+};
+
 // status/enabled se fijan server-side al crear; ageGroup/gender y la config
 // deportiva tienen default en Prisma (LIBRE/MASCULINO/3-1-0)
 export const tournamentCreateSchema = tournamentBase
@@ -97,9 +109,12 @@ export const tournamentCreateSchema = tournamentBase
     tiebreakers: true,
     yellowsForSuspension: true,
     matchesPerRedCard: true,
-  });
+  })
+  .refine(endNotBeforeStart, endNotBeforeStartError);
 
-export const tournamentUpdateSchema = tournamentBase.partial();
+export const tournamentUpdateSchema = tournamentBase
+  .partial()
+  .refine(endNotBeforeStart, endNotBeforeStartError);
 
 export type TournamentCreateInput = z.infer<typeof tournamentCreateSchema>;
 export type TournamentUpdateInput = z.infer<typeof tournamentUpdateSchema>;

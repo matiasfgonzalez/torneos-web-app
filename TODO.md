@@ -44,7 +44,6 @@
 - **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
 - **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
 - **M10** — Estados vacíos y skeletons consistentes · `E:Medio`
-- **M11** — Reglas de negocio de torneo (casos borde) · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
 
@@ -441,7 +440,17 @@
 
 ### M11. Reglas de negocio de torneo incompletas (casos borde)
 
-- [ ] No se valida: equipo jugando contra sí mismo (`homeTeamId === awayTeamId`), partidos entre equipos que no pertenecen al torneo, resultados negativos, partido FINALIZADO sin scores, torneo con `endDate < startDate`, edición de resultados de torneos FINALIZADOS/ARCHIVADOS, jugador duplicado en dos equipos del mismo torneo (permitido hoy — ¿regla?). Codificar estas invariantes en los validadores Zod + checks de negocio. **E:Medio**
+- [x] **Resuelto (2026-07-23).** Se codificaron las invariantes que faltaban, **en el server** (los validadores Zod cubren la forma; el negocio vive en helpers + checks). Auditado uno por uno — un caso ya estaba, el resto no:
+  - **Reglas puras y testeables** en [lib/match-rules.ts](lib/match-rules.ts) (10 tests): `validateMatchRules` (mismo equipo, finalizado sin marcador, marcador negativo) y `canCreateMatchInTournament`/`canEditMatchInTournament` (estado del torneo). Las que tocan la base van aparte en [lib/match-guards.ts](lib/match-guards.ts) (`assertTeamsInTournament`).
+  - ✅ **Equipo contra sí mismo** (`homeTeamId === awayTeamId`): antes solo lo cortaba el form del cliente. Ahora también el POST y el PATCH de `/api/matches`, sobre los valores **efectivos** (el PATCH puede reenviar solo un equipo).
+  - ✅ **Equipos ajenos al torneo:** `assertTeamsInTournament` exige que los dos sean `TournamentTeam` de ESE torneo. Se podía programar un partido con equipos de otro torneo o con ids inventados. En el PATCH solo se re-chequea si se cambian los equipos.
+  - ✅ **Resultados negativos:** ya estaba (`nullableInt(0, 99)` corta el negativo). Se dejó igual la regla en el helper como defensa en profundidad.
+  - ✅ **Finalizado sin marcador:** un partido `FINALIZADO` exige los dos scores. Excepción: el **walkover**, donde el marcador lo pone el server (walkoverScore-0, N7).
+  - ✅ **`endDate < startDate`:** refine de Zod en `tournamentCreateSchema` y `tournamentUpdateSchema` ([lib/validators/tournament.ts](lib/validators/tournament.ts)) cuando las dos fechas llegan juntas, **más** un check con los valores efectivos en el PATCH del torneo (cierra la edición de una sola fecha contra la de la base).
+  - ✅ **Editar/crear en torneo terminal — decisión de diseño, documentada:** `ARCHIVADO` y `CANCELADO` quedan **de solo lectura** (ni crear ni editar partidos). `FINALIZADO` **bloquea sumar partidos nuevos** pero **permite corregir resultados** (una protesta o un typo en la final son reales; bloquearlo dejaría el error para siempre). El TODO original pedía bloquear también la edición en FINALIZADO — se eligió el criterio más útil y se dejó en una constante única (`MATCH_READONLY_TOURNAMENT_STATUSES`) fácil de endurecer si una liga lo pide.
+  - ✅ **Jugador en dos equipos del mismo torneo — regla nueva:** un jugador juega para **un solo equipo por torneo**. El `@@unique([playerId, tournamentTeamId])` solo evitaba repetirlo en el mismo equipo; el POST de `/api/team-player` ahora rechaza (409) si ya está en otro equipo del torneo, y traduce el P2002 del mismo-equipo a un mensaje claro en vez de un 500.
+  - **Fuera de alcance (anotado):** los generadores de fixture (`generateFixture`) y de copa (`saveCupRound`) crean partidos por su cuenta, no por `/api/matches`; ya arman los cruces con equipos del propio torneo y tienen sus propias guardas ("nunca pisa partidos jugados"). No pasan por estos checks a propósito.
+  - **Verificado:** 262 tests verdes (+10), `tsc`/`eslint` limpios, `next build` en verde.
 
 ### M12. Máquina de estados de torneo y partido
 

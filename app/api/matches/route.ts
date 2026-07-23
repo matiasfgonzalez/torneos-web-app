@@ -13,6 +13,11 @@ import {
 } from "@/lib/orgAuth";
 import { matchCreateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
+import {
+  canCreateMatchInTournament,
+  validateMatchRules,
+} from "@/lib/match-rules";
+import { assertTeamsInTournament } from "@/lib/match-guards";
 
 // GET /api/matches — listado paginado y filtrado (A3).
 //
@@ -156,6 +161,7 @@ export async function POST(req: NextRequest) {
       where: { id: parsed.data.tournamentId },
       select: {
         organizationId: true,
+        status: true,
         pointsWin: true,
         pointsDraw: true,
         pointsLoss: true,
@@ -172,6 +178,12 @@ export async function POST(req: NextRequest) {
     const auth = await requireApiOrgAccess(tournament.organizationId);
     if (auth.error) {
       return auth.error;
+    }
+
+    // M11: no se cargan partidos en un torneo finalizado/archivado/cancelado.
+    const canCreate = canCreateMatchInTournament(tournament.status);
+    if (!canCreate.ok) {
+      return NextResponse.json({ error: canCreate.error }, { status: 409 });
     }
 
     const data = { ...parsed.data };
@@ -191,6 +203,31 @@ export async function POST(req: NextRequest) {
       }
       data.homeScore = wo.homeScore;
       data.awayScore = wo.awayScore;
+    }
+
+    // M11: invariantes del partido (mismo equipo, finalizado con marcador, etc.)
+    // sobre los valores efectivos (ya resuelto el walkover).
+    const rules = validateMatchRules({
+      homeTeamId: data.homeTeamId,
+      awayTeamId: data.awayTeamId,
+      status: data.status ?? MatchStatus.PROGRAMADO,
+      homeScore: data.homeScore ?? null,
+      awayScore: data.awayScore ?? null,
+      isWalkover: data.status === MatchStatus.WALKOVER,
+    });
+    if (!rules.ok) {
+      return NextResponse.json({ error: rules.error }, { status: 400 });
+    }
+
+    // M11: los dos equipos tienen que pertenecer a ESTE torneo. Sin esto se
+    // podía programar un partido con equipos de otro torneo (o inventados).
+    const teamsCheck = await assertTeamsInTournament(
+      data.tournamentId,
+      data.homeTeamId,
+      data.awayTeamId,
+    );
+    if (!teamsCheck.ok) {
+      return NextResponse.json({ error: teamsCheck.error }, { status: 400 });
     }
 
     // 📌 Crear partido + tabla de posiciones en una única transacción

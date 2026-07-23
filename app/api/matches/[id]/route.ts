@@ -9,6 +9,8 @@ import { recomputeTournamentSuspensions } from "@/lib/suspensions/engine";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { canEditMatchInTournament, validateMatchRules } from "@/lib/match-rules";
+import { assertTeamsInTournament } from "@/lib/match-guards";
 import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
 
 type tParams = Promise<{ id: string }>;
@@ -73,11 +75,13 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         homeScore: true,
         awayScore: true,
         status: true,
+        tournamentId: true,
         tournamentPhaseId: true,
         walkoverWinnerTeamId: true,
         tournament: {
           select: {
             name: true,
+            status: true,
             organizationId: true,
             pointsWin: true,
             pointsDraw: true,
@@ -102,6 +106,13 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     );
     if (auth.error) {
       return auth.error;
+    }
+
+    // M11: un torneo archivado/cancelado no deja editar resultados. Finalizado
+    // sí (correcciones y protestas son reales).
+    const canEdit = canEditMatchInTournament(previousMatch.tournament.status);
+    if (!canEdit.ok) {
+      return NextResponse.json({ error: canEdit.error }, { status: 409 });
     }
 
     const body = await req.json();
@@ -131,6 +142,35 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       }
       data.homeScore = wo.homeScore;
       data.awayScore = wo.awayScore;
+    }
+
+    // M11: invariantes sobre los valores **efectivos** (el update puede reenviar
+    // solo algunos campos; el resto queda como estaba).
+    const effHomeTeamId = data.homeTeamId ?? previousMatch.homeTeamId;
+    const effAwayTeamId = data.awayTeamId ?? previousMatch.awayTeamId;
+    const rules = validateMatchRules({
+      homeTeamId: effHomeTeamId,
+      awayTeamId: effAwayTeamId,
+      status: effectiveStatus,
+      homeScore: data.homeScore ?? previousMatch.homeScore,
+      awayScore: data.awayScore ?? previousMatch.awayScore,
+      isWalkover: effectiveStatus === "WALKOVER",
+    });
+    if (!rules.ok) {
+      return NextResponse.json({ error: rules.error }, { status: 400 });
+    }
+
+    // Solo si se están cambiando los equipos hace falta re-verificar que
+    // pertenezcan al torneo (al crearse ya se validó).
+    if (data.homeTeamId != null || data.awayTeamId != null) {
+      const teamsCheck = await assertTeamsInTournament(
+        previousMatch.tournamentId,
+        effHomeTeamId,
+        effAwayTeamId,
+      );
+      if (!teamsCheck.ok) {
+        return NextResponse.json({ error: teamsCheck.error }, { status: 400 });
+      }
     }
 
     // 📌 Actualizar partido + tabla de posiciones en una única transacción

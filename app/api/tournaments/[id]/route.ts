@@ -135,6 +135,8 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         name: true,
         slug: true,
         status: true,
+        startDate: true,
+        endDate: true,
       },
     });
 
@@ -177,6 +179,19 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       if (!check.ok) {
         return NextResponse.json({ error: check.error }, { status: 402 });
       }
+    }
+
+    // M11: la fecha de fin no puede caer antes de la de inicio, contra los
+    // valores **efectivos** (por si el PATCH manda solo una de las dos). El Zod
+    // ya lo cubre cuando llegan juntas; esto cierra la edición parcial.
+    const effectiveStart = parsed.data.startDate ?? existing.startDate;
+    const effectiveEnd =
+      parsed.data.endDate !== undefined ? parsed.data.endDate : existing.endDate;
+    if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
+      return NextResponse.json(
+        { error: "La fecha de fin no puede ser anterior a la de inicio." },
+        { status: 400 },
+      );
     }
 
     // El slug se genera una sola vez y NO cambia al renombrar, para mantener
