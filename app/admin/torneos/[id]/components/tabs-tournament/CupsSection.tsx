@@ -38,16 +38,44 @@ import {
   createCupPhase,
   deleteCupPhase,
   generateCupRound,
+  getTournamentGroupCount,
   getTournamentPhases,
 } from "@modules/torneos/actions/cups";
 
 type Phase = Awaited<ReturnType<typeof getTournamentPhases>>[number];
 
 const SOURCE_LABEL: Record<PhaseSeedSource, string> = {
-  STANDINGS: "Por posición en la tabla",
+  STANDINGS: "Por posición en la tabla general",
+  GROUP_POSITION: "Por posición en cada grupo (tipo Mundial)",
   WINNERS: "Ganadores de otra fase",
   LOSERS: "Perdedores de otra fase",
 };
+
+/** Potencia de 2 igual o mayor: cuántas llaves entran en el cuadro. */
+function bracketSize(n: number): number {
+  let size = 1;
+  while (size < n) size *= 2;
+  return size;
+}
+
+/** De dónde salen los equipos de una copa, en texto para la lista. */
+function describeSource(p: Phase, origen: string | undefined): string {
+  const fase = `«${origen ?? "?"}»`;
+  switch (p.seedSource) {
+    case "STANDINGS":
+      return `Posiciones ${p.seedFrom}-${p.seedTo} de ${fase}`;
+    case "GROUP_POSITION":
+      return `${p.seedFrom} por grupo${
+        p.seedTo ? ` + ${p.seedTo} mejores` : ""
+      } de ${fase}`;
+    case "WINNERS":
+      return `Ganadores de ${fase}`;
+    case "LOSERS":
+      return `Perdedores de ${fase}`;
+    default:
+      return fase;
+  }
+}
 
 /**
  * Copas y fase final del torneo (S13).
@@ -72,9 +100,20 @@ export default function CupsSection({
   const [sourcePhaseId, setSourcePhaseId] = useState("");
   const [from, setFrom] = useState("1");
   const [to, setTo] = useState("8");
+  // Modo "por grupo": cuántos clasifican de cada grupo + cuántos mejores terceros.
+  const [perGroup, setPerGroup] = useState("2");
+  const [bestThirds, setBestThirds] = useState("8");
+  const [groupCount, setGroupCount] = useState(0);
 
   const load = () =>
-    startLoad(async () => setPhases(await getTournamentPhases(tournamentId)));
+    startLoad(async () => {
+      const [ph, gc] = await Promise.all([
+        getTournamentPhases(tournamentId),
+        getTournamentGroupCount(tournamentId),
+      ]);
+      setPhases(ph);
+      setGroupCount(gc);
+    });
 
   useEffect(() => {
     load();
@@ -99,7 +138,21 @@ export default function CupsSection({
   const cups = list.filter((p) => p.cupName);
   const sourceOptions = list; // cualquier fase puede ser origen
 
-  const submit = () =>
+  // Cuántos clasifican con el modo "por grupo", en vivo, para que el usuario
+  // vea el resultado antes de crear la ronda.
+  const clasificados =
+    groupCount * (Number(perGroup) || 0) + (Number(bestThirds) || 0);
+  const cruces = Math.floor(bracketSize(clasificados) / 2);
+  const hayByes = clasificados > 0 && clasificados !== bracketSize(clasificados);
+
+  const submit = () => {
+    const config =
+      source === "STANDINGS"
+        ? { seedFrom: Number(from), seedTo: Number(to) }
+        : source === "GROUP_POSITION"
+          ? { seedFrom: Number(perGroup), seedTo: Number(bestThirds) }
+          : { seedFrom: null, seedTo: null };
+
     run(() =>
       createCupPhase({
         tournamentId,
@@ -107,10 +160,10 @@ export default function CupsSection({
         cupName,
         seedSource: source,
         sourcePhaseId,
-        seedFrom: source === "STANDINGS" ? Number(from) : null,
-        seedTo: source === "STANDINGS" ? Number(to) : null,
+        ...config,
       }),
     );
+  };
 
   return (
     <div className="space-y-5">
@@ -166,9 +219,7 @@ export default function CupsSection({
                     {p.cupName} — {p.name}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {p.seedSource === "STANDINGS"
-                      ? `Posiciones ${p.seedFrom}-${p.seedTo} de «${origen?.name ?? "?"}»`
-                      : `${p.seedSource === "WINNERS" ? "Ganadores" : "Perdedores"} de «${origen?.name ?? "?"}»`}
+                    {describeSource(p, origen?.name)}
                     {generada
                       ? ` · ${p._count.matches} ${p._count.matches === 1 ? "cruce" : "cruces"}`
                       : " · sin generar"}
@@ -311,13 +362,76 @@ export default function CupsSection({
               </div>
             )}
 
+            {source === "GROUP_POSITION" && (
+              <div className="space-y-3">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="per-group">
+                      Clasifican de cada grupo
+                    </Label>
+                    <Input
+                      id="per-group"
+                      type="number"
+                      min={1}
+                      value={perGroup}
+                      onChange={(e) => setPerGroup(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Los primeros de cada grupo (2 = 1° y 2°).
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="best-thirds">Más los mejores</Label>
+                    <Input
+                      id="best-thirds"
+                      type="number"
+                      min={0}
+                      value={bestThirds}
+                      onChange={(e) => setBestThirds(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Mejores terceros entre todos los grupos (0 = ninguno).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Contador en vivo: el usuario ve el resultado antes de crear. */}
+                <div className="rounded-xl border border-brand/20 bg-brand/5 p-3 text-sm">
+                  {groupCount === 0 ? (
+                    <span className="text-amber-600 dark:text-amber-400">
+                      Este torneo no tiene grupos asignados. Este modo necesita
+                      una fase de grupos.
+                    </span>
+                  ) : (
+                    <span className="text-gray-700 dark:text-gray-200">
+                      <strong>{groupCount}</strong> grupos ×{" "}
+                      <strong>{perGroup || 0}</strong> ={" "}
+                      {groupCount * (Number(perGroup) || 0)} directos
+                      {Number(bestThirds) > 0 &&
+                        ` + ${Number(bestThirds)} mejores`}{" "}
+                      = <strong>{clasificados}</strong> clasificados →{" "}
+                      <strong>{cruces}</strong>{" "}
+                      {cruces === 1 ? "cruce" : "cruces"}
+                      {hayByes && (
+                        <span className="text-amber-600 dark:text-amber-400">
+                          {" "}
+                          (no es potencia de 2: algunos pasan sin jugar)
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             <p className="rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-gray-600 dark:bg-gray-900/50 dark:text-gray-400">
-              <strong>Ejemplo con 20 equipos:</strong> tres rondas por posición —
-              1-8 «Copa de Oro», 9-16 «Copa de Plata», 17-20 «Copa de Bronce».
+              <strong>Mundial (grupos):</strong> «Por posición en cada grupo» con
+              2 por grupo + 8 mejores terceros arma los dieciseisavos. Después,
+              cada ronda siguiente (octavos, cuartos…) se crea con «Ganadores de
+              otra fase», y el 3° puesto con «Perdedores» de la semifinal.
               <br />
-              <strong>Ejemplo con cruce:</strong> una ronda 1-8 «Cuartos», y
-              después dos rondas más: los <em>ganadores</em> de cuartos a la Copa
-              de Oro y los <em>perdedores</em> a la Copa de Plata.
+              <strong>Liga con playoff:</strong> «Por posición en la tabla
+              general», 1-8 «Copa de Oro» y 9-16 «Copa de Plata».
             </p>
           </div>
 

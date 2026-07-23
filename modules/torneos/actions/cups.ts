@@ -52,6 +52,22 @@ async function authForTournament(
   return { tournament };
 }
 
+/**
+ * Cantidad de grupos distintos del torneo (los `TournamentTeam.group`). Lo usa
+ * la pantalla de copas para mostrar, en vivo, cuántos clasifican con el modo
+ * "por posición en cada grupo".
+ */
+export async function getTournamentGroupCount(
+  tournamentId: string,
+): Promise<number> {
+  const rows = await db.tournamentTeam.findMany({
+    where: { tournamentId, group: { not: null } },
+    select: { group: true },
+    distinct: ["group"],
+  });
+  return rows.filter((r) => r.group?.trim()).length;
+}
+
 /** Fases del torneo, para armar la pantalla de copas. */
 export async function getTournamentPhases(tournamentId: string) {
   return db.tournamentPhase.findMany({
@@ -113,11 +129,30 @@ export async function createCupPhase(input: {
     }
   }
 
+  // `GROUP_POSITION` reusa `seedFrom` = cuántos clasifican por grupo, y `seedTo`
+  // = cuántos "mejores terceros" además (0 = ninguno). No hace falta migración.
+  if (input.seedSource === "GROUP_POSITION") {
+    const perGroup = input.seedFrom;
+    const best = input.seedTo ?? 0;
+    if (perGroup == null || !Number.isInteger(perGroup) || perGroup < 1) {
+      return {
+        success: false,
+        error: "Indicá cuántos equipos de cada grupo clasifican (al menos 1)",
+      };
+    }
+    if (!Number.isInteger(best) || best < 0) {
+      return { success: false, error: "La cantidad de mejores terceros no es válida" };
+    }
+  }
+
   const last = await db.tournamentPhase.findFirst({
     where: { tournamentId: input.tournamentId },
     select: { order: true },
     orderBy: { order: "desc" },
   });
+
+  const guardaConfig =
+    input.seedSource === "STANDINGS" || input.seedSource === "GROUP_POSITION";
 
   await db.tournamentPhase.create({
     data: {
@@ -131,8 +166,8 @@ export async function createCupPhase(input: {
       order: (last?.order ?? 0) + 1,
       seedSource: input.seedSource,
       sourcePhaseId: input.sourcePhaseId,
-      seedFrom: input.seedSource === "STANDINGS" ? input.seedFrom : null,
-      seedTo: input.seedSource === "STANDINGS" ? input.seedTo : null,
+      seedFrom: guardaConfig ? input.seedFrom : null,
+      seedTo: guardaConfig ? (input.seedTo ?? 0) : null,
     },
   });
 
@@ -190,6 +225,81 @@ async function standingsOfPhase(
   });
 
   return [...general].sort(comparator).map((t) => t.id);
+}
+
+/**
+ * Grupos de la fase de origen, cada uno ordenado por posición, más el orden
+ * global de rendimiento (para el repechaje de terceros y la siembra del cuadro).
+ *
+ * El grupo sale de `TournamentTeam.group` (lo que el generador escribe y lo que
+ * el organizador asignó a mano), no de `TeamPhaseStats.groupId`, que hoy no lo
+ * llena nadie. Los stats de ordenamiento salen de `TeamPhaseStats` de la fase
+ * si existen; si no, de la tabla general.
+ */
+async function groupStandingsOfPhase(
+  tournamentId: string,
+  phaseId: string,
+  tiebreakers: unknown,
+): Promise<{ groups: { name: string; teamIds: string[] }[]; globalRank: string[] }> {
+  const comparator = makeStandingsComparator(tiebreakers);
+
+  const teams = await db.tournamentTeam.findMany({
+    where: { tournamentId },
+    select: {
+      id: true,
+      group: true,
+      points: true,
+      goalDifference: true,
+      goalsFor: true,
+      goalsAgainst: true,
+      wins: true,
+    },
+  });
+
+  // Los stats por fase pisan a los generales si existen (una fase de grupos
+  // guarda su propia tabla en `TeamPhaseStats`).
+  const phaseStats = await db.teamPhaseStats.findMany({
+    where: { tournamentPhaseId: phaseId },
+    select: {
+      tournamentTeamId: true,
+      points: true,
+      goalDifference: true,
+      goalsFor: true,
+      goalsAgainst: true,
+      wins: true,
+    },
+  });
+  const statsById = new Map(phaseStats.map((s) => [s.tournamentTeamId, s]));
+
+  const rows = teams.map((t) => {
+    const s = statsById.get(t.id);
+    return {
+      id: t.id,
+      group: t.group?.trim() || null,
+      points: s?.points ?? t.points,
+      goalDifference: s?.goalDifference ?? t.goalDifference,
+      goalsFor: s?.goalsFor ?? t.goalsFor,
+      goalsAgainst: s?.goalsAgainst ?? t.goalsAgainst,
+      wins: s?.wins ?? t.wins,
+    };
+  });
+
+  const globalRank = [...rows].sort(comparator).map((r) => r.id);
+
+  const byGroup = new Map<string, typeof rows>();
+  for (const r of rows) {
+    if (!r.group) continue; // un equipo sin grupo no entra a la clasificación por grupo
+    byGroup.set(r.group, [...(byGroup.get(r.group) ?? []), r]);
+  }
+
+  const groups = [...byGroup.entries()]
+    .sort(([a], [b]) => a.localeCompare(b, "es"))
+    .map(([name, rowsG]) => ({
+      name,
+      teamIds: [...rowsG].sort(comparator).map((r) => r.id),
+    }));
+
+  return { groups, globalRank };
 }
 
 /** Cruces de una fase con su ganador ya resuelto (penales y walkover incluidos). */
@@ -269,22 +379,36 @@ export async function generateCupRound(
 
   let plan;
   try {
-    plan =
-      phase.seedSource === "STANDINGS"
-        ? planCupRound({
-            source: "STANDINGS",
-            standings: await standingsOfPhase(
-              phase.tournamentId,
-              phase.sourcePhaseId,
-              ctx.tournament.tiebreakers,
-            ),
-            from: phase.seedFrom ?? undefined,
-            to: phase.seedTo ?? undefined,
-          })
-        : planCupRound({
-            source: phase.seedSource,
-            results: await resultsOfPhase(phase.sourcePhaseId),
-          });
+    if (phase.seedSource === "STANDINGS") {
+      plan = planCupRound({
+        source: "STANDINGS",
+        standings: await standingsOfPhase(
+          phase.tournamentId,
+          phase.sourcePhaseId,
+          ctx.tournament.tiebreakers,
+        ),
+        from: phase.seedFrom ?? undefined,
+        to: phase.seedTo ?? undefined,
+      });
+    } else if (phase.seedSource === "GROUP_POSITION") {
+      const { groups, globalRank } = await groupStandingsOfPhase(
+        phase.tournamentId,
+        phase.sourcePhaseId,
+        ctx.tournament.tiebreakers,
+      );
+      plan = planCupRound({
+        source: "GROUP_POSITION",
+        groups,
+        globalRank,
+        qualifyPerGroup: phase.seedFrom ?? undefined,
+        bestCount: phase.seedTo ?? 0,
+      });
+    } else {
+      plan = planCupRound({
+        source: phase.seedSource,
+        results: await resultsOfPhase(phase.sourcePhaseId),
+      });
+    }
   } catch (error) {
     // `CupSeedError` trae un mensaje pensado para el organizador ("faltan
     // resultados", "revisá el rango"): se muestra tal cual.

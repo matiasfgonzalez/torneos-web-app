@@ -451,13 +451,16 @@ model TournamentPhase {
 
 /// Cómo se puebla una fase final (S13).
 ///
-/// `STANDINGS` decide la copa por **posición** (20 equipos: 1-8 Oro, 9-16
-/// Plata, 17-20 Bronce). `WINNERS`/`LOSERS` la deciden por **resultado**: los
-/// que ganan cuartos van a la Copa de Oro y los que pierden a la de Plata.
-/// Ese segundo caso es también el cuadro de perdedores que le faltaba a
-/// `DOBLE_ELIMINACION`.
+/// `STANDINGS` decide la copa por **posición** en una tabla única (20 equipos:
+/// 1-8 Oro, 9-16 Plata, 17-20 Bronce). `GROUP_POSITION` clasifica por posición
+/// **en cada grupo** (Mundial: 2 por grupo + los mejores terceros); usa
+/// `seedFrom` como "cuántos por grupo" y `seedTo` como "cuántos mejores
+/// terceros". `WINNERS`/`LOSERS` deciden por **resultado**: los que ganan
+/// cuartos van a la Copa de Oro y los que pierden a la de Plata — ese caso es
+/// además el cuadro de perdedores que le faltaba a `DOBLE_ELIMINACION`.
 enum PhaseSeedSource {
   STANDINGS
+  GROUP_POSITION
   WINNERS
   LOSERS
 }
