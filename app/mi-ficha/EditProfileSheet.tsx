@@ -34,7 +34,7 @@ import {
   TextField,
   TextareaField,
 } from "@/components/shared/form/fields";
-import { toDateInput } from "@/lib/date-input";
+import { toDateOnlyInput } from "@/lib/date-input";
 import { PLAYER_POSITION_OPTIONS } from "@/lib/constants";
 import type { MyPlayerProfile } from "@modules/jugadores/actions/claims";
 
@@ -111,7 +111,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 const valuesFromProfile = (p: MyPlayerProfile): ProfileFormValues => ({
   name: p.name ?? "",
-  birthDate: toDateInput(p.birthDate),
+  birthDate: toDateOnlyInput(p.birthDate),
   birthPlace: p.birthPlace ?? "",
   nationality: p.nationality ?? "",
   height: p.height ?? undefined,

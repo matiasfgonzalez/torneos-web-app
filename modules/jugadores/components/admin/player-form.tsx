@@ -39,7 +39,7 @@ import {
   TextField,
   TextareaField,
 } from "@/components/shared/form/fields";
-import { toDateInput } from "@/lib/date-input";
+import { toDateOnlyInput } from "@/lib/date-input";
 import {
   PLAYER_POSITION_OPTIONS,
   PLAYER_STATUS_OPTIONS,
@@ -153,7 +153,7 @@ const emptyValues = (): PlayerFormValues => ({
 const valuesFromPlayer = (p: IPlayer): PlayerFormValues => ({
   name: p.name ?? "",
   nationalId: p.nationalId ?? "",
-  birthDate: toDateInput(p.birthDate),
+  birthDate: toDateOnlyInput(p.birthDate),
   birthPlace: p.birthPlace ?? "",
   nationality: p.nationality ?? "",
   height: p.height ?? undefined,
@@ -162,7 +162,7 @@ const valuesFromPlayer = (p: IPlayer): PlayerFormValues => ({
   position: p.position ?? "",
   number: p.number ?? undefined,
   status: p.status || "ACTIVO",
-  joinedAt: toDateInput(p.joinedAt),
+  joinedAt: toDateOnlyInput(p.joinedAt),
   imageUrl: p.imageUrl ?? null,
   imagePublicId: p.imagePublicId ?? null,
   imageUrlFace: p.imageUrlFace ?? null,

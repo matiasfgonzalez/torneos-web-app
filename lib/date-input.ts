@@ -23,6 +23,25 @@ export function toDateInput(value: string | Date | null | undefined): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/**
+ * Date | ISO string → "1995-03-05" leído en **UTC**. Para campos **date-only**
+ * (fecha de nacimiento, alta): una fecha civil sin hora ni zona.
+ *
+ * Estos campos se guardan como medianoche UTC (el validador los parsea con
+ * `z.coerce.date()`, que interpreta "1995-03-05" como `...T00:00:00Z` sin
+ * importar la zona del server). Si se los formatea en hora local —como hace
+ * `toDateInput`— al oeste de Greenwich sale el **día anterior**, y como el input
+ * vuelve a guardarse, la fecha **pierde un día en cada guardado**. Leyéndolos en
+ * UTC ↔ guardándolos en UTC, la fecha civil queda idéntica en cualquier zona.
+ */
+export function toDateOnlyInput(
+  value: string | Date | null | undefined,
+): string {
+  const date = parse(value);
+  if (!date) return "";
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+}
+
 /** Date | ISO string → "2026-07-14T20:30" (hora local). "" si no hay fecha. */
 export function toDateTimeInput(
   value: string | Date | null | undefined,

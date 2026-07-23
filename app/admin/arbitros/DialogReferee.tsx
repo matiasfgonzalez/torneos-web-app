@@ -29,7 +29,7 @@ import {
   SelectField,
   TextField,
 } from "@/components/shared/form/fields";
-import { toDateInput } from "@/lib/date-input";
+import { toDateOnlyInput } from "@/lib/date-input";
 import { createReferee, updateReferee } from "@modules/arbitros/actions/actions";
 import {
   CERTIFICATION_LEVELS,
@@ -81,7 +81,7 @@ const emptyValues = (): RefereeFormValues => ({
 const valuesFromReferee = (referee: IReferee): RefereeFormValues => ({
   name: referee.name ?? "",
   nationalId: referee.nationalId ?? "",
-  birthDate: toDateInput(referee.birthDate),
+  birthDate: toDateOnlyInput(referee.birthDate),
   nationality: referee.nationality ?? "",
   imageUrl: referee.imageUrl ?? "",
   email: referee.email ?? "",
