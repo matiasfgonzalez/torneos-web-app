@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -8,6 +8,7 @@ import {
   Calendar,
   Clock,
   Goal as GoalIcon,
+  Layers,
   Loader2,
   MapPin,
   Minus,
@@ -15,6 +16,7 @@ import {
   Save,
   Shield,
   ShieldAlert,
+  Target,
   Trophy,
 } from "lucide-react";
 
@@ -34,15 +36,30 @@ import { IPartidos, MATCH_STATUS, MatchStatus } from "@modules/partidos/types";
 import ManageGoals from "@/app/admin/torneos/[id]/components/tabs-match/ManageGoals";
 import ManageCards from "@/app/admin/torneos/[id]/components/tabs-match/ManageCards";
 
+/** Fase del torneo, tal como la ofrece el selector. */
+interface PhaseOption {
+  id: string;
+  name: string;
+  cupName: string | null;
+}
+
 interface QuickMatchLoaderProps {
   initialMatch: IPartidos;
+  phases: PhaseOption[];
 }
+
+/** Radix no admite `value=""` en un `SelectItem`: usamos un centinela. */
+const NONE = "NONE";
 
 interface ResultDraft {
   status: MatchStatus;
   homeScore: number;
   awayScore: number;
   walkoverWinnerTeamId: string;
+  tournamentPhaseId: string; // NONE = sin fase
+  penaltyWinnerTeamId: string; // NONE = no se definió por penales
+  penaltyScoreHome: number;
+  penaltyScoreAway: number;
 }
 
 function draftFromMatch(match: IPartidos): ResultDraft {
@@ -51,12 +68,22 @@ function draftFromMatch(match: IPartidos): ResultDraft {
     homeScore: match.homeScore ?? 0,
     awayScore: match.awayScore ?? 0,
     walkoverWinnerTeamId: match.walkoverWinnerTeamId ?? "",
+    tournamentPhaseId: match.tournamentPhaseId ?? NONE,
+    penaltyWinnerTeamId: match.penaltyWinnerTeamId ?? NONE,
+    penaltyScoreHome: match.penaltyScoreHome ?? 0,
+    penaltyScoreAway: match.penaltyScoreAway ?? 0,
   };
+}
+
+/** Etiqueta de una fase: "Copa de Oro — Semifinal" o solo el nombre. */
+function phaseLabel(p: PhaseOption): string {
+  return p.cupName ? `${p.cupName} — ${p.name}` : p.name;
 }
 
 export default function QuickMatchLoader({
   initialMatch,
-}: QuickMatchLoaderProps) {
+  phases,
+}: Readonly<QuickMatchLoaderProps>) {
   const [match, setMatch] = useState(initialMatch);
   const [draft, setDraft] = useState<ResultDraft>(() =>
     draftFromMatch(initialMatch),
@@ -79,12 +106,36 @@ export default function QuickMatchLoader({
 
   const isWalkover = draft.status === "WALKOVER";
   const walkoverScore = match.tournament.walkoverScore ?? 3;
+  // Los penales solo aplican a un empate que no sea walkover (un 2-2 que se
+  // define desde el punto). Un partido con ganador en el marcador no los usa.
+  const isDraw = !isWalkover && draft.homeScore === draft.awayScore;
+  const hasPenaltyWinner = draft.penaltyWinnerTeamId !== NONE;
+
+  const homeName = match.homeTeam.team.shortName || match.homeTeam.team.name;
+  const awayName = match.awayTeam.team.shortName || match.awayTeam.team.name;
+
+  // ¿Cambió algo respecto de lo guardado? Se compara campo por campo, ya
+  // normalizado (NONE ↔ null), para no habilitar "Guardar" sin cambios.
+  const phaseChanged =
+    (draft.tournamentPhaseId === NONE ? null : draft.tournamentPhaseId) !==
+    (match.tournamentPhaseId ?? null);
+  const penaltyWinnerNorm = isDraw && hasPenaltyWinner ? draft.penaltyWinnerTeamId : null;
+  const penaltyChanged =
+    penaltyWinnerNorm !== (match.penaltyWinnerTeamId ?? null) ||
+    (isDraw &&
+      hasPenaltyWinner &&
+      (draft.penaltyScoreHome !== (match.penaltyScoreHome ?? 0) ||
+        draft.penaltyScoreAway !== (match.penaltyScoreAway ?? 0)));
+
   const isDirty =
     draft.status !== match.status ||
+    phaseChanged ||
     (!isWalkover &&
       (draft.homeScore !== (match.homeScore ?? 0) ||
         draft.awayScore !== (match.awayScore ?? 0))) ||
-    (isWalkover && draft.walkoverWinnerTeamId !== (match.walkoverWinnerTeamId ?? ""));
+    (isWalkover &&
+      draft.walkoverWinnerTeamId !== (match.walkoverWinnerTeamId ?? "")) ||
+    penaltyChanged;
 
   const adjustScore = (side: "home" | "away", delta: number) => {
     setDraft((prev) => ({
@@ -92,6 +143,19 @@ export default function QuickMatchLoader({
       [side === "home" ? "homeScore" : "awayScore"]: Math.max(
         0,
         Math.min(99, (side === "home" ? prev.homeScore : prev.awayScore) + delta),
+      ),
+    }));
+  };
+
+  const adjustPenalty = (side: "home" | "away", delta: number) => {
+    setDraft((prev) => ({
+      ...prev,
+      [side === "home" ? "penaltyScoreHome" : "penaltyScoreAway"]: Math.max(
+        0,
+        Math.min(
+          99,
+          (side === "home" ? prev.penaltyScoreHome : prev.penaltyScoreAway) + delta,
+        ),
       ),
     }));
   };
@@ -104,12 +168,30 @@ export default function QuickMatchLoader({
 
     setIsSaving(true);
     try {
-      const body: Record<string, unknown> = { status: draft.status };
+      const body: Record<string, unknown> = {
+        status: draft.status,
+        // La fase se manda siempre desde acá: así el cruce de copa no pierde
+        // su fase al cargar el resultado (antes esta pantalla no la tocaba).
+        tournamentPhaseId:
+          draft.tournamentPhaseId === NONE ? null : draft.tournamentPhaseId,
+      };
+
       if (isWalkover) {
         body.walkoverWinnerTeamId = draft.walkoverWinnerTeamId;
       } else {
         body.homeScore = draft.homeScore;
         body.awayScore = draft.awayScore;
+        // Penales: solo con empate y un ganador elegido. Si no, se limpian
+        // (por si el partido tuvo penales y después se corrigió el marcador).
+        if (isDraw && hasPenaltyWinner) {
+          body.penaltyWinnerTeamId = draft.penaltyWinnerTeamId;
+          body.penaltyScoreHome = draft.penaltyScoreHome;
+          body.penaltyScoreAway = draft.penaltyScoreAway;
+        } else {
+          body.penaltyWinnerTeamId = null;
+          body.penaltyScoreHome = null;
+          body.penaltyScoreAway = null;
+        }
       }
 
       const res = await fetch(`/api/matches/${match.id}`, {
@@ -132,9 +214,6 @@ export default function QuickMatchLoader({
       setIsSaving(false);
     }
   };
-
-  const homeName = match.homeTeam.team.shortName || match.homeTeam.team.name;
-  const awayName = match.awayTeam.team.shortName || match.awayTeam.team.name;
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-24">
@@ -228,9 +307,7 @@ export default function QuickMatchLoader({
 
             <div className="flex flex-col items-center gap-1 px-1">
               <span className="text-xs font-medium text-gray-400">VS</span>
-              {isWalkover && (
-                <Trophy className="h-5 w-5 text-brand" />
-              )}
+              {isWalkover && <Trophy className="h-5 w-5 text-brand" />}
             </div>
 
             <div className="flex flex-col items-center gap-1.5 min-w-0">
@@ -277,28 +354,67 @@ export default function QuickMatchLoader({
             </div>
           </div>
 
-          {/* Estado + walkover */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <Select
-              value={draft.status}
-              onValueChange={(v) =>
-                setDraft((prev) => ({ ...prev, status: v as MatchStatus }))
-              }
-              disabled={isSaving}
-            >
-              <SelectTrigger className="h-11 rounded-xl">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                {MATCH_STATUS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Estado + fase */}
+          <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Estado
+              </label>
+              <Select
+                value={draft.status}
+                onValueChange={(v) =>
+                  setDraft((prev) => ({ ...prev, status: v as MatchStatus }))
+                }
+                disabled={isSaving}
+              >
+                <SelectTrigger className="h-11 rounded-xl">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MATCH_STATUS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            {isWalkover ? (
+            {phases.length > 0 && (
+              <div className="space-y-1">
+                <label className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <Layers className="h-3.5 w-3.5" />
+                  Fase
+                </label>
+                <Select
+                  value={draft.tournamentPhaseId}
+                  onValueChange={(v) =>
+                    setDraft((prev) => ({ ...prev, tournamentPhaseId: v }))
+                  }
+                  disabled={isSaving}
+                >
+                  <SelectTrigger className="h-11 rounded-xl">
+                    <SelectValue placeholder="Fase" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>Sin fase (tabla general)</SelectItem>
+                    {phases.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {phaseLabel(p)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          {/* Walkover: elegir el equipo que se presentó */}
+          {isWalkover && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Equipo ganador del walkover
+              </label>
               <Select
                 value={draft.walkoverWinnerTeamId}
                 onValueChange={(v) =>
@@ -314,42 +430,80 @@ export default function QuickMatchLoader({
                   <SelectItem value={match.awayTeamId}>{awayName}</SelectItem>
                 </SelectContent>
               </Select>
-            ) : (
-              <Button
-                onClick={handleSave}
-                disabled={isSaving || !isDirty}
-                className="h-11 rounded-xl bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                <span className="ml-2">Guardar</span>
-              </Button>
-            )}
-          </div>
-
-          {isWalkover && (
-            <div className="space-y-2">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 El marcador se fija automáticamente a {walkoverScore}-0 a favor
                 del ganador.
               </p>
-              <Button
-                onClick={handleSave}
-                disabled={isSaving || !isDirty}
-                className="w-full h-11 rounded-xl bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                <span className="ml-2">Guardar walkover</span>
-              </Button>
             </div>
           )}
+
+          {/* Penales: aparece solo si el partido quedó empatado */}
+          {isDraw && (
+            <div className="space-y-3 rounded-xl border border-brand/20 bg-brand/5 p-3 dark:bg-brand/10">
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-white">
+                <Target className="h-4 w-4 text-brand" />
+                Definición por penales
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Quedó {draft.homeScore}-{draft.awayScore}. Si se definió desde el
+                punto, elegí quién ganó. El empate sigue contando para la tabla;
+                los penales solo deciden quién avanza.
+              </p>
+
+              <Select
+                value={draft.penaltyWinnerTeamId}
+                onValueChange={(v) =>
+                  setDraft((prev) => ({ ...prev, penaltyWinnerTeamId: v }))
+                }
+                disabled={isSaving}
+              >
+                <SelectTrigger className="h-11 rounded-xl">
+                  <SelectValue placeholder="Ganador por penales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>No se definió por penales</SelectItem>
+                  <SelectItem value={match.homeTeamId}>{homeName}</SelectItem>
+                  <SelectItem value={match.awayTeamId}>{awayName}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {hasPenaltyWinner && (
+                <div className="flex items-center justify-center gap-4">
+                  <PenaltyStepper
+                    label={homeName}
+                    value={draft.penaltyScoreHome}
+                    onAdjust={(d) => adjustPenalty("home", d)}
+                    disabled={isSaving}
+                  />
+                  <span className="pt-5 text-lg font-bold text-gray-300 dark:text-gray-600">
+                    :
+                  </span>
+                  <PenaltyStepper
+                    label={awayName}
+                    value={draft.penaltyScoreAway}
+                    onAdjust={(d) => adjustPenalty("away", d)}
+                    disabled={isSaving}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Guardar */}
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || !isDirty}
+            className="w-full h-11 rounded-xl bg-gradient-to-r from-brand to-brand-mid hover:from-brand-hover hover:to-brand-mid-hover text-white shadow-lg shadow-brand/25"
+          >
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            <span className="ml-2">
+              {isWalkover ? "Guardar walkover" : "Guardar resultado"}
+            </span>
+          </Button>
         </CardContent>
       </Card>
 
@@ -382,6 +536,50 @@ export default function QuickMatchLoader({
           <ManageCards match={match} onUpdate={refreshMatch} />
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/** Contador +/- compacto para los penales de un equipo. */
+function PenaltyStepper({
+  label,
+  value,
+  onAdjust,
+  disabled,
+}: Readonly<{
+  label: string;
+  value: number;
+  onAdjust: (delta: number) => void;
+  disabled: boolean;
+}>) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="max-w-24 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+        {label}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-label={`Restar penal a ${label}`}
+          onClick={() => onAdjust(-1)}
+          disabled={disabled}
+          className="h-9 w-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-brand/50 hover:text-brand active:scale-95 transition-all disabled:opacity-40"
+        >
+          <Minus className="h-3.5 w-3.5" />
+        </button>
+        <span className="w-7 text-center text-xl font-bold font-mono tabular-nums">
+          {value}
+        </span>
+        <button
+          type="button"
+          aria-label={`Sumar penal a ${label}`}
+          onClick={() => onAdjust(1)}
+          disabled={disabled}
+          className="h-9 w-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-brand/50 hover:text-brand active:scale-95 transition-all disabled:opacity-40"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   );
 }

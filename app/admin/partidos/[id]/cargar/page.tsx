@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 import { getMatchById } from "@modules/partidos/actions/getMatchById";
+import { getTournamentPhases } from "@modules/torneos/actions/cups";
 import { checkUser } from "@/lib/checkUser";
 import { canManageOrg } from "@/lib/orgAuth";
 import { Button } from "@/components/ui/button";
@@ -58,5 +59,13 @@ export default async function CargarResultadoPage({
     );
   }
 
-  return <QuickMatchLoader initialMatch={match} />;
+  // Fases del torneo, para poder asignar/mantener la fase del partido desde acá
+  // (un cruce de copa nace con su fase; al cargar el resultado no hay que perderla).
+  const phases = (await getTournamentPhases(match.tournamentId)).map((p) => ({
+    id: p.id,
+    name: p.name,
+    cupName: p.cupName,
+  }));
+
+  return <QuickMatchLoader initialMatch={match} phases={phases} />;
 }
