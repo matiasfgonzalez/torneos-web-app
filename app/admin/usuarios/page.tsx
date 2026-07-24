@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users,
-  Plus,
   Search,
   MoreVertical,
   Eye,
@@ -59,7 +58,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/formatDate";
-import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { SkeletonCards } from "@/components/shared/Skeletons";
 import {
   IUser,
   UserRole,
@@ -463,15 +463,8 @@ export default function UsersPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <FullscreenLoading
-        isVisible={true}
-        message="Cargando usuarios"
-        submessage="Obteniendo lista de usuarios..."
-      />
-    );
-  }
+  const hasFilters =
+    !!filters.search || filters.role !== "all" || filters.status !== "all";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800">
@@ -700,7 +693,9 @@ export default function UsersPage() {
         </Card>
 
         {/* Users Grid/List */}
-        {users.length > 0 ? (
+        {isLoading ? (
+          <SkeletonCards count={8} />
+        ) : users.length > 0 ? (
           <div className="space-y-6">
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -763,25 +758,38 @@ export default function UsersPage() {
             )}
           </div>
         ) : (
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60">
-            <CardContent className="text-center py-16">
-              <Users className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No se encontraron usuarios
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {filters.search ||
-                filters.role !== "all" ||
-                filters.status !== "all"
-                  ? "No hay usuarios que coincidan con los filtros aplicados."
-                  : "Aún no hay usuarios registrados en el sistema."}
-              </p>
-              <Button className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Crear Primer Usuario
-              </Button>
-            </CardContent>
-          </Card>
+          // Las cuentas las crea Clerk (registro), no un alta manual: por eso
+          // el estado vacío no ofrece "crear usuario" (el botón viejo no hacía
+          // nada, A4). Con filtros activos, ofrece limpiarlos.
+          <EmptyState
+            icon={Users}
+            title="No se encontraron usuarios"
+            description={
+              hasFilters
+                ? "No hay usuarios que coincidan con los filtros aplicados."
+                : "Aún no hay usuarios registrados en el sistema."
+            }
+            action={
+              hasFilters ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const reset: UserFilters = {
+                      ...filters,
+                      search: "",
+                      role: "all",
+                      status: "all",
+                      page: 1,
+                    };
+                    setFilters(reset);
+                    fetchUsers(reset);
+                  }}
+                >
+                  Limpiar filtros
+                </Button>
+              ) : undefined
+            }
+          />
         )}
       </div>
     </div>

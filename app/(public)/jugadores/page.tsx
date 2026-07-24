@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { SkeletonCards } from "@/components/shared/Skeletons";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { PlayerCard } from "@modules/jugadores/components/public/PlayerCard";
@@ -334,12 +335,7 @@ const PlayersListInterface = () => {
 
           {/* Content — anatomía compartida vía PlayerCard (F2) */}
           {isLoading ? (
-            <div className="text-center py-20">
-              <div className="w-16 h-16 border-4 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
-              <p className="mt-4 text-gray-500 dark:text-gray-400">
-                Cargando jugadores...
-              </p>
-            </div>
+            <SkeletonCards count={8} className="xl:grid-cols-4" />
           ) : filteredPlayers.length === 0 ? (
             <EmptyState
               icon={Users}

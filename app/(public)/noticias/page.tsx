@@ -23,9 +23,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { formatDate } from "@/lib/formatDate";
-import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { SkeletonCards } from "@/components/shared/Skeletons";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { INoticia } from "@modules/noticias/types";
@@ -140,10 +142,6 @@ export default function NoticiasPage() {
   // Noticia destacada (la más reciente)
   const noticiaDestacada = noticiasFiltradas[0];
   const restOfNoticias = noticiasFiltradas.slice(1);
-
-  if (loading) {
-    return <FullscreenLoading isVisible={true} message="Cargando noticias" />;
-  }
 
   return (
     <div className="min-h-screen premium-gradient-bg">
@@ -283,29 +281,26 @@ export default function NoticiasPage() {
           </div>
 
           {/* Content */}
-          {noticiasFiltradas.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="relative inline-block">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-brand-2/20 rounded-full blur-2xl" />
-                <div className="relative w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                  <Newspaper className="w-12 h-12 text-gray-400" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                No se encontraron noticias
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-                No hay noticias que coincidan con tu búsqueda. Intenta con otros
-                filtros.
-              </p>
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand to-brand-2 text-white font-semibold rounded-xl shadow-lg shadow-brand/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-              >
-                <X className="w-4 h-4" />
-                Limpiar Filtros
-              </button>
-            </div>
+          {loading ? (
+            <SkeletonCards count={6} />
+          ) : noticiasFiltradas.length === 0 ? (
+            <EmptyState
+              icon={Newspaper}
+              title="No se encontraron noticias"
+              description={
+                hasActiveFilters
+                  ? "No hay noticias que coincidan con tu búsqueda. Probá con otros filtros."
+                  : "Todavía no se publicaron noticias. Volvé pronto."
+              }
+              action={
+                hasActiveFilters ? (
+                  <Button variant="brand" onClick={clearFilters}>
+                    <X className="h-4 w-4" />
+                    Limpiar filtros
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
             <>
               {/* Featured Article */}

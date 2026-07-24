@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { SkeletonCards } from "@/components/shared/Skeletons";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { IPartidos, MatchStatus } from "@modules/partidos/types";
 import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
@@ -290,24 +292,13 @@ export default function PartidosPage() {
 
           {/* Matches Grid */}
           {isLoading ? (
-            <div className="text-center py-20">
-              <div className="w-16 h-16 border-4 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
-              <p className="mt-4 text-gray-500 dark:text-gray-400">
-                Cargando partidos...
-              </p>
-            </div>
+            <SkeletonCards count={6} className="lg:grid-cols-2 mb-8" />
           ) : matches.length === 0 ? (
-            <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl">
-              <CardContent className="p-12 text-center">
-                <Trophy className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                  No se encontraron partidos
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Intenta ajustar los filtros o buscar con otros términos
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Trophy}
+              title="No se encontraron partidos"
+              description="Intentá ajustar los filtros o buscar con otros términos."
+            />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {matches.map((match) => (

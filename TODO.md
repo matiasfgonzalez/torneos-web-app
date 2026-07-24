@@ -43,7 +43,6 @@
 - **M4** — Accesibilidad WCAG AA · `E:Medio`
 - **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
 - **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
-- **M10** — Estados vacíos y skeletons consistentes · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
 
@@ -436,7 +435,11 @@
 ### M10. Estados vacíos y skeletons consistentes
 
 - [x] **Componentes creados (F0):** `<EmptyState>`, `<SkeletonTable>`, `<SkeletonCards>` en [components/shared/](components/shared/).
-- [ ] **Falta la adopción pareja.** Queda una pantalla con `loading.tsx` propio hecho a mano: [app/admin/usuarios/loading.tsx](app/admin/usuarios/loading.tsx) — ~150 líneas de skeleton manual con el wrapper legacy `bg-gradient-to-br ... to-blue-50/30` (azul, no es color de marca) y una grilla de 7 columnas escrita a mano. **Es la única del panel que no hereda [app/admin/loading.tsx](app/admin/loading.tsx)** (`FullscreenLoading`), así que su transición se ve distinta a la de todas las demás. El mismo caso se corrigió en `/admin/noticias` el 2026-07-22 borrando su `loading.tsx`: la ruta pasó a heredar el global y el estado de carga de datos quedó en `<SkeletonTable>` dentro de la página. Repetir acá. **E:Bajo**
+- [x] **Adopción pareja — hecho (2026-07-23).**
+  - **El `loading.tsx` a mano de usuarios, borrado.** [app/admin/usuarios/loading.tsx](app/admin/usuarios/loading.tsx) (las ~150 líneas de skeleton manual con el wrapper azul legacy) se eliminó: la ruta ahora hereda [app/admin/loading.tsx](app/admin/loading.tsx) como todas. El estado de carga de datos de la página pasó de un `FullscreenLoading` a `<SkeletonCards>` **dentro** del layout (header + filtros quedan visibles mientras cargan las tarjetas), y su estado vacío hecho a mano —con un botón muerto "Crear Primer Usuario" (A4 quitó el alta manual)— se reemplazó por `<EmptyState>` (sin ese botón; con "Limpiar filtros" cuando hay filtros activos).
+  - **Listas públicas, parejas.** [partidos](app/(public)/partidos/page.tsx), [jugadores](app/(public)/jugadores/page.tsx) y [noticias](app/(public)/noticias/page.tsx): el spinner de carga inicial (o el `FullscreenLoading` de página completa en noticias) pasó a `<SkeletonCards>` **en su lugar** —el hero y los filtros se ven al instante y solo las tarjetas cargan— y los estados vacíos escritos a mano (una `<Card>` centrada o un `<div>` con ícono grande) se unificaron en `<EmptyState>`.
+  - **El panel ya estaba centralizado.** Las tablas de árbitros/equipos/jugadores/torneos **no** hacían su vacío a mano: lo delegan al `DataTable` compartido ([components/shared/DataTable.tsx](components/shared/DataTable.tsx)), que ya usa `<EmptyState>`. Fue un falso positivo del barrido. Los `<p>` chiquitos de sección que quedan (pagos: "No hay pagos pendientes", organizaciones) se **dejaron a propósito**: `EmptyState` es `py-20` con ícono grande, mete demasiado peso para una nota de una línea dentro de una card.
+  - **Verificado en runtime:** screenshots del `EmptyState` real (filtro sin resultados en `/partidos`) en **claro y oscuro** — ícono en círculo con tinte de marca, título y descripción parejos; noticias renderiza hero+stats+lista sin el early-return. `tsc`/`eslint` limpios (solo warnings `<img>` preexistentes), 266 tests verdes, `next build` en verde.
 
 ### M11. Reglas de negocio de torneo incompletas (casos borde)
 
