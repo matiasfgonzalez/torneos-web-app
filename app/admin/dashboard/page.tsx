@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -45,10 +46,11 @@ function MatchRow({
         <div className="flex -space-x-2 shrink-0">
           <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-900 flex items-center justify-center overflow-hidden">
             {match.homeTeamLogo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={match.homeTeamLogo}
                 alt={match.homeTeamName}
+                width={40}
+                height={40}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -57,10 +59,11 @@ function MatchRow({
           </div>
           <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-900 flex items-center justify-center overflow-hidden">
             {match.awayTeamLogo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={match.awayTeamLogo}
                 alt={match.awayTeamName}
+                width={40}
+                height={40}
                 className="h-full w-full object-cover"
               />
             ) : (

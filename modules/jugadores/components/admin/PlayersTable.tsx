@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Activity, MapPinHouse, Users } from "lucide-react";
 import {
   DataTable,
@@ -64,14 +65,12 @@ const PlayersTable = ({ players }: PropsPlayersTable) => {
         <div className="flex items-center gap-3">
           <div className="relative shrink-0">
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={player.imageUrlFace || "/placeholder.svg"}
+              <SmartImage
+                src={player.imageUrlFace}
                 alt=""
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.svg";
-                }}
               />
             </div>
             {player.number != null && (

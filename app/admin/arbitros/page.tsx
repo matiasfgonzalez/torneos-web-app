@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import {
   getReferees,
   deleteReferee,
@@ -192,10 +193,11 @@ export default function RefereesPage() {
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-600 shrink-0">
             {referee.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={referee.imageUrl}
                 alt=""
+                width={48}
+                height={48}
                 className="w-full h-full object-cover"
               />
             ) : (

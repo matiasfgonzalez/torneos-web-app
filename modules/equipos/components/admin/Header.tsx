@@ -1,6 +1,7 @@
 "use client";
 
 import { MapPin, Calendar, User, Shield } from "lucide-react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Card, CardContent } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
@@ -58,9 +59,12 @@ const Header = (props: PropsHeader) => {
               <div className="relative">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl border-4 border-white dark:border-gray-600 shadow-xl overflow-hidden bg-white dark:bg-gray-700 p-2 flex items-center justify-center">
                   {teamData.logoUrl ? (
-                    <img
+                    <SmartImage
                       src={teamData.logoUrl}
                       alt={`Escudo ${teamData.name}`}
+                      width={96}
+                      height={96}
+                      blur
                       className="w-full h-full object-contain"
                     />
                   ) : (

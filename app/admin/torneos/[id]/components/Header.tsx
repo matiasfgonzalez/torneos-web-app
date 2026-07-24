@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { ITorneo } from "@modules/torneos/types";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
 import { DeleteTournamentButton } from "@modules/torneos/components/admin/DeleteTournamentButton";
@@ -101,9 +102,12 @@ const Header = ({
               <div className="relative group flex-shrink-0">
                 <div className="absolute -inset-2 bg-gradient-to-r from-brand to-brand-mid rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
                 <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-3 flex items-center justify-center border-4 border-white/10 overflow-hidden">
-                  <img
-                    src={tournamentData.logoUrl || "/placeholder.svg"}
+                  <SmartImage
+                    src={tournamentData.logoUrl}
                     alt={`Logo ${tournamentData.name}`}
+                    width={96}
+                    height={96}
+                    blur
                     className="w-full h-full object-contain"
                   />
                 </div>

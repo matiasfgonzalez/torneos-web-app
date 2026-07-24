@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -257,10 +258,11 @@ export default function QuickMatchLoader({
             <div className="flex flex-col items-center gap-1.5 min-w-0">
               <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
                 {match.homeTeam.team.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <SmartImage
                     src={match.homeTeam.team.logoUrl}
                     alt={homeName}
+                    width={48}
+                    height={48}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -305,10 +307,11 @@ export default function QuickMatchLoader({
             <div className="flex flex-col items-center gap-1.5 min-w-0">
               <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
                 {match.awayTeam.team.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <SmartImage
                     src={match.awayTeam.team.logoUrl}
                     alt={awayName}
+                    width={48}
+                    height={48}
                     className="h-full w-full object-cover"
                   />
                 ) : (

@@ -38,7 +38,6 @@
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
 **🟡 Medio**
-- **M2** — Migrar `<img>` → `next/image` (42 archivos) · `E:Medio`
 - **M4** — Accesibilidad WCAG AA · `E:Medio`
 - **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
 - **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
@@ -336,7 +335,11 @@
 
 ### M2. Migrar `<img>` → `next/image` (42 archivos)
 
-- [ ] Definir `sizes` correctos, placeholders blur para logos/portadas, y transformar URLs de Cloudinary con `f_auto,q_auto,w_...`. Mejora LCP/CLS directa. **E:Medio**
+- [x] **Hecho (2026-07-24).** Migrados **38 archivos** de `<img>` a `next/image` vía un wrapper único [components/shared/SmartImage.tsx](components/shared/SmartImage.tsx) — centralizar loader/sizes/blur en un solo lugar evita repetir la lógica de Cloudinary en 38 sitios y hace la regresión manejable. La infra base es [lib/cloudinary-loader.ts](lib/cloudinary-loader.ts): un `loader` per-instance que inyecta `f_auto,q_auto,w_{width},c_limit` **después de `/upload/`** (delega resize+formato a Cloudinary en vez del optimizador de Vercel → sin costo de transforms de Vercel), `cloudinaryBlur` (URL `e_blur:1500,q_1,f_auto,w_24` para el `blurDataURL`) e `isCloudinaryUrl`. Verificado con aserciones: transforma bien las URLs de Cloudinary, respeta `quality`/`width`, arma el blur correcto, y **deja intactas las URLs no-Cloudinary** (locales/SVG pasan sin tocar; `/placeholder.svg` va con `unoptimized`).
+  - **Patrones aplicados:** logos/avatares de tamaño fijo → `width`/`height` = px del contenedor + `className="w-full h-full object-cover/contain"` (el CSS controla el display; width/height solo alimenta el `srcset`, evita la complicación de `fill`+`relative`). Portadas/fotos que llenan un contenedor → `fill` + `sizes` responsive + `blur` (portadas de noticias/novedades, fotos de cuerpo/rostro del jugador). Los `onError`/`|| "/placeholder.svg"` manuales se quitaron: `SmartImage` cae solo a `fallbackSrc` cuando el `src` es `null`.
+  - **Excepciones documentadas (siguen como `<img>` con `// eslint-disable-next-line @next/next/no-img-element`):** [app/mi-ficha/carnet/page.tsx](app/mi-ficha/carnet/page.tsx) y [app/print/torneo/[id]/page.tsx](<app/print/torneo/[id]/page.tsx>) — son páginas de impresión (`window.print`/`@media print`); el lazy-loading y la optimización de `next/image` no son fiables al imprimir/generar PDF, así que la imagen cruda es lo correcto. `hero-section.tsx` ya usaba `next/image` (el `<img` que aparecía era un comentario).
+  - **Verificación:** `tsc --noEmit` limpio · `next build` compila y prerenderiza todas las rutas sin errores · `npx eslint app components lib modules` → **0 warnings `no-img-element`** (antes ~40). Los 24 comentarios `eslint-disable` que quedaron colgados sobre los `<img>` migrados se removieron automáticamente.
+  - ⚠️ **Fuera de alcance (M2 no tocó estos archivos):** el eslint del CI marca **5 errores preexistentes `react-hooks/set-state-in-effect`** en código ya commiteado (sin cambios vs HEAD): [app/admin/miembros/MembersClient.tsx](app/admin/miembros/MembersClient.tsx) `:108`, [app/admin/organizaciones/OrganizacionesClient.tsx](app/admin/organizaciones/OrganizacionesClient.tsx) `:121`, [app/admin/pagos/page.tsx](app/admin/pagos/page.tsx) `:46`, [app/admin/plan/PlanClient.tsx](app/admin/plan/PlanClient.tsx) `:111`, [app/admin/planes/PlanesClient.tsx](app/admin/planes/PlanesClient.tsx) `:114`. `next build` no falla por ellos (los trata como warning), pero el comando de lint del CI sí los reporta como error. Patrón común: `useEffect(() => { load(); }, [load])` con `load` = `useCallback` async que hace `setState`. **Pendiente de arreglar aparte.** **E:Medio**
 
 ### M3. SEO real (hoy solo hay metadata en el root)
 

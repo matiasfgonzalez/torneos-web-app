@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -185,10 +186,11 @@ export default function MiEquipoClient({
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-brand to-brand-mid">
                     {request.team.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <SmartImage
                         src={request.team.logoUrl}
                         alt=""
+                        width={48}
+                        height={48}
                         className="h-full w-full object-cover"
                       />
                     ) : (

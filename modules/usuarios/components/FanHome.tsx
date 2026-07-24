@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SmartImage } from "@/components/shared/SmartImage";
 import {
   Trophy,
   Users,
@@ -112,8 +113,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
                       >
                         <div className="w-11 h-11 rounded-xl overflow-hidden border border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {t.logoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={t.logoUrl} alt={t.name} className="w-full h-full object-cover" />
+                            <SmartImage src={t.logoUrl} alt={t.name} width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             <Trophy className="w-5 h-5 text-brand" />
                           )}
@@ -169,8 +169,7 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
                       >
                         <div className="w-11 h-11 rounded-xl overflow-hidden border border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {t.logoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={t.logoUrl} alt={t.name} className="w-full h-full object-cover" />
+                            <SmartImage src={t.logoUrl} alt={t.name} width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             <Shield className="w-5 h-5 text-brand" />
                           )}

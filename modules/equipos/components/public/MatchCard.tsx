@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -107,13 +108,15 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
                       si no, es el rival. El fallback que había acá leía
                       `partido.homeTeam`/`awayTeam`, que no existen en este
                       objeto: nunca se evaluaba. */}
-                  <img
+                  <SmartImage
                     src={
-                      (partido.esLocal
+                      partido.esLocal
                         ? teamLogo
-                        : partido.equipoRival?.logoUrl) || "/placeholder.svg"
+                        : partido.equipoRival?.logoUrl
                     }
                     alt=""
+                    width={64}
+                    height={64}
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -190,14 +193,15 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
               <div className="relative w-14 h-14 sm:w-16 sm:h-16">
                 <div className="absolute -inset-2 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-full blur-sm opacity-50" />
                 <div className="relative w-full h-full p-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center">
-                  <img
+                  <SmartImage
                     src={
-                      (!partido.esLocal
+                      !partido.esLocal
                         ? teamLogo
-                        : partido.equipoRival?.logoUrl) ||
-                      "/placeholder.svg"
+                        : partido.equipoRival?.logoUrl
                     }
                     alt="Away Team"
+                    width={64}
+                    height={64}
                     className="w-full h-full object-contain"
                   />
                 </div>

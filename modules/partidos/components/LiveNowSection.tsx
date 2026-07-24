@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { api } from "@/lib/api-client";
 import Link from "next/link";
 import { Radio, Shield, ChevronRight } from "lucide-react";
@@ -116,8 +117,13 @@ function TeamCell({
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700">
         {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+          <SmartImage
+            src={logoUrl}
+            alt=""
+            width={36}
+            height={36}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <Shield className="h-4 w-4 text-gray-400" />
         )}

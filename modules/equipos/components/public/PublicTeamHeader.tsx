@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, User, Shield, Users, Shirt } from "lucide-react";
 import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";
@@ -30,9 +31,12 @@ export default function PublicTeamHeader({
               <div className="absolute -inset-2 bg-gradient-to-r from-brand to-brand-mid rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative w-36 h-36 sm:w-44 sm:h-44 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-4 flex items-center justify-center border-4 border-white/10">
                 {team.logoUrl ? (
-                  <img
+                  <SmartImage
                     src={team.logoUrl}
                     alt={team.name}
+                    width={176}
+                    height={176}
+                    blur
                     className="w-full h-full object-contain"
                   />
                 ) : (

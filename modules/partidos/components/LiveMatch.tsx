@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { api } from "@/lib/api-client";
 import Link from "next/link";
 import {
@@ -53,10 +54,11 @@ function TeamSide({
     >
       <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-white bg-gray-50 shadow-lg dark:border-gray-700 dark:bg-gray-700 sm:h-24 sm:w-24">
         {team.team.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <SmartImage
             src={team.team.logoUrl}
             alt=""
+            width={96}
+            height={96}
             className="h-full w-full object-cover"
           />
         ) : (

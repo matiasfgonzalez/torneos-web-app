@@ -1,5 +1,6 @@
 "use client";
 import { TabsContent } from "@/components/ui/tabs";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -183,10 +184,11 @@ const TabsTeams = (props: TabsTeamsProps) => {
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={row.team?.logoUrl || "/placeholder.svg"}
+            <SmartImage
+              src={row.team?.logoUrl}
               alt=""
+              width={40}
+              height={40}
               className="w-full h-full object-cover"
             />
           </div>
@@ -379,10 +381,11 @@ const TabsTeams = (props: TabsTeamsProps) => {
             <div className="rounded-xl border-2 border-gray-100 dark:border-gray-700 p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={row.team?.logoUrl || "/placeholder.svg"}
+                  <SmartImage
+                    src={row.team?.logoUrl}
                     alt=""
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
                   />
                 </div>

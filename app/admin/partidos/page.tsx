@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState, useEffect, useTransition } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -258,9 +259,11 @@ export default function PartidosPage() {
                 <div className="flex flex-col items-center gap-2 flex-1">
                   <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600">
                     {match.homeTeam.team.logoUrl ? (
-                      <img
+                      <SmartImage
                         src={match.homeTeam.team.logoUrl}
                         alt={match.homeTeam.team.name}
+                        width={48}
+                        height={48}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -293,9 +296,11 @@ export default function PartidosPage() {
                 <div className="flex flex-col items-center gap-2 flex-1">
                   <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600">
                     {match.awayTeam.team.logoUrl ? (
-                      <img
+                      <SmartImage
                         src={match.awayTeam.team.logoUrl}
                         alt={match.awayTeam.team.name}
+                        width={48}
+                        height={48}
                         className="h-full w-full object-cover"
                       />
                     ) : (

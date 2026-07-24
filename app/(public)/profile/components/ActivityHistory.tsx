@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Shield, Calendar } from "lucide-react";
@@ -40,9 +41,11 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                         {tournament.logoUrl ? (
-                          <img
+                          <SmartImage
                             src={tournament.logoUrl}
                             alt={tournament.name}
+                            width={40}
+                            height={40}
                             className="w-full h-full object-cover rounded-lg"
                           />
                         ) : (

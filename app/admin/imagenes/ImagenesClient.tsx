@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
@@ -275,13 +276,13 @@ export default function ImagenesClient({
                             className="bg-background/80 backdrop-blur-sm"
                           />
                         </div>
-                        <div className="aspect-square bg-muted">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                        <div className="relative aspect-square bg-muted">
+                          <SmartImage
                             src={thumbUrl(o.secure_url)}
                             alt={o.public_id}
-                            loading="lazy"
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="(max-width: 768px) 50vw, 200px"
+                            className="object-cover"
                           />
                         </div>
                         <div className="p-2 space-y-0.5">

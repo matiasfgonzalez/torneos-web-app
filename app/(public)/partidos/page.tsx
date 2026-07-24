@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useTransition } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -325,9 +326,11 @@ export default function PartidosPage() {
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {match.homeTeam.team.logoUrl ? (
-                            <img
+                            <SmartImage
                               src={match.homeTeam.team.logoUrl}
                               alt={match.homeTeam.team.name}
+                              width={44}
+                              height={44}
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -383,9 +386,11 @@ export default function PartidosPage() {
                         </div>
                         <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                           {match.awayTeam.team.logoUrl ? (
-                            <img
+                            <SmartImage
                               src={match.awayTeam.team.logoUrl}
                               alt={match.awayTeam.team.name}
+                              width={44}
+                              height={44}
                               className="w-full h-full object-cover"
                             />
                           ) : (

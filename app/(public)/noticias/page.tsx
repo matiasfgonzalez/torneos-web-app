@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
@@ -302,12 +303,12 @@ export default function NoticiasPage() {
                     <Card className="overflow-hidden border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
                       <div className="grid md:grid-cols-2 gap-0">
                         <div className="relative h-64 md:h-auto">
-                          <img
-                            src={
-                              noticiaDestacada.coverImageUrl ||
-                              "/placeholder.svg"
-                            }
+                          <SmartImage
+                            src={noticiaDestacada.coverImageUrl}
                             alt={noticiaDestacada.title}
+                            width={640}
+                            height={360}
+                            blur
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                           <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent md:hidden" />
@@ -356,9 +357,12 @@ export default function NoticiasPage() {
                           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand to-brand-2 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
 
                           <div className="relative h-48">
-                            <img
-                              src={noticia.coverImageUrl || "/placeholder.svg"}
+                            <SmartImage
+                              src={noticia.coverImageUrl}
                               alt={noticia.title}
+                              width={400}
+                              height={225}
+                              blur
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -411,9 +415,12 @@ export default function NoticiasPage() {
                       <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
                         <div className="flex flex-col md:flex-row">
                           <div className="relative w-full md:w-64 h-48 md:h-auto flex-shrink-0">
-                            <img
-                              src={noticia.coverImageUrl || "/placeholder.svg"}
+                            <SmartImage
+                              src={noticia.coverImageUrl}
                               alt={noticia.title}
+                              width={400}
+                              height={225}
+                              blur
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           </div>

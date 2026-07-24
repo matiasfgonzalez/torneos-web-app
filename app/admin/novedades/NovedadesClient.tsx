@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import {
@@ -122,10 +123,11 @@ export function NovedadesClient({
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-700">
             {post.coverImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={post.coverImageUrl}
                 alt=""
+                width={96}
+                height={96}
                 className="h-full w-full object-cover"
               />
             ) : (

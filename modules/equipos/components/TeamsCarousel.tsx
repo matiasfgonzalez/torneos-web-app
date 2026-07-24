@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import {
   Card,
   CardContent,
@@ -86,8 +87,8 @@ const TeamsCarousel = (props: PropsTeamsCarousel) => {
                 <CardContent className="p-4 text-center">
                   <div className="relative mb-3">
                     <div className="w-16 h-16 mx-auto mb-2 relative">
-                      <img
-                        src={team.team?.logoUrl || "/placeholder.svg"}
+                      <SmartImage
+                        src={team.team?.logoUrl}
                         alt={`Escudo de ${team.team?.name}`}
                         width={64}
                         height={64}

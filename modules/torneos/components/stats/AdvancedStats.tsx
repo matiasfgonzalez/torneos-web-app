@@ -1,4 +1,5 @@
 import { Activity, ShieldCheck } from "lucide-react";
+import { SmartImage } from "@/components/shared/SmartImage";
 
 import {
   Card,
@@ -57,10 +58,11 @@ export function AdvancedStats({
                       {row.position}
                     </span>
                     {row.teamLogoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <SmartImage
                         src={row.teamLogoUrl}
                         alt=""
+                        width={28}
+                        height={28}
                         className="h-7 w-7 shrink-0 rounded-md bg-white object-contain p-0.5 dark:bg-gray-800"
                       />
                     ) : (
@@ -122,10 +124,11 @@ export function AdvancedStats({
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     {team.teamLogoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <SmartImage
                         src={team.teamLogoUrl}
                         alt=""
+                        width={28}
+                        height={28}
                         className="h-7 w-7 shrink-0 rounded-md bg-white object-contain p-0.5 dark:bg-gray-800"
                       />
                     ) : (

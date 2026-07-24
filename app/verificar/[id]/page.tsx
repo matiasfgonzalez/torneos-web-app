@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { notFound } from "next/navigation";
 import {
   ShieldCheck,
@@ -93,10 +94,11 @@ export default async function VerificarPage({
         <section className="mt-4 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div className="aspect-square w-full bg-gray-200 dark:bg-gray-800">
             {data.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={data.photoUrl}
                 alt={`Foto oficial de ${data.name}`}
+                width={128}
+                height={128}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -136,10 +138,11 @@ export default async function VerificarPage({
                 className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
               >
                 {t.teamLogoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <SmartImage
                     src={t.teamLogoUrl}
                     alt=""
+                    width={40}
+                    height={40}
                     className="h-10 w-10 shrink-0 rounded-full object-cover"
                   />
                 ) : (

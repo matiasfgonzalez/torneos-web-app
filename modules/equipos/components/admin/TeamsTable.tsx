@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Eye, Filter, MapPin, Users } from "lucide-react";
@@ -75,14 +76,12 @@ const TeamsTable = ({ teams }: PropsTeamsTable) => {
       cell: (team) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl border-2 border-gray-200 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={team.logoUrl || "/placeholder.svg"}
+            <SmartImage
+              src={team.logoUrl}
               alt=""
+              width={40}
+              height={40}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder.svg";
-              }}
             />
           </div>
           <div className="min-w-0">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { ArrowRight, Shield, Trophy, Users } from "lucide-react";
 import type {
   FavoriteTournamentItem,
@@ -56,8 +57,7 @@ export function FavoritesTab({ tournaments, teams }: Readonly<FavoritesTabProps>
                 <Link href={tournamentPublicPath(t)} className="flex items-center gap-3 min-w-0 flex-1 group">
                   <div className="w-9 h-9 rounded-lg overflow-hidden border border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                     {t.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.logoUrl} alt={t.name} className="w-full h-full object-cover" />
+                      <SmartImage src={t.logoUrl} alt={t.name} width={40} height={40} className="w-full h-full object-cover" />
                     ) : (
                       <Trophy className="w-4 h-4 text-brand" />
                     )}
@@ -87,8 +87,7 @@ export function FavoritesTab({ tournaments, teams }: Readonly<FavoritesTabProps>
                 <Link href={`/equipos/${t.id}`} className="flex items-center gap-3 min-w-0 flex-1 group">
                   <div className="w-9 h-9 rounded-lg overflow-hidden border border-brand/20 flex items-center justify-center bg-gray-50 dark:bg-gray-700 shrink-0">
                     {t.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.logoUrl} alt={t.name} className="w-full h-full object-cover" />
+                      <SmartImage src={t.logoUrl} alt={t.name} width={40} height={40} className="w-full h-full object-cover" />
                     ) : (
                       <Shield className="w-4 h-4 text-brand" />
                     )}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { SmartImage } from "@/components/shared/SmartImage";
 
 /**
  * Anatomía compartida de las cards de listado público (F2) — torneo, equipo
@@ -82,8 +83,7 @@ export function EntityCardAvatar({
         )}
       >
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="w-full h-full object-cover" />
+          <SmartImage src={src} alt={alt} fill sizes="96px" className="object-cover" />
         ) : (
           fallback
         )}

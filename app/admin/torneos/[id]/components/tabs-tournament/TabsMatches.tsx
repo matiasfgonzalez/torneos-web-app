@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/api-client";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { ITorneo } from "@modules/torneos/types";
 import { TabsContent } from "@/components/ui/tabs";
@@ -142,10 +143,11 @@ const TabsMatches = (props: TabsTournamentProps) => {
       cell: (match) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={match.homeTeam.team.logoUrl || "/placeholder.svg"}
+            <SmartImage
+              src={match.homeTeam.team.logoUrl}
               alt=""
+              width={40}
+              height={40}
               className="w-full h-full object-cover"
             />
           </div>
@@ -153,10 +155,11 @@ const TabsMatches = (props: TabsTournamentProps) => {
             {match.homeTeam.team.shortName} vs {match.awayTeam.team.shortName}
           </span>
           <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={match.awayTeam.team.logoUrl || "/placeholder.svg"}
+            <SmartImage
+              src={match.awayTeam.team.logoUrl}
               alt=""
+              width={40}
+              height={40}
               className="w-full h-full object-cover"
             />
           </div>

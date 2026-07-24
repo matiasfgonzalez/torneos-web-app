@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import {
   Card,
@@ -210,12 +211,11 @@ export function KnockoutBracket({
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm">
-                              <img
-                                src={
-                                  match.homeTeam?.team?.logoUrl ||
-                                  "/placeholder.svg"
-                                }
+                              <SmartImage
+                                src={match.homeTeam?.team?.logoUrl}
                                 alt={match.homeTeam?.team?.name || "Local"}
+                                width={40}
+                                height={40}
                                 className="w-full h-full object-cover"
                               />
                             </div>
@@ -264,12 +264,11 @@ export function KnockoutBracket({
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm">
-                              <img
-                                src={
-                                  match.awayTeam?.team?.logoUrl ||
-                                  "/placeholder.svg"
-                                }
+                              <SmartImage
+                                src={match.awayTeam?.team?.logoUrl}
                                 alt={match.awayTeam?.team?.name || "Visitante"}
+                                width={40}
+                                height={40}
                                 className="w-full h-full object-cover"
                               />
                             </div>

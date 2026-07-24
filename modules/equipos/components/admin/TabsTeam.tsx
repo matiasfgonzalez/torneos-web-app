@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SmartImage } from "@/components/shared/SmartImage";
 import {
   Users,
   Trophy,
@@ -180,9 +181,11 @@ export default function TabsTeam(props: PropsTabsTeam) {
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-1">
                       {tt.tournament.logoUrl ? (
-                        <img
+                        <SmartImage
                           src={tt.tournament.logoUrl}
                           alt={tt.tournament.name}
+                          width={48}
+                          height={48}
                           className="w-full h-full object-contain"
                         />
                       ) : (
@@ -279,7 +282,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
                         {teamData.shortName || teamData.name}
                       </span>
                       {teamData.logoUrl && (
-                        <img src={teamData.logoUrl} className="w-8 h-8 object-contain" alt="Home" />
+                        <SmartImage src={teamData.logoUrl} width={32} height={32} className="w-8 h-8 object-contain" alt="Home" />
                       )}
                     </div>
                     
@@ -291,7 +294,7 @@ export default function TabsTeam(props: PropsTabsTeam) {
 
                     <div className="flex items-center justify-start gap-3 text-left">
                        {partido.equipoRival.logoUrl ? (
-                        <img src={partido.equipoRival.logoUrl} className="w-8 h-8 object-contain" alt="Away" />
+                        <SmartImage src={partido.equipoRival.logoUrl} width={32} height={32} className="w-8 h-8 object-contain" alt="Away" />
                       ) : (
                         <div className="w-8 h-8 bg-gray-200 rounded-full" />
                       )}

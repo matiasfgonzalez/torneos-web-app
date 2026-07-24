@@ -8,6 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import {
   Users,
@@ -263,9 +264,11 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
                       <div className="absolute -inset-1 bg-gradient-to-r from-brand to-brand-mid rounded-2xl blur opacity-0 group-hover:opacity-40 transition-opacity" />
                       <div className="relative w-16 h-16 rounded-2xl bg-white dark:bg-gray-800 p-2 flex items-center justify-center shadow-lg border border-gray-100 dark:border-gray-700">
                         {tt.tournament.logoUrl ? (
-                          <img
+                          <SmartImage
                             src={tt.tournament.logoUrl}
                             alt={tt.tournament.name}
+                            width={48}
+                            height={48}
                             className="w-full h-full object-contain"
                           />
                         ) : (

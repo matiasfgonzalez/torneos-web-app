@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -178,10 +179,11 @@ export default function AdminNoticias() {
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-700">
             {article.coverImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={article.coverImageUrl}
                 alt=""
+                width={96}
+                height={96}
                 className="h-full w-full object-cover"
               />
             ) : (

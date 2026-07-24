@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -394,15 +395,14 @@ export default async function TournamentDetailView({
                                   {match.homeTeam?.team?.name || "Por definir"}
                                 </span>
                                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-0.5 shadow-md order-1 sm:order-2">
-                                  <img
-                                    src={
-                                      match.homeTeam?.team?.logoUrl ||
-                                      "/placeholder.svg"
-                                    }
+                                  <SmartImage
+                                    src={match.homeTeam?.team?.logoUrl}
                                     alt={
                                       match.homeTeam?.team?.name ||
                                       "Equipo local"
                                     }
+                                    width={56}
+                                    height={56}
                                     className="w-full h-full object-cover rounded-lg"
                                   />
                                 </div>
@@ -418,15 +418,14 @@ export default async function TournamentDetailView({
                               {/* Away Team */}
                               <div className="flex flex-col sm:flex-row items-center gap-3 flex-1 justify-start">
                                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-0.5 shadow-md">
-                                  <img
-                                    src={
-                                      match.awayTeam?.team?.logoUrl ||
-                                      "/placeholder.svg"
-                                    }
+                                  <SmartImage
+                                    src={match.awayTeam?.team?.logoUrl}
                                     alt={
                                       match.awayTeam?.team?.name ||
                                       "Equipo visitante"
                                     }
+                                    width={56}
+                                    height={56}
                                     className="w-full h-full object-cover rounded-lg"
                                   />
                                 </div>
@@ -587,15 +586,14 @@ export default async function TournamentDetailView({
                                       : "bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"
                                   }`}
                                 >
-                                  <img
-                                    src={
-                                      match.homeTeam?.team?.logoUrl ||
-                                      "/placeholder.svg"
-                                    }
+                                  <SmartImage
+                                    src={match.homeTeam?.team?.logoUrl}
                                     alt={
                                       match.homeTeam?.team?.name ||
                                       "Equipo local"
                                     }
+                                    width={56}
+                                    height={56}
                                     className="w-full h-full object-cover rounded-lg bg-white dark:bg-gray-900"
                                   />
                                 </div>
@@ -641,15 +639,14 @@ export default async function TournamentDetailView({
                                       : "bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"
                                   }`}
                                 >
-                                  <img
-                                    src={
-                                      match.awayTeam?.team?.logoUrl ||
-                                      "/placeholder.svg"
-                                    }
+                                  <SmartImage
+                                    src={match.awayTeam?.team?.logoUrl}
                                     alt={
                                       match.awayTeam?.team?.name ||
                                       "Equipo visitante"
                                     }
+                                    width={56}
+                                    height={56}
                                     className="w-full h-full object-cover rounded-lg bg-white dark:bg-gray-900"
                                   />
                                 </div>
@@ -806,9 +803,11 @@ export default async function TournamentDetailView({
                             </div>
                             <div className="flex items-center gap-3">
                               {scorer.teamLogoUrl && (
-                                <img
+                                <SmartImage
                                   src={scorer.teamLogoUrl}
                                   alt={scorer.teamName}
+                                  width={32}
+                                  height={32}
                                   className="w-8 h-8 rounded-lg object-contain bg-white dark:bg-gray-800 p-0.5"
                                 />
                               )}
@@ -878,9 +877,11 @@ export default async function TournamentDetailView({
                             </div>
                             <div className="flex items-center gap-3">
                               {team.teamLogoUrl && (
-                                <img
+                                <SmartImage
                                   src={team.teamLogoUrl}
                                   alt={team.teamName}
+                                  width={40}
+                                  height={40}
                                   className="w-10 h-10 rounded-lg object-contain bg-white dark:bg-gray-800 p-0.5"
                                 />
                               )}
@@ -951,9 +952,11 @@ export default async function TournamentDetailView({
                             </div>
                             <div className="flex items-center gap-3">
                               {player.teamLogoUrl && (
-                                <img
+                                <SmartImage
                                   src={player.teamLogoUrl}
                                   alt={player.teamName}
+                                  width={32}
+                                  height={32}
                                   className="w-8 h-8 rounded-lg object-contain bg-white dark:bg-gray-800 p-0.5"
                                 />
                               )}

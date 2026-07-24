@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import {
   getMatchEvents,
@@ -177,9 +178,11 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
             {/* Home Team */}
             <div className="flex flex-col items-center gap-2 flex-1">
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-white dark:bg-gray-700 p-1 shadow-md">
-                <img
-                  src={match.homeTeam?.team?.logoUrl || "/placeholder.svg"}
+                <SmartImage
+                  src={match.homeTeam?.team?.logoUrl}
                   alt={match.homeTeam?.team?.name || "Local"}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -202,9 +205,11 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
             {/* Away Team */}
             <div className="flex flex-col items-center gap-2 flex-1">
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-white dark:bg-gray-700 p-1 shadow-md">
-                <img
-                  src={match.awayTeam?.team?.logoUrl || "/placeholder.svg"}
+                <SmartImage
+                  src={match.awayTeam?.team?.logoUrl}
                   alt={match.awayTeam?.team?.name || "Visitante"}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-contain"
                 />
               </div>

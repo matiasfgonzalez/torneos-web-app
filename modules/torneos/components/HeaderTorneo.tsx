@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -99,9 +100,12 @@ const HeaderTorneo = (props: PropsHeaderTorneo) => {
                 <div className="absolute -inset-2 bg-gradient-to-r from-brand via-brand-mid to-brand-2 rounded-3xl blur-lg opacity-50" />
                 <div className="relative w-32 h-32 lg:w-40 lg:h-40 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-4 border-white/20 overflow-hidden flex items-center justify-center">
                   {tournamentData.logoUrl ? (
-                    <img
+                    <SmartImage
                       src={tournamentData.logoUrl}
                       alt={`Logo de ${tournamentData.name}`}
+                      width={128}
+                      height={128}
+                      blur
                       className="w-full h-full object-contain p-2"
                     />
                   ) : (

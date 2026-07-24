@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { Button } from "@/components/ui/button";
 import {
   Calendar,
@@ -40,10 +41,11 @@ export function TournamentCard({ tournament }: { tournament: ITorneo }) {
         <div className="absolute bottom-0 left-6 translate-y-1/2">
           <div className="w-20 h-20 bg-white dark:bg-gray-700 rounded-2xl shadow-xl border-4 border-white dark:border-gray-800 overflow-hidden flex items-center justify-center">
             {tournament.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SmartImage
                 src={tournament.logoUrl}
                 alt={tournament.name}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
               />
             ) : (

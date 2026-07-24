@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -325,16 +326,22 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                   {/* Image Container */}
                   <div className="relative w-64 h-80 lg:w-80 lg:h-96 rounded-2xl overflow-hidden border-2 border-amber-400/30 shadow-2xl shadow-slate-400/20 dark:shadow-black/50">
                     {player.imageUrl ? (
-                      <img
+                      <SmartImage
                         src={player.imageUrl}
                         alt={player.name}
-                        className="absolute inset-0 w-full h-full object-cover object-top"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 420px"
+                        blur
+                        className="object-cover object-top"
                       />
                     ) : player.imageUrlFace ? (
-                      <img
+                      <SmartImage
                         src={player.imageUrlFace}
                         alt={player.name}
-                        className="absolute inset-0 w-full h-full object-cover object-center"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 420px"
+                        blur
+                        className="object-cover object-center"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
@@ -588,9 +595,11 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm">
                         {tp.tournamentTeam?.team?.logoUrl ? (
-                          <img
+                          <SmartImage
                             src={tp.tournamentTeam.team.logoUrl}
                             alt={tp.tournamentTeam.team.name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-contain"
                           />
                         ) : (
@@ -676,9 +685,11 @@ export default function PlayerDetailPage({ player }: PlayerDetailPageProps) {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700">
                         {tp.tournamentTeam?.team?.logoUrl ? (
-                          <img
+                          <SmartImage
                             src={tp.tournamentTeam.team.logoUrl}
                             alt={tp.tournamentTeam.team.name}
+                            width={32}
+                            height={32}
                             className="w-8 h-8 object-contain"
                           />
                         ) : (

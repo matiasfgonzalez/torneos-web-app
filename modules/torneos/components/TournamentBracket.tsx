@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { Trophy, Swords, Medal } from "lucide-react";
 import {
@@ -397,10 +398,11 @@ function BracketTeamRow({
     >
       <span className="h-4 w-5 shrink-0 overflow-hidden rounded-sm bg-gray-100 dark:bg-gray-700">
         {team?.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <SmartImage
             src={team.logoUrl}
             alt=""
+            width={24}
+            height={24}
             className="h-full w-full object-cover"
           />
         ) : null}

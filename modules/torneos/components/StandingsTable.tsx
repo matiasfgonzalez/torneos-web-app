@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import {
   Card,
   CardContent,
@@ -345,9 +346,11 @@ export function StandingsTable({
                 <TableCell className="font-medium py-4">
                   <div className="flex items-center gap-4">
                     <div className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-0.5 group-hover:shadow-lg transition-shadow">
-                      <img
+                      <SmartImage
                         src={row.teamLogo}
                         alt={`Escudo de ${row.teamName}`}
+                        width={40}
+                        height={40}
                         className="w-full h-full object-cover rounded-lg"
                       />
                     </div>

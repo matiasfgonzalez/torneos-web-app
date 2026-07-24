@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { SmartImage } from "@/components/shared/SmartImage";
 import { api } from "@/lib/api-client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -404,13 +405,16 @@ export default function AdminNoticiaDetail({
                           ? editedArticle.coverImageUrl
                           : article.coverImageUrl
                       ) ? (
-                        <img
+                        <SmartImage
                           src={
                             isEditing
                               ? editedArticle.coverImageUrl
                               : article.coverImageUrl
                           }
                           alt="Cover"
+                          width={640}
+                          height={360}
+                          blur
                           className="w-full h-full object-cover"
                         />
                       ) : (
