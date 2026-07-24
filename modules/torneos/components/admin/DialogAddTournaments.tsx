@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
+import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { FormSheet } from "@/components/shared/form/FormSheet";
 import {
@@ -290,40 +291,25 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
       ).value,
     };
 
-    try {
-      const res = await fetch(
-        isEditMode ? `/api/tournaments/${tournament.id}` : "/api/tournaments",
-        {
-          method: isEditMode ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+    const res = isEditMode
+      ? await api.patch(`/api/tournaments/${tournament.id}`, payload)
+      : await api.post("/api/tournaments", payload);
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        const message =
-          error?.error ??
-          (isEditMode
-            ? "No se pudo guardar el torneo"
-            : "No se pudo crear el torneo");
-        // 402 = límite del plan → upsell con acción hacia /admin/plan (N14d)
-        if (res.status === 402) {
-          toastPlanLimit(message);
-        } else {
-          toast.error(message);
-        }
-        return;
+    if (!res.ok) {
+      // 402 = límite del plan → upsell con acción hacia /admin/plan (N14d)
+      if (res.status === 402) {
+        toastPlanLimit(res.error);
+      } else {
+        toast.error(res.error);
       }
-
-      toast.success(isEditMode ? "Torneo guardado" : "Torneo creado");
-      draft.clear();
-      setOpen(false);
-      form.reset(isEditMode ? data : emptyValues());
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+      return;
     }
+
+    toast.success(isEditMode ? "Torneo guardado" : "Torneo creado");
+    draft.clear();
+    setOpen(false);
+    form.reset(isEditMode ? data : emptyValues());
+    router.refresh();
   };
 
   return (

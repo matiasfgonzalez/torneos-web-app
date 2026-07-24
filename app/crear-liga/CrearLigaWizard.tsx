@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,14 +65,6 @@ const STEPS = [
 const isAutoName = (name: string | undefined) =>
   !name || name === "Mi Liga" || name.startsWith("Liga de ");
 
-async function readError(res: Response): Promise<string> {
-  try {
-    const data = await res.json();
-    return data.error ?? "Ocurrió un error inesperado";
-  } catch {
-    return "Ocurrió un error inesperado";
-  }
-}
 
 // ============================================================
 // Wizard
@@ -136,21 +129,17 @@ export default function CrearLigaWizard({
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/org", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: orgForm.name.trim(),
-          locality: orgForm.locality,
-          description: orgForm.description,
-          phone: orgForm.phone,
-          logoUrl: orgForm.logoUrl,
-          logoPublicId: orgForm.logoPublicId,
-          brandColor: orgForm.brandColor || null,
-        }),
+      const res = await api.patch("/api/org", {
+        name: orgForm.name.trim(),
+        locality: orgForm.locality,
+        description: orgForm.description,
+        phone: orgForm.phone,
+        logoUrl: orgForm.logoUrl,
+        logoPublicId: orgForm.logoPublicId,
+        brandColor: orgForm.brandColor || null,
       });
       if (!res.ok) {
-        toast.error(await readError(res));
+        toast.error(res.error);
         return;
       }
       toast.success("¡Tu liga quedó creada!");
@@ -174,10 +163,9 @@ export default function CrearLigaWizard({
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/tournaments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await api.post<{ id: string; name: string }>(
+        "/api/tournaments",
+        {
           name: tournamentForm.name.trim(),
           format: tournamentForm.format,
           startDate: tournamentForm.startDate,
@@ -185,15 +173,14 @@ export default function CrearLigaWizard({
           gender: tournamentForm.gender,
           locality: orgForm.locality.trim() || "A definir",
           liga: orgForm.name.trim() || null,
-        }),
-      });
+        },
+      );
       if (!res.ok) {
-        toast.error(await readError(res));
+        toast.error(res.error);
         return;
       }
-      const data = await res.json();
-      setCreatedTournament({ id: data.id, name: data.name });
-      toast.success(`Torneo "${data.name}" creado`);
+      setCreatedTournament({ id: res.data.id, name: res.data.name });
+      toast.success(`Torneo "${res.data.name}" creado`);
       setStep(3);
     } finally {
       setSaving(false);
@@ -215,27 +202,22 @@ export default function CrearLigaWizard({
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/org/members", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role: inviteRole }),
-      });
-      if (res.status === 402) {
-        setPlanLimitMsg(await readError(res));
-        return;
-      }
+      const res = await api.post<{ type: "member" | "invite" }>(
+        "/api/org/members",
+        { email, role: inviteRole },
+      );
       if (!res.ok) {
-        toast.error(await readError(res));
+        if (res.status === 402) setPlanLimitMsg(res.error);
+        else toast.error(res.error);
         return;
       }
-      const data = await res.json();
       setSentInvites((prev) => [
         ...prev,
-        { email, role: inviteRole, type: data.type },
+        { email, role: inviteRole, type: res.data.type },
       ]);
       setInviteEmail("");
       toast.success(
-        data.type === "member"
+        res.data.type === "member"
           ? `${email} ya tiene cuenta: se sumó a tu liga`
           : `Invitación enviada: se sumará al registrarse`,
       );

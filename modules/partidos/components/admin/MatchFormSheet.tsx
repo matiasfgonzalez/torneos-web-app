@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
+import { api } from "@/lib/api-client";
 import { FormSheet } from "@/components/shared/form/FormSheet";
 import {
   DateField,
@@ -254,38 +255,39 @@ export function MatchFormSheet({
   // (react-hooks/set-state-in-effect) — ver docs/AGENT_RULES.md.
   const loadTournaments = useCallback(() => {
     startFetch(async () => {
-      try {
-        const res = await fetch("/api/tournaments");
-        if (!res.ok) throw new Error();
-        const data: { id: string; name: string }[] = await res.json();
-        setTournamentOptions(data.map((t) => ({ value: t.id, label: t.name })));
-      } catch {
+      const res = await api.get<{ id: string; name: string }[]>(
+        "/api/tournaments",
+      );
+      if (!res.ok) {
         toast.error("No se pudieron cargar los torneos");
+        return;
       }
+      setTournamentOptions(
+        res.data.map((t) => ({ value: t.id, label: t.name })),
+      );
     });
   }, []);
 
   const loadContext = useCallback((id: string) => {
     startFetch(async () => {
-      try {
-        const res = await fetch(`/api/tournaments/${id}`);
-        if (!res.ok) throw new Error();
-        const data: TournamentDetailDTO = await res.json();
-        setFetchedContext({
-          name: data.name,
-          walkoverScore: data.walkoverScore ?? 3,
-          teams: (data.tournamentTeams ?? []).map((t) => ({
-            value: t.id,
-            label: t.team?.name ?? "Equipo sin nombre",
-          })),
-          phases: (data.tournamentPhases ?? []).map((p) => ({
-            value: p.id,
-            label: p.name,
-          })),
-        });
-      } catch {
+      const res = await api.get<TournamentDetailDTO>(`/api/tournaments/${id}`);
+      if (!res.ok) {
         toast.error("No se pudieron cargar los equipos del torneo");
+        return;
       }
+      const data = res.data;
+      setFetchedContext({
+        name: data.name,
+        walkoverScore: data.walkoverScore ?? 3,
+        teams: (data.tournamentTeams ?? []).map((t) => ({
+          value: t.id,
+          label: t.team?.name ?? "Equipo sin nombre",
+        })),
+        phases: (data.tournamentPhases ?? []).map((p) => ({
+          value: p.id,
+          label: p.name,
+        })),
+      });
     });
   }, []);
 
@@ -338,35 +340,20 @@ export function MatchFormSheet({
         : {}),
     };
 
-    try {
-      const res = await fetch(
-        isEdit ? `/api/matches/${match?.id}` : "/api/matches",
-        {
-          method: isEdit ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+    const res = isEdit
+      ? await api.patch(`/api/matches/${match?.id}`, payload)
+      : await api.post("/api/matches", payload);
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(
-          error?.error ??
-            (isEdit
-              ? "No se pudo guardar el partido"
-              : "No se pudo programar el partido"),
-        );
-        return;
-      }
-
-      toast.success(isEdit ? "Partido guardado" : "Partido programado");
-      setOpen(false);
-      form.reset(isEdit ? data : emptyValues(tournament?.id ?? ""));
-      onSuccess?.();
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+
+    toast.success(isEdit ? "Partido guardado" : "Partido programado");
+    setOpen(false);
+    form.reset(isEdit ? data : emptyValues(tournament?.id ?? ""));
+    onSuccess?.();
+    router.refresh();
   };
 
   return (

@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import {
   IUser,
@@ -135,21 +136,18 @@ export default function UserDetailPage() {
   // setState no queda en el cuerpo del effect (react-hooks/set-state-in-effect).
   const fetchUser = useCallback(() => {
     startFetch(async () => {
-      try {
-        const response = await fetch(`/api/users/${userId}`);
-        const result: ApiResponse<UserWithStats> = await response.json();
-
-        if (result.success && result.data) {
-          setUser(result.data);
-        } else {
-          toast.error(result.message || "Error al cargar el usuario");
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        toast.error("Error al cargar los datos del usuario");
-      } finally {
-        setIsLoading(false);
+      const res = await api.get<ApiResponse<UserWithStats>>(
+        `/api/users/${userId}`,
+      );
+      if (res.ok && res.data.success && res.data.data) {
+        setUser(res.data.data);
+      } else {
+        toast.error(
+          (res.ok ? res.data.message : res.error) ||
+            "Error al cargar el usuario",
+        );
       }
+      setIsLoading(false);
     });
   }, [userId]);
 
@@ -166,25 +164,19 @@ export default function UserDetailPage() {
 
     try {
       setIsUpdatingRole(true);
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ role: newRole }),
+      const res = await api.put<ApiResponse<IUser>>(`/api/users/${userId}`, {
+        role: newRole,
       });
-
-      const result: ApiResponse<IUser> = await response.json();
-
-      if (result.success && result.data) {
-        setUser((prev) => (prev ? { ...prev, ...result.data } : null));
+      if (res.ok && res.data.success && res.data.data) {
+        const updated = res.data.data;
+        setUser((prev) => (prev ? { ...prev, ...updated } : null));
         toast.success("Rol actualizado exitosamente");
       } else {
-        toast.error(result.message || "Error al actualizar el rol");
+        toast.error(
+          (res.ok ? res.data.message : res.error) ||
+            "Error al actualizar el rol",
+        );
       }
-    } catch (error) {
-      console.error("Error updating role:", error);
-      toast.error("Error al actualizar el rol");
     } finally {
       setIsUpdatingRole(false);
     }
@@ -196,25 +188,19 @@ export default function UserDetailPage() {
 
     try {
       setIsUpdatingStatus(true);
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
+      const res = await api.put<ApiResponse<IUser>>(`/api/users/${userId}`, {
+        status: newStatus,
       });
-
-      const result: ApiResponse<IUser> = await response.json();
-
-      if (result.success && result.data) {
-        setUser((prev) => (prev ? { ...prev, ...result.data } : null));
+      if (res.ok && res.data.success && res.data.data) {
+        const updated = res.data.data;
+        setUser((prev) => (prev ? { ...prev, ...updated } : null));
         toast.success("Estado actualizado exitosamente");
       } else {
-        toast.error(result.message || "Error al actualizar el estado");
+        toast.error(
+          (res.ok ? res.data.message : res.error) ||
+            "Error al actualizar el estado",
+        );
       }
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Error al actualizar el estado");
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -226,22 +212,16 @@ export default function UserDetailPage() {
 
     try {
       setIsDeleting(true);
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result: ApiResponse<any> = await response.json();
-
-      if (result.success) {
+      const res = await api.del<ApiResponse<unknown>>(`/api/users/${userId}`);
+      if (res.ok && res.data?.success) {
         toast.success("Usuario eliminado exitosamente");
         router.push("/admin/usuarios");
       } else {
-        toast.error(result.message || "Error al eliminar el usuario");
+        toast.error(
+          (res.ok ? res.data?.message : res.error) ||
+            "Error al eliminar el usuario",
+        );
       }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Error al eliminar usuario");
     } finally {
       setIsDeleting(false);
     }

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ClipboardPen, Edit, Hash, Plus, Shield, Trophy } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
+import { api } from "@/lib/api-client";
 import { toastPlanLimit } from "@/lib/planUpsell";
 import { Button } from "@/components/ui/button";
 import { FormSheet } from "@/components/shared/form/FormSheet";
@@ -112,41 +113,24 @@ export default function TournamentTeamSheet({
       notes: data.notes || null,
     };
 
-    try {
-      const res = await fetch(
-        isEdit
-          ? `/api/tournament-teams/${tournamentTeam?.id}`
-          : "/api/tournament-teams",
-        {
-          method: isEdit ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+    const res = isEdit
+      ? await api.patch(`/api/tournament-teams/${tournamentTeam?.id}`, payload)
+      : await api.post("/api/tournament-teams", payload);
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        const message =
-          error?.error ??
-          (isEdit
-            ? "No se pudo guardar la inscripción"
-            : "No se pudo inscribir el equipo");
-        // 402 = límite del plan → upsell con acción hacia /admin/plan (N14d)
-        if (res.status === 402) {
-          toastPlanLimit(message);
-          return;
-        }
-        toast.error(message);
-        return;
+    if (!res.ok) {
+      // 402 = límite del plan → upsell con acción hacia /admin/plan (N14d)
+      if (res.status === 402) {
+        toastPlanLimit(res.error);
+      } else {
+        toast.error(res.error);
       }
-
-      toast.success(isEdit ? "Inscripción guardada" : "Equipo inscripto");
-      setOpen(false);
-      form.reset(data);
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+      return;
     }
+
+    toast.success(isEdit ? "Inscripción guardada" : "Equipo inscripto");
+    setOpen(false);
+    form.reset(data);
+    router.refresh();
   };
 
   return (

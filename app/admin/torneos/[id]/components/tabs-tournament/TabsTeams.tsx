@@ -23,6 +23,7 @@ import { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
 import { ITorneo } from "@modules/torneos/types";
 import TournamentTeamSheet from "../TournamentTeamSheet";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import TeamRosterSheet from "../TeamRosterSheet";
@@ -76,17 +77,13 @@ const TabsTeams = (props: TabsTeamsProps) => {
   const handleDelete = async (id: string) => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/tournament-teams/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Error al eliminar el equipo del torneo");
-
+      const res = await api.del(`/api/tournament-teams/${id}`);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
       toast.success("Equipo eliminado correctamente del torneo");
       router.refresh();
-    } catch (error) {
-      toast.error("No se pudo eliminar el equipo");
-      console.error(error);
     } finally {
       setIsLoading(false);
       setDeleteAssoc(null);

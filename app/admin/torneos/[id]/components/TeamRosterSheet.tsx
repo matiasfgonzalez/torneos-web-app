@@ -27,6 +27,7 @@ import {
 } from "@/components/shared/form/fields";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { PLAYER_POSITION_OPTIONS } from "@/lib/constants";
+import { api } from "@/lib/api-client";
 import type { IPlayer, IPlayerTeam } from "@modules/jugadores/types";
 import type { ITournamentTeam } from "@modules/torneos/types/tournament-teams.types";
 
@@ -85,27 +86,21 @@ export default function TeamRosterSheet({
   // fetch dentro de una transición (react-hooks/set-state-in-effect).
   const loadRoster = useCallback(() => {
     startFetch(async () => {
-      try {
-        const res = await fetch(`/api/team-player/${teamData.id}`);
-        if (!res.ok) throw new Error();
-        setRoster(await res.json());
-      } catch {
-        toast.error("No se pudo cargar el plantel");
-      }
+      const res = await api.get<IPlayerTeam[]>(
+        `/api/team-player/${teamData.id}`,
+      );
+      if (res.ok) setRoster(res.data);
+      else toast.error("No se pudo cargar el plantel");
     });
   }, [teamData.id]);
 
   const loadPlayers = useCallback(() => {
     startFetch(async () => {
-      try {
-        // scope=panel: solo jugadores de mis organizaciones. La ruta ya excluye
-        // los deshabilitados y eliminados — un jugador dado de baja no se suma.
-        const res = await fetch("/api/players?scope=panel");
-        if (!res.ok) throw new Error();
-        setPlayers(await res.json());
-      } catch {
-        toast.error("No se pudieron cargar los jugadores");
-      }
+      // scope=panel: solo jugadores de mis organizaciones. La ruta ya excluye
+      // los deshabilitados y eliminados — un jugador dado de baja no se suma.
+      const res = await api.get<IPlayer[]>("/api/players?scope=panel");
+      if (res.ok) setPlayers(res.data);
+      else toast.error("No se pudieron cargar los jugadores");
     });
   }, []);
 
@@ -122,52 +117,34 @@ export default function TeamRosterSheet({
 
   const removePlayer = async () => {
     if (!toRemove) return;
-    try {
-      const res = await fetch(`/api/team-player/${toRemove.id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudo sacar al jugador del equipo");
-        return;
-      }
-      toast.success(`${toRemove.player.name} salió del equipo`);
-      setToRemove(null);
-      loadRoster();
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.del(`/api/team-player/${toRemove.id}`);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success(`${toRemove.player.name} salió del equipo`);
+    setToRemove(null);
+    loadRoster();
+    router.refresh();
   };
 
   const onSubmit = async (data: RosterFormValues) => {
-    try {
-      const res = await fetch("/api/team-player", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tournamentTeamId: teamData.id,
-          playerId: data.playerId,
-          joinedAt: data.joinedAt,
-          leftAt: data.leftAt || null,
-          number: data.number ?? null,
-          position: data.position || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudo sumar al jugador");
-        return;
-      }
-
-      toast.success("Jugador sumado al equipo");
-      form.reset(emptyValues());
-      loadRoster();
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.post("/api/team-player", {
+      tournamentTeamId: teamData.id,
+      playerId: data.playerId,
+      joinedAt: data.joinedAt,
+      leftAt: data.leftAt || null,
+      number: data.number ?? null,
+      position: data.position || null,
+    });
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success("Jugador sumado al equipo");
+    form.reset(emptyValues());
+    loadRoster();
+    router.refresh();
   };
 
   return (

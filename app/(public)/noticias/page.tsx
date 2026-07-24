@@ -28,6 +28,7 @@ import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { formatDate } from "@/lib/formatDate";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SkeletonCards } from "@/components/shared/Skeletons";
+import { api } from "@/lib/api-client";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { INoticia } from "@modules/noticias/types";
@@ -50,28 +51,12 @@ export default function NoticiasPage() {
 
   useEffect(() => {
     const fetchNoticias = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/noticias", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch noticias");
-        }
-
-        const data = await response.json();
-        setNoticias(data);
-      } catch (err) {
-        console.error("Error fetching noticias:", err);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const res = await api.get<INoticia[]>("/api/noticias");
+      if (res.ok) setNoticias(res.data);
+      else console.error("Error fetching noticias:", res.error);
+      setLoading(false);
     };
-
     fetchNoticias();
   }, []);
 

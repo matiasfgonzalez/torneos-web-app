@@ -38,7 +38,6 @@
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
 **🟡 Medio**
-- **M5** — Capa de datos del cliente unificada (47 fetch dispersos) · `E:Alto`
 - **M2** — Migrar `<img>` → `next/image` (42 archivos) · `E:Medio`
 - **M4** — Accesibilidad WCAG AA · `E:Medio`
 - **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
@@ -356,7 +355,12 @@
 
 ### M5. Capa de datos del cliente unificada
 
-- [ ] 47 `fetch()` dispersos con manejo de errores desigual; mezcla de server actions y API routes para lo mismo (ej. partidos usa ambas). Decidir: **mutaciones = server actions** (con Zod compartido) y API routes solo para lo consumido externamente; o crear `lib/api-client.ts` tipado. Considerar TanStack Query para cache/revalidación en cliente. **E:Alto**
+- [x] **Resuelto (2026-07-24).** Los ~69 `fetch()` sueltos del cliente (eran 47 al escribir la auditoría) tenían el mismo boilerplate copiado con **manejo de errores desigual**: unos chequeaban `res.ok`, otros no; unos leían `err.error`, otros `err.message`, otros tragaban el error o tiraban `throw new Error("delete failed")`. Se unificó en **`lib/api-client.ts`**.
+  - **Decisión: cliente tipado, NO TanStack Query.** El dolor real era la inconsistencia del manejo de errores, no el cacheo — las lecturas pesadas ya son server components (A3) y las mutaciones revalidan con `revalidatePath`. React Query obligaría a un `QueryClientProvider` y a reescribir cada componente de datos a cambio de poco. El cliente tipado da el 90% del beneficio con una fracción del riesgo. (La otra opción del enunciado —"mutaciones = server actions"— habría sido reescribir 25 rutas API + sus validadores; se descartó por el mismo motivo.)
+  - **`api.get/post/patch/put/del`** ([lib/api-client.ts](lib/api-client.ts)) devuelven un **`ApiResult<T>` discriminado** (`{ ok:true; data } | { ok:false; error; status; details?; raw? }`) — nunca tiran. Parsean el JSON una vez, sacan el mensaje de `error`/`message` (con fallback), exponen los `details` por campo de una validación Zod y el `raw` para campos propios de una ruta (ej. el `existingPlayer` del 409 de `/api/players`). Red caída → `status:0` con mensaje de conexión. El cliente **no** muestra toasts: devuelve el resultado y el que llama decide el copy (`if (!res.ok) toast.error(res.error)`), como ya se usaba. 7 tests ([tests/api-client.test.ts](tests/api-client.test.ts)).
+  - **Migrados los 69 `fetch` de ~34 archivos cliente** (0 `fetch` crudo restante, verificado por grep): forms/sheets (partido, equipo, jugador, torneo, inscripción, plantel, noticia, novedad, mi-ficha, mi-equipo), listas públicas (partidos/jugadores/noticias) + polling en vivo (`LiveMatch`/`LiveNowSection`), y todos los clients del panel (usuarios + detalle/edición, árbitros, pagos, miembros, mi-liga, novedades, organizaciones, plan, planes, partidos, tabs de torneo, wizard de alta). De paso se borraron **4 helpers `readError(res)`** duplicados (mi-liga, miembros, crear-liga, …) que hacían a mano lo que ahora hace el cliente, y varios `try/catch` que solo servían para el error de red.
+  - **Los pocos casos especiales se preservaron:** el 402 del límite del plan sigue yendo al `toastPlanLimit` (torneo, inscripción, miembros); el 409 de DNI repetido sigue marcando el campo (`res.raw.existingPlayer`); las rutas de `users/*` conservan su envelope `{ success, data, meta }` (el cliente devuelve el JSON tal cual y el llamador lo tipa).
+  - **Verificado:** `tsc`/`eslint` limpios, **273 tests verdes** (+7), `next build` en verde, y `/partidos` renderiza con datos reales (lista + summary vía `api.get`, 104 partidos en el hero).
 
 ### M6. Tokenizar la marca (93 archivos con `#ad45ff` hardcodeado)
 

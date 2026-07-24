@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { api } from "@/lib/api-client";
 import { ITorneo } from "@modules/torneos/types";
 
 interface DeleteTournamentButtonProps {
@@ -36,51 +37,35 @@ export function DeleteTournamentButton({
   const router = useRouter();
 
   const restore = async () => {
-    try {
-      const res = await fetch(`/api/tournaments/${tournament.id}/restore`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudo restaurar el torneo");
-        return;
-      }
-      toast.success(`"${tournament.name}" volvió al listado`);
-      // Si se eliminó desde la ficha, el "Deshacer" tiene que devolver ahí:
-      // deshacer significa volver al estado anterior, también el de navegación.
-      if (redirectAfterDelete) router.push(`/admin/torneos/${tournament.id}`);
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.post(`/api/tournaments/${tournament.id}/restore`);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success(`"${tournament.name}" volvió al listado`);
+    // Si se eliminó desde la ficha, el "Deshacer" tiene que devolver ahí:
+    // deshacer significa volver al estado anterior, también el de navegación.
+    if (redirectAfterDelete) router.push(`/admin/torneos/${tournament.id}`);
+    router.refresh();
   };
 
   const handleDelete = async () => {
-    try {
-      const res = await fetch(`/api/tournaments/${tournament.id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudo eliminar el torneo");
-        return;
-      }
-
-      toast.success(`"${tournament.name}" eliminado`, {
-        description: "El historial se conserva por si lo restaurás.",
-        // 10s en vez de los 4 por defecto: un "Deshacer" que se va antes de que
-        // el usuario registre el error no sirve de nada.
-        duration: 10000,
-        action: { label: "Deshacer", onClick: () => void restore() },
-      });
-
-      // Tras borrar desde la ficha del propio torneo, esa ruta ya no existe
-      if (redirectAfterDelete) router.push(redirectAfterDelete);
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.del(`/api/tournaments/${tournament.id}`);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success(`"${tournament.name}" eliminado`, {
+      description: "El historial se conserva por si lo restaurás.",
+      // 10s en vez de los 4 por defecto: un "Deshacer" que se va antes de que
+      // el usuario registre el error no sirve de nada.
+      duration: 10000,
+      action: { label: "Deshacer", onClick: () => void restore() },
+    });
+
+    // Tras borrar desde la ficha del propio torneo, esa ruta ya no existe
+    if (redirectAfterDelete) router.push(redirectAfterDelete);
+    router.refresh();
   };
 
   return (

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { FileText, ImageIcon, Newspaper, Plus, Text } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
@@ -74,28 +75,17 @@ export function NoticiaForm({
       summary: data.summary.trim() === "" ? null : data.summary.trim(),
     };
 
-    try {
-      const res = await fetch("/api/noticias", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudo crear la noticia");
-        return;
-      }
-
-      toast.success(data.published ? "Noticia publicada" : "Borrador guardado");
-      setOpen(false);
-      form.reset(emptyValues());
-      // Se recarga la lista en vez de insertar la respuesta: el POST devuelve
-      // la noticia sin su autor, y la tabla espera la forma completa.
-      onSuccess();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.post("/api/noticias", payload);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success(data.published ? "Noticia publicada" : "Borrador guardado");
+    setOpen(false);
+    form.reset(emptyValues());
+    // Se recarga la lista en vez de insertar la respuesta: el POST devuelve
+    // la noticia sin su autor, y la tabla espera la forma completa.
+    onSuccess();
   };
 
   return (

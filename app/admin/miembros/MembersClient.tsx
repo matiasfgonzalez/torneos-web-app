@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -82,15 +83,6 @@ const ROLE_BADGE_CLASSES: Record<OrgRole, string> = {
     "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 border-0",
 };
 
-async function readError(res: Response): Promise<string> {
-  try {
-    const data = await res.json();
-    return data.error ?? "Ocurrió un error inesperado";
-  } catch {
-    return "Ocurrió un error inesperado";
-  }
-}
-
 // ============================================================
 // Componente
 // ============================================================
@@ -106,16 +98,10 @@ export default function MembersClient() {
   const [planLimitMsg, setPlanLimitMsg] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    try {
-      const res = await fetch("/api/org/members");
-      if (!res.ok) {
-        toast.error(await readError(res));
-        return;
-      }
-      setData(await res.json());
-    } finally {
-      setLoading(false);
-    }
+    const res = await api.get<MembersData>("/api/org/members");
+    if (res.ok) setData(res.data);
+    else toast.error(res.error);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -130,22 +116,17 @@ export default function MembersClient() {
     }
     setSending(true);
     try {
-      const res = await fetch("/api/org/members", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role: inviteRole }),
+      const res = await api.post<{ type: string }>("/api/org/members", {
+        email,
+        role: inviteRole,
       });
-      if (res.status === 402) {
-        setPlanLimitMsg(await readError(res));
-        return;
-      }
       if (!res.ok) {
-        toast.error(await readError(res));
+        if (res.status === 402) setPlanLimitMsg(res.error);
+        else toast.error(res.error);
         return;
       }
-      const result = await res.json();
       toast.success(
-        result.type === "member"
+        res.data.type === "member"
           ? `${email} se sumó a tu liga`
           : "Invitación enviada: se sumará al registrarse",
       );
@@ -157,13 +138,9 @@ export default function MembersClient() {
   };
 
   const changeRole = async (memberId: string, role: string) => {
-    const res = await fetch(`/api/org/members/${memberId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
+    const res = await api.patch(`/api/org/members/${memberId}`, { role });
     if (!res.ok) {
-      toast.error(await readError(res));
+      toast.error(res.error);
       return;
     }
     toast.success("Rol actualizado");
@@ -171,11 +148,9 @@ export default function MembersClient() {
   };
 
   const removeMember = async (memberId: string) => {
-    const res = await fetch(`/api/org/members/${memberId}`, {
-      method: "DELETE",
-    });
+    const res = await api.del(`/api/org/members/${memberId}`);
     if (!res.ok) {
-      toast.error(await readError(res));
+      toast.error(res.error);
       return;
     }
     toast.success("Miembro quitado de la liga");
@@ -184,11 +159,9 @@ export default function MembersClient() {
   };
 
   const cancelInvite = async (inviteId: string) => {
-    const res = await fetch(`/api/org/invites/${inviteId}`, {
-      method: "DELETE",
-    });
+    const res = await api.del(`/api/org/invites/${inviteId}`);
     if (!res.ok) {
-      toast.error(await readError(res));
+      toast.error(res.error);
       return;
     }
     toast.success("Invitación cancelada");

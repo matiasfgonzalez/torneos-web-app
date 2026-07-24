@@ -39,6 +39,7 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { INoticia } from "@modules/noticias/types";
 import { formatDate } from "@/lib/formatDate";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
@@ -71,34 +72,30 @@ export default function EditNoticia() {
   useEffect(() => {
     async function loadArticle() {
       setLoadingArticle(true);
-      try {
-        const res = await fetch(`/api/noticias/${id}`);
-
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError("Noticia no encontrada");
-            return;
-          }
-        }
-
-        const data = await res.json();
-        setArticle(data);
-        setFormData({
-          title: data.title || "",
-          summary: data.summary || "",
-          content: data.content || "",
-          coverImageUrl: data.coverImageUrl || "",
-          coverImagePublicId: data.coverImagePublicId || "",
-          published: data.published || false,
-          date:
-            data.date?.split("T")[0] || new Date().toISOString().split("T")[0],
-        });
-      } catch (error) {
-        setError(`Error al cargar la noticia: ${error}`);
-        toast.error(`Error al cargar la noticia: ${error}`);
-      } finally {
+      const res = await api.get<INoticia & { date?: string }>(
+        `/api/noticias/${id}`,
+      );
+      if (!res.ok) {
+        const msg =
+          res.status === 404 ? "Noticia no encontrada" : res.error;
+        setError(msg);
+        toast.error(`Error al cargar la noticia: ${msg}`);
         setLoadingArticle(false);
+        return;
       }
+      const data = res.data;
+      setArticle(data);
+      setFormData({
+        title: data.title || "",
+        summary: data.summary || "",
+        content: data.content || "",
+        coverImageUrl: data.coverImageUrl || "",
+        coverImagePublicId: data.coverImagePublicId || "",
+        published: data.published || false,
+        date:
+          data.date?.split("T")[0] || new Date().toISOString().split("T")[0],
+      });
+      setLoadingArticle(false);
     }
 
     loadArticle();
@@ -112,42 +109,26 @@ export default function EditNoticia() {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/noticias/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
+      const res = await api.put(`/api/noticias/${id}`, formData);
       if (!res.ok) {
-        throw new Error("Error al actualizar la noticia");
+        toast.error(res.error);
+        return;
       }
-
       toast.success("Noticia actualizada correctamente");
       setHasChanges(false);
-    } catch (error) {
-      toast.error(`Error al guardar los cambios: ${error}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    try {
-      const res = await fetch(`/api/noticias/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        throw new Error("Error al eliminar la noticia");
-      }
-
-      toast.success("Noticia eliminada correctamente");
-      router.push("/admin/noticias");
-    } catch (error) {
-      toast.error(`Error al eliminar la noticia: ${error}`);
+    const res = await api.del(`/api/noticias/${id}`);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success("Noticia eliminada correctamente");
+    router.push("/admin/noticias");
   };
 
   // Sin `confirm()` nativo (lo prohíbe AGENT_RULES): la confirmación de descarte

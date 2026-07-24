@@ -24,6 +24,7 @@ import Link from "next/link";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SkeletonCards } from "@/components/shared/Skeletons";
+import { api } from "@/lib/api-client";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { PlayerCard } from "@modules/jugadores/components/public/PlayerCard";
@@ -62,16 +63,11 @@ const PlayersListInterface = () => {
 
   useEffect(() => {
     const fetchPlayers = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/api/players");
-        const data = await response.json();
-        setPlayers(data);
-      } catch (error) {
-        console.error("Error fetching players:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(true);
+      const res = await api.get<IPlayer[]>("/api/players");
+      if (res.ok) setPlayers(res.data);
+      else console.error("Error fetching players:", res.error);
+      setIsLoading(false);
     };
     fetchPlayers();
   }, []);

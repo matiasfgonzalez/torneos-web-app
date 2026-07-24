@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   Megaphone,
   Filter,
@@ -36,14 +37,11 @@ export function NovedadesClient({
   const router = useRouter();
 
   const togglePublish = async (post: IOrgPost) => {
-    const res = await fetch(`/api/org-posts/${post.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ published: !post.published }),
+    const res = await api.patch(`/api/org-posts/${post.id}`, {
+      published: !post.published,
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      toast.error(err?.error ?? "No se pudo cambiar el estado");
+      toast.error(res.error);
       return;
     }
     toast.success(post.published ? "Pasada a borrador" : "Novedad publicada");
@@ -51,10 +49,9 @@ export function NovedadesClient({
   };
 
   const deletePost = async (post: IOrgPost) => {
-    const res = await fetch(`/api/org-posts/${post.id}`, { method: "DELETE" });
+    const res = await api.del(`/api/org-posts/${post.id}`);
     if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      toast.error(err?.error ?? "No se pudo eliminar la novedad");
+      toast.error(res.error);
       return;
     }
     toast.success("Novedad eliminada");

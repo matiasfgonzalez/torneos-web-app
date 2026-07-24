@@ -1,4 +1,6 @@
 "use client";
+
+import { api } from "@/lib/api-client";
 import Link from "next/link";
 import { ITorneo } from "@modules/torneos/types";
 import { TabsContent } from "@/components/ui/tabs";
@@ -40,15 +42,10 @@ const TabsMatches = (props: TabsTournamentProps) => {
   // del effect (react-hooks/set-state-in-effect).
   const fetchMatches = useCallback(() => {
     startFetch(async () => {
-      try {
-        const response = await fetch(
-          `/api/matches/tournament/${tournamentData.id}`,
-        );
-        const data: IPartidos[] = await response.json();
-        setMatches(data);
-      } catch (error) {
-        console.error("Error fetching matches:", error);
-      }
+      const res = await api.get<IPartidos[]>(
+        `/api/matches/tournament/${tournamentData.id}`,
+      );
+      if (res.ok) setMatches(res.data);
     });
   }, [tournamentData.id]);
 

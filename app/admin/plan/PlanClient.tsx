@@ -17,6 +17,7 @@ import {
 import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   CreditCard,
   Crown,
@@ -95,18 +96,15 @@ export default function PlanClient({
   const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
-    try {
-      const [subRes, plansRes, paysRes] = await Promise.all([
-        fetch("/api/org/subscription"),
-        fetch("/api/plans"),
-        fetch("/api/payments"),
-      ]);
-      if (subRes.ok) setInfo(await subRes.json());
-      if (plansRes.ok) setPlans(await plansRes.json());
-      if (paysRes.ok) setPayments(await paysRes.json());
-    } finally {
-      setLoading(false);
-    }
+    const [subRes, plansRes, paysRes] = await Promise.all([
+      api.get<SubscriptionInfo>("/api/org/subscription"),
+      api.get<PlanInfo[]>("/api/plans"),
+      api.get<PaymentRow[]>("/api/payments"),
+    ]);
+    if (subRes.ok) setInfo(subRes.data);
+    if (plansRes.ok) setPlans(plansRes.data);
+    if (paysRes.ok) setPayments(paysRes.data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -124,17 +122,13 @@ export default function PlanClient({
     }
     try {
       setSubmitting(true);
-      const res = await fetch("/api/payments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planCode: selectedPlan,
-          periodMonths: Number(months),
-          method: "TRANSFERENCIA",
-          receiptUrl,
-          receiptPublicId,
-          notes: notes || undefined,
-        }),
+      const res = await api.post("/api/payments", {
+        planCode: selectedPlan,
+        periodMonths: Number(months),
+        method: "TRANSFERENCIA",
+        receiptUrl,
+        receiptPublicId,
+        notes: notes || undefined,
       });
       if (res.ok) {
         toast.success(
@@ -145,8 +139,7 @@ export default function PlanClient({
         setNotes("");
         load();
       } else {
-        const data = await res.json();
-        toast.error(data.error || "No se pudo informar el pago");
+        toast.error(res.error);
       }
     } finally {
       setSubmitting(false);

@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
@@ -103,32 +104,27 @@ export default function EditUser() {
   // Cargar datos del usuario
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/users/${userId}`);
-        const result: ApiResponse<ApiUser> = await response.json();
-
-        if (result.success && result.data) {
-          const userData = result.data;
-          setUser(userData);
-          setFormData({
-            name: userData.name || "",
-            phone: userData.phone || "",
-            location: userData.location || "",
-            bio: userData.bio || "",
-            role: userData.role,
-            status: userData.status,
-            imageUrl: userData.imageUrl || "",
-          });
-        } else {
-          toast.error(result.message || "Error al cargar el usuario");
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        toast.error("Error al cargar los datos del usuario");
-      } finally {
-        setLoading(false);
+      setLoading(true);
+      const res = await api.get<ApiResponse<ApiUser>>(`/api/users/${userId}`);
+      if (res.ok && res.data.success && res.data.data) {
+        const userData = res.data.data;
+        setUser(userData);
+        setFormData({
+          name: userData.name || "",
+          phone: userData.phone || "",
+          location: userData.location || "",
+          bio: userData.bio || "",
+          role: userData.role,
+          status: userData.status,
+          imageUrl: userData.imageUrl || "",
+        });
+      } else {
+        toast.error(
+          (res.ok ? res.data.message : res.error) ||
+            "Error al cargar el usuario",
+        );
       }
+      setLoading(false);
     };
 
     if (userId) {
@@ -178,28 +174,20 @@ export default function EditUser() {
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result: ApiResponse<ApiUser> = await response.json();
-
-      if (result.success) {
+      const res = await api.put<ApiResponse<ApiUser>>(
+        `/api/users/${userId}`,
+        formData,
+      );
+      if (res.ok && res.data.success) {
         toast.success("Usuario actualizado exitosamente");
         setHasChanges(false);
-        if (result.data) {
-          setUser(result.data);
-        }
+        if (res.data.data) setUser(res.data.data);
       } else {
-        toast.error(result.message || "Error al actualizar el usuario");
+        toast.error(
+          (res.ok ? res.data.message : res.error) ||
+            "Error al actualizar el usuario",
+        );
       }
-    } catch (error) {
-      console.error("Error updating user:", error);
-      toast.error("Error al actualizar el usuario");
     } finally {
       setSaving(false);
     }

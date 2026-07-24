@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,15 +52,6 @@ const toForm = (org: OrgProfile): FormState => ({
 
 const DEFAULT_BRAND = "#ad45ff";
 const isValidHex = (v: string) => /^#[0-9a-fA-F]{6}$/.test(v);
-
-async function readError(res: Response): Promise<string> {
-  try {
-    const data = await res.json();
-    return data.error ?? "Ocurrió un error inesperado";
-  } catch {
-    return "Ocurrió un error inesperado";
-  }
-}
 
 /**
  * Reusa el "paso de marca" del wizard de alta (CrearLigaWizard, paso 1)
@@ -119,13 +111,9 @@ export default function MiLigaClient({
       // pero el payload lo respeta para no pisar el valor guardado).
       if (canBrand) payload.brandColor = form.brandColor || null;
 
-      const res = await fetch("/api/org", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await api.patch("/api/org", payload);
       if (!res.ok) {
-        toast.error(await readError(res));
+        toast.error(res.error);
         return;
       }
       toast.success("Cambios guardados");

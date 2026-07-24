@@ -35,6 +35,7 @@ import {
   TextareaField,
 } from "@/components/shared/form/fields";
 import { toDateOnlyInput } from "@/lib/date-input";
+import { api } from "@/lib/api-client";
 import { PLAYER_POSITION_OPTIONS } from "@/lib/constants";
 import type { MyPlayerProfile } from "@modules/jugadores/actions/claims";
 
@@ -140,26 +141,15 @@ export default function EditProfileSheet({
   });
 
   const onSubmit = async (data: ProfileFormValues) => {
-    try {
-      const res = await fetch(`/api/players/${player.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudieron guardar tus datos");
-        return;
-      }
-
-      toast.success("Tus datos quedaron actualizados");
-      setOpen(false);
-      form.reset(data);
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.patch(`/api/players/${player.id}`, data);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success("Tus datos quedaron actualizados");
+    setOpen(false);
+    form.reset(data);
+    router.refresh();
   };
 
   return (

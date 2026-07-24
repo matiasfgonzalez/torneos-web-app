@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   Calendar,
   Edit,
@@ -59,11 +60,10 @@ export default function AdminNoticias() {
 
   const fetchNoticias = useCallback(() => {
     startFetch(async () => {
-      try {
-        const res = await fetch("/api/noticias");
-        if (!res.ok) throw new Error("fetch failed");
-        setNoticias(await res.json());
-      } catch {
+      const res = await api.get<INoticia[]>("/api/noticias");
+      if (res.ok) {
+        setNoticias(res.data);
+      } else {
         setNoticias([]);
         toast.error("No se pudieron cargar las noticias");
       }
@@ -85,35 +85,29 @@ export default function AdminNoticias() {
   );
 
   const handleDeleteArticle = async (id: string) => {
-    try {
-      const res = await fetch(`/api/noticias/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("delete failed");
-
-      setNoticias((prev) => (prev ?? []).filter((n) => n.id !== id));
-      toast.success("Noticia eliminada");
-    } catch {
-      toast.error("No se pudo eliminar la noticia");
+    const res = await api.del(`/api/noticias/${id}`);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    setNoticias((prev) => (prev ?? []).filter((n) => n.id !== id));
+    toast.success("Noticia eliminada");
   };
 
   const togglePublishStatus = async (article: INoticia) => {
     const next = !article.published;
-    try {
-      // Solo el campo que cambia: `newsUpdateSchema` es parcial y mandar la
-      // noticia entera arrastraba el autor y las fechas sin necesidad.
-      const res = await fetch(`/api/noticias/${article.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ published: next }),
-      });
-      if (!res.ok) throw new Error("update failed");
-
-      const updated = await res.json();
+    // Solo el campo que cambia: `newsUpdateSchema` es parcial y mandar la
+    // noticia entera arrastraba el autor y las fechas sin necesidad.
+    const res = await api.put<INoticia>(`/api/noticias/${article.id}`, {
+      published: next,
+    });
+    if (res.ok) {
+      const updated = res.data;
       setNoticias((prev) =>
         (prev ?? []).map((n) => (n.id === article.id ? updated : n)),
       );
       toast.success(next ? "Noticia publicada" : "Pasada a borrador");
-    } catch {
+    } else {
       toast.error("No se pudo cambiar el estado");
     }
   };

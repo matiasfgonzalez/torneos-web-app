@@ -45,6 +45,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 
 interface Match extends MatchToEdit {
   homeScore: number | null;
@@ -102,31 +103,22 @@ export default function PartidosPage() {
   // el fetch dentro de una transición (react-hooks/set-state-in-effect).
   const fetchList = useCallback(() => {
     startFetch(async () => {
-      try {
-        const qs = new URLSearchParams({
-          scope: "panel",
-          page: String(page),
-          limit: String(PAGE_SIZE),
-        });
-        if (debouncedSearch) qs.set("q", debouncedSearch);
-        if (statusFilter !== "TODOS") qs.set("status", statusFilter);
-        const res = await fetch(`/api/matches?${qs.toString()}`);
-        const data: MatchesResponse = await res.json();
-        setList(data);
-      } catch (error) {
-        console.error("Error fetching matches:", error);
-      }
+      const qs = new URLSearchParams({
+        scope: "panel",
+        page: String(page),
+        limit: String(PAGE_SIZE),
+      });
+      if (debouncedSearch) qs.set("q", debouncedSearch);
+      if (statusFilter !== "TODOS") qs.set("status", statusFilter);
+      const res = await api.get<MatchesResponse>(`/api/matches?${qs.toString()}`);
+      if (res.ok) setList(res.data);
     });
   }, [page, debouncedSearch, statusFilter]);
 
   const fetchSummary = useCallback(() => {
     startFetch(async () => {
-      try {
-        const res = await fetch("/api/matches/summary?scope=panel");
-        setSummary(await res.json());
-      } catch (error) {
-        console.error("Error fetching summary:", error);
-      }
+      const res = await api.get<Summary>("/api/matches/summary?scope=panel");
+      if (res.ok) setSummary(res.data);
     });
   }, []);
 
@@ -155,19 +147,13 @@ export default function PartidosPage() {
 
   const performDelete = async () => {
     if (!deleteTarget) return;
-    try {
-      const res = await fetch(`/api/matches/${deleteTarget.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        toast.success("Partido eliminado");
-        refreshAll();
-      } else {
-        toast.error("Error al eliminar el partido");
-      }
-    } catch {
-      toast.error("Error al eliminar el partido");
+    const res = await api.del(`/api/matches/${deleteTarget.id}`);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success("Partido eliminado");
+    refreshAll();
   };
 
   const matches = list?.data ?? [];

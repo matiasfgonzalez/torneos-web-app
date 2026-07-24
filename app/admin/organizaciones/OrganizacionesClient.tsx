@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   Building2,
   Eye,
@@ -107,16 +108,13 @@ export default function OrganizacionesClient() {
   };
 
   const load = useCallback(async () => {
-    try {
-      const [orgsRes, metricsRes] = await Promise.all([
-        fetch("/api/admin/organizations"),
-        fetch("/api/admin/metrics"),
-      ]);
-      if (orgsRes.ok) setOrgs(await orgsRes.json());
-      if (metricsRes.ok) setMetrics(await metricsRes.json());
-    } finally {
-      setLoading(false);
-    }
+    const [orgsRes, metricsRes] = await Promise.all([
+      api.get<OrganizationRow[]>("/api/admin/organizations"),
+      api.get<Metrics>("/api/admin/metrics"),
+    ]);
+    if (orgsRes.ok) setOrgs(orgsRes.data);
+    if (metricsRes.ok) setMetrics(metricsRes.data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -127,10 +125,8 @@ export default function OrganizacionesClient() {
     const nextStatus = org.status === "ACTIVA" ? "SUSPENDIDA" : "ACTIVA";
     setUpdating(org.id);
     try {
-      const res = await fetch(`/api/admin/organizations/${org.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
+      const res = await api.patch(`/api/admin/organizations/${org.id}`, {
+        status: nextStatus,
       });
       if (res.ok) {
         toast.success(
@@ -140,8 +136,7 @@ export default function OrganizacionesClient() {
         );
         load();
       } else {
-        const data = await res.json().catch(() => null);
-        toast.error(data?.error || "No se pudo actualizar la organización");
+        toast.error(res.error);
       }
     } finally {
       setUpdating(null);

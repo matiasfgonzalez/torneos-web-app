@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   CalendarDays,
   ImageIcon,
@@ -133,25 +134,14 @@ export default function EditTeamSheet({
       logoPublicId: data.logoPublicId ?? null,
     };
 
-    try {
-      const res = await fetch(`/api/teams/${team.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(error?.error ?? "No se pudieron guardar los cambios");
-        return;
-      }
-
-      toast.success("Los datos del equipo quedaron actualizados");
-      setOpen(false);
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    const res = await api.patch(`/api/teams/${team.id}`, payload);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+    toast.success("Los datos del equipo quedaron actualizados");
+    setOpen(false);
+    router.refresh();
   };
 
   return (

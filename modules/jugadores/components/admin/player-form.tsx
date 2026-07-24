@@ -40,6 +40,7 @@ import {
   TextareaField,
 } from "@/components/shared/form/fields";
 import { toDateOnlyInput } from "@/lib/date-input";
+import { api } from "@/lib/api-client";
 import {
   PLAYER_POSITION_OPTIONS,
   PLAYER_STATUS_OPTIONS,
@@ -194,45 +195,29 @@ export default function PlayerForm({
   const onSubmit = async (data: PlayerFormValues) => {
     // La API normaliza "" → null (nullableString/nullableInt de los validadores),
     // así que los opcionales vacíos se mandan tal cual.
-    try {
-      const res = await fetch(
-        isEditMode ? `/api/players/${player?.id}` : "/api/players",
-        {
-          method: isEditMode ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
+    const res = isEditMode
+      ? await api.patch(`/api/players/${player?.id}`, data)
+      : await api.post("/api/players", data);
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-
-        // 409 = ese DNI ya tiene ficha. No es un error de sistema: es la misma
-        // persona ya cargada. El mensaje va en el campo, que es donde se
-        // corrige (y no en un toast que se va).
-        if (res.status === 409 && error?.existingPlayer) {
-          form.setError("nationalId", {
-            message: `Ese DNI ya es de ${error.existingPlayer.name}. Sumalo desde el plantel en vez de cargarlo de nuevo.`,
-          });
-          return;
-        }
-
-        toast.error(
-          error?.error ??
-            (isEditMode
-              ? "No se pudo guardar el jugador"
-              : "No se pudo crear el jugador"),
-        );
+    if (!res.ok) {
+      // 409 = ese DNI ya tiene ficha. No es un error de sistema: es la misma
+      // persona ya cargada. El mensaje va en el campo, que es donde se corrige
+      // (y no en un toast que se va). `raw` trae el `existingPlayer` de la ruta.
+      const body = res.raw as { existingPlayer?: { name: string } } | null;
+      if (res.status === 409 && body?.existingPlayer) {
+        form.setError("nationalId", {
+          message: `Ese DNI ya es de ${body.existingPlayer.name}. Sumalo desde el plantel en vez de cargarlo de nuevo.`,
+        });
         return;
       }
-
-      toast.success(isEditMode ? "Jugador guardado" : "Jugador creado");
-      setOpen(false);
-      form.reset(isEditMode ? data : emptyValues());
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+      toast.error(res.error);
+      return;
     }
+
+    toast.success(isEditMode ? "Jugador guardado" : "Jugador creado");
+    setOpen(false);
+    form.reset(isEditMode ? data : emptyValues());
+    router.refresh();
   };
 
   return (

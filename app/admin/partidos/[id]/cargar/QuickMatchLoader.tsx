@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   ArrowLeft,
   Calendar,
@@ -194,22 +195,13 @@ export default function QuickMatchLoader({
         }
       }
 
-      const res = await fetch(`/api/matches/${match.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
+      const res = await api.patch(`/api/matches/${match.id}`, body);
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        toast.error(errorData?.error || "Error al guardar el resultado");
+        toast.error(res.error);
         return;
       }
-
       toast.success("Resultado guardado");
       await refreshMatch();
-    } catch {
-      toast.error("Ocurrió un error inesperado");
     } finally {
       setIsSaving(false);
     }

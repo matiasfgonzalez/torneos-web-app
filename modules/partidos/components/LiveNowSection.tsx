@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { api } from "@/lib/api-client";
 import Link from "next/link";
 import { Radio, Shield, ChevronRight } from "lucide-react";
 import { MatchStatus } from "@prisma/client";
@@ -19,14 +20,11 @@ export function LiveNowSection() {
   const [matches, setMatches] = useState<LiveMatchCard[]>([]);
 
   const refresh = async () => {
-    try {
-      const res = await fetch("/api/matches/live", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json();
-      setMatches(Array.isArray(data) ? data : []);
-    } catch {
-      // Sin conexión: reintenta en el próximo tick.
-    }
+    // Sin conexión no rompe: el cliente devuelve ok:false y reintenta al tick.
+    const res = await api.get<LiveMatchCard[]>("/api/matches/live", {
+      cache: "no-store",
+    });
+    if (res.ok) setMatches(Array.isArray(res.data) ? res.data : []);
   };
 
   useLivePoll(refresh, LIVE_LIST_POLL_MS, true);

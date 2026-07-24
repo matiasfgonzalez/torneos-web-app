@@ -57,6 +57,7 @@ import {
   SortDesc,
 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/formatDate";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SkeletonCards } from "@/components/shared/Skeletons";
@@ -386,37 +387,32 @@ export default function UsersPage() {
   // pendiente de la transición hace de `isRefreshing` sin un estado aparte.
   const fetchUsers = (currentFilters = filters) => {
     startRefresh(async () => {
-      try {
-        const params = new URLSearchParams();
+      const params = new URLSearchParams();
 
-        if (currentFilters.search)
-          params.append("search", currentFilters.search);
-        if (currentFilters.role !== "all")
-          params.append("role", currentFilters.role);
-        if (currentFilters.status !== "all")
-          params.append("status", currentFilters.status);
-        params.append("sortBy", currentFilters.sortBy);
-        params.append("sortOrder", currentFilters.sortOrder);
-        params.append("page", currentFilters.page.toString());
-        params.append("limit", currentFilters.limit.toString());
+      if (currentFilters.search)
+        params.append("search", currentFilters.search);
+      if (currentFilters.role !== "all")
+        params.append("role", currentFilters.role);
+      if (currentFilters.status !== "all")
+        params.append("status", currentFilters.status);
+      params.append("sortBy", currentFilters.sortBy);
+      params.append("sortOrder", currentFilters.sortOrder);
+      params.append("page", currentFilters.page.toString());
+      params.append("limit", currentFilters.limit.toString());
 
-        const response = await fetch(`/api/users?${params.toString()}`);
-        const result: ApiResponse<ApiUser[]> = await response.json();
-
-        if (result.success && result.data) {
-          setUsers(result.data);
-          if (result.meta) {
-            setMeta(result.meta);
-          }
-        } else {
-          toast.error(result.message || "Error al cargar usuarios");
-        }
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        toast.error("Error al cargar los usuarios");
-      } finally {
-        setIsLoading(false);
+      // Las rutas de users conservan el envelope { success, data, meta } (A7).
+      const res = await api.get<ApiResponse<ApiUser[]>>(
+        `/api/users?${params.toString()}`,
+      );
+      if (res.ok && res.data.success && res.data.data) {
+        setUsers(res.data.data);
+        if (res.data.meta) setMeta(res.data.meta);
+      } else {
+        toast.error(
+          (res.ok ? res.data.message : res.error) || "Error al cargar usuarios",
+        );
       }
+      setIsLoading(false);
     });
   };
 
@@ -443,23 +439,14 @@ export default function UsersPage() {
 
   // Función para eliminar usuario
   const handleDeleteUser = async (userId: string) => {
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result: ApiResponse<any> = await response.json();
-
-      if (result.success) {
-        toast.success("Usuario eliminado exitosamente");
-        fetchUsers(); // Recargar la lista
-      } else {
-        toast.error(result.message || "Error al eliminar usuario");
-      }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Error al eliminar usuario");
+    const res = await api.del<ApiResponse<unknown>>(`/api/users/${userId}`);
+    if (res.ok && res.data?.success) {
+      toast.success("Usuario eliminado exitosamente");
+      fetchUsers(); // Recargar la lista
+    } else {
+      toast.error(
+        (res.ok ? res.data?.message : res.error) || "Error al eliminar usuario",
+      );
     }
   };
 

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { z } from "@/lib/zod-locale";
+import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { FormSheet } from "@/components/shared/form/FormSheet";
 import {
@@ -123,34 +124,19 @@ export default function TeamForm({
   });
 
   const onSubmit = async (data: TeamFormValues) => {
-    try {
-      const res = await fetch(
-        isEditMode ? `/api/teams/${team?.id}` : "/api/teams",
-        {
-          method: isEditMode ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
+    const res = isEditMode
+      ? await api.patch(`/api/teams/${team?.id}`, data)
+      : await api.post("/api/teams", data);
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(
-          error?.error ??
-            (isEditMode
-              ? "No se pudo guardar el equipo"
-              : "No se pudo crear el equipo"),
-        );
-        return;
-      }
-
-      toast.success(isEditMode ? "Equipo guardado" : "Equipo creado");
-      setOpen(false);
-      form.reset(isEditMode ? data : emptyValues());
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+
+    toast.success(isEditMode ? "Equipo guardado" : "Equipo creado");
+    setOpen(false);
+    form.reset(isEditMode ? data : emptyValues());
+    router.refresh();
   };
 
   return (

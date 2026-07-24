@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { api } from "@/lib/api-client";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -124,16 +125,12 @@ export default function LiveMatch({
   const showLive = live && liveEnabled;
 
   const refresh = async () => {
-    try {
-      const res = await fetch(`/api/matches/${initialMatch.id}/live`, {
-        cache: "no-store",
-      });
-      if (!res.ok) return;
-      const fresh: LiveMatchState = await res.json();
-      setState(fresh);
-    } catch {
-      // Poll fallido (señal mala): reintenta en el próximo tick, sin romper nada.
-    }
+    // Poll fallido (señal mala): el cliente devuelve ok:false y reintenta al tick.
+    const res = await api.get<LiveMatchState>(
+      `/api/matches/${initialMatch.id}/live`,
+      { cache: "no-store" },
+    );
+    if (res.ok) setState(res.data);
   };
 
   useLivePoll(refresh, LIVE_POLL_MS, showLive);

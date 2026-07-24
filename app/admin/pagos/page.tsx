@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/formatDate";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { BadgeCheck, BadgeX, Loader2, Wallet } from "lucide-react";
 
 interface AdminPayment {
@@ -36,12 +37,9 @@ export default function PagosAdminPage() {
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
-    try {
-      const res = await fetch("/api/payments");
-      if (res.ok) setPayments(await res.json());
-    } finally {
-      setLoading(false);
-    }
+    const res = await api.get<AdminPayment[]>("/api/payments");
+    if (res.ok) setPayments(res.data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -51,25 +49,20 @@ export default function PagosAdminPage() {
   const review = async (id: string, action: "APROBAR" | "RECHAZAR") => {
     try {
       setReviewing(id);
-      const res = await fetch(`/api/payments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action,
-          reviewNotes: rejectNotes[id] || undefined,
-        }),
+      const res = await api.patch(`/api/payments/${id}`, {
+        action,
+        reviewNotes: rejectNotes[id] || undefined,
       });
-      if (res.ok) {
-        toast.success(
-          action === "APROBAR"
-            ? "Pago aprobado — suscripción activada"
-            : "Pago rechazado",
-        );
-        load();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "No se pudo revisar el pago");
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
       }
+      toast.success(
+        action === "APROBAR"
+          ? "Pago aprobado — suscripción activada"
+          : "Pago rechazado",
+      );
+      load();
     } finally {
       setReviewing(null);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,16 +80,11 @@ export default function AdminNoticiaDetail({
   // `loading` arranca en true (la carga ya está en curso en el primer render),
   // así el effect no necesita un setState síncrono en su cuerpo.
   useEffect(() => {
-    fetch(`/api/noticias/${id}`)
-      .then((res) => res.json())
-      .then((data: INoticia) => {
-        setArticle(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
+    api.get<INoticia>(`/api/noticias/${id}`).then((res) => {
+      if (res.ok) setArticle(res.data);
+      else setError(true);
+      setLoading(false);
+    });
   }, [id]);
 
   if (loading)
@@ -130,27 +126,15 @@ export default function AdminNoticiaDetail({
 
   const handleSave = async () => {
     if (!article) return;
-
-    try {
-      const res = await fetch(`/api/noticias/${article.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editedArticle),
-      });
-
-      if (!res.ok) {
-        throw new Error("Error al actualizar la noticia");
-      }
-
-      const updated = await res.json();
-
-      setArticle(updated); // opcional, actualiza el estado local
+    const res = await api.put<INoticia>(
+      `/api/noticias/${article.id}`,
+      editedArticle,
+    );
+    if (res.ok) {
+      setArticle(res.data); // actualiza el estado local
       setIsEditing(false);
-    } catch (error) {
-      console.error(error);
-      // Podés mostrar un toast o un mensaje de error
+    } else {
+      console.error(res.error);
     }
   };
 

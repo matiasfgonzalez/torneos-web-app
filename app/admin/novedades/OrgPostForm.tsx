@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   Edit,
   FileText,
@@ -90,40 +91,25 @@ export function OrgPostForm({
       summary: data.summary.trim() === "" ? null : data.summary.trim(),
     };
 
-    try {
-      const res = await fetch(
-        isEditMode ? `/api/org-posts/${post?.id}` : "/api/org-posts",
-        {
-          method: isEditMode ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+    const res = isEditMode
+      ? await api.patch(`/api/org-posts/${post?.id}`, payload)
+      : await api.post("/api/org-posts", payload);
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => null);
-        toast.error(
-          error?.error ??
-            (isEditMode
-              ? "No se pudo guardar la novedad"
-              : "No se pudo crear la novedad"),
-        );
-        return;
-      }
-
-      toast.success(
-        isEditMode
-          ? "Novedad guardada"
-          : data.published
-            ? "Novedad publicada"
-            : "Borrador guardado",
-      );
-      setOpen(false);
-      form.reset(isEditMode ? valuesFromPost({ ...post!, ...payload }) : emptyValues());
-      router.refresh();
-    } catch {
-      toast.error("No se pudo conectar con el servidor. Revisá tu conexión.");
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
     }
+
+    toast.success(
+      isEditMode
+        ? "Novedad guardada"
+        : data.published
+          ? "Novedad publicada"
+          : "Borrador guardado",
+    );
+    setOpen(false);
+    form.reset(isEditMode ? valuesFromPost({ ...post!, ...payload }) : emptyValues());
+    router.refresh();
   };
 
   return (

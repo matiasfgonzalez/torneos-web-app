@@ -29,6 +29,7 @@ import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { FilterSelect, FilterGrid } from "@/components/shared/FilterSelect";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SkeletonCards } from "@/components/shared/Skeletons";
+import { api } from "@/lib/api-client";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { IPartidos, MatchStatus } from "@modules/partidos/types";
 import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
@@ -92,20 +93,16 @@ export default function PartidosPage() {
   // del effect (react-hooks/set-state-in-effect).
   const fetchList = useCallback(() => {
     startFetch(async () => {
-      try {
-        const qs = new URLSearchParams({
-          page: String(currentPage),
-          limit: String(ITEMS_PER_PAGE),
-        });
-        if (debouncedSearch) qs.set("q", debouncedSearch);
-        if (filters.status !== "all") qs.set("status", filters.status);
-        if (filters.tournamentId !== "all")
-          qs.set("tournamentId", filters.tournamentId);
-        const res = await fetch(`/api/matches?${qs.toString()}`);
-        setList(await res.json());
-      } catch (error) {
-        console.error("Error fetching matches:", error);
-      }
+      const qs = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(ITEMS_PER_PAGE),
+      });
+      if (debouncedSearch) qs.set("q", debouncedSearch);
+      if (filters.status !== "all") qs.set("status", filters.status);
+      if (filters.tournamentId !== "all")
+        qs.set("tournamentId", filters.tournamentId);
+      const res = await api.get<MatchesResponse>(`/api/matches?${qs.toString()}`);
+      if (res.ok) setList(res.data);
     });
   }, [currentPage, debouncedSearch, filters.status, filters.tournamentId]);
 
@@ -118,10 +115,9 @@ export default function PartidosPage() {
   // El resumen (cifras del hero + torneos del filtro) mira TODO el conjunto,
   // así que va una sola vez y no depende de la página ni de los filtros.
   useEffect(() => {
-    fetch("/api/matches/summary")
-      .then((r) => r.json())
-      .then(setSummary)
-      .catch((e) => console.error("Error fetching summary:", e));
+    api.get<MatchesSummary>("/api/matches/summary").then((res) => {
+      if (res.ok) setSummary(res.data);
+    });
   }, []);
 
   const tournaments = summary?.tournaments ?? [];

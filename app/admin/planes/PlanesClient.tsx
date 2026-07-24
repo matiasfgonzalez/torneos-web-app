@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   CheckCircle2,
   Layers,
@@ -104,12 +105,9 @@ export default function PlanesClient() {
   const [form, setForm] = useState<PlanFormValues>(emptyForm);
 
   const load = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/plans");
-      if (res.ok) setPlans(await res.json());
-    } finally {
-      setLoading(false);
-    }
+    const res = await api.get<PlanRow[]>("/api/admin/plans");
+    if (res.ok) setPlans(res.data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -162,21 +160,15 @@ export default function PlanesClient() {
 
     setSaving(true);
     try {
-      const res = await fetch(
-        editingId ? `/api/admin/plans/${editingId}` : "/api/admin/plans",
-        {
-          method: editingId ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+      const res = editingId
+        ? await api.patch(`/api/admin/plans/${editingId}`, payload)
+        : await api.post("/api/admin/plans", payload);
       if (res.ok) {
         toast.success(editingId ? "Plan actualizado" : "Plan creado");
         setDialogOpen(false);
         load();
       } else {
-        const data = await res.json().catch(() => null);
-        toast.error(data?.error || "No se pudo guardar el plan");
+        toast.error(res.error);
       }
     } finally {
       setSaving(false);
@@ -184,21 +176,14 @@ export default function PlanesClient() {
   };
 
   const toggleActive = async (plan: PlanRow) => {
-    try {
-      const res = await fetch(`/api/admin/plans/${plan.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !plan.isActive }),
-      });
-      if (res.ok) {
-        toast.success(plan.isActive ? "Plan desactivado" : "Plan activado");
-        load();
-      } else {
-        const data = await res.json().catch(() => null);
-        toast.error(data?.error || "No se pudo actualizar el plan");
-      }
-    } catch {
-      toast.error("Ocurrió un error inesperado");
+    const res = await api.patch(`/api/admin/plans/${plan.id}`, {
+      isActive: !plan.isActive,
+    });
+    if (res.ok) {
+      toast.success(plan.isActive ? "Plan desactivado" : "Plan activado");
+      load();
+    } else {
+      toast.error(res.error);
     }
   };
 
