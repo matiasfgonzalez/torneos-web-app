@@ -1,3 +1,13 @@
+"use client";
+
+// `"use client"` es obligatorio: `next/image` es un Client Component y el prop
+// `loader` es una **función**. Si `SmartImage` fuera un componente de servidor,
+// pasar `cloudinaryLoader` a `<Image>` cruzaría la frontera RSC servidor→cliente
+// y React tira "Functions cannot be passed directly to Client Components"
+// (500 en SSR). Como client component, el loader se aplica del lado del cliente
+// y nunca se serializa. Todos sus props (src, alt, width…) son serializables,
+// así que se puede seguir usando desde server components sin problema.
+
 import Image, { type ImageProps } from "next/image";
 import {
   cloudinaryLoader,
@@ -47,15 +57,24 @@ export function SmartImage({
   const finalSrc = src || fallbackSrc;
   const cloudinary = isCloudinaryUrl(finalSrc);
   const useBlur = blur && cloudinary;
+  const isRemote = /^https?:\/\//i.test(finalSrc);
+
+  // `next/image` valida el host contra `images.remotePatterns` SOLO cuando la
+  // imagen pasa por el optimizador default. Con un host no listado el render
+  // **tira** (500 en SSR) — cosa que el `<img>` viejo nunca hacía. Como no
+  // controlamos todos los orígenes (avatares de OAuth en googleusercontent,
+  // logos externos de datos demo/legacy), cualquier URL remota que no sea
+  // Cloudinary se sirve **sin optimizar**: se emite tal cual, sin chequeo de
+  // host, igual que antes. Cloudinary usa su loader propio (tampoco valida
+  // host) y los SVG locales van sin optimizar.
+  const unoptimized = !cloudinary && (isRemote || finalSrc.endsWith(".svg"));
 
   return (
     <Image
       src={finalSrc}
       alt={alt}
       loader={cloudinary ? cloudinaryLoader : undefined}
-      // Los SVG (placeholder) no se optimizan; el resto de no-Cloudinary va por
-      // el optimizador default de Next.
-      unoptimized={!cloudinary && finalSrc.endsWith(".svg")}
+      unoptimized={unoptimized}
       placeholder={useBlur ? "blur" : "empty"}
       blurDataURL={useBlur ? cloudinaryBlur(finalSrc) : undefined}
       {...rest}
