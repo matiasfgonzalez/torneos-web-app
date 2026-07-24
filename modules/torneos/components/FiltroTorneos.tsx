@@ -96,6 +96,7 @@ const FiltroTorneos = ({ tournaments }: PropsFiltroTorneos) => {
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-brand transition-colors" />
               <Input
+                aria-label="Buscar torneos"
                 placeholder="Buscar por nombre, descripción o ubicación..."
                 value={q}
                 onChange={(e) => setFilter("q", e.target.value)}

@@ -233,6 +233,7 @@ export default function PartidosPage() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
+                    aria-label="Buscar partidos"
                     placeholder="Buscar equipos, torneos, estadios..."
                     className="pl-10 h-11 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-brand/30 focus:border-brand"
                     value={filters.search}

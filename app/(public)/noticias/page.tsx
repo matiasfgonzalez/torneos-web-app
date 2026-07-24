@@ -186,15 +186,19 @@ export default function NoticiasPage() {
                   <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode("grid")}
+                      aria-label="Vista en cuadrícula"
+                      aria-pressed={viewMode === "grid"}
                       className={`p-2 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-gray-600 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
                     >
-                      <Grid3X3 className="w-4 h-4" />
+                      <Grid3X3 className="w-4 h-4" aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => setViewMode("list")}
+                      aria-label="Vista en lista"
+                      aria-pressed={viewMode === "list"}
                       className={`p-2 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-600 shadow-sm text-brand" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}
                     >
-                      <LayoutList className="w-4 h-4" />
+                      <LayoutList className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
 
@@ -390,7 +394,7 @@ export default function NoticiasPage() {
                             </p>
 
                             <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700/50">
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 {formatDate(noticia.updatedAt, "dd/MM/yyyy")}
                               </div>
                               <div className="flex items-center gap-1 text-brand group-hover:text-brand-mid transition-colors">
@@ -444,7 +448,7 @@ export default function NoticiasPage() {
                             </p>
 
                             <div className="flex items-center justify-between">
-                              <div className="text-sm text-gray-400">
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
                                 Actualizada:{" "}
                                 {formatDate(noticia.updatedAt, "dd/MM/yyyy")}
                               </div>

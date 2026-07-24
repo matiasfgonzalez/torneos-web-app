@@ -583,6 +583,7 @@ export default function UsersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
+                  aria-label="Buscar usuarios"
                   placeholder="Buscar usuarios..."
                   value={filters.search}
                   onChange={(e) => handleFilterChange("search", e.target.value)}
@@ -594,7 +595,7 @@ export default function UsersPage() {
                 value={filters.role}
                 onValueChange={(value) => handleFilterChange("role", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Filtrar por rol">
                   <SelectValue placeholder="Filtrar por rol" />
                 </SelectTrigger>
                 <SelectContent>
@@ -614,7 +615,7 @@ export default function UsersPage() {
                 value={filters.status}
                 onValueChange={(value) => handleFilterChange("status", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Filtrar por estado">
                   <SelectValue placeholder="Filtrar por estado" />
                 </SelectTrigger>
                 <SelectContent>

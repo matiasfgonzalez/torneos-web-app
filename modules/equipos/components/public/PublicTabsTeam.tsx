@@ -360,14 +360,14 @@ export default function PublicTabsTeam({ teamData }: PropsTabsTeam) {
                         <span className="text-green-600 dark:text-green-400 font-semibold">
                           {tt.goalsFor}
                         </span>
-                        <span className="text-gray-400 text-xs">GF</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">GF</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Goal className="w-4 h-4 text-red-500" />
                         <span className="text-red-500 dark:text-red-400 font-semibold">
                           {tt.goalsAgainst}
                         </span>
-                        <span className="text-gray-400 text-xs">GC</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">GC</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <TrendingUp

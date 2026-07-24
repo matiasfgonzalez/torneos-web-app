@@ -242,7 +242,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
                     {/* Goals */}
                     {allGoals.length > 0 && (
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-1">
                           <Goal className="w-3.5 h-3.5" /> Goles
                         </div>
                         <div className="space-y-2">
@@ -285,7 +285,7 @@ export default function MatchCard({ partido, teamId, teamLogo }: MatchCardProps)
                     {/* Cards */}
                     {allCards.length > 0 && (
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-1">
                           <AlertTriangle className="w-3.5 h-3.5" /> Tarjetas
                         </div>
                         <div className="space-y-2">

@@ -213,6 +213,7 @@ export default function PartidosPage() {
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
               <Input
+                aria-label="Buscar partidos"
                 placeholder="Buscar por equipo, torneo o estadio..."
                 className="pl-9 bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 focus:border-brand/50 focus:ring-brand/20 transition-all"
                 value={searchTerm}
@@ -324,9 +325,10 @@ export default function PartidosPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Acciones de ${match.homeTeam.team.name} vs ${match.awayTeam.team.name}`}
                       className="-mr-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

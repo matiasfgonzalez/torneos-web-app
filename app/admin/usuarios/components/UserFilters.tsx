@@ -228,6 +228,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
+            aria-label="Buscar usuarios"
             placeholder="Buscar por nombre, email, teléfono o ubicación..."
             value={filters.search}
             onChange={(e) => handleFilterChange("search", e.target.value)}
@@ -241,7 +242,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
             value={filters.role}
             onValueChange={(value) => handleFilterChange("role", value)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px]" aria-label="Filtrar por rol">
               <SelectValue placeholder="Filtrar por rol" />
             </SelectTrigger>
             <SelectContent>
@@ -261,7 +262,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
             value={filters.status}
             onValueChange={(value) => handleFilterChange("status", value)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px]" aria-label="Filtrar por estado">
               <SelectValue placeholder="Filtrar por estado" />
             </SelectTrigger>
             <SelectContent>

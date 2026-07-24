@@ -38,7 +38,6 @@
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
 **🟡 Medio**
-- **M4** — Accesibilidad WCAG AA · `E:Medio`
 - **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
 - **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
@@ -354,7 +353,15 @@
 
 ### M4. Accesibilidad (WCAG AA)
 
-- [ ] Solo hay 15 atributos `aria-*` en todo el código. Auditar: labels en inputs de filtros, `aria-label` en botones-ícono, focus visible consistente, orden de tabulación en diálogos, contraste del texto gris sobre fondos glass, `alt` significativos, `prefers-reduced-motion` para las animaciones pulse/blur. **E:Medio**
+- [x] **Hecho (2026-07-24).** La foto del enunciado ("solo 15 `aria-*`") quedó vieja: F1/F4/N* dejaron **273 `aria-*`** y buena parte del trabajo ya hecho. La auditoría de este ítem encontró que lo estructural estaba cubierto y faltaban huecos puntuales, que se cerraron:
+  - **Nombre accesible en controles-ícono.** Escaneo de los 26 `<Button size="icon">` + 53 `<button>` nativos: casi todos ya tenían `aria-label`/`sr-only`/`title`. Faltaban: los **toggles grid/list** de las 3 listas públicas ([noticias](<app/(public)/noticias/page.tsx>), [jugadores](<app/(public)/jugadores/page.tsx>), [TeamsList](modules/equipos/components/public/TeamsList.tsx)) → `aria-label` + **`aria-pressed`** (son toggles, el estado presionado tiene que anunciarse) + `aria-hidden` en el ícono; y 3 sueltos: la X de quitar imagen ([cloudinary-upload](components/ui/cloudinary-upload.tsx)), el lápiz de editar plan ([PlanesClient](app/admin/planes/PlanesClient.tsx)) y el `⋮` de acciones de partido ([admin/partidos](app/admin/partidos/page.tsx), con nombre contextual "Acciones de {local} vs {visitante}").
+  - **Labels en inputs/selects de filtro.** El `placeholder` no es nombre accesible (desaparece al tipear, lectores lo ignoran). Se agregó `aria-label` a los buscadores de [usuarios (UserFilters + page)](app/admin/usuarios/components/UserFilters.tsx), [partidos admin](app/admin/partidos/page.tsx) y [público](<app/(public)/partidos/page.tsx>), [organizaciones](app/admin/organizaciones/OrganizacionesClient.tsx) y [torneos](modules/torneos/components/FiltroTorneos.tsx), y a los `SelectTrigger` de rol/estado. (El buscador de torneos del panel usa `<CommandInput>` dentro de un diálogo con título, y [FilterSelect](components/shared/FilterSelect.tsx) ya trae `aria-labelledby` — no hacían falta.)
+  - **`prefers-reduced-motion`: ya resuelto en F1.** [globals.css](app/globals.css) tiene la media query global que anula `animation`/`transition` en `*` (mata pulse/spin/ping/bounce/blur) + reglas específicas para `.interactive-surface` y `.page-transition`; `NumberTicker`/`template.tsx` la respetan en JS. No hizo falta tocar nada.
+  - **Focus visible:** los controles usan los anillos `focus-visible:ring-*` de shadcn (Button/Input) y `focus-visible:ring-brand` explícito en los `<button>` custom (FilterSelect, KnockoutSection, ImagenesClient, noticias). Verificado, sin huecos.
+  - **`alt` significativos:** garantizado estructuralmente por `<SmartImage>` (M2), que hace `alt` obligatorio; las imágenes decorativas van con `alt=""` a propósito.
+  - **Contraste gris/glass — pasada dirigida.** De 582 `text-gray-400`, 466 son `dark:text-gray-400` (buen contraste sobre fondo oscuro) y de los 116 base la mayoría son íconos o separadores ("—"/"vs"). Se corrigió el **texto legible** de páginas públicas que fallaba AA en claro (fechas de noticias, headers de MatchCard, labels GF/GC/DG) a `text-gray-500 dark:text-gray-400` — la convención propia del repo (usada en 466 sitios).
+  - **Verificación:** `tsc` limpio · `eslint` sin issues nuevos (siguen los 5 errores preexistentes ajenos, ver M2) · `next build` verde (58/58 páginas).
+  - ⏳ **Pendiente acotado (sub-ítem):** **auditoría de contraste completa con checker sobre las páginas renderizadas** (claro/oscuro). Quedan ~100 `text-gray-400` base sin par `dark:` —íconos, separadores y labels cortos— que un barrido ciego rompería; hay que medirlos in situ (axe/Lighthouse) y ajustar solo los que fallen 4.5:1. Tocarlo al pasar por cada archivo. **E:Bajo** **E:Medio**
 
 ### M5. Capa de datos del cliente unificada
 

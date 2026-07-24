@@ -398,9 +398,10 @@ export default function PlanesClient() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  aria-label={`Editar plan ${plan.name}`}
                   onClick={() => openEdit(plan)}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
             </CardHeader>
