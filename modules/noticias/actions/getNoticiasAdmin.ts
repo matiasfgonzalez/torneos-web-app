@@ -1,0 +1,89 @@
+"use server";
+
+import type { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
+import { newsAuthorSelect } from "@modules/noticias/authorSelect";
+import type { INoticia } from "@modules/noticias/types";
+import type { ParsedTableParams } from "@/lib/tableParams";
+
+/**
+ * Listado paginado server-side de noticias para el panel (M7).
+ *
+ * Va como server action aparte y **no** toca `GET /api/noticias`: esa ruta es
+ * pública (la consume la lista pública de noticias) y devuelve un array plano;
+ * cambiarle el shape a un envelope paginado la rompería. Mismo `select` sin
+ * `content` (A3): el listado no necesita el cuerpo.
+ */
+
+/** Columnas ordenables → `orderBy` de Prisma. */
+const NEWS_ORDER_BY: Record<string, keyof Prisma.NewsOrderByWithRelationInput> =
+  {
+    article: "title",
+    publishedAt: "publishedAt",
+    status: "published",
+  };
+
+const listSelect = {
+  id: true,
+  title: true,
+  summary: true,
+  coverImageUrl: true,
+  published: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  userId: true,
+  user: newsAuthorSelect, // autor sin PII (M1)
+} satisfies Prisma.NewsSelect;
+
+export async function getNoticiasAdminPaged(
+  params: ParsedTableParams,
+): Promise<{ rows: INoticia[]; total: number }> {
+  const conditions: Prisma.NewsWhereInput[] = [{ deletedAt: null }];
+
+  if (params.q) {
+    conditions.push({
+      OR: [
+        { title: { contains: params.q, mode: "insensitive" } },
+        { summary: { contains: params.q, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  const published = params.filters.published;
+  if (published === "published") conditions.push({ published: true });
+  else if (published === "draft") conditions.push({ published: false });
+
+  const where: Prisma.NewsWhereInput = { AND: conditions };
+
+  const orderCol = params.sort ? NEWS_ORDER_BY[params.sort] : undefined;
+  const orderBy: Prisma.NewsOrderByWithRelationInput = orderCol
+    ? { [orderCol]: params.dir }
+    : { createdAt: "desc" };
+
+  const [rows, total] = await Promise.all([
+    db.news.findMany({
+      where,
+      orderBy,
+      skip: params.skip,
+      take: params.take,
+      select: listSelect,
+    }),
+    db.news.count({ where }),
+  ]);
+
+  return { rows: rows as unknown as INoticia[], total };
+}
+
+/** Contadores del panel de noticias (agregados — M7). */
+export async function getNoticiasStats(): Promise<{
+  total: number;
+  published: number;
+  drafts: number;
+}> {
+  const [total, published] = await Promise.all([
+    db.news.count({ where: { deletedAt: null } }),
+    db.news.count({ where: { deletedAt: null, published: true } }),
+  ]);
+  return { total, published, drafts: total - published };
+}

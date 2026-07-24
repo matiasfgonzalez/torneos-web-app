@@ -1,32 +1,30 @@
-import { ITorneo } from "@modules/torneos/types";
 import { StatCard, StatCardGrid } from "@/components/shared/StatCard";
 import { Trophy, Clock, UserPlus, CheckCircle } from "lucide-react";
-import { TournamentStatus } from "@prisma/client";
 
 interface PropsStatsCards {
-  tournaments: ITorneo[];
+  total: number;
+  activos: number;
+  inscripciones: number;
+  finalizados: number;
 }
 
-const StatsCards = ({ tournaments }: PropsStatsCards) => {
-  const total = Math.max(tournaments.length, 1);
-  const activos = tournaments.filter(
-    (t) => t.status === TournamentStatus.ACTIVO,
-  ).length;
-  const inscripciones = tournaments.filter(
-    (t) => t.status === TournamentStatus.INSCRIPCION,
-  ).length;
-  const finalizados = tournaments.filter(
-    (t) => t.status === TournamentStatus.FINALIZADO,
-  ).length;
+/** KPIs del panel de torneos — contadores agregados desde el server (M7). */
+const StatsCards = ({
+  total,
+  activos,
+  inscripciones,
+  finalizados,
+}: PropsStatsCards) => {
+  const denom = Math.max(total, 1);
 
   return (
     <StatCardGrid>
       <StatCard
         title="Total Torneos"
-        value={tournaments.length}
+        value={total}
         description="Torneos registrados"
         icon={Trophy}
-        progress={tournaments.length > 0 ? 100 : 0}
+        progress={total > 0 ? 100 : 0}
       />
       <StatCard
         title="En Curso"
@@ -35,7 +33,7 @@ const StatsCards = ({ tournaments }: PropsStatsCards) => {
         icon={Clock}
         gradient="from-blue-500 to-cyan-500"
         bgGradient="from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20"
-        progress={(activos / total) * 100}
+        progress={(activos / denom) * 100}
       />
       <StatCard
         title="Inscripciones"
@@ -44,7 +42,7 @@ const StatsCards = ({ tournaments }: PropsStatsCards) => {
         icon={UserPlus}
         gradient="from-green-500 to-emerald-500"
         bgGradient="from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-        progress={(inscripciones / total) * 100}
+        progress={(inscripciones / denom) * 100}
       />
       <StatCard
         title="Finalizados"
@@ -53,7 +51,7 @@ const StatsCards = ({ tournaments }: PropsStatsCards) => {
         icon={CheckCircle}
         gradient="from-gray-500 to-slate-500"
         bgGradient="from-gray-50 to-slate-50 dark:from-gray-800/20 dark:to-slate-800/20"
-        progress={(finalizados / total) * 100}
+        progress={(finalizados / denom) * 100}
       />
     </StatCardGrid>
   );

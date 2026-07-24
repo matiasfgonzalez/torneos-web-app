@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowDown,
@@ -8,6 +9,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   Search,
 } from "lucide-react";
 import {
@@ -42,9 +44,14 @@ import { cn } from "@/lib/utils";
  * búsqueda, filtros, **orden por columna**, **paginación** y **colapso a
  * cards en mobile** (una tabla de 7 columnas es ilegible en 375px).
  *
- * Ordenar/filtrar/paginar es **en cliente**: alcanza para los volúmenes
- * actuales. La paginación server-side es M7 y se enchufa acá cuando llegue
- * (misma API de columnas, cambia de dónde salen las filas).
+ * Dos modos:
+ * - **Cliente (default):** recibe TODAS las filas y ordena/filtra/pagina en
+ *   memoria. Alcanza para volúmenes acotados (listas org-scoped).
+ * - **Server (M7):** se pasa el prop `server`. Las filas ya vienen paginadas del
+ *   server component; búsqueda/filtros/orden/página se guardan en la **URL**
+ *   (`?q`/`?<filtro>`/`?sort`/`?dir`/`?page`) y cada cambio navega para que el
+ *   server rehaga la query de Prisma. El estado queda compartible por link.
+ *   (Ver [lib/tableParams.ts](../../lib/tableParams.ts) para el parseo.)
  */
 
 export interface DataTableColumn<T> {
@@ -71,10 +78,33 @@ export interface DataTableFilter<T> {
   label: string;
   icon?: LucideIcon;
   options: FilterOption[];
-  /** `value` es el `FilterOption.value` elegido; se llama solo si no es el default. */
-  test: (row: T, value: string) => boolean;
+  /**
+   * `value` es el `FilterOption.value` elegido; se llama solo si no es el
+   * default. **Solo se usa en modo cliente** (en server el filtro va a la query).
+   */
+  test?: (row: T, value: string) => boolean;
   /** Valor "sin filtrar". Default: "all". */
   defaultValue?: string;
+}
+
+/**
+ * Estado server-side que arma el server component desde la URL. Cuando está
+ * presente, la tabla pasa a modo server: no filtra en memoria y las mutaciones
+ * de búsqueda/filtro/orden/página navegan cambiando los query params.
+ */
+export interface DataTableServer {
+  /** Total de filas que matchean los filtros actuales (para paginar). */
+  total: number;
+  /** Página 1-based actual. */
+  page: number;
+  pageSize: number;
+  /** Texto de búsqueda actual (seed del input). */
+  q: string;
+  /** Columna de orden (id) actual, o null. */
+  sort: string | null;
+  dir: "asc" | "desc";
+  /** Valor actual de cada filtro por su id. */
+  filterValues: Record<string, string>;
 }
 
 export interface DataTableProps<T> {
@@ -90,11 +120,18 @@ export interface DataTableProps<T> {
   actions?: React.ReactNode;
 
   /** Búsqueda por texto libre: devolver el texto sobre el que se busca. */
-  searchable?: { placeholder: string; getText: (row: T) => string };
+  searchable?: { placeholder: string; getText?: (row: T) => string };
   filters?: DataTableFilter<T>[];
 
   /** 0 = sin paginación. Default: 10. */
   pageSize?: number;
+
+  /**
+   * Activa el modo server-side (M7). Con esto, `rows` es la página actual ya
+   * consultada y el estado (búsqueda/filtros/orden/página) se sincroniza con la
+   * URL en vez de filtrarse en memoria.
+   */
+  server?: DataTableServer;
 
   empty: {
     icon: LucideIcon;
@@ -128,6 +165,8 @@ const ALIGN: Record<NonNullable<DataTableColumn<unknown>["align"]>, string> = {
   right: "text-right",
 };
 
+const SEARCH_DEBOUNCE_MS = 350;
+
 export function DataTable<T>({
   columns,
   rows,
@@ -139,44 +178,143 @@ export function DataTable<T>({
   searchable,
   filters,
   pageSize = 10,
+  server,
   empty,
   renderCard,
   rowActions,
 }: DataTableProps<T>) {
-  const [search, setSearch] = useState("");
-  const [filterValues, setFilterValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      (filters ?? []).map((f) => [f.id, f.defaultValue ?? "all"]),
-    ),
-  );
-  const [sort, setSort] = useState<SortState>(null);
-  const [page, setPage] = useState(1);
+  const serverMode = !!server;
 
+  // --- Navegación (solo relevante en modo server). Los hooks se llaman siempre
+  //     para no romper las reglas de hooks; en modo cliente quedan sin uso. ---
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  const pushParams = useCallback(
+    (updates: Record<string, string | null>, resetPage = true) => {
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "") params.delete(key);
+        else params.set(key, value);
+      }
+      // Cualquier cambio de filtro/búsqueda/orden vuelve a la página 1 (salvo que
+      // se esté paginando explícitamente).
+      if (resetPage && !("page" in updates)) params.delete("page");
+      const qs = params.toString();
+      startTransition(() => {
+        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      });
+    },
+    [router, pathname, searchParams],
+  );
+
+  // --- Estado local (modo cliente) ---
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientFilterValues, setClientFilterValues] = useState<
+    Record<string, string>
+  >(() =>
+    Object.fromEntries((filters ?? []).map((f) => [f.id, f.defaultValue ?? "all"])),
+  );
+  const [clientSort, setClientSort] = useState<SortState>(null);
+  const [clientPage, setClientPage] = useState(1);
+
+  // --- Input de búsqueda: estado local en ambos modos; en server se debouncea
+  //     a la URL. Se resincroniza con `server.q` cuando cambia por navegación
+  //     externa (ej. "Limpiar filtros") usando el patrón prev-prop (sin effect). ---
+  const [searchInput, setSearchInput] = useState(serverMode ? server!.q : "");
+  const [lastServerQ, setLastServerQ] = useState(serverMode ? server!.q : "");
+  if (serverMode && server!.q !== lastServerQ) {
+    setLastServerQ(server!.q);
+    setSearchInput(server!.q);
+  }
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const search = serverMode ? searchInput : clientSearch;
+
+  const onSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (!serverMode) {
+      setClientSearch(value);
+      setClientPage(1);
+      return;
+    }
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(
+      () => pushParams({ q: value || null }),
+      SEARCH_DEBOUNCE_MS,
+    );
+  };
+
+  const filterValueOf = (f: DataTableFilter<T>) =>
+    serverMode
+      ? (server!.filterValues[f.id] ?? f.defaultValue ?? "all")
+      : (clientFilterValues[f.id] ?? f.defaultValue ?? "all");
+
+  const onFilterChange = (f: DataTableFilter<T>, value: string) => {
+    if (!serverMode) {
+      setClientFilterValues((prev) => ({ ...prev, [f.id]: value }));
+      setClientPage(1);
+      return;
+    }
+    pushParams({ [f.id]: value === (f.defaultValue ?? "all") ? null : value });
+  };
+
+  const activeSort: SortState = serverMode
+    ? server!.sort
+      ? { columnId: server!.sort, dir: server!.dir }
+      : null
+    : clientSort;
+
+  const toggleSort = (col: DataTableColumn<T>) => {
+    if (!col.sortValue) return;
+    if (!serverMode) {
+      setClientPage(1);
+      setClientSort((prev) => {
+        if (prev?.columnId !== col.id) return { columnId: col.id, dir: "asc" };
+        if (prev.dir === "asc") return { columnId: col.id, dir: "desc" };
+        return null; // tercer click: sin orden
+      });
+      return;
+    }
+    // Server: mismo ciclo asc → desc → sin orden, pero a la URL.
+    if (activeSort?.columnId !== col.id) {
+      pushParams({ sort: col.id, dir: "asc" });
+    } else if (activeSort.dir === "asc") {
+      pushParams({ sort: col.id, dir: "desc" });
+    } else {
+      pushParams({ sort: null, dir: null });
+    }
+  };
+
+  // --- Derivados de modo cliente (filtrar/ordenar/paginar en memoria) ---
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    if (serverMode) return rows;
+    const term = clientSearch.trim().toLowerCase();
     return rows.filter((row) => {
       if (
         term &&
-        searchable &&
+        searchable?.getText &&
         !searchable.getText(row).toLowerCase().includes(term)
       ) {
         return false;
       }
       for (const f of filters ?? []) {
-        const value = filterValues[f.id] ?? f.defaultValue ?? "all";
-        if (value !== (f.defaultValue ?? "all") && !f.test(row, value)) {
+        const value = clientFilterValues[f.id] ?? f.defaultValue ?? "all";
+        if (value !== (f.defaultValue ?? "all") && f.test && !f.test(row, value)) {
           return false;
         }
       }
       return true;
     });
-  }, [rows, search, searchable, filters, filterValues]);
+  }, [serverMode, rows, clientSearch, searchable, filters, clientFilterValues]);
 
   const sorted = useMemo(() => {
-    if (!sort) return filtered;
-    const col = columns.find((c) => c.id === sort.columnId);
+    if (serverMode || !clientSort) return filtered;
+    const col = columns.find((c) => c.id === clientSort.columnId);
     if (!col?.sortValue) return filtered;
-    const dir = sort.dir === "asc" ? 1 : -1;
+    const dir = clientSort.dir === "asc" ? 1 : -1;
     return [...filtered].sort((a, b) => {
       const va = col.sortValue!(a);
       const vb = col.sortValue!(b);
@@ -184,45 +322,63 @@ export function DataTable<T>({
         return (va - vb) * dir;
       return String(va).localeCompare(String(vb), "es") * dir;
     });
-  }, [filtered, sort, columns]);
+  }, [serverMode, filtered, clientSort, columns]);
 
-  const totalPages =
-    pageSize > 0 ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
-  // Ajuste durante el render (no useEffect): si al filtrar la página actual
-  // dejó de existir, volver a la 1 sin disparar un render en cascada.
-  const currentPage = Math.min(page, totalPages);
-  const paged =
-    pageSize > 0
+  // --- Paginación (según modo) ---
+  const totalPages = serverMode
+    ? Math.max(1, Math.ceil(server!.total / server!.pageSize))
+    : pageSize > 0
+      ? Math.max(1, Math.ceil(sorted.length / pageSize))
+      : 1;
+  const currentPage = serverMode
+    ? Math.min(server!.page, totalPages)
+    : Math.min(clientPage, totalPages);
+
+  // Filas a pintar: en server ya vienen paginadas; en cliente se cortan acá.
+  const viewRows = serverMode
+    ? rows
+    : pageSize > 0
       ? sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize)
       : sorted;
 
-  const hasActiveFilters =
-    !!search.trim() ||
-    (filters ?? []).some(
-      (f) => (filterValues[f.id] ?? "all") !== (f.defaultValue ?? "all"),
-    );
-
-  const toggleSort = (col: DataTableColumn<T>) => {
-    if (!col.sortValue) return;
-    setPage(1);
-    setSort((prev) => {
-      if (prev?.columnId !== col.id) return { columnId: col.id, dir: "asc" };
-      if (prev.dir === "asc") return { columnId: col.id, dir: "desc" };
-      return null; // tercer click: sin orden
-    });
+  const goToPage = (n: number) => {
+    if (serverMode) pushParams({ page: String(n) }, false);
+    else setClientPage(n);
   };
 
+  const hasActiveFilters = serverMode
+    ? !!server!.q ||
+      (filters ?? []).some(
+        (f) =>
+          (server!.filterValues[f.id] ?? "all") !== (f.defaultValue ?? "all"),
+      )
+    : !!clientSearch.trim() ||
+      (filters ?? []).some(
+        (f) =>
+          (clientFilterValues[f.id] ?? "all") !== (f.defaultValue ?? "all"),
+      );
+
   const clearFilters = () => {
-    setSearch("");
-    setFilterValues(
+    if (serverMode) {
+      setSearchInput("");
+      const cleared: Record<string, string | null> = { q: null, page: null };
+      for (const f of filters ?? []) cleared[f.id] = null;
+      pushParams(cleared);
+      return;
+    }
+    setClientSearch("");
+    setSearchInput("");
+    setClientFilterValues(
       Object.fromEntries(
         (filters ?? []).map((f) => [f.id, f.defaultValue ?? "all"]),
       ),
     );
-    setPage(1);
+    setClientPage(1);
   };
 
+  const shownCount = serverMode ? server!.total : sorted.length;
   const cardColumns = columns.filter((c) => !c.hideOnCard);
+  const isEmpty = viewRows.length === 0;
 
   const emptyBlock = (
     <EmptyState
@@ -276,14 +432,16 @@ export function DataTable<T>({
 
           {searchable && (
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              {serverMode && isPending ? (
+                <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-brand" />
+              ) : (
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              )}
               <Input
+                aria-label={searchable.placeholder}
                 placeholder={searchable.placeholder}
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10 h-11 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-brand bg-card"
               />
             </div>
@@ -296,11 +454,8 @@ export function DataTable<T>({
                   key={f.id}
                   label={f.label}
                   icon={f.icon}
-                  value={filterValues[f.id] ?? f.defaultValue ?? "all"}
-                  onChange={(v) => {
-                    setFilterValues((prev) => ({ ...prev, [f.id]: v }));
-                    setPage(1);
-                  }}
+                  value={filterValueOf(f)}
+                  onChange={(v) => onFilterChange(f, v)}
                   options={f.options}
                 />
               ))}
@@ -309,8 +464,8 @@ export function DataTable<T>({
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-              <span className="font-semibold">{sorted.length}</span> de{" "}
-              {rows.length}
+              <span className="font-semibold">{shownCount}</span>
+              {serverMode ? " resultados" : ` de ${rows.length}`}
             </span>
             {hasActiveFilters && (
               <button
@@ -326,23 +481,28 @@ export function DataTable<T>({
       )}
 
       <CardContent>
-        {sorted.length === 0 ? (
+        {isEmpty ? (
           emptyBlock
         ) : (
           <>
             {/* Desktop: tabla */}
-            <div className="hidden md:block rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div
+              className={cn(
+                "hidden md:block rounded-xl border-2 border-gray-100 dark:border-gray-700 overflow-hidden transition-opacity",
+                serverMode && isPending && "opacity-60",
+              )}
+            >
               <Table>
                 <TableHeader className="bg-gray-50 dark:bg-gray-800">
                   <TableRow className="hover:bg-transparent">
                     {columns.map((col) => {
-                      const isSorted = sort?.columnId === col.id;
+                      const isSorted = activeSort?.columnId === col.id;
                       return (
                         <TableHead
                           key={col.id}
                           aria-sort={
                             isSorted
-                              ? sort.dir === "asc"
+                              ? activeSort!.dir === "asc"
                                 ? "ascending"
                                 : "descending"
                               : undefined
@@ -364,7 +524,7 @@ export function DataTable<T>({
                             >
                               {col.header}
                               {isSorted ? (
-                                sort.dir === "asc" ? (
+                                activeSort!.dir === "asc" ? (
                                   <ArrowUp className="w-3.5 h-3.5 text-brand" />
                                 ) : (
                                   <ArrowDown className="w-3.5 h-3.5 text-brand" />
@@ -382,7 +542,7 @@ export function DataTable<T>({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paged.map((row) => (
+                  {viewRows.map((row) => (
                     <TableRow
                       key={getRowKey(row)}
                       className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
@@ -405,8 +565,13 @@ export function DataTable<T>({
             </div>
 
             {/* Mobile: cards (una tabla de N columnas es ilegible en 375px) */}
-            <div className="md:hidden space-y-3">
-              {paged.map((row) => (
+            <div
+              className={cn(
+                "md:hidden space-y-3 transition-opacity",
+                serverMode && isPending && "opacity-60",
+              )}
+            >
+              {viewRows.map((row) => (
                 <div key={getRowKey(row)}>
                   {renderCard ? (
                     renderCard(row)
@@ -441,7 +606,7 @@ export function DataTable<T>({
             </div>
 
             {/* Paginación */}
-            {pageSize > 0 && totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Página {currentPage} de {totalPages}
@@ -452,7 +617,7 @@ export function DataTable<T>({
                     size="sm"
                     className="rounded-xl"
                     disabled={currentPage === 1}
-                    onClick={() => setPage(currentPage - 1)}
+                    onClick={() => goToPage(currentPage - 1)}
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Anterior
@@ -462,7 +627,7 @@ export function DataTable<T>({
                     size="sm"
                     className="rounded-xl"
                     disabled={currentPage === totalPages}
-                    onClick={() => setPage(currentPage + 1)}
+                    onClick={() => goToPage(currentPage + 1)}
                   >
                     Siguiente
                     <ChevronRight className="h-4 w-4" />

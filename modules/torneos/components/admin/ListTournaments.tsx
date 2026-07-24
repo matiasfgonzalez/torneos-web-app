@@ -7,6 +7,7 @@ import { Calendar, Eye, Filter, MapPin, Trophy } from "lucide-react";
 import {
   DataTable,
   type DataTableColumn,
+  type DataTableServer,
 } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ITorneo } from "@modules/torneos/types";
@@ -25,6 +26,8 @@ interface PropsListTournaments {
    * el de la primera org (el server valida por torneo igual, con 403).
    */
   canDelete?: boolean;
+  /** Config de paginación server-side (M7). */
+  server?: DataTableServer;
 }
 
 function RowActions({
@@ -58,6 +61,7 @@ function RowActions({
 const ListTournaments = ({
   tournaments,
   canDelete = false,
+  server,
 }: PropsListTournaments) => {
   const columns: DataTableColumn<ITorneo>[] = [
     {
@@ -141,6 +145,7 @@ const ListTournaments = ({
   return (
     <DataTable
       rows={tournaments}
+      server={server}
       columns={columns}
       getRowKey={(t) => t.id}
       icon={Trophy}

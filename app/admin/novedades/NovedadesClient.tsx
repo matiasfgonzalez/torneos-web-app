@@ -26,7 +26,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import {
+  DataTable,
+  type DataTableColumn,
+  type DataTableServer,
+} from "@/components/shared/DataTable";
 import { formatDate } from "@/lib/formatDate";
 import type { IOrgPost } from "@modules/novedades/types";
 import { OrgPostForm } from "./OrgPostForm";
@@ -34,7 +38,12 @@ import { OrgPostForm } from "./OrgPostForm";
 export function NovedadesClient({
   posts,
   canCreate,
-}: Readonly<{ posts: IOrgPost[]; canCreate: boolean }>) {
+  server,
+}: Readonly<{
+  posts: IOrgPost[];
+  canCreate: boolean;
+  server?: DataTableServer;
+}>) {
   const router = useRouter();
 
   const togglePublish = async (post: IOrgPost) => {
@@ -215,7 +224,7 @@ export function NovedadesClient({
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Mejorá tu plan para publicar novedades en la página de tu liga.
-                {posts.length > 0 &&
+                {(server?.total ?? posts.length) > 0 &&
                   " Las que ya cargaste siguen visibles y editables."}
               </p>
             </div>
@@ -231,6 +240,7 @@ export function NovedadesClient({
 
       <DataTable
         rows={posts}
+        server={server}
         columns={columns}
         getRowKey={(p) => p.id}
         icon={Megaphone}

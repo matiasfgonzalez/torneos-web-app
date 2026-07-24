@@ -1,29 +1,29 @@
-import { IPlayer } from "@modules/jugadores/types";
 import { StatCard, StatCardGrid } from "@/components/shared/StatCard";
 import { Award, Users, Activity, UserX } from "lucide-react";
 
 interface PropsStatsCards {
-  players: IPlayer[];
+  total: number;
+  activos: number;
+  suspendidos: number;
+  goles: number;
 }
 
-const StatsCards = ({ players }: PropsStatsCards) => {
-  const total = Math.max(players.length, 1);
-  // Enum real de Prisma: ACTIVO/SUSPENDIDO (antes comparaba "ACTIVE"/"SUSPENDED" → siempre 0)
-  const activos = players.filter((p) => p.status === "ACTIVO").length;
-  const suspendidos = players.filter((p) => p.status === "SUSPENDIDO").length;
-  const goles = players.reduce(
-    (sum, player) => sum + (player.goals ? player.goals.length : 0),
-    0,
-  );
+/**
+ * KPIs del panel de jugadores. Recibe los contadores ya agregados desde el
+ * server (`getJugadoresStats`) — no la lista completa: la tabla pagina y no
+ * tendría sentido traer toda la base solo para estos números (M7).
+ */
+const StatsCards = ({ total, activos, suspendidos, goles }: PropsStatsCards) => {
+  const denom = Math.max(total, 1);
 
   return (
     <StatCardGrid>
       <StatCard
         title="Total Jugadores"
-        value={players.length}
+        value={total}
         description="Registrados en la plataforma"
         icon={Users}
-        progress={players.length > 0 ? 100 : 0}
+        progress={total > 0 ? 100 : 0}
       />
       <StatCard
         title="Activos"
@@ -32,7 +32,7 @@ const StatsCards = ({ players }: PropsStatsCards) => {
         icon={Activity}
         gradient="from-green-500 to-emerald-500"
         bgGradient="from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-        progress={(activos / total) * 100}
+        progress={(activos / denom) * 100}
       />
       <StatCard
         title="Suspendidos"
@@ -41,7 +41,7 @@ const StatsCards = ({ players }: PropsStatsCards) => {
         icon={UserX}
         gradient="from-red-500 to-rose-500"
         bgGradient="from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20"
-        progress={(suspendidos / total) * 100}
+        progress={(suspendidos / denom) * 100}
       />
       <StatCard
         title="Total Goles"

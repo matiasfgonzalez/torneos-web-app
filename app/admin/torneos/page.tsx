@@ -1,19 +1,28 @@
 import StatsCards from "@modules/torneos/components/admin/StatsCards";
 import ListTournaments from "@modules/torneos/components/admin/ListTournaments";
 import DialogAddTournaments from "@modules/torneos/components/admin/DialogAddTournaments";
-import { getAdminTorneos } from "@modules/torneos/actions/getTorneos";
+import {
+  getAdminTorneosPaged,
+  getTorneosStats,
+} from "@modules/torneos/actions/getTorneos";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
 import { checkUser } from "@/lib/checkUser";
 import { getMyOrgRole } from "@/lib/orgAuth";
 import { Trophy, TrendingUp, Calendar, Users } from "lucide-react";
-import { TournamentStatus } from "@prisma/client";
+import { parseTableParams, type RawSearchParams } from "@/lib/tableParams";
 
 // Listado scopeado por sesión (N3) — siempre dinámico, nunca prerender
 export const dynamic = "force-dynamic";
 
-export default async function AdminTorneos() {
-  const [tournaments, user] = await Promise.all([
-    getAdminTorneos(),
+export default async function AdminTorneos({
+  searchParams,
+}: Readonly<{ searchParams: Promise<RawSearchParams> }>) {
+  const sp = await searchParams;
+  const params = parseTableParams(sp, { filterKeys: ["status"] });
+
+  const [{ rows, total }, stats, user] = await Promise.all([
+    getAdminTorneosPaged(params),
+    getTorneosStats(),
     checkUser(),
   ]);
 
@@ -29,24 +38,24 @@ export default async function AdminTorneos() {
         <PageHeader
           icon={Trophy}
           title="Gestión de Torneos"
-          statusText={`Sistema activo - ${tournaments.length} torneos registrados`}
+          statusText={`Sistema activo - ${stats.total} torneos registrados`}
           description="Administra todos los torneos de la plataforma con herramientas profesionales para crear, editar y gestionar competencias deportivas"
           quickStats={[
             {
               icon: TrendingUp,
-              text: `${tournaments.filter((t) => t.status === TournamentStatus.ACTIVO).length} activos`,
+              text: `${stats.activos} activos`,
               colorClass:
                 "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
             },
             {
               icon: Calendar,
-              text: `${tournaments.filter((t) => t.status === TournamentStatus.INSCRIPCION).length} inscribiendo`,
+              text: `${stats.inscripciones} inscribiendo`,
               colorClass:
                 "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300",
             },
             {
               icon: Users,
-              text: `Total: ${tournaments.length}`,
+              text: `Total: ${stats.total}`,
               colorClass:
                 "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
             },
@@ -56,12 +65,29 @@ export default async function AdminTorneos() {
 
         <div className="space-y-4">
           <SectionTitle>Estadísticas Generales</SectionTitle>
-          <StatsCards tournaments={tournaments} />
+          <StatsCards
+            total={stats.total}
+            activos={stats.activos}
+            inscripciones={stats.inscripciones}
+            finalizados={stats.finalizados}
+          />
         </div>
 
         <div className="space-y-4">
           <SectionTitle>Administración de Torneos</SectionTitle>
-          <ListTournaments tournaments={tournaments} canDelete={isOwner} />
+          <ListTournaments
+            tournaments={rows}
+            canDelete={isOwner}
+            server={{
+              total,
+              page: params.page,
+              pageSize: params.pageSize,
+              q: params.q,
+              sort: params.sort,
+              dir: params.dir,
+              filterValues: { status: params.filters.status ?? "all" },
+            }}
+          />
         </div>
       </div>
     </div>

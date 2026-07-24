@@ -1,12 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
+import { useSearchParams } from "next/navigation";
 import { SmartImage } from "@/components/shared/SmartImage";
 import {
-  getReferees,
+  getRefereesPaged,
+  getRefereesStats,
   deleteReferee,
   toggleRefereeEnabled,
 } from "@modules/arbitros/actions/actions";
+import { parseTableParams } from "@/lib/tableParams";
 import {
   IReferee,
   REFEREE_STATUS_LABELS,
@@ -49,27 +58,51 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function RefereesPage() {
+  // Estado de la tabla (página/búsqueda/filtro/orden) en la URL (M7): la lista
+  // se pagina y consulta en el server; el toggle "mostrar deshabilitados" sigue
+  // siendo local (es un arg de refetch, no una columna).
+  const searchParams = useSearchParams();
+  const params = useMemo(
+    () =>
+      parseTableParams(Object.fromEntries(searchParams.entries()), {
+        filterKeys: ["status"],
+      }),
+    [searchParams],
+  );
+
   // `null` = todavía no cargó nunca (skeleton). El pendiente de la transición
   // cubre los refetch: así no hay setState síncrono adentro del effect
   // (react-hooks/set-state-in-effect).
-  const [referees, setReferees] = useState<IReferee[] | null>(null);
+  const [data, setData] = useState<{ rows: IReferee[]; total: number } | null>(
+    null,
+  );
+  const [stats, setStats] = useState({
+    total: 0,
+    activos: 0,
+    inactivos: 0,
+    totalMatches: 0,
+  });
   const [showDisabled, setShowDisabled] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [isRefetching, startRefetch] = useTransition();
 
   const fetchReferees = useCallback(() => {
     startRefetch(async () => {
-      const res = await getReferees(showDisabled, false);
-      setReferees(res.success ? (res.data as IReferee[]) : []);
+      const [res, st] = await Promise.all([
+        getRefereesPaged(params, showDisabled),
+        getRefereesStats(),
+      ]);
+      setData({ rows: res.data as IReferee[], total: res.total });
+      setStats(st);
     });
-  }, [showDisabled]);
+  }, [params, showDisabled]);
 
   useEffect(() => {
     fetchReferees();
   }, [fetchReferees]);
 
-  const isLoading = referees === null;
-  const list = referees ?? [];
+  const isLoading = data === null;
+  const list = data?.rows ?? [];
 
   const handleDelete = async (id: string, name: string) => {
     setActionLoading(id);
@@ -94,15 +127,6 @@ export default function RefereesPage() {
     }
     setActionLoading(null);
   };
-
-  // Estadísticas
-  const totalMatches = list.reduce((sum, r) => sum + (r._count?.matches || 0), 0);
-  const activeReferees = list.filter(
-    (r) => r.enabled && r.status === "ACTIVO",
-  ).length;
-  const inactiveReferees = list.filter(
-    (r) => !r.enabled || r.status !== "ACTIVO",
-  ).length;
 
   // Función de render, no componente: si se declarara como componente adentro
   // del render, React lo remontaría en cada render (react-hooks/static-components).
@@ -307,24 +331,24 @@ export default function RefereesPage() {
       <PageHeader
         icon={Award}
         title="Panel de Árbitros"
-        statusText={`Sistema activo · ${list.length} árbitros registrados`}
+        statusText={`Sistema activo · ${stats.total} árbitros registrados`}
         description="Gestiona el cuerpo arbitral de tus torneos. Agrega, edita, habilita/deshabilita y administra los árbitros."
         quickStats={[
           {
             icon: Power,
-            text: `${activeReferees} activos`,
+            text: `${stats.activos} activos`,
             colorClass:
               "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300",
           },
           {
             icon: PowerOff,
-            text: `${inactiveReferees} inactivos`,
+            text: `${stats.inactivos} inactivos`,
             colorClass:
               "bg-gray-50 dark:bg-gray-700/30 text-gray-600 dark:text-gray-300",
           },
           {
             icon: TrendingUp,
-            text: `${totalMatches} partidos dirigidos`,
+            text: `${stats.totalMatches} partidos dirigidos`,
           },
         ]}
         actions={<DialogReferee mode="create" onSuccess={fetchReferees} />}
@@ -335,6 +359,15 @@ export default function RefereesPage() {
       ) : (
         <DataTable
           rows={list}
+          server={{
+            total: data?.total ?? 0,
+            page: params.page,
+            pageSize: params.pageSize,
+            q: params.q,
+            sort: params.sort,
+            dir: params.dir,
+            filterValues: { status: params.filters.status ?? "all" },
+          }}
           columns={columns}
           getRowKey={(r) => r.id}
           icon={Users}

@@ -8,6 +8,7 @@ import { Calendar, Eye, Filter, MapPin, Users } from "lucide-react";
 import {
   DataTable,
   type DataTableColumn,
+  type DataTableServer,
 } from "@/components/shared/DataTable";
 import { ITeam } from "@modules/equipos/types/types";
 import TeamForm from "./team-form";
@@ -16,6 +17,8 @@ import { deleteTeam, toggleTeamEnabled } from "@modules/equipos/actions/teams";
 
 interface PropsTeamsTable {
   teams: ITeam[];
+  /** Config de paginación server-side (M7). */
+  server?: DataTableServer;
 }
 
 function StatusBadge({ enabled }: { enabled: boolean }) {
@@ -67,7 +70,7 @@ function RowActions({ team }: Readonly<{ team: ITeam }>) {
 }
 
 /** Lista de equipos del panel — usa el DataTable común (F3). */
-const TeamsTable = ({ teams }: PropsTeamsTable) => {
+const TeamsTable = ({ teams, server }: PropsTeamsTable) => {
   const columns: DataTableColumn<ITeam>[] = [
     {
       id: "team",
@@ -175,6 +178,7 @@ const TeamsTable = ({ teams }: PropsTeamsTable) => {
   return (
     <DataTable
       rows={teams}
+      server={server}
       columns={columns}
       getRowKey={(t) => t.id}
       icon={Users}

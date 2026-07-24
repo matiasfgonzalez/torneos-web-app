@@ -1,8 +1,10 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
 import type { IOrgPost, IPublicOrgPost } from "@modules/novedades/types";
+import type { ParsedTableParams } from "@/lib/tableParams";
 
 const POST_FIELDS = {
   id: true,
@@ -31,6 +33,59 @@ export async function getOrgPostsForPanel(): Promise<IOrgPost[]> {
     orderBy: { createdAt: "desc" },
     select: POST_FIELDS,
   });
+}
+
+/** Columnas ordenables → `orderBy` de Prisma (M7). */
+const POST_ORDER_BY: Record<
+  string,
+  keyof Prisma.OrgPostOrderByWithRelationInput
+> = {
+  post: "title",
+  date: "createdAt",
+  status: "published",
+};
+
+/** Versión paginada server-side del panel de novedades (M7). */
+export async function getOrgPostsForPanelPaged(
+  params: ParsedTableParams,
+): Promise<{ rows: IOrgPost[]; total: number }> {
+  const orgIds = await getPanelOrgIds();
+  if (orgIds !== null && orgIds.length === 0) return { rows: [], total: 0 };
+
+  const conditions: Prisma.OrgPostWhereInput[] = [
+    { deletedAt: null, ...orgScopeWhere(orgIds) },
+  ];
+  if (params.q) {
+    conditions.push({
+      OR: [
+        { title: { contains: params.q, mode: "insensitive" } },
+        { summary: { contains: params.q, mode: "insensitive" } },
+      ],
+    });
+  }
+  const published = params.filters.published;
+  if (published === "published") conditions.push({ published: true });
+  else if (published === "draft") conditions.push({ published: false });
+
+  const where: Prisma.OrgPostWhereInput = { AND: conditions };
+
+  const orderCol = params.sort ? POST_ORDER_BY[params.sort] : undefined;
+  const orderBy: Prisma.OrgPostOrderByWithRelationInput = orderCol
+    ? { [orderCol]: params.dir }
+    : { createdAt: "desc" };
+
+  const [rows, total] = await Promise.all([
+    db.orgPost.findMany({
+      where,
+      orderBy,
+      skip: params.skip,
+      take: params.take,
+      select: POST_FIELDS,
+    }),
+    db.orgPost.count({ where }),
+  ]);
+
+  return { rows, total };
 }
 
 /**

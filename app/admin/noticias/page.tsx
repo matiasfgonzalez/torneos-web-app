@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
+import { useSearchParams } from "next/navigation";
 import { SmartImage } from "@/components/shared/SmartImage";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -29,6 +36,11 @@ import {
 } from "@/components/shared/DataTable";
 import { formatDate } from "@/lib/formatDate";
 import { INoticia } from "@modules/noticias/types";
+import {
+  getNoticiasAdminPaged,
+  getNoticiasStats,
+} from "@modules/noticias/actions/getNoticiasAdmin";
+import { parseTableParams } from "@/lib/tableParams";
 import { NoticiaForm } from "./NoticiaForm";
 
 /**
@@ -54,36 +66,49 @@ function PublishedBadge({ published }: Readonly<{ published: boolean }>) {
 }
 
 export default function AdminNoticias() {
+  // Estado de la tabla (página/búsqueda/filtro/orden) en la URL (M7): la lista
+  // se pagina y filtra en el server vía server action (no por `/api/noticias`,
+  // que es pública y devuelve un array plano).
+  const searchParams = useSearchParams();
+  const params = useMemo(
+    () =>
+      parseTableParams(Object.fromEntries(searchParams.entries()), {
+        filterKeys: ["published"],
+      }),
+    [searchParams],
+  );
+
   // `null` = todavía no llegó la primera respuesta. Evita el frame con la tabla
   // vacía y el `setState` en el cuerpo del effect (react-hooks).
-  const [noticias, setNoticias] = useState<INoticia[] | null>(null);
+  const [data, setData] = useState<{ rows: INoticia[]; total: number } | null>(
+    null,
+  );
+  const [stats, setStats] = useState({ total: 0, published: 0, drafts: 0 });
   const [, startFetch] = useTransition();
 
   const fetchNoticias = useCallback(() => {
     startFetch(async () => {
-      const res = await api.get<INoticia[]>("/api/noticias");
-      if (res.ok) {
-        setNoticias(res.data);
-      } else {
-        setNoticias([]);
+      try {
+        const [paged, st] = await Promise.all([
+          getNoticiasAdminPaged(params),
+          getNoticiasStats(),
+        ]);
+        setData(paged);
+        setStats(st);
+      } catch {
+        setData({ rows: [], total: 0 });
         toast.error("No se pudieron cargar las noticias");
       }
     });
-  }, []);
+  }, [params]);
 
   useEffect(() => {
     fetchNoticias();
   }, [fetchNoticias]);
 
-  const isLoading = noticias === null;
-  const list = noticias ?? [];
-  const published = list.filter((n) => n.published).length;
-
-  // Orden por defecto: más recientes primero. El DataTable reordena encima.
-  const sortedNews = [...list].sort(
-    (a, b) =>
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-  );
+  const isLoading = data === null;
+  const list = data?.rows ?? [];
+  const published = stats.published;
 
   const handleDeleteArticle = async (id: string) => {
     const res = await api.del(`/api/noticias/${id}`);
@@ -91,7 +116,7 @@ export default function AdminNoticias() {
       toast.error(res.error);
       return;
     }
-    setNoticias((prev) => (prev ?? []).filter((n) => n.id !== id));
+    fetchNoticias();
     toast.success("Noticia eliminada");
   };
 
@@ -103,10 +128,7 @@ export default function AdminNoticias() {
       published: next,
     });
     if (res.ok) {
-      const updated = res.data;
-      setNoticias((prev) =>
-        (prev ?? []).map((n) => (n.id === article.id ? updated : n)),
-      );
+      fetchNoticias();
       toast.success(next ? "Noticia publicada" : "Pasada a borrador");
     } else {
       toast.error("No se pudo cambiar el estado");
@@ -248,8 +270,8 @@ export default function AdminNoticias() {
       <PageHeader
         icon={Newspaper}
         title="Panel de Noticias"
-        statusText={`Sistema activo · ${list.length} ${
-          list.length === 1 ? "noticia" : "noticias"
+        statusText={`Sistema activo · ${stats.total} ${
+          stats.total === 1 ? "noticia" : "noticias"
         }`}
         description="Gestiona las noticias de la plataforma: creá, publicá y editá los artículos que ven todos los usuarios de GOLAZO."
         quickStats={[
@@ -261,7 +283,7 @@ export default function AdminNoticias() {
           },
           {
             icon: PenLine,
-            text: `${list.length - published} borradores`,
+            text: `${stats.drafts} borradores`,
             colorClass:
               "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300",
           },
@@ -272,7 +294,7 @@ export default function AdminNoticias() {
       <StatCardGrid>
         <StatCard
           title="Total noticias"
-          value={list.length}
+          value={stats.total}
           description="Artículos en total"
           icon={FileText}
         />
@@ -286,7 +308,7 @@ export default function AdminNoticias() {
         />
         <StatCard
           title="Borradores"
-          value={list.length - published}
+          value={stats.drafts}
           description="Sin publicar"
           icon={PenLine}
           gradient="from-orange-500 to-amber-500"
@@ -298,7 +320,16 @@ export default function AdminNoticias() {
         <SkeletonTable rows={5} />
       ) : (
         <DataTable
-          rows={sortedNews}
+          rows={list}
+          server={{
+            total: data?.total ?? 0,
+            page: params.page,
+            pageSize: params.pageSize,
+            q: params.q,
+            sort: params.sort,
+            dir: params.dir,
+            filterValues: { published: params.filters.published ?? "all" },
+          }}
           columns={newsColumns}
           getRowKey={(a) => a.id}
           icon={FileText}

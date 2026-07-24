@@ -1,18 +1,27 @@
 import TeamForm from "@modules/equipos/components/admin/team-form";
 import StatsCards from "@modules/equipos/components/admin/StatsCards";
 import TeamsTable from "@modules/equipos/components/admin/TeamsTable";
-import { getAdminEquipos } from "@modules/equipos/actions/getEquipos";
+import {
+  getEquiposPaged,
+  getEquiposStats,
+} from "@modules/equipos/actions/getEquipos";
 import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
 import { Trophy, Users, TrendingUp } from "lucide-react";
+import { parseTableParams, type RawSearchParams } from "@/lib/tableParams";
 
 // Listado scopeado por sesión (N3) — siempre dinámico, nunca prerender
 export const dynamic = "force-dynamic";
 
-export default async function AdminEquipos() {
-  const teams = await getAdminEquipos();
+export default async function AdminEquipos({
+  searchParams,
+}: Readonly<{ searchParams: Promise<RawSearchParams> }>) {
+  const sp = await searchParams;
+  const params = parseTableParams(sp, { filterKeys: ["status"] });
 
-  const activeTeams = teams.filter((t) => t.enabled === true).length;
-  const disabledTeams = teams.filter((t) => t.enabled === false).length;
+  const [{ rows, total }, stats] = await Promise.all([
+    getEquiposPaged(params),
+    getEquiposStats(),
+  ]);
 
   return (
     <div className="space-y-8 p-6 sm:p-8">
@@ -20,24 +29,24 @@ export default async function AdminEquipos() {
       <PageHeader
         icon={Users}
         title="Gestión de Equipos"
-        statusText={`Sistema activo - ${teams.length} equipos registrados`}
+        statusText={`Sistema activo - ${stats.total} equipos registrados`}
         description="Administra todos los equipos registrados en la plataforma"
         quickStats={[
           {
             icon: TrendingUp,
-            text: `${activeTeams} activos`,
+            text: `${stats.activos} activos`,
             colorClass:
               "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300",
           },
           {
             icon: Users,
-            text: `${disabledTeams} deshabilitados`,
+            text: `${stats.deshabilitados} deshabilitados`,
             colorClass:
               "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300",
           },
           {
             icon: Trophy,
-            text: `Total: ${teams.length}`,
+            text: `Total: ${stats.total}`,
             colorClass:
               "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300",
           },
@@ -47,12 +56,28 @@ export default async function AdminEquipos() {
 
       <div className="space-y-4">
         <SectionTitle>Estadísticas Generales</SectionTitle>
-        <StatsCards teams={teams} />
+        <StatsCards
+          total={stats.total}
+          activos={stats.activos}
+          deshabilitados={stats.deshabilitados}
+          jugadores={stats.jugadores}
+        />
       </div>
 
       <div className="space-y-4">
         <SectionTitle>Lista de Equipos</SectionTitle>
-        <TeamsTable teams={teams} />
+        <TeamsTable
+          teams={rows}
+          server={{
+            total,
+            page: params.page,
+            pageSize: params.pageSize,
+            q: params.q,
+            sort: params.sort,
+            dir: params.dir,
+            filterValues: { status: params.filters.status ?? "all" },
+          }}
+        />
       </div>
     </div>
   );

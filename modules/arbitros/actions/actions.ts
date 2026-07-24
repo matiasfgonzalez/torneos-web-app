@@ -2,8 +2,9 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { RefereeStatus } from "@prisma/client";
+import { RefereeStatus, type Prisma } from "@prisma/client";
 import { IRefereeCreate, IRefereeUpdate } from "../types";
+import type { ParsedTableParams } from "@/lib/tableParams";
 import {
   getPanelOrgIds,
   orgScopeWhere,
@@ -132,6 +133,97 @@ export async function getReferees(
     console.error("Error fetching referees:", error);
     return { success: false, data: [] };
   }
+}
+
+/** Columnas ordenables → `orderBy` de Prisma (M7). */
+const REFEREE_ORDER_BY: Record<
+  string,
+  Prisma.RefereeOrderByWithRelationInput
+> = {
+  referee: { name: "asc" },
+  level: { certificationLevel: "asc" },
+  status: { status: "asc" },
+  matches: { matches: { _count: "asc" } },
+};
+
+/**
+ * Listado paginado server-side de árbitros (M7). Mismo scope que `getReferees`,
+ * con búsqueda/filtro/orden/página desde la URL. `includeDisabled` sigue siendo
+ * un toggle aparte (es un refetch, no un filtro de columna).
+ */
+export async function getRefereesPaged(
+  params: ParsedTableParams,
+  includeDisabled = true,
+) {
+  try {
+    const orgIds = await getPanelOrgIds();
+
+    const conditions: Prisma.RefereeWhereInput[] = [
+      orgScopeWhere(orgIds),
+      { deletedAt: null },
+    ];
+    if (!includeDisabled) conditions.push({ enabled: true });
+    if (params.q) {
+      conditions.push({
+        OR: [
+          { name: { contains: params.q, mode: "insensitive" } },
+          { email: { contains: params.q, mode: "insensitive" } },
+          { phone: { contains: params.q, mode: "insensitive" } },
+        ],
+      });
+    }
+    if (params.filters.status) {
+      conditions.push({ status: params.filters.status as RefereeStatus });
+    }
+
+    const where: Prisma.RefereeWhereInput = { AND: conditions };
+
+    const base = params.sort ? REFEREE_ORDER_BY[params.sort] : undefined;
+    // Aplica la dirección elegida a la columna mapeada (el mapa fija asc).
+    const orderBy: Prisma.RefereeOrderByWithRelationInput = base
+      ? params.sort === "matches"
+        ? { matches: { _count: params.dir } }
+        : { [Object.keys(base)[0]]: params.dir }
+      : { name: "asc" };
+
+    const [rows, total] = await Promise.all([
+      db.referee.findMany({
+        where,
+        orderBy,
+        skip: params.skip,
+        take: params.take,
+        include: { _count: { select: { matches: true } } },
+      }),
+      db.referee.count({ where }),
+    ]);
+
+    return { success: true as const, data: rows, total };
+  } catch (error) {
+    console.error("Error fetching referees (paged):", error);
+    return { success: false as const, data: [], total: 0 };
+  }
+}
+
+/**
+ * Contadores del panel de árbitros. Agrega sobre el conjunto (acotado por org)
+ * de árbitros no borrados — independiente de la página/toggle.
+ */
+export async function getRefereesStats() {
+  const orgIds = await getPanelOrgIds();
+  const refs = await db.referee.findMany({
+    where: { ...orgScopeWhere(orgIds), deletedAt: null },
+    select: {
+      enabled: true,
+      status: true,
+      _count: { select: { matches: true } },
+    },
+  });
+  const totalMatches = refs.reduce((s, r) => s + r._count.matches, 0);
+  const activos = refs.filter((r) => r.enabled && r.status === "ACTIVO").length;
+  const inactivos = refs.filter(
+    (r) => !r.enabled || r.status !== "ACTIVO",
+  ).length;
+  return { total: refs.length, activos, inactivos, totalMatches };
 }
 
 /**

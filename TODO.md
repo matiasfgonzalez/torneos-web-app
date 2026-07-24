@@ -38,7 +38,6 @@
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
 **🟡 Medio**
-- **M7** — Paginación/búsqueda/filtros server-side en admin · `E:Medio`
 - **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
@@ -402,7 +401,15 @@
 
 ### M7. Paginación, búsqueda y filtros server-side en admin
 
-- [ ] Las tablas de admin cargan todo y filtran en cliente. Con `?page`, `?q`, `?status` en URL (estado compartible) + `searchParams` en server components. **E:Medio**
+- [x] **Hecho (2026-07-24). Barrido completo (8 tablas).** El estado de cada tabla (página/búsqueda/filtros/orden) vive ahora en la **URL** (`?page`/`?q`/`?sort`/`?dir`/`?<filtro>`) — compartible por link — y la consulta se hace **server-side** (Prisma `where`/`orderBy`/`skip`/`take` + `count`), no cargando todo y filtrando en memoria.
+  - **Infra reutilizable:**
+    - [lib/tableParams.ts](lib/tableParams.ts): `parseTableParams(searchParams, { filterKeys, ... })` → `{ page, pageSize, skip, take, q, sort, dir, filters }` saneado, + `paginationMeta`. Convención de nombres de query param compartida.
+    - **Modo server en [components/shared/DataTable.tsx](components/shared/DataTable.tsx)** (el comentario ya lo anticipaba en F3): con el prop `server` la tabla no filtra en memoria — búsqueda (con **debounce 350ms**), filtros, orden por columna (asc→desc→sin orden) y paginación **navegan la URL** vía `router.replace(..., { scroll:false })`; muestra spinner de pendiente con `useTransition`. Sin el prop, sigue el modo cliente de siempre (retrocompatible). `searchable.getText`/`filter.test` pasaron a opcionales (solo los usa el modo cliente).
+  - **Tablas server-rendered (server page lee `searchParams` → query paginada → tabla en modo server):** [jugadores](app/admin/jugadores/page.tsx), [equipos](app/admin/equipos/page.tsx), [torneos](app/admin/torneos/page.tsx), [novedades](app/admin/novedades/page.tsx). Cada `get…Paged(params)` devuelve `{ rows, total }`; los KPIs del header pasaron a `get…Stats()` con **agregados** (`count`/relaciones) en vez de derivarlos de la lista completa (traer toda la base solo para los números no tenía sentido al paginar). De paso se arregló el KPI "Total Jugadores" de equipos, que daba 0 (la lista no incluía `players` — ahora cuenta por `TeamPlayer`).
+  - **Tablas client con mutaciones (árbitros, noticias):** se mantienen client (por las acciones de fila / toggles) pero la página **lee los params de la URL, refetchea con la acción paginada, y pasa `server` al DataTable**. [noticias](app/admin/noticias/page.tsx) usa una server action nueva ([getNoticiasAdmin.ts](modules/noticias/actions/getNoticiasAdmin.ts)) y **no** toca `GET /api/noticias` (esa ruta es pública y devuelve un array plano — cambiarle el shape la rompería). [árbitros](app/admin/arbitros/page.tsx) mantiene su toggle "mostrar deshabilitados" como arg de refetch (no es columna).
+  - **usuarios:** el [`/api/users`](app/api/users/route.ts) ya paginaba server-side; faltaba sacar el estado del `useState` local. [La página](app/admin/usuarios/page.tsx) ahora deriva los filtros de la URL y los empuja ahí (búsqueda con debounce); `q` de la URL ↔ `search` del API.
+  - **organizaciones (platform-wide, escala real):** se agregó `?q`/`?page`/`?limit` a [`GET /api/admin/organizations`](app/api/admin/organizations/route.ts) (ahora devuelve `{ data, meta }`; único consumidor) y [el cliente](app/admin/organizaciones/OrganizacionesClient.tsx) lee/empuja la URL + controles de paginación. Bonus: el `getEffectivePlan` por org era un **N+1** — al paginar solo se calcula para la página visible, no para todas las ligas.
+  - **Verificación:** `tsc` limpio · `next build` verde (58/58) · `eslint` sin issues nuevos (siguen los 5 `set-state-in-effect` preexistentes, ver M2 — uno es de OrganizacionesClient y se movió de línea al agregar código, no es nuevo). Las rutas responden sano (307 → sign-in por auth; sin 500 de render). El patrón no pasa funciones por la frontera RSC (lección del hotfix de M2): las server pages solo mandan datos serializables; las funciones de columna viven dentro de los componentes client. **E:Medio**
 
 ### M8. Integrar AuditLog (modelo existe, uso = 0)
 

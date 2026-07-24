@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -363,15 +371,6 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, startRefresh] = useTransition();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [filters, setFilters] = useState<UserFilters>({
-    search: "",
-    role: "all",
-    status: "all",
-    sortBy: "createdAt",
-    sortOrder: "desc",
-    page: 1,
-    limit: 12,
-  });
   const [meta, setMeta] = useState({
     total: 0,
     page: 1,
@@ -381,24 +380,41 @@ export default function UsersPage() {
     hasPreviousPage: false,
   });
 
+  // El estado de la tabla (búsqueda/filtros/orden/página) vive en la URL (M7):
+  // compartible por link. El API de usuarios ya paginaba server-side; lo que
+  // faltaba era sacar el estado del `useState` local y ponerlo en los query
+  // params. La `q` de la URL mapea a `search` del API.
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const filters: UserFilters = useMemo(
+    () => ({
+      search: searchParams.get("q") ?? "",
+      role: (searchParams.get("role") as UserFilters["role"]) ?? "all",
+      status: (searchParams.get("status") as UserFilters["status"]) ?? "all",
+      sortBy: (searchParams.get("sortBy") as UserFilters["sortBy"]) ?? "createdAt",
+      sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") ?? "desc",
+      page: Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1),
+      limit: 12,
+    }),
+    [searchParams],
+  );
+
   // Función para cargar usuarios.
   // El fetch va dentro de una transición: así el setState no queda en el cuerpo
-  // del effect que la llama al montar (react-hooks/set-state-in-effect), y el
-  // pendiente de la transición hace de `isRefreshing` sin un estado aparte.
-  const fetchUsers = (currentFilters = filters) => {
+  // del effect que la llama (react-hooks/set-state-in-effect), y el pendiente de
+  // la transición hace de `isRefreshing` sin un estado aparte.
+  const fetchUsers = useCallback(() => {
     startRefresh(async () => {
       const params = new URLSearchParams();
-
-      if (currentFilters.search)
-        params.append("search", currentFilters.search);
-      if (currentFilters.role !== "all")
-        params.append("role", currentFilters.role);
-      if (currentFilters.status !== "all")
-        params.append("status", currentFilters.status);
-      params.append("sortBy", currentFilters.sortBy);
-      params.append("sortOrder", currentFilters.sortOrder);
-      params.append("page", currentFilters.page.toString());
-      params.append("limit", currentFilters.limit.toString());
+      if (filters.search) params.append("search", filters.search);
+      if (filters.role !== "all") params.append("role", filters.role);
+      if (filters.status !== "all") params.append("status", filters.status);
+      params.append("sortBy", filters.sortBy);
+      params.append("sortOrder", filters.sortOrder);
+      params.append("page", String(filters.page));
+      params.append("limit", String(filters.limit));
 
       // Las rutas de users conservan el envelope { success, data, meta } (A7).
       const res = await api.get<ApiResponse<ApiUser[]>>(
@@ -414,27 +430,65 @@ export default function UsersPage() {
       }
       setIsLoading(false);
     });
-  };
+  }, [filters]);
 
-  // Cargar usuarios al montar el componente
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Refetch cuando cambian los filtros de la URL (o al montar).
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
+
+  // Empuja cambios de query params a la URL (reseteando la página salvo que se
+  // esté paginando). El refetch lo dispara el effect al cambiar `searchParams`.
+  const pushParams = useCallback(
+    (updates: Record<string, string | null>, resetPage = true) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "") params.delete(key);
+        else params.set(key, value);
+      }
+      if (resetPage && !("page" in updates)) params.delete("page");
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [searchParams, router, pathname],
+  );
+
+  const FILTER_DEFAULTS: Record<string, string> = {
+    role: "all",
+    status: "all",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  };
 
   // Función para manejar cambios de filtros
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFilterChange = (key: keyof UserFilters, value: any) => {
-    const newFilters = { ...filters, [key]: value, page: 1 }; // Reset page when filtering
-    setFilters(newFilters);
-    fetchUsers(newFilters);
+    const name = key === "search" ? "q" : (key as string);
+    const def = FILTER_DEFAULTS[key as string] ?? "";
+    pushParams({ [name]: value === def ? null : String(value) });
   };
 
   // Función para cambiar de página
   const handlePageChange = (newPage: number) => {
-    const newFilters = { ...filters, page: newPage };
-    setFilters(newFilters);
-    fetchUsers(newFilters);
+    pushParams({ page: String(newPage) }, false);
+  };
+
+  // Input de búsqueda con debounce: no navegar en cada tecla. Se resincroniza
+  // con la `q` de la URL (patrón prev-prop, sin effect) al navegar externamente.
+  const [searchInput, setSearchInput] = useState(filters.search);
+  const [lastQ, setLastQ] = useState(filters.search);
+  if (filters.search !== lastQ) {
+    setLastQ(filters.search);
+    setSearchInput(filters.search);
+  }
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(
+      () => handleFilterChange("search", value),
+      350,
+    );
   };
 
   // Función para eliminar usuario
@@ -585,8 +639,8 @@ export default function UsersPage() {
                 <Input
                   aria-label="Buscar usuarios"
                   placeholder="Buscar usuarios..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange("search", e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => onSearchChange(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -761,17 +815,9 @@ export default function UsersPage() {
               hasFilters ? (
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    const reset: UserFilters = {
-                      ...filters,
-                      search: "",
-                      role: "all",
-                      status: "all",
-                      page: 1,
-                    };
-                    setFilters(reset);
-                    fetchUsers(reset);
-                  }}
+                  onClick={() =>
+                    pushParams({ q: null, role: null, status: null })
+                  }
                 >
                   Limpiar filtros
                 </Button>

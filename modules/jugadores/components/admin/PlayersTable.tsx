@@ -6,6 +6,7 @@ import { Activity, MapPinHouse, Users } from "lucide-react";
 import {
   DataTable,
   type DataTableColumn,
+  type DataTableServer,
 } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { IPlayer } from "@modules/jugadores/types";
@@ -22,6 +23,8 @@ import { deletePlayer, togglePlayerEnabled } from "@modules/jugadores/actions/pl
 
 interface PropsPlayersTable {
   players: IPlayer[];
+  /** Config de paginación server-side (M7). Si se omite, la tabla filtra en cliente. */
+  server?: DataTableServer;
 }
 
 /**
@@ -55,7 +58,7 @@ const footLabel = (f: string | null) =>
   f ? (FOOT_LABELS[f as Foot] ?? f) : "—";
 
 /** Lista de jugadores del panel — usa el DataTable común (F3). */
-const PlayersTable = ({ players }: PropsPlayersTable) => {
+const PlayersTable = ({ players, server }: PropsPlayersTable) => {
   const columns: DataTableColumn<IPlayer>[] = [
     {
       id: "player",
@@ -169,6 +172,7 @@ const PlayersTable = ({ players }: PropsPlayersTable) => {
   return (
     <DataTable
       rows={players}
+      server={server}
       columns={columns}
       getRowKey={(p) => p.id}
       icon={Users}

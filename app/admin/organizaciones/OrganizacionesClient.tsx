@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { useRouter } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import {
   Building2,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Loader2,
   MapPin,
@@ -81,14 +87,55 @@ const SUB_STATUS_BADGE: Record<string, string> = {
   CANCELADA: "bg-gray-500/15 text-gray-600 border-gray-500/30",
 };
 
+const PAGE_SIZE = 10;
+
 export default function OrganizacionesClient() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Estado de la tabla (búsqueda/página) en la URL (M7): compartible y con la
+  // query paginada en el server (importa: el listado es platform-wide).
+  const q = searchParams.get("q") ?? "";
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+
   const [orgs, setOrgs] = useState<OrganizationRow[]>([]);
+  const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
   const [viewingAs, setViewingAs] = useState<string | null>(null);
+
+  const pushParams = useCallback(
+    (updates: Record<string, string | null>, resetPage = true) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [k, v] of Object.entries(updates)) {
+        if (v === null || v === "") params.delete(k);
+        else params.set(k, v);
+      }
+      if (resetPage && !("page" in updates)) params.delete("page");
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [searchParams, router, pathname],
+  );
+
+  // Búsqueda con debounce a la URL (no navegar por tecla).
+  const [searchInput, setSearchInput] = useState(q);
+  const [lastQ, setLastQ] = useState(q);
+  if (q !== lastQ) {
+    setLastQ(q);
+    setSearchInput(q);
+  }
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(
+      () => pushParams({ q: value || null }),
+      350,
+    );
+  };
 
   // "Ver como organización" (N3/N10): scopea el panel a esa org
   const viewAs = async (org: OrganizationRow) => {
@@ -108,14 +155,24 @@ export default function OrganizacionesClient() {
   };
 
   const load = useCallback(async () => {
+    const qs = new URLSearchParams();
+    if (q) qs.set("q", q);
+    qs.set("page", String(page));
+    qs.set("limit", String(PAGE_SIZE));
     const [orgsRes, metricsRes] = await Promise.all([
-      api.get<OrganizationRow[]>("/api/admin/organizations"),
+      api.get<{
+        data: OrganizationRow[];
+        meta: { total: number; page: number; totalPages: number };
+      }>(`/api/admin/organizations?${qs.toString()}`),
       api.get<Metrics>("/api/admin/metrics"),
     ]);
-    if (orgsRes.ok) setOrgs(orgsRes.data);
+    if (orgsRes.ok) {
+      setOrgs(orgsRes.data.data);
+      setMeta(orgsRes.data.meta);
+    }
     if (metricsRes.ok) setMetrics(metricsRes.data);
     setLoading(false);
-  }, []);
+  }, [q, page]);
 
   useEffect(() => {
     load();
@@ -142,17 +199,6 @@ export default function OrganizacionesClient() {
       setUpdating(null);
     }
   };
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return orgs;
-    return orgs.filter(
-      (o) =>
-        o.name.toLowerCase().includes(term) ||
-        o.slug.toLowerCase().includes(term) ||
-        o.locality?.toLowerCase().includes(term),
-    );
-  }, [orgs, search]);
 
   if (loading) {
     return (
@@ -260,20 +306,20 @@ export default function OrganizacionesClient() {
         <Input
           aria-label="Buscar organizaciones"
           placeholder="Buscar por nombre, slug o localidad..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
         />
       </div>
 
       {/* Listado */}
       <div className="space-y-3">
-        {filtered.length === 0 ? (
+        {orgs.length === 0 ? (
           <p className="text-sm text-gray-500 text-center py-12">
             No se encontraron organizaciones.
           </p>
         ) : (
-          filtered.map((org) => (
+          orgs.map((org) => (
             <Card key={org.id} className="border-0 glass-card">
               <CardContent className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -420,6 +466,38 @@ export default function OrganizacionesClient() {
           ))
         )}
       </div>
+
+      {/* Paginación server-side (M7) */}
+      {meta.totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Página {meta.page} de {meta.totalPages} · {meta.total}{" "}
+            {meta.total === 1 ? "organización" : "organizaciones"}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+              disabled={page <= 1}
+              onClick={() => pushParams({ page: String(page - 1) }, false)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+              disabled={page >= meta.totalPages}
+              onClick={() => pushParams({ page: String(page + 1) }, false)}
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
