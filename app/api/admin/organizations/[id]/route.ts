@@ -3,6 +3,7 @@ import { validateApiRole } from "@/lib/apiRoleValidation";
 import { apiError, apiOk } from "@/lib/apiResponse";
 import { organizationStatusSchema } from "@/lib/validators/organization";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 
 type tParams = Promise<{ id: string }>;
 
@@ -13,7 +14,7 @@ type tParams = Promise<{ id: string }>;
  * (ver requireApiOrgContext en lib/orgAuth.ts).
  */
 export async function PATCH(req: Request, { params }: { params: tParams }) {
-  const { error } = await validateApiRole(["ADMINISTRADOR"]);
+  const { error, user } = await validateApiRole(["ADMINISTRADOR"]);
   if (error) return error;
 
   const { id } = await params;
@@ -33,6 +34,15 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
     const updated = await db.organization.update({
       where: { id },
       data: { status: parsed.data.status },
+    });
+
+    // Auditoría (M8): suspender/reactivar una liga es una acción sensible.
+    await logAudit({
+      actorId: user?.id,
+      action: AuditAction.STATUS_CHANGE,
+      entity: AuditEntity.ORGANIZATION,
+      entityId: id,
+      payload: { name: org.name, from: org.status, to: parsed.data.status },
     });
 
     return apiOk(updated);

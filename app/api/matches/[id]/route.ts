@@ -11,6 +11,7 @@ import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { canEditMatchInTournament, validateMatchRules } from "@/lib/match-rules";
 import { assertTeamsInTournament } from "@/lib/match-guards";
+import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
 
 type tParams = Promise<{ id: string }>;
@@ -208,6 +209,35 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     // el mismo que usa la carga en vivo — notificar en cada uno sería spam.
     if (!wasFinalized && isFinalized) {
       await notifyMatchResult(id, updatedMatch, previousMatch.tournament.name, auth.user.id);
+    }
+
+    // Auditoría (M8): la edición de resultado es una mutación sensible. Solo se
+    // registra si el marcador o el estado realmente cambiaron — este PATCH es
+    // el mismo de la carga en vivo y logear cada no-op sería ruido.
+    const resultChanged =
+      updatedMatch.homeScore !== previousMatch.homeScore ||
+      updatedMatch.awayScore !== previousMatch.awayScore ||
+      updatedMatch.status !== previousMatch.status;
+    if (resultChanged) {
+      await logAudit({
+        actorId: auth.user.id,
+        action: AuditAction.MATCH_RESULT,
+        entity: AuditEntity.MATCH,
+        entityId: id,
+        payload: {
+          tournament: previousMatch.tournament.name,
+          from: {
+            homeScore: previousMatch.homeScore,
+            awayScore: previousMatch.awayScore,
+            status: previousMatch.status,
+          },
+          to: {
+            homeScore: updatedMatch.homeScore,
+            awayScore: updatedMatch.awayScore,
+            status: updatedMatch.status,
+          },
+        },
+      });
     }
 
     return NextResponse.json(updatedMatch, { status: 200 });

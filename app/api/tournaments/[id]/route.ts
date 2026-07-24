@@ -5,6 +5,7 @@ import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
 import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentUpdateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 
 type tParams = Promise<{ id: string }>;
 
@@ -94,6 +95,15 @@ export async function DELETE(
         deletedAt: new Date(),
         enabled: false,
       },
+    });
+
+    // Auditoría (M8): baja de torneo (libera cupo del plan — sensible).
+    await logAudit({
+      actorId: auth.user.id,
+      action: AuditAction.DELETE,
+      entity: AuditEntity.TOURNAMENT,
+      entityId: id,
+      payload: { name: deletedTournament.name },
     });
 
     return NextResponse.json(

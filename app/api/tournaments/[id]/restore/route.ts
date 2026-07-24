@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgOwner } from "@/lib/orgAuth";
 import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
+import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 
 type tParams = Promise<{ id: string }>;
 
@@ -73,6 +74,15 @@ export async function POST(req: Request, { params }: { params: tParams }) {
     const tournament = await db.tournament.update({
       where: { id },
       data: { deletedAt: null, enabled: true },
+    });
+
+    // Auditoría (M8): restauración de torneo (vuelve a consumir cupo).
+    await logAudit({
+      actorId: auth.user.id,
+      action: AuditAction.RESTORE,
+      entity: AuditEntity.TOURNAMENT,
+      entityId: id,
+      payload: { name: tournament.name },
     });
 
     return NextResponse.json(tournament, { status: 200 });

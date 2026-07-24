@@ -38,7 +38,6 @@
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
 **🟡 Medio**
-- **M8** — Integrar `AuditLog` (modelo existe, uso = 0) + vista `/admin/auditoria` · `E:Medio`
 - **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
 
@@ -413,7 +412,16 @@
 
 ### M8. Integrar AuditLog (modelo existe, uso = 0)
 
-- [ ] Registrar en `AuditLog` todas las mutaciones sensibles (delete de torneo, cambio de rol, edición de resultado) desde los helpers de autorización, y una vista `/admin/auditoria` para ADMINISTRADOR. **E:Medio**
+- [x] **Hecho (2026-07-24).** El modelo `AuditLog` existía sin escritura real (había dos `db.auditLog.create` sueltos en `users/[id]`, pero con **`userId` = usuario editado**, no el admin que actuaba — bug: el registro debe guardar al **actor**).
+  - **Helper central [lib/audit.ts](lib/audit.ts)** — `logAudit({ actorId, action, entity, entityId, payload })`. Nunca lanza (envuelto en try/catch): un fallo de auditoría **no** puede tumbar la mutación de negocio. Las constantes/etiquetas (`AuditAction`/`AuditEntity`/labels) viven en [lib/audit-constants.ts](lib/audit-constants.ts) aparte porque `audit.ts` es `server-only` (usa `db`) y la tabla de la vista es un client component que necesita los labels.
+  - **Mutaciones sensibles instrumentadas** (el actor sale del helper de auth que ya corría en cada ruta — `requireApiOrgAccess`/`requireApiOrgOwner`/`validateApiRole` devuelven `{ user }`):
+    - **Cambio de rol / edición de usuario** → [`PUT /api/users/[id]`](<app/api/users/[id]/route.ts>): `ROLE_CHANGE` si el cambio toca el rol, `UPDATE` si no. Baja de usuario → `DELETE`. (Se corrigió el actor de los dos writes que ya existían.)
+    - **Edición de resultado** → [`PATCH /api/matches/[id]`](<app/api/matches/[id]/route.ts>): `MATCH_RESULT`, **solo si el marcador o el estado cambiaron** (este PATCH es el mismo de la carga en vivo; logear cada no-op sería ruido). Payload con el `from`/`to`.
+    - **Baja / restauración de torneo** → [`DELETE`](<app/api/tournaments/[id]/route.ts>) + [`POST .../restore`](<app/api/tournaments/[id]/restore/route.ts>): `DELETE` / `RESTORE`.
+    - **Suspender / reactivar organización** → [`PATCH /api/admin/organizations/[id]`](<app/api/admin/organizations/[id]/route.ts>): `STATUS_CHANGE` con `from`/`to`.
+  - **Vista [/admin/auditoria](app/admin/auditoria/page.tsx)** (solo ADMINISTRADOR, gateada con `validatePanelAccess`): tabla **server-side reutilizando el patrón de M7** — estado en la URL (`?q`/`?entity`/`?action`/`?page`), búsqueda por autor o id de entidad, filtros por entidad y acción, orden por fecha, paginación. Columnas: fecha, autor (avatar + nombre/email), acción (badge por severidad), entidad + id, y **detalle del payload** en un `<details>` expandible. Query en [getAuditLogs.ts](modules/auditoria/actions/getAuditLogs.ts). Link agregado al nav ([admin-nav.ts](lib/constants/admin-nav.ts), ADMINISTRADOR).
+  - **Bonus:** el detalle de usuario ([app/admin/usuarios/[id]](<app/admin/usuarios/[id]/page.tsx>)) ya leía `user.auditLogs` (siempre vacío por falta de escritura) — ahora se **puebla solo** con el actor correcto.
+  - **Verificación:** `tsc` limpio · `eslint` limpio · `next build` verde (58/58, `/admin/auditoria` dinámica) · la ruta responde 307 → sign-in (auth) sin errores de render. Pendiente menor (ya anotado en el ítem del Dashboard): el widget de "actividad reciente" del dashboard puede tirar de este mismo log. **E:Medio**
 
 ### M14. Equipos compartidos entre ligas (decisión de producto, 2026-07-22)
 

@@ -4,6 +4,7 @@ import { validateApiRole, canManageUserApi } from "@/lib/apiRoleValidation";
 import { formatTournamentCategory } from "@/lib/constants";
 import { userUpdateSchema } from "@/lib/validators/user";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
@@ -272,15 +273,16 @@ export async function PUT(
       },
     });
 
-    // Crear log de auditoría
-    await db.auditLog.create({
-      data: {
-        userId: id,
-        action: "UPDATE_USER",
-        entity: "User",
-        entityId: id,
-        payload: updateData,
-      },
+    // Auditoría (M8): el actor es el ADMIN que edita, no el usuario editado.
+    // Si el cambio incluye el rol, se marca como ROLE_CHANGE (la mutación
+    // sensible que pide el enunciado).
+    await logAudit({
+      actorId: authResult.user!.id,
+      action:
+        "role" in updateData ? AuditAction.ROLE_CHANGE : AuditAction.UPDATE,
+      entity: AuditEntity.USER,
+      entityId: id,
+      payload: updateData,
     });
 
     return NextResponse.json({
@@ -362,15 +364,13 @@ export async function DELETE(
       },
     });
 
-    // Crear log de auditoría
-    await db.auditLog.create({
-      data: {
-        userId: id,
-        action: "DELETE_USER",
-        entity: "User",
-        entityId: id,
-        payload: { reason: "Admin deletion" },
-      },
+    // Auditoría (M8): actor = admin que da de baja.
+    await logAudit({
+      actorId: authResult.user!.id,
+      action: AuditAction.DELETE,
+      entity: AuditEntity.USER,
+      entityId: id,
+      payload: { reason: "Baja lógica desde el panel" },
     });
 
     return NextResponse.json({
