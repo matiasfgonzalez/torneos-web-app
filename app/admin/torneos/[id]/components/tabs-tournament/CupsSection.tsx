@@ -134,7 +134,10 @@ export default function CupsSection({
 
   const isLoading = phases === null;
   const list = phases ?? [];
-  const cups = list.filter((p) => p.cupName);
+  // Las rondas creadas acá se reconocen por `seedSource` (de dónde salen sus
+  // equipos), no por `cupName`: la copa es opcional y una fase final única no
+  // la tiene — filtrar por el nombre las hacía desaparecer de la lista.
+  const cups = list.filter((p) => p.seedSource != null);
   const sourceOptions = list; // cualquier fase puede ser origen
 
   // Cuántos clasifican con el modo "por grupo", en vivo, para que el usuario
@@ -215,7 +218,8 @@ export default function CupsSection({
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-gray-900 dark:text-white">
-                    {p.cupName} — {p.name}
+                    {/* Sin copa (fase final única) se muestra solo la ronda. */}
+                    {p.cupName ? `${p.cupName} — ${p.name}` : p.name}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {describeSource(p, origen?.name)}
@@ -238,9 +242,12 @@ export default function CupsSection({
                     title="¿Eliminar esta ronda?"
                     description={
                       <>
-                        Se elimina <strong>{p.cupName} — {p.name}</strong> y sus
-                        cruces programados. Si ya tiene partidos jugados, el
-                        sistema no te va a dejar.
+                        Se elimina{" "}
+                        <strong>
+                          {p.cupName ? `${p.cupName} — ${p.name}` : p.name}
+                        </strong>{" "}
+                        y sus cruces programados. Si ya tiene partidos jugados,
+                        el sistema no te va a dejar.
                       </>
                     }
                     confirmLabel="Eliminar"
@@ -253,7 +260,7 @@ export default function CupsSection({
                         size="icon"
                         className="h-9 w-9 border-red-300 text-red-600 hover:bg-red-50 dark:border-red-500/50 dark:text-red-400 dark:hover:bg-red-500/10"
                         disabled={isWorking}
-                        aria-label={`Eliminar ${p.cupName} ${p.name}`}
+                        aria-label={`Eliminar ${p.cupName ? `${p.cupName} ` : ""}${p.name}`}
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
@@ -279,15 +286,6 @@ export default function CupsSection({
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="cup-name">Copa</Label>
-                <Input
-                  id="cup-name"
-                  placeholder="Copa de Oro"
-                  value={cupName}
-                  onChange={(e) => setCupName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="round-name">Ronda</Label>
                 <Input
                   id="round-name"
@@ -295,6 +293,30 @@ export default function CupsSection({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  El nombre de esta ronda: «Cuartos de final», «Semifinal»,
+                  «Final».
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cup-name">
+                  Copa{" "}
+                  <span className="font-normal text-gray-400">(opcional)</span>
+                </Label>
+                <Input
+                  id="cup-name"
+                  placeholder="Copa de Oro"
+                  value={cupName}
+                  onChange={(e) => setCupName(e.target.value)}
+                />
+                {/* Solo tiene sentido con VARIAS copas: es lo que separa los
+                    cuadros públicos. Vacío = una sola fase final. */}
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Solo si el torneo tiene <strong>varias copas</strong> (Oro y
+                  Plata). Con una sola fase final, dejalo vacío: si repetís acá
+                  el nombre de la ronda, el cuadro público se parte en uno por
+                  ronda.
+                </p>
               </div>
             </div>
 
@@ -438,7 +460,7 @@ export default function CupsSection({
             <Button
               variant="brand"
               onClick={submit}
-              disabled={isWorking || !cupName.trim() || !name.trim() || !sourcePhaseId}
+              disabled={isWorking || !name.trim() || !sourcePhaseId}
             >
               {isWorking && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
               Crear ronda

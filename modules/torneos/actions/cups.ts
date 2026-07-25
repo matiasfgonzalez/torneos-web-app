@@ -97,7 +97,14 @@ export async function getTournamentPhases(tournamentId: string) {
 export async function createCupPhase(input: {
   tournamentId: string;
   name: string;
-  cupName: string;
+  /**
+   * Copa a la que pertenece la ronda — **opcional**. Solo se llena cuando el
+   * torneo tiene VARIAS copas conviviendo ("Copa de Oro" / "Copa de Plata"):
+   * es lo que separa los cuadros públicos. Un torneo con una sola fase final
+   * (lo normal) lo deja vacío; era obligatorio y eso llevó a cargar el nombre
+   * de la ronda acá, partiendo el bracket en un cuadro por ronda.
+   */
+  cupName?: string | null;
   seedSource: PhaseSeedSource;
   sourcePhaseId: string;
   seedFrom?: number | null;
@@ -107,9 +114,9 @@ export async function createCupPhase(input: {
   if (ctx.error !== undefined) return { success: false, error: ctx.error };
 
   const name = input.name.trim();
-  const cupName = input.cupName.trim();
-  if (!name || !cupName) {
-    return { success: false, error: "La copa y la ronda necesitan un nombre" };
+  const cupName = input.cupName?.trim() || null;
+  if (!name) {
+    return { success: false, error: "La ronda necesita un nombre" };
   }
 
   const source = await db.tournamentPhase.findFirst({
@@ -173,7 +180,10 @@ export async function createCupPhase(input: {
   });
 
   revalidatePath(`/admin/torneos/${input.tournamentId}`);
-  return { success: true, message: `${cupName} — ${name} creada.` };
+  return {
+    success: true,
+    message: cupName ? `${cupName} — ${name} creada.` : `${name} creada.`,
+  };
 }
 
 /**

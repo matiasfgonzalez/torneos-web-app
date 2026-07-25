@@ -73,6 +73,12 @@ export interface IPhase {
    * el bug del bracket, que buscaba nombres del modelo `Phase` legacy).
    */
   type?: PhaseType;
+  /**
+   * Copa a la que pertenece la fase (S13): "Copa de Oro", "Copa de Plata"…
+   * `null` = fase final única (el torneo no usa copas múltiples). Es lo que
+   * separa los cuadros: dos copas en un mismo torneo son dos brackets.
+   */
+  cupName?: string | null;
 }
 
 export interface IGoal {
