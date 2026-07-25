@@ -39,6 +39,13 @@ type ViewMode = "grid" | "list";
 
 const DEFAULTS = { q: "", autor: "", orden: "date-desc" };
 
+/**
+ * Fecha con la que se ordena/agrupa una noticia. `publishedAt` es nullable
+ * (A6: solo lo tiene lo publicado); si faltara, cae a `createdAt` para que el
+ * orden no se rompa con un `Invalid Date`.
+ */
+const fechaNoticia = (n: INoticia) => new Date(n.publishedAt ?? n.createdAt);
+
 export default function NoticiasPage() {
   // Filtros en la URL (F2)
   const { values, setFilter, clearFilters, hasActiveFilters } =
@@ -53,7 +60,10 @@ export default function NoticiasPage() {
   useEffect(() => {
     const fetchNoticias = async () => {
       setLoading(true);
-      const res = await api.get<INoticia[]>("/api/noticias");
+      // `?published=true`: la lista es pública, los borradores no se muestran
+      // (y desde A6 ni siquiera tienen `publishedAt`). El panel usa su propia
+      // action paginada (`getNoticiasAdminPaged`), no esta ruta.
+      const res = await api.get<INoticia[]>("/api/noticias?published=true");
       if (res.ok) setNoticias(res.data);
       else console.error("Error fetching noticias:", res.error);
       setLoading(false);
@@ -66,7 +76,7 @@ export default function NoticiasPage() {
     const autores = new Set(noticias.map((n) => n.user?.name).filter(Boolean))
       .size;
     const thisMonth = noticias.filter((n) => {
-      const date = new Date(n.publishedAt);
+      const date = fechaNoticia(n);
       const now = new Date();
       return (
         date.getMonth() === now.getMonth() &&
@@ -102,15 +112,9 @@ export default function NoticiasPage() {
     result.sort((a, b) => {
       switch (sortBy) {
         case "date-desc":
-          return (
-            new Date(b.publishedAt).getTime() -
-            new Date(a.publishedAt).getTime()
-          );
+          return fechaNoticia(b).getTime() - fechaNoticia(a).getTime();
         case "date-asc":
-          return (
-            new Date(a.publishedAt).getTime() -
-            new Date(b.publishedAt).getTime()
-          );
+          return fechaNoticia(a).getTime() - fechaNoticia(b).getTime();
         case "title-asc":
           return a.title.localeCompare(b.title);
         case "title-desc":
@@ -325,7 +329,7 @@ export default function NoticiasPage() {
                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                               <Clock className="w-4 h-4 mr-1" />
                               {formatDate(
-                                noticiaDestacada.publishedAt,
+                                fechaNoticia(noticiaDestacada),
                                 "dd/MM/yyyy",
                               )}
                             </div>
@@ -381,7 +385,7 @@ export default function NoticiasPage() {
                             <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-3">
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1" />
-                                {formatDate(noticia.publishedAt, "dd/MM/yyyy")}
+                                {formatDate(fechaNoticia(noticia), "dd/MM/yyyy")}
                               </div>
                             </div>
 
@@ -435,7 +439,7 @@ export default function NoticiasPage() {
                               </Badge>
                               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                                 <Calendar className="w-4 h-4 mr-1" />
-                                {formatDate(noticia.publishedAt, "dd/MM/yyyy")}
+                                {formatDate(fechaNoticia(noticia), "dd/MM/yyyy")}
                               </div>
                             </div>
 

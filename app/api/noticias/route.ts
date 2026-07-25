@@ -65,10 +65,13 @@ export async function POST(req: NextRequest) {
       return validationErrorResponse(parsed.error);
     }
 
+    const published = parsed.data.published ?? false;
     const newNews = await db.news.create({
       data: {
         ...parsed.data,
-        published: parsed.data.published ?? false,
+        published,
+        // A6: `publishedAt` se setea SOLO al publicar; un borrador queda en null.
+        publishedAt: published ? new Date() : null,
         userId: authResult.user!.id,
       },
     });

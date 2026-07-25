@@ -38,7 +38,12 @@ export async function generateMetadata({
       title: noticia.title,
       description,
       type: "article",
-      publishedTime: new Date(noticia.publishedAt).toISOString(),
+      // `publishedAt` es nullable (A6). Acá siempre viene seteado —
+      // `getNoticiaById` filtra `published: true` — pero el tipo lo admite:
+      // sin fecha se omite el campo en vez de emitir un "Invalid Date".
+      publishedTime: noticia.publishedAt
+        ? new Date(noticia.publishedAt).toISOString()
+        : undefined,
       images: noticia.coverImageUrl
         ? [{ url: noticia.coverImageUrl }]
         : undefined,
@@ -72,7 +77,9 @@ export default async function NoticiaIndividualPage({
     "@type": "NewsArticle",
     headline: noticia.title,
     description: noticia.summary ?? noticia.content.slice(0, 160),
-    datePublished: new Date(noticia.publishedAt).toISOString(),
+    datePublished: noticia.publishedAt
+      ? new Date(noticia.publishedAt).toISOString()
+      : undefined,
     dateModified: new Date(noticia.updatedAt).toISOString(),
     image: cover ? [cover] : undefined,
     author: { "@type": "Person", name: noticia.user?.name ?? "GOLAZO" },
@@ -170,8 +177,17 @@ export default async function NoticiaIndividualPage({
               </div>
               <div className="flex items-center gap-2 text-white/70">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
-                <time dateTime={new Date(noticia.publishedAt).toISOString()}>
-                  {formatDate(noticia.publishedAt, "dd 'de' MMMM, yyyy")}
+                {/* `publishedAt` nullable (A6): cae a `createdAt` para no
+                    quedar con un `<time>` vacío si faltara. */}
+                <time
+                  dateTime={new Date(
+                    noticia.publishedAt ?? noticia.createdAt,
+                  ).toISOString()}
+                >
+                  {formatDate(
+                    noticia.publishedAt ?? noticia.createdAt,
+                    "dd 'de' MMMM, yyyy",
+                  )}
                 </time>
               </div>
               <div className="flex items-center gap-2 text-white/70">
@@ -296,12 +312,14 @@ export default async function NoticiaIndividualPage({
                   )}
                 </div>
                 <div className="flex flex-1 flex-col gap-1.5 p-4">
-                  <time
-                    dateTime={new Date(n.publishedAt).toISOString()}
-                    className="text-xs text-gray-500 dark:text-gray-400"
-                  >
-                    {formatDate(n.publishedAt, "dd 'de' MMMM, yyyy")}
-                  </time>
+                  {n.publishedAt && (
+                    <time
+                      dateTime={new Date(n.publishedAt).toISOString()}
+                      className="text-xs text-gray-500 dark:text-gray-400"
+                    >
+                      {formatDate(n.publishedAt, "dd 'de' MMMM, yyyy")}
+                    </time>
+                  )}
                   <h3 className="line-clamp-2 font-semibold leading-snug text-gray-900 group-hover:text-brand dark:text-white">
                     {n.title}
                   </h3>

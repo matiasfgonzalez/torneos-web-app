@@ -23,7 +23,9 @@ export async function getNoticiasRelacionadas(excludeId: string, take = 3) {
       coverImageUrl: true,
       publishedAt: true,
     },
-    orderBy: { publishedAt: "desc" },
+    // `nulls: "last"` (A6): `publishedAt` es nullable y en Postgres un NULL
+    // ordena PRIMERO con DESC — una noticia sin fecha encabezaría la lista.
+    orderBy: { publishedAt: { sort: "desc", nulls: "last" } },
     take,
   });
 }

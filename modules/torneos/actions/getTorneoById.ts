@@ -2,6 +2,7 @@
 
 import { ITorneo } from "@modules/torneos/types";
 import { db } from "@/lib/db";
+import { nextMatchFromMatches } from "@/lib/tournaments/nextMatch";
 
 export async function getTorneoById(id: string): Promise<ITorneo | null> {
   try {
@@ -56,11 +57,14 @@ export async function getTorneoById(id: string): Promise<ITorneo | null> {
     // `inscriptionFee` es Decimal (S3): se pasa a number acá porque este objeto
     // termina cruzando a client components (Header, HeaderTorneo) y un Decimal
     // no atraviesa el límite RSC.
+    // `nextMatch` (A6) es derivado: el PROGRAMADO más próximo. Los partidos ya
+    // vinieron en el include, así que se calcula en memoria (sin query extra).
     return {
       ...torneo,
       inscriptionFee: torneo.inscriptionFee
         ? Number(torneo.inscriptionFee)
         : null,
+      nextMatch: nextMatchFromMatches(torneo.matches),
     } as unknown as ITorneo;
   } catch (error) {
     console.error("Error al obtener torneo por ID:", error);

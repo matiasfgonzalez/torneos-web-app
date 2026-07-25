@@ -63,7 +63,8 @@ export async function GET(
             publishedAt: true,
           },
           orderBy: {
-            publishedAt: "desc",
+            // Nullable desde A6 (borradores sin fecha): que no encabecen.
+            publishedAt: { sort: "desc", nulls: "last" },
           },
           take: 5,
         },
@@ -119,9 +120,12 @@ export async function GET(
       tournamentsTotal,
       teamsTotal,
     ] = await Promise.all([
+      // Noticias PUBLICADAS en los últimos 30 días. Desde A6 un borrador tiene
+      // `publishedAt: null`, así que ya no se cuela en la métrica.
       db.news.count({
         where: {
           userId: id,
+          published: true,
           publishedAt: { gte: thirtyDaysAgo },
         },
       }),

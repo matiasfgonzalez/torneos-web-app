@@ -24,7 +24,12 @@ export interface ITorneo {
    */
   inscriptionFee?: number | null;
   inscriptionPaymentInfo?: string | null;
-  nextMatch: string | Date;
+  /**
+   * Próximo partido (A6): campo **derivado**, no existe en la BD. Lo calcula
+   * `lib/tournaments/nextMatch.ts` (el PROGRAMADO más próximo) y lo adjuntan
+   * las actions de listado/detalle. `null`/ausente = no hay partidos por jugar.
+   */
+  nextMatch?: string | Date | null;
   startDate: string | Date;
   endDate: string | Date;
   organizationId: string;

@@ -84,7 +84,6 @@ const tournamentFormSchema = z
       .max(50, "La localidad no puede superar los 50 caracteres"),
     startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
     endDate: z.string(),
-    nextMatch: z.string(),
     logoUrl: z.string().nullish(),
     logoPublicId: z.string().nullish(),
     liga: z.string().max(100, "La liga no puede superar los 100 caracteres"),
@@ -139,13 +138,6 @@ const tournamentFormSchema = z
         "Las inscripciones no pueden cerrar después de que arranque el torneo",
       path: ["registrationDeadline"],
     },
-  )
-  .refine(
-    (data) => !data.nextMatch || data.nextMatch.slice(0, 10) >= data.startDate,
-    {
-      message: "El próximo partido no puede ser anterior al inicio del torneo",
-      path: ["nextMatch"],
-    },
   );
 
 type TournamentFormValues = z.infer<typeof tournamentFormSchema>;
@@ -195,7 +187,6 @@ const emptyValues = (): TournamentFormValues => ({
   locality: "",
   startDate: "",
   endDate: "",
-  nextMatch: "",
   logoUrl: null,
   logoPublicId: null,
   liga: "",
@@ -227,7 +218,6 @@ const valuesFromTournament = (t: ITorneo): TournamentFormValues => ({
   locality: t.locality ?? "",
   startDate: toDateInput(t.startDate),
   endDate: toDateInput(t.endDate),
-  nextMatch: toDateTimeInput(t.nextMatch),
   logoUrl: t.logoUrl ?? null,
   logoPublicId: t.logoPublicId ?? null,
   liga: t.liga ?? "",
@@ -271,11 +261,10 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
   });
 
   const onSubmit = async (data: TournamentFormValues) => {
-    const { tiebreakerPreset, nextMatch, registrationDeadline, ...rest } = data;
+    const { tiebreakerPreset, registrationDeadline, ...rest } = data;
 
     const payload = {
       ...rest,
-      nextMatch: dateTimeInputToISO(nextMatch),
       maxTeams: data.maxTeams ?? null,
       registrationDeadline: dateTimeInputToISO(registrationDeadline),
       inscriptionFee: data.inscriptionFee ?? null,
@@ -428,14 +417,8 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
             icon={Calendar}
           />
         </FieldRow>
-        <DateField
-          control={form.control}
-          name="nextMatch"
-          label="Próximo partido"
-          icon={CalendarClock}
-          withTime
-          description="Se muestra como destacado en la ficha pública del torneo."
-        />
+        {/* A6: el "próximo partido" ya no se carga a mano — se deriva del
+            partido PROGRAMADO más próximo del fixture. */}
       </FormSection>
 
       <FormSection

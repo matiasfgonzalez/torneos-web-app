@@ -57,9 +57,13 @@ export async function getNoticiasAdminPaged(
   const where: Prisma.NewsWhereInput = { AND: conditions };
 
   const orderCol = params.sort ? NEWS_ORDER_BY[params.sort] : undefined;
-  const orderBy: Prisma.NewsOrderByWithRelationInput = orderCol
-    ? { [orderCol]: params.dir }
-    : { createdAt: "desc" };
+  // `publishedAt` es nullable (A6): los borradores van al final en vez de
+  // encabezar la tabla (en Postgres un NULL ordena primero con DESC).
+  const orderBy: Prisma.NewsOrderByWithRelationInput = !orderCol
+    ? { createdAt: "desc" }
+    : orderCol === "publishedAt"
+      ? { publishedAt: { sort: params.dir, nulls: "last" } }
+      : { [orderCol]: params.dir };
 
   const [rows, total] = await Promise.all([
     db.news.findMany({

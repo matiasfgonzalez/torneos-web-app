@@ -96,7 +96,8 @@ interface UserWithStats extends IUser {
     title: string;
     summary: string;
     published: boolean;
-    publishedAt: Date;
+    /** Nullable (A6): un borrador no tiene fecha de publicación. */
+    publishedAt: Date | null;
   }>;
   tournaments?: Array<{
     id: string;

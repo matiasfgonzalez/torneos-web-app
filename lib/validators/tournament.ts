@@ -44,7 +44,8 @@ const tournamentBase = z.object({
   logoPublicId: nullableString(255),
   liga: nullableString(120),
   format: z.enum(TournamentFormat),
-  nextMatch: nullableLocalDate,
+  // `nextMatch` se eliminó en A6: es derivable (el partido PROGRAMADO más
+  // próximo) y no se carga a mano — ver lib/tournaments/nextMatch.ts.
   homeAndAway: z.boolean(),
   startDate: localDate,
   endDate: nullableLocalDate,
@@ -93,7 +94,6 @@ export const tournamentCreateSchema = tournamentBase
     logoUrl: true,
     logoPublicId: true,
     liga: true,
-    nextMatch: true,
     homeAndAway: true,
     endDate: true,
     rules: true,

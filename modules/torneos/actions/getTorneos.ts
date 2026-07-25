@@ -5,6 +5,7 @@ import { ITorneo } from "@modules/torneos/types";
 import { db } from "@/lib/db";
 import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
 import type { ParsedTableParams } from "@/lib/tableParams";
+import { nextMatchDatesFor } from "@/lib/tournaments/nextMatch";
 
 /** Listado PÚBLICO de torneos (difusión: todas las organizaciones). */
 export async function getTorneos(): Promise<ITorneo[]> {
@@ -32,9 +33,12 @@ export async function getTorneos(): Promise<ITorneo[]> {
       },
     });
     // `inscriptionFee` (Decimal) → number: la lista cruza a FiltroTorneos (client).
+    // `nextMatch` (A6): derivado del partido PROGRAMADO más próximo, no un campo.
+    const nextMatchMap = await nextMatchDatesFor(torneos.map((t) => t.id));
     return torneos.map((t) => ({
       ...t,
       inscriptionFee: t.inscriptionFee ? Number(t.inscriptionFee) : null,
+      nextMatch: nextMatchMap.get(t.id) ?? null,
     })) as unknown as ITorneo[];
   } catch (error) {
     console.error("Error al obtener torneos:", error);
@@ -71,9 +75,12 @@ export async function getAdminTorneos(): Promise<ITorneo[]> {
       },
     });
     // `inscriptionFee` (Decimal) → number: la lista cruza a componentes cliente.
+    // `nextMatch` (A6): derivado, una sola groupBy para todos los torneos.
+    const nextMatchMap = await nextMatchDatesFor(torneos.map((t) => t.id));
     return torneos.map((t) => ({
       ...t,
       inscriptionFee: t.inscriptionFee ? Number(t.inscriptionFee) : null,
+      nextMatch: nextMatchMap.get(t.id) ?? null,
     })) as unknown as ITorneo[];
   } catch (error) {
     console.error("Error al obtener torneos del panel:", error);
@@ -143,10 +150,14 @@ export async function getAdminTorneosPaged(
     db.tournament.count({ where }),
   ]);
 
+  // `nextMatch` (A6): derivado — solo para la página visible, no para el total.
+  const nextMatchMap = await nextMatchDatesFor(rows.map((t) => t.id));
+
   return {
     rows: rows.map((t) => ({
       ...t,
       inscriptionFee: t.inscriptionFee ? Number(t.inscriptionFee) : null,
+      nextMatch: nextMatchMap.get(t.id) ?? null,
     })) as unknown as ITorneo[],
     total,
   };

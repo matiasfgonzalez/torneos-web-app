@@ -69,9 +69,28 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
       return validationErrorResponse(parsed.error);
     }
 
+    // A6: `publishedAt` se fija la PRIMERA vez que se publica y se conserva
+    // (no se re-sella al editar ni se borra al pasar a borrador) — mismo patrón
+    // que `OrgPost`. El PUT es parcial: el estado efectivo puede venir del body
+    // o quedarse como estaba.
+    const existing = await db.news.findUnique({
+      where: { id },
+      select: { published: true, publishedAt: true },
+    });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Noticia no encontrada" },
+        { status: 404 },
+      );
+    }
+    const willPublish = parsed.data.published ?? existing.published;
+    const publishedAt = willPublish
+      ? (existing.publishedAt ?? new Date())
+      : existing.publishedAt;
+
     const updatedNoticia = await db.news.update({
       where: { id },
-      data: parsed.data,
+      data: { ...parsed.data, publishedAt },
       include: { user: newsAuthorSelect },
     });
 

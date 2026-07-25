@@ -19,9 +19,13 @@ const toArgentinaTime = (date: Date): Date => {
 /**
  * Formatea una fecha ajustándola a la zona horaria de Argentina (UTC-3)
  * Usar para fechas con hora (ej: partidos, eventos)
+ *
+ * Acepta `null`/`undefined` y devuelve `""` (hay fechas opcionales en el
+ * modelo: `News.publishedAt` de un borrador, `endDate`, etc.). Si la vista
+ * necesita un texto de reemplazo ("Sin fecha"), lo decide el llamador.
  */
 export const formatDate = (
-  dateString: string | Date,
+  dateString: string | Date | null | undefined,
   formato: string = "dd 'de' MMMM yyyy - HH:mm",
 ): string => {
   if (!dateString) {
@@ -45,7 +49,7 @@ export const formatDate = (
  * y al parsearlas el navegador las ajusta a la zona local, causando desfases
  */
 export const formatDateOk = (
-  dateString: string | Date,
+  dateString: string | Date | null | undefined,
   formato: string = "dd 'de' MMMM yyyy",
 ): string => {
   if (!dateString) {
@@ -74,7 +78,7 @@ export const formatDateOk = (
  * @param includeTime - Si es true, ajusta la hora a Argentina. Si es false, usa fecha UTC.
  */
 export const formatDateArgentina = (
-  dateString: string | Date,
+  dateString: string | Date | null | undefined,
   formato: string = "dd 'de' MMMM yyyy",
   includeTime: boolean = false,
 ): string => {

@@ -272,7 +272,10 @@ model News {
   coverImageUrl      String?
   coverImagePublicId String?
   published          Boolean   @default(false)
-  publishedAt        DateTime  @default(now())
+  // A6: nullable y sin `@default(now())`. Un borrador no tiene fecha de
+  // publicación (antes el `now()` daba un orden de publicación falso). Se setea
+  // al publicar y se conserva (mismo patrón que `OrgPost.publishedAt`).
+  publishedAt        DateTime?
   deletedAt          DateTime?
   userId             String
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -353,7 +356,9 @@ model Tournament {
   liga         String? // nombre de liga/asociación (texto libre)
   status       TournamentStatus   @default(PENDIENTE)
   format       TournamentFormat   @default(LIGA)
-  nextMatch    DateTime?
+  // `nextMatch` (campo denormalizado que el organizador cargaba a mano) se
+  // eliminó en A6: es derivable = el partido PROGRAMADO más próximo. Se calcula
+  // con una query (lib/tournaments/nextMatch.ts) y se adjunta a `ITorneo`.
   homeAndAway  Boolean            @default(false)
   enabled      Boolean            @default(true)
   rules        String?

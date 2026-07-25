@@ -27,7 +27,6 @@ export interface ITournament {
   liga?: string;
   status?: string;
   format?: string;
-  nextMatch?: string;
   homeAndAway?: boolean;
   enabled?: boolean;
   startDate?: string;

@@ -50,14 +50,13 @@
 - **S10** — Multi-deporte (solo si el negocio lo pide) · `E:Alto`
 
 ### 🟨 Parcialmente hechas — falta el remate
-- **A6** — falta `publishedAt` nullable + eliminar `nextMatch` derivable
 - **A7** — falta migrar los éxitos de todas las rutas al envelope `{success,data}`
 - **A8** — faltan tests de validadores Zod y Playwright E2E (el **lint bloqueante** se resolvió en B5)
 - **S13** — copas múltiples: núcleo hecho (schema + lógica + acciones + pantalla). Falta que el **cuadro público separe por copa** (`KnockoutBracket` agrupa por fase, no por `cupName`)
 - **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A6, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -258,7 +257,7 @@
 
 ### A6. Prisma: índices ausentes y modelo legacy conviviendo
 
-- [~] **Problema:**
+- [x] **Problema:**
   - Sin índices en: `Match(tournamentId, dateTime)`, `Match(status)`, `Goal(matchId)`, `Card(matchId)`, `TeamPlayer(tournamentTeamId)`, `Tournament(status, deletedAt)`, `News(published, publishedAt)`, `User(role, status)`.
   - `Phase`/`phaseId` (legacy) convive con `TournamentPhase` en Tournament y Match — dos caminos para lo mismo.
   - `News.publishedAt` tiene `@default(now())` aunque sea borrador (orden de publicación falso).
@@ -266,6 +265,10 @@
   - `Tournament.nextMatch` es un dato derivable (denormalización manual propensa a quedar vieja).
 - **Solución:** Migración única: agregar `@@index`, migrar datos de `Phase`→`TournamentPhase` y eliminar el modelo legacy, `publishedAt DateTime?` (se setea al publicar), `yearFounded Int?`, y calcular `nextMatch` con query en lugar de campo.
 - **Implementado (2026-07-05, migración `nueva_estructura`):** todos los índices ✅ (más `organizationId` en las 4 entidades, `homeTeamId/awayTeamId/tournamentPhaseId` en Match, `AuditLog(entity, entityId)`), `Phase` legacy eliminado ✅, `yearFounded Int?` ✅. **Pendiente:** `publishedAt` nullable y eliminar `nextMatch` derivable (quedaron como estaban para no tocar más UI en esta pasada).
+- **Completado (2026-07-24, migración `a6_publishedat_nullable_drop_nextmatch`):** el remate de los dos puntos pendientes.
+  - **`News.publishedAt DateTime?`** (sin `@default(now())`): la migración incluye un **data migration** que limpia (`NULL`) el `publishedAt` falso de los borradores existentes. La fecha se sella la **primera vez que se publica** y se conserva al editar o al volver a borrador — mismo patrón que `OrgPost` ([app/api/noticias/route.ts](app/api/noticias/route.ts) POST, [app/api/noticias/[id]/route.ts](app/api/noticias/[id]/route.ts) PUT). Consumidores hechos null-safe: `INoticia.publishedAt`, `formatDate*` acepta `null` y devuelve `""`, ordenamientos con `nulls: "last"` (los borradores dejan de encabezar la tabla del panel y las relacionadas), metadata OG/JSON-LD de la ficha omiten el campo en vez de emitir `Invalid Date`, y el conteo de "noticias de los últimos 30 días" de `/api/users/[id]` ahora filtra `published: true`.
+  - **`Tournament.nextMatch` eliminado**: pasa a ser derivado en [lib/tournaments/nextMatch.ts](lib/tournaments/nextMatch.ts) — el partido `PROGRAMADO` de menor `dateTime`. `nextMatchDatesFor()` resuelve los listados con **una sola `groupBy`** (sin N+1) y `nextMatchFromMatches()` lo calcula en memoria en el detalle, donde los partidos ya vienen en el `include` (cero queries extra). Se adjunta en `getTorneos`, `getAdminTorneos`, `getAdminTorneosPaged` y `getTorneoById`. Sacado del schema Zod ([lib/validators/tournament.ts](lib/validators/tournament.ts)), del formulario ([DialogAddTournaments.tsx](modules/torneos/components/admin/DialogAddTournaments.tsx): campo, validación cruzada y payload) y de los 4 tipos que lo declaraban. La UI que lo muestra (`TournamentCard`, `ListTournaments`, `QuickStats`) no cambió: ahora recibe el valor derivado y siempre está al día.
+  - Verificado: `tsc --noEmit` limpio, 273 tests en verde, build de producción completo.
 - **Esfuerzo:** E:Medio-Alto · **Beneficio:** Queries rápidas y un solo modelo mental de fases.
 
 ### A7. Formato de respuesta de API inconsistente
@@ -1468,3 +1471,7 @@ Extiende la tabla de N1 con los sombreros que no son membresía:
 ### Hallazgo agregado el 2026-07-21 (al implementar M6 — Mi liga / Marca)
 
 15. [x] 🟡 **Descubrimiento de ligas en el menú público (`E:Bajo-Medio`) — HECHO (2026-07-21).** Antes las páginas `/liga/[slug]` solo se alcanzaban por link directo/breadcrumb. Se agregó la página `/ligas` ([app/(public)/ligas/page.tsx](app/(public)/ligas/page.tsx)) — grid buscable de organizaciones ACTIVAS con al menos un torneo visible (`getPublicOrganizations`), con logo, localidad y N° de torneos — y su ítem "Ligas" en `siteLinks` ([lib/constants/navigation.ts](lib/constants/navigation.ts)), primero en el menú. Verificado en el navegador (HTTP 200, desktop + mobile).
+
+### Hallazgo agregado el 2026-07-24 (al rematar A6 — `publishedAt` / `nextMatch`)
+
+16. [ ] 🟠 **`GET /api/noticias` expone borradores a cualquiera (`E:Bajo`).** La ruta es pública y sin sesión, y el filtro `published` depende de un query param opcional: `GET /api/noticias` (sin `?published=true`) devuelve **también los borradores** — título, resumen y portada de noticias no publicadas. Se detectó porque la lista pública [app/(public)/noticias/page.tsx](app/(public)/noticias/page.tsx) llamaba sin el param; se corrigió el consumidor (ahora pide `?published=true`), pero **la ruta sigue sirviendo borradores a quien los pida a mano**. **Solución:** en [app/api/noticias/route.ts](app/api/noticias/route.ts), forzar `published: true` salvo que haya sesión con rol de panel (mismo criterio que `getNoticiaById`, que ya filtra). El panel no depende de esta ruta para listar: usa `getNoticiasAdminPaged` (M7).

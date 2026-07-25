@@ -27,7 +27,11 @@ export interface INoticia {
     coverImageUrl: string;
     coverImagePublicId?: string;
     published: boolean;
-    publishedAt: string | Date;
+    /**
+     * Fecha de publicación (A6): `null` mientras la noticia es borrador. Se
+     * sella la primera vez que se publica y se conserva después.
+     */
+    publishedAt: string | Date | null;
     userId: string;
     createdAt: string | Date;
     updatedAt: string | Date;
