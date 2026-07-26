@@ -6,6 +6,7 @@ import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentUpdateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
+import { canTransitionTournament } from "@/lib/status-transitions";
 
 type tParams = Promise<{ id: string }>;
 
@@ -161,6 +162,19 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const auth = await requireApiOrgAccess(existing.organizationId);
     if (auth.error) {
       return auth.error;
+    }
+
+    // M12: el cambio de estado tiene que ser un camino válido de la máquina de
+    // estados. El enum de Prisma acota los valores, no el camino: sin esto un
+    // torneo FINALIZADO volvía a INSCRIPCION con partidos y tabla ya cargados.
+    if (parsed.data.status) {
+      const transition = canTransitionTournament(
+        existing.status,
+        parsed.data.status,
+      );
+      if (!transition.ok) {
+        return NextResponse.json({ error: transition.error }, { status: 409 });
+      }
     }
 
     // **Reactivar consume el límite igual que crear.** Faltaba: se podía

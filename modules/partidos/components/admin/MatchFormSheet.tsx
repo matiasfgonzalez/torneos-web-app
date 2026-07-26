@@ -35,6 +35,8 @@ import {
 } from "@/components/shared/form/fields";
 import { toDateTimeInput } from "@/lib/date-input";
 import { MATCH_STATUS } from "@modules/partidos/types";
+import { allowedMatchTransitions } from "@/lib/status-transitions";
+import type { MatchStatus } from "@prisma/client";
 import type { ITorneo } from "@modules/torneos/types";
 
 /**
@@ -309,6 +311,24 @@ export function MatchFormSheet({
   const teamOptions = context?.teams ?? [];
   const isWalkover = status === "WALKOVER";
 
+  /**
+   * Estados ofrecidos (M12): en edición, los que la máquina de estados permite
+   * desde el estado guardado; en el alta, los que puede tener un partido recién
+   * creado (todo menos ENTRETIEMPO, que exige un partido ya en juego). Los
+   * demás quedan visibles pero en gris. El server valida lo mismo.
+   */
+  const statusOptions = useMemo(() => {
+    const current = (isEdit ? match?.status : "PROGRAMADO") as
+      | MatchStatus
+      | undefined;
+    if (!current) return MATCH_STATUS;
+    const allowed = allowedMatchTransitions(current);
+    return MATCH_STATUS.map((o) => ({
+      ...o,
+      disabled: o.value !== current && !allowed.includes(o.value),
+    }));
+  }, [isEdit, match?.status]);
+
   // El ganador (de penales o de walkover) solo puede ser uno de los dos equipos
   const involvedTeams = teamOptions.filter(
     (t) => t.value === homeTeamId || t.value === awayTeamId,
@@ -427,7 +447,7 @@ export function MatchFormSheet({
             label="Estado"
             icon={Flag}
             required
-            options={MATCH_STATUS}
+            options={statusOptions}
           />
           <NumberField
             control={form.control}

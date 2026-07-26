@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,6 +49,8 @@ import {
   TOURNAMENT_STATUS_OPTIONS,
   tournamentFormatOptions,
 } from "@/lib/constants";
+import { allowedTournamentTransitions } from "@/lib/status-transitions";
+import type { TournamentStatus } from "@prisma/client";
 import type { ITorneo } from "@modules/torneos/types";
 
 /**
@@ -259,6 +261,23 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
     key: "tournament:new",
     enabled: !isEditMode,
   });
+
+  /**
+   * Estados ofrecidos en el select (M12). En edición se deshabilitan los que la
+   * máquina de estados no permite desde el actual — visibles en gris, no
+   * escondidos: así se entiende que el estado existe y por qué no se puede
+   * elegir ahora. El server valida lo mismo, esto solo evita el viaje.
+   * En el alta no se filtra: el estado inicial lo fija el server (PENDIENTE).
+   */
+  const statusOptions = useMemo(() => {
+    const current = tournament?.status as TournamentStatus | undefined;
+    if (!current) return TOURNAMENT_STATUS_OPTIONS;
+    const allowed = allowedTournamentTransitions(current);
+    return TOURNAMENT_STATUS_OPTIONS.map((o) => ({
+      ...o,
+      disabled: o.value !== current && !allowed.includes(o.value),
+    }));
+  }, [tournament?.status]);
 
   const onSubmit = async (data: TournamentFormValues) => {
     const { tiebreakerPreset, registrationDeadline, ...rest } = data;
@@ -569,7 +588,12 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
           label="Estado"
           icon={Shield}
           required
-          options={TOURNAMENT_STATUS_OPTIONS}
+          options={statusOptions}
+          description={
+            isEditMode
+              ? "Los estados en gris no se pueden elegir desde el estado actual."
+              : undefined
+          }
         />
         <SwitchField
           control={form.control}

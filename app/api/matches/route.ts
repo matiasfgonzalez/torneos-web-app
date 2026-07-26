@@ -17,6 +17,7 @@ import {
   canCreateMatchInTournament,
   validateMatchRules,
 } from "@/lib/match-rules";
+import { canCreateMatchWithStatus } from "@/lib/status-transitions";
 import { assertTeamsInTournament } from "@/lib/match-guards";
 
 // GET /api/matches — listado paginado y filtrado (A3).
@@ -187,6 +188,15 @@ export async function POST(req: NextRequest) {
     }
 
     const data = { ...parsed.data };
+
+    // M12: un partido nace PROGRAMADO. Se puede crear ya jugado (carga
+    // histórica) pero no en un estado "en vivo" imposible como ENTRETIEMPO.
+    if (data.status) {
+      const initial = canCreateMatchWithStatus(data.status);
+      if (!initial.ok) {
+        return NextResponse.json({ error: initial.error }, { status: 409 });
+      }
+    }
 
     // Regla WALKOVER (N7): el organizador marca el ganador y el server fija
     // el marcador (walkoverScore-0). Ya no se carga el 3-0 a mano.

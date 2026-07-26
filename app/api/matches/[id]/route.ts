@@ -10,6 +10,7 @@ import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { matchUpdateSchema } from "@/lib/validators/match";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { canEditMatchInTournament, validateMatchRules } from "@/lib/match-rules";
+import { canTransitionMatch } from "@/lib/status-transitions";
 import { assertTeamsInTournament } from "@/lib/match-guards";
 import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
@@ -124,6 +125,16 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     }
 
     const data = { ...parsed.data };
+
+    // M12: el cambio de estado tiene que ser un camino válido. Sin esto un
+    // partido CANCELADO podía saltar a ENTRETIEMPO, o uno que nunca arrancó
+    // aparecía "en vivo" en la ficha pública.
+    if (data.status) {
+      const transition = canTransitionMatch(previousMatch.status, data.status);
+      if (!transition.ok) {
+        return NextResponse.json({ error: transition.error }, { status: 409 });
+      }
+    }
 
     // Regla WALKOVER (N7): el organizador marca el ganador y el server fija
     // el marcador (walkoverScore-0). Se usan los valores efectivos porque el

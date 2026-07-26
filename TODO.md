@@ -38,7 +38,6 @@
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
 **🟡 Medio**
-- **M12** — Máquina de estados torneo/partido (`canTransition`) · `E:Medio`
 - **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
 
 **🟢 Bajo**
@@ -56,7 +55,7 @@
 - **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A6, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A6, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M12, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -490,7 +489,14 @@
 
 ### M12. Máquina de estados de torneo y partido
 
-- [ ] Hoy cualquier status puede saltar a cualquier otro. Definir transiciones válidas (`BORRADOR→INSCRIPCION→PENDIENTE→ACTIVO→FINALIZADO→ARCHIVADO`, etc.) en un helper `canTransition(from, to)` compartido por API y UI (deshabilitar opciones inválidas en selects). **E:Medio**
+- [x] Hoy cualquier status puede saltar a cualquier otro. Definir transiciones válidas (`BORRADOR→INSCRIPCION→PENDIENTE→ACTIVO→FINALIZADO→ARCHIVADO`, etc.) en un helper `canTransition(from, to)` compartido por API y UI (deshabilitar opciones inválidas en selects). **E:Medio**
+- **Implementado (2026-07-25):** [lib/status-transitions.ts](lib/status-transitions.ts) — lógica pura, sin BD ni React, con los dos grafos (`TOURNAMENT_TRANSITIONS` / `MATCH_TRANSITIONS`) y su API: `canTransitionTournament` / `canTransitionMatch` (devuelven el `RuleResult` de `match-rules`, con mensaje accionable) y `allowedTournamentTransitions` / `allowedMatchTransitions` para armar los selects. **20 tests** en [tests/status-transitions.test.ts](tests/status-transitions.test.ts).
+  - **Los dos criterios del grafo:** (1) **volver atrás se permite donde el organizador se puede equivocar** — cargar el resultado en el partido equivocado o cerrar un torneo de más pasa seguido, y que el único arreglo sea tocar la base no es una regla, es una trampa: `FINALIZADO` reabre a `ACTIVO` (es como se agregan partidos que faltaban, ver M11), `CANCELADO` vuelve a `BORRADOR`, un partido `FINALIZADO` corrige a `PROGRAMADO`/`EN_JUEGO`/`WALKOVER`; (2) **se prohíbe lo que deja datos incoherentes o miente** — `ENTRETIEMPO` en un partido que nunca arrancó, o devolver a `INSCRIPCION` un torneo ya jugado con tabla cargada.
+  - **Detalle que importa:** repetir el estado actual **es válido**. Los PATCH parciales (y el form de torneo, que manda el payload completo) reenvían el `status` sin querer cambiarlo; tratar eso como transición habría roto toda edición que no toca el estado.
+  - **Server (la que manda):** `PATCH /api/tournaments/[id]` y `PATCH /api/matches/[id]` validan contra el estado **guardado** y devuelven **409** con el mensaje. `POST /api/matches` usa `canCreateMatchWithStatus`, que mide contra `PROGRAMADO` — así la regla sale del mismo grafo y no de una segunda lista: deja crear un partido ya jugado (carga histórica) y frena los estados "en vivo" imposibles. `POST /api/tournaments` no necesitó nada: ya fija `PENDIENTE` server-side.
+  - **UI:** las opciones inválidas quedan **visibles pero en gris** (explican el camino mejor que esconderlas) en los tres lugares donde se cambia un estado: [DialogAddTournaments](modules/torneos/components/admin/DialogAddTournaments.tsx), [MatchFormSheet](modules/partidos/components/admin/MatchFormSheet.tsx) y [QuickMatchLoader](app/admin/partidos/[id]/cargar/QuickMatchLoader.tsx). `FieldOption` ganó `disabled?` y `SelectField` lo pasa al `SelectItem`. En el quick loader las opciones se calculan contra el estado **guardado**, no contra el borrador: si no, elegir uno y arrepentirse dejaba el original en gris.
+  - Un test recorre los dos enums de Prisma y falla si se agrega un estado sin definir sus salidas — el modo en que esta clase de tabla se pudre en silencio.
+  - **Verificado:** 302 tests verdes (20 nuevos), `tsc`/`eslint` limpios, `next build` completo. **No se ejercitó con sesión real:** el 409 de la API y el gris de los selects están cubiertos por tests y tipos, no por una pantalla logueada.
 
 ### M13. Revisión de enums sobredimensionados (decisión tomada ✅)
 

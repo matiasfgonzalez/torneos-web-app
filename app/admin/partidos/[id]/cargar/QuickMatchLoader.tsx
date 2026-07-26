@@ -35,6 +35,7 @@ import {
 import { formatDate } from "@/lib/formatDate";
 import { getMatchById } from "@modules/partidos/actions/getMatchById";
 import { IPartidos, MATCH_STATUS, MatchStatus } from "@modules/partidos/types";
+import { allowedMatchTransitions } from "@/lib/status-transitions";
 import ManageGoals from "@/app/admin/torneos/[id]/components/tabs-match/ManageGoals";
 import ManageCards from "@/app/admin/torneos/[id]/components/tabs-match/ManageCards";
 
@@ -105,6 +106,11 @@ export default function QuickMatchLoader({
     const fresh = await getMatchById(match.id);
     if (fresh) setMatch(fresh);
   };
+
+  // M12: estados a los que se puede llegar desde el **guardado** (no desde el
+  // borrador: si no, elegir uno y arrepentirse dejaría el original en gris).
+  // Los inválidos se muestran deshabilitados; el server valida lo mismo.
+  const allowedStatuses = allowedMatchTransitions(match.status);
 
   const isWalkover = draft.status === "WALKOVER";
   const walkoverScore = match.tournament.walkoverScore ?? 3;
@@ -367,7 +373,14 @@ export default function QuickMatchLoader({
                 </SelectTrigger>
                 <SelectContent>
                   {MATCH_STATUS.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
+                    <SelectItem
+                      key={s.value}
+                      value={s.value}
+                      disabled={
+                        s.value !== match.status &&
+                        !allowedStatuses.includes(s.value)
+                      }
+                    >
                       {s.label}
                     </SelectItem>
                   ))}

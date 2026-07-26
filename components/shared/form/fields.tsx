@@ -311,6 +311,12 @@ export function TextareaField<T extends FieldValues>({
 export interface FieldOption {
   value: string;
   label: string;
+  /**
+   * Opción visible pero no elegible. Se usa para los estados a los que la
+   * máquina de estados no deja llegar (M12): mostrarlos en gris explica el
+   * camino mejor que esconderlos.
+   */
+  disabled?: boolean;
 }
 
 export function SelectField<T extends FieldValues>({
@@ -351,7 +357,11 @@ export function SelectField<T extends FieldValues>({
             </FormControl>
             <SelectContent>
               {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                >
                   {option.label}
                 </SelectItem>
               ))}
