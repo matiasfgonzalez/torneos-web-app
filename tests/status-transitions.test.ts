@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MatchStatus, TournamentStatus } from "@prisma/client";
+import { MatchStatus, TournamentStatus } from "@/lib/generated/prisma/enums";
 
 import {
   MATCH_TRANSITIONS,

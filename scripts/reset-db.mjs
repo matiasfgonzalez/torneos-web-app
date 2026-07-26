@@ -22,7 +22,7 @@
 import { createInterface } from "node:readline/promises";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { PrismaClient } from "@prisma/client";
+import { crearDbDeScript } from "./db-client.mjs";
 
 /** Tablas que NO se tocan: el historial de migraciones de Prisma. */
 const KEEP_TABLES = new Set(["_prisma_migrations"]);
@@ -75,7 +75,7 @@ async function main() {
   }
 
   const target = describeTarget(url);
-  const db = new PrismaClient();
+  const db = crearDbDeScript();
 
   try {
     // Tablas reales de la base, no una lista escrita a mano: un modelo nuevo en

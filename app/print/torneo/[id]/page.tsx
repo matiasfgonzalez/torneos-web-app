@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import Link from "next/link";
 import {
   getTournamentExportData,

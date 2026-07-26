@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { UserRole, UserStatus } from "@prisma/client";
+import { UserRole, UserStatus } from "@/lib/generated/prisma/enums";
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { apiError, apiOk } from "@/lib/apiResponse";
 

@@ -28,7 +28,7 @@ import {
   resignMyDelegation,
   transferMyDelegation,
 } from "@modules/delegados/actions/requests";
-import type { ApprovalStatus } from "@prisma/client";
+import type { ApprovalStatus } from "@/lib/generated/prisma/enums";
 
 /**
  * Acciones que el delegado tiene sobre su propio vínculo con el equipo (N13):

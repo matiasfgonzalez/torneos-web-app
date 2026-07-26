@@ -27,7 +27,7 @@ import { toDateTimeInput } from "@/lib/date-input";
 import { strategyFor } from "@/lib/fixture/formats";
 import { generateTournamentFixture } from "@modules/torneos/actions/generateFixture";
 import type { ITorneo } from "@modules/torneos/types";
-import type { TournamentFormat } from "@prisma/client";
+import type { TournamentFormat } from "@/lib/generated/prisma/enums";
 
 /**
  * Generador de fixture (S1) — la UI.

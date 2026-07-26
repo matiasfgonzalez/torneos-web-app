@@ -16,7 +16,7 @@ import {
   FOOT_LABELS,
 } from "@/lib/constants";
 import { calcularEdad } from "@/lib/calcularEdad";
-import type { Foot, PlayerPosition } from "@prisma/client";
+import type { Foot, PlayerPosition } from "@/lib/generated/prisma/enums";
 import PlayerForm from "./player-form";
 import { DeleteOrDisableButtons } from "@/components/shared/DeleteOrDisableButtons";
 import { deletePlayer, togglePlayerEnabled } from "@modules/jugadores/actions/players";

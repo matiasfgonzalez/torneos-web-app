@@ -18,7 +18,7 @@ import {
   User,
 } from "lucide-react";
 
-import { RefereeStatus } from "@prisma/client";
+import { RefereeStatus } from "@/lib/generated/prisma/enums";
 import { z } from "@/lib/zod-locale";
 import { Button } from "@/components/ui/button";
 import { FormSheet } from "@/components/shared/form/FormSheet";

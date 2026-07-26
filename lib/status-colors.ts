@@ -4,7 +4,7 @@ import {
   PlayerStatus,
   TournamentStatus,
   UserStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/enums";
 
 /**
  * Mapas ÚNICOS de color por estado (F0 del rediseño frontend).

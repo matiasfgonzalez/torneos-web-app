@@ -49,7 +49,7 @@ import {
   TOURNAMENT_STATUS_OPTIONS,
 } from "@/lib/constants";
 import { allowedTournamentTransitions } from "@/lib/status-transitions";
-import type { TournamentStatus } from "@prisma/client";
+import type { TournamentStatus } from "@/lib/generated/prisma/enums";
 import type { ITorneo } from "@modules/torneos/types";
 
 /**

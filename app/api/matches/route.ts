@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db"; // Asegúrate de tener este cliente configurado
-import { MatchStatus, Prisma } from "@prisma/client";
+import { MatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import {
   applyMatchResult,
   extractMatchResult,

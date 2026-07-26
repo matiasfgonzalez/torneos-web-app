@@ -5,7 +5,7 @@ import { SmartImage } from "@/components/shared/SmartImage";
 import { api } from "@/lib/api-client";
 import Link from "next/link";
 import { Radio, Shield, ChevronRight } from "lucide-react";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { useLivePoll } from "@/hooks/use-live-poll";
 import type { LiveMatchCard } from "@modules/partidos/utils/liveState";
 

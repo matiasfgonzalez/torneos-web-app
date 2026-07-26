@@ -1,4 +1,4 @@
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 
 /**
  * Resultado de un partido para cálculo de estadísticas

@@ -1,4 +1,4 @@
-import type { CardType, MatchStatus } from "@prisma/client";
+import type { CardType, MatchStatus } from "@/lib/generated/prisma/enums";
 
 /**
  * Estadísticas avanzadas del torneo (S7) — capa pura.

@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client";
+import type { UserRole } from "@/lib/generated/prisma/enums";
 
 /**
  * Jerarquía de roles de **plataforma** — pura, sin Next ni base, para que la

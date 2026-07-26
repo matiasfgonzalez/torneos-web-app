@@ -34,7 +34,7 @@ import {
   PLAYER_POSITION_LABELS,
   PLAYER_POSITION_OPTIONS,
 } from "@/lib/constants";
-import { PlayerPosition } from "@prisma/client";
+import { PlayerPosition } from "@/lib/generated/prisma/enums";
 
 type SortOption = "name-asc" | "name-desc" | "number-asc" | "number-desc";
 type ViewMode = "grid" | "list";

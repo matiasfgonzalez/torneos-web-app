@@ -21,7 +21,7 @@ import { useEffect, useState, useCallback, useTransition } from "react";
 import { MatchFormSheet } from "@modules/partidos/components/admin/MatchFormSheet";
 import GenerateFixtureSheet from "../GenerateFixtureSheet";
 import DialogMatchDetails from "../DialogMatchDetails";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { IPartidos } from "@modules/partidos/types";
 import { MATCH_STATUS_OPTIONS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/StatusBadge";

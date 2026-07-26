@@ -29,7 +29,7 @@ import {
   type MyPlayerProfile,
 } from "@modules/jugadores/actions/claims";
 import EditProfileSheet from "./EditProfileSheet";
-import type { ApprovalStatus } from "@prisma/client";
+import type { ApprovalStatus } from "@/lib/generated/prisma/enums";
 
 interface Career {
   id: string;

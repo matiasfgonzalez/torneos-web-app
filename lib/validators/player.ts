@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Foot, PlayerPosition, PlayerStatus } from "@prisma/client";
+import { Foot, PlayerPosition, PlayerStatus } from "@/lib/generated/prisma/enums";
 import {
   nullableDate,
   nullableEnum,

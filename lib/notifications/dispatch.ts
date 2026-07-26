@@ -1,4 +1,4 @@
-import type { NotificationCategory } from "@prisma/client";
+import type { NotificationCategory } from "@/lib/generated/prisma/enums";
 
 import { db } from "@/lib/db";
 import {

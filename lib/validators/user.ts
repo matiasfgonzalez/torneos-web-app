@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserRole, UserStatus } from "@prisma/client";
+import { UserRole, UserStatus } from "@/lib/generated/prisma/enums";
 import { nullableString } from "./common";
 
 // No hay `userCreateSchema`: las cuentas las crea Clerk, no un alta manual

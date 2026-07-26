@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { PhaseSeedSource } from "@prisma/client";
+import type { PhaseSeedSource } from "@/lib/generated/prisma/enums";
 
 import { db } from "@/lib/db";
 import { requireActionOrgAccess } from "@/lib/orgAuth";

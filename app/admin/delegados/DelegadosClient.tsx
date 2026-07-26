@@ -18,7 +18,7 @@ import { PageHeader, SectionTitle } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { formatFee } from "@/lib/inscriptions";
-import type { InscriptionPayStatus } from "@prisma/client";
+import type { InscriptionPayStatus } from "@/lib/generated/prisma/enums";
 import {
   approveTeamRequest,
   rejectTeamRequest,

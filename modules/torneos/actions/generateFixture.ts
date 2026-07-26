@@ -1,6 +1,6 @@
 "use server";
 
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";

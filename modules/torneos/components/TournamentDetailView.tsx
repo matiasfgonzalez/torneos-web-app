@@ -45,7 +45,7 @@ import { FollowButton } from "@modules/favoritos/components/FollowButton";
 import TeamsCarousel from "@modules/equipos/components/TeamsCarousel";
 import PublicStandingsSection from "@modules/torneos/components/PublicStandingsSection";
 import MatchDetailModal from "@modules/torneos/components/MatchDetailModal";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import {
   ITournamentTeam,
   IMatch,

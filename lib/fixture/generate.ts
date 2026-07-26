@@ -1,4 +1,4 @@
-import { TournamentFormat } from "@prisma/client";
+import { TournamentFormat } from "@/lib/generated/prisma/enums";
 import { distributeIntoGroups, groupByExisting, groupName } from "./groups";
 import { knockoutFirstRound } from "./knockout";
 import { roundRobinRounds } from "./round-robin";

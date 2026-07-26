@@ -10,6 +10,10 @@ export default defineConfig({
   },
   test: {
     include: ["tests/**/*.test.ts"],
+    // Los de integración necesitan una Postgres levantada y van por
+    // `npm run test:integration` (vitest.integration.config.ts). Excluirlos acá
+    // mantiene `npm test` en lo que siempre fue: rápido y sin infra.
+    exclude: ["tests/integration/**", "node_modules/**"],
     environment: "node",
   },
 });

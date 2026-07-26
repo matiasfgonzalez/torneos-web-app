@@ -32,7 +32,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { SkeletonCards } from "@/components/shared/Skeletons";
 import { api } from "@/lib/api-client";
 import { useUrlFilters } from "@/hooks/use-url-filters";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { IPartidos } from "@modules/partidos/types";
 import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 import { LiveNowSection } from "@modules/partidos/components/LiveNowSection";

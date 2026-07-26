@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { MatchStatus, Prisma } from "@prisma/client";
+import { MatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { MatchResult, extractMatchResult } from "./utils";
 import { phaseTypeCountsPoints } from "./phase-utils";
 import { DEFAULT_POINTS, PointsConfig } from "./config";

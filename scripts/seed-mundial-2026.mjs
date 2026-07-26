@@ -19,7 +19,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { PrismaClient } from "@prisma/client";
+import { crearDbDeScript } from "./db-client.mjs";
 
 // Paleta del proyecto (`TEAM_COLORS` en components/shared/form/fields.tsx),
 // para que los equipos sembrados usen los mismos colores que ofrece el panel.
@@ -134,7 +134,7 @@ async function main() {
     return;
   }
 
-  const db = new PrismaClient();
+  const db = crearDbDeScript();
   try {
     const org = orgId
       ? await db.organization.findUnique({ where: { id: orgId }, select: { id: true, name: true } })

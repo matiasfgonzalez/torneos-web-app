@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PlayerStatus } from "@prisma/client";
+import { PlayerStatus } from "@/lib/generated/prisma/enums";
 import {
   emptyToUndefined,
   nullableDate,

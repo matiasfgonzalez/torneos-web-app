@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg } from "@/lib/orgAuth";

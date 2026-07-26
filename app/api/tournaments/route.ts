@@ -1,5 +1,5 @@
 // app/api/tournaments/route.ts
-import { AgeGroup, Gender, Prisma } from "@prisma/client";
+import { AgeGroup, Gender, Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import { isOrgOwner, requireApiOrgContext } from "@/lib/orgAuth";
 import { assertPlanLimit } from "@/lib/planLimits";

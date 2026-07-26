@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Prisma } from "@prisma/client";
-import { MatchStatus } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { applyMatchResult } from "@/lib/standings/calculate-standings";
 import type { MatchResult } from "@/lib/standings/utils";
 

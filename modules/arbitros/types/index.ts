@@ -1,4 +1,4 @@
-import { RefereeStatus } from "@prisma/client";
+import { RefereeStatus } from "@/lib/generated/prisma/enums";
 
 export interface IReferee {
   id: string;

@@ -4,7 +4,7 @@ import {
   Gender,
   TournamentFormat,
   TournamentStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/enums";
 import { nullableInt, nullableString } from "./common";
 import { TIEBREAKER_CRITERIA } from "@/lib/standings/config";
 

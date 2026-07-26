@@ -2,7 +2,7 @@ import type { NextResponse } from "next/server";
 
 import { checkUser } from "@/lib/checkUser";
 import { apiError } from "@/lib/apiResponse";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/generated/prisma/enums";
 import { canManageUser } from "@/lib/userRoles";
 
 /**

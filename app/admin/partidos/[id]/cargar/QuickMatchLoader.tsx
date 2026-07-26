@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { formatDate } from "@/lib/formatDate";
 import { getMatchById } from "@modules/partidos/actions/getMatchById";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { IPartidos } from "@modules/partidos/types";
 import { MATCH_STATUS_OPTIONS } from "@/lib/constants";
 import { allowedMatchTransitions } from "@/lib/status-transitions";

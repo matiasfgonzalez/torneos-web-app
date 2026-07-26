@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
 import {
   CardInput,

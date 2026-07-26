@@ -1,4 +1,4 @@
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 
 /**
  * Resolución de WALKOVER (N7 / cierra C6).

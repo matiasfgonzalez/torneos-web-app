@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { SmartImage } from "@/components/shared/SmartImage";
-import { User } from "@prisma/client";
+import { User } from "@/lib/generated/prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Shield, Calendar } from "lucide-react";
 import Link from "next/link";

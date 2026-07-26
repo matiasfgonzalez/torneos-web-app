@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { isWalkover, resolveWalkover } from "@/lib/standings/walkover";
 
 describe("resolveWalkover", () => {

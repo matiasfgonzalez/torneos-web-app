@@ -1,6 +1,6 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
 import type { IOrgPost, IPublicOrgPost } from "@modules/novedades/types";

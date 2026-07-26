@@ -1,4 +1,4 @@
-import type { PhaseType } from "@prisma/client";
+import type { PhaseType } from "@/lib/generated/prisma/enums";
 
 /**
  * Generador de fixture (S1) — tipos compartidos.

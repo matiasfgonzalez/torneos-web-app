@@ -1,5 +1,5 @@
 // app/api/players/route.ts
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getPanelOrgIds } from "@/lib/orgAuth";

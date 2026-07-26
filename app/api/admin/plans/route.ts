@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { apiError, apiOk } from "@/lib/apiResponse";
 import { planCreateSchema } from "@/lib/validators/plan";

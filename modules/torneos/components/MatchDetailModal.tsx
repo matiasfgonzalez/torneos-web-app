@@ -28,7 +28,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { IMatch } from "@modules/torneos/types/tournament-teams.types";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 
 interface MatchDetailModalProps {
   match: IMatch;

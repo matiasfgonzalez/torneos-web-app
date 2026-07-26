@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatDate } from "@/lib/formatDate";
 import { Users, Trophy, Target, Clock, Building, Calendar } from "lucide-react";
 import { TOURNAMENT_FORMAT_LABELS } from "@/lib/constants";
-import { TournamentFormat } from "@prisma/client";
+import { TournamentFormat } from "@/lib/generated/prisma/enums";
 
 interface PropsQuickStats {
   readonly tournamentData: ITorneo;

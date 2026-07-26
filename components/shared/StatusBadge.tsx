@@ -5,7 +5,7 @@ import {
   RefereeStatus,
   TournamentStatus,
   UserStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/enums";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {

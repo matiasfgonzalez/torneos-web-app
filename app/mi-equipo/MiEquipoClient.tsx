@@ -38,7 +38,7 @@ import RosterSection, { type Roster } from "./RosterSection";
 import InscriptionsSection, { type OpenTournament } from "./InscriptionsSection";
 import EditTeamSheet from "./EditTeamSheet";
 import DelegationActions from "./DelegationActions";
-import type { ApprovalStatus } from "@prisma/client";
+import type { ApprovalStatus } from "@/lib/generated/prisma/enums";
 
 interface MyRequest {
   id: string;

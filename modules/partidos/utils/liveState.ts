@@ -1,4 +1,4 @@
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 
 /**
  * Estado "en vivo" de un partido (S6): la forma compacta que viaja del server al

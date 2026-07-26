@@ -21,7 +21,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { PrismaClient } from "@prisma/client";
+import { crearDbDeScript } from "./db-client.mjs";
 
 // Un script de Node suelto no carga `.env`; lo metemos en process.env para que
 // PrismaClient encuentre DATABASE_URL.
@@ -46,7 +46,7 @@ const force = process.argv.includes("--force");
 const tIdx = process.argv.indexOf("--tournament");
 const tournamentId = tIdx !== -1 ? process.argv[tIdx + 1] : undefined;
 
-const prisma = new PrismaClient();
+const prisma = crearDbDeScript();
 
 const where = {
   tournamentPhaseId: null,

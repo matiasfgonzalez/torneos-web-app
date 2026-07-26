@@ -1,6 +1,6 @@
 ﻿// app/api/noticias/route.ts
 import { NextRequest } from "next/server";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsCreateSchema } from "@/lib/validators/news";

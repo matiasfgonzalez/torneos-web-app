@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
 import { canManageOrg } from "@/lib/orgAuth";

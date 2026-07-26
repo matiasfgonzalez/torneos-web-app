@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RefereeStatus } from "@prisma/client";
+import { RefereeStatus } from "@/lib/generated/prisma/enums";
 import { nullableDate, nullableString } from "./common";
 
 const emptyToNull = (value: unknown) =>

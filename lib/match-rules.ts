@@ -1,4 +1,4 @@
-import type { MatchStatus, TournamentStatus } from "@prisma/client";
+import type { MatchStatus, TournamentStatus } from "@/lib/generated/prisma/enums";
 
 /**
  * Reglas de negocio de un partido y del torneo que lo contiene (M11) — puras y

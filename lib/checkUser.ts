@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { currentUser } from "@clerk/nextjs/server";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 
 import { db } from "@/lib/db";
 

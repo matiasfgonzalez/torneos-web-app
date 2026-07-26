@@ -1,8 +1,8 @@
 // Backfill de slugs de torneos existentes (N9). Idempotente: solo toca los
 // que aún no tienen slug. Genera slug único por organización con desambiguación.
-import { PrismaClient } from "@prisma/client";
+import { crearDbDeScript } from "../scripts/db-client.mjs";
 
-const db = new PrismaClient();
+const db = crearDbDeScript();
 
 function slugify(input) {
   return (

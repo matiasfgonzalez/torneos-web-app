@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";

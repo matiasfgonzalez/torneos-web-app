@@ -1,6 +1,6 @@
 "use server";
 
-import type { TournamentStatus } from "@prisma/client";
+import type { TournamentStatus } from "@/lib/generated/prisma/enums";
 
 import { db } from "@/lib/db";
 import { ITorneo } from "@modules/torneos/types";

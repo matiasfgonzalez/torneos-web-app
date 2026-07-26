@@ -18,7 +18,7 @@ import { getTournamentTeamPlayers } from "@modules/equipos/actions/getTournament
 import { addCard, deleteCard } from "@modules/partidos/actions/cards";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { CardType } from "@prisma/client";
+import { CardType } from "@/lib/generated/prisma/enums";
 
 interface ManageCardsProps {
   match: IPartidos;

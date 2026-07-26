@@ -1,4 +1,4 @@
-import type { NotificationCategory, NotificationType } from "@prisma/client";
+import type { NotificationCategory, NotificationType } from "@/lib/generated/prisma/enums";
 
 /**
  * Catálogo de notificaciones (S5) — **puro y sin dependencias**.

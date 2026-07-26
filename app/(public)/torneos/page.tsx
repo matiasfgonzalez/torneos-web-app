@@ -3,7 +3,7 @@ import FiltroTorneos from "@modules/torneos/components/FiltroTorneos";
 import { Badge } from "@/components/ui/badge";
 import { PageHero, HeroHighlight } from "@/components/shared/PageHero";
 import { AGE_GROUP_LABELS } from "@/lib/constants";
-import { AgeGroup } from "@prisma/client";
+import { AgeGroup } from "@/lib/generated/prisma/enums";
 import {
   Trophy,
   Users,

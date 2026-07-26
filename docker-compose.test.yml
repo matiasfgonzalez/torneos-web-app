@@ -1,0 +1,33 @@
+# Postgres efímera para los tests de integración (#26).
+#
+#   docker compose -f docker-compose.test.yml up -d
+#   npm run test:integration
+#   docker compose -f docker-compose.test.yml down -v
+#
+# `down -v` borra el volumen: la base es descartable a propósito. Los tests
+# aplican las migraciones sobre una base vacía, que es parte de lo que prueban.
+#
+# Puerto 55432 y no 5432: si alguien tiene un Postgres local, no se pisan — y un
+# error de configuración no puede terminar corriendo los tests contra su base.
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: golazo-postgres-test
+    environment:
+      POSTGRES_USER: golazo
+      POSTGRES_PASSWORD: golazo
+      POSTGRES_DB: golazo_test
+    ports:
+      - "55432:5432"
+    # `fsync=off` y compañía: es una base descartable, no hace falta durabilidad.
+    # Acelera bastante el `migrate deploy` de cada corrida.
+    command: >
+      postgres
+      -c fsync=off
+      -c synchronous_commit=off
+      -c full_page_writes=off
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U golazo -d golazo_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20

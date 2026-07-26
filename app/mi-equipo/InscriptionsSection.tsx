@@ -32,7 +32,7 @@ import { formatFee } from "@/lib/inscriptions";
 import type {
   InscriptionPayStatus,
   RegistrationStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/enums";
 
 interface Registration {
   id: string;

@@ -11,7 +11,7 @@ import {
   PayStatus,
   OrgRole,
   UserRole,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/enums";
 
 // ============================================
 // CATEGORÍA DE TORNEO (M13: ageGroup + gender + division)

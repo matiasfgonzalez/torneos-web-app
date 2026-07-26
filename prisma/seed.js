@@ -1,10 +1,10 @@
 // Seed de planes (N4). Idempotente: upsert por code.
 // Las definiciones viven en `plans.mjs` para que un test pueda verificarlas sin
 // escribir en la base (ver tests/plans/features.test.ts).
-import { PrismaClient } from "@prisma/client";
+import { crearDbDeScript } from "../scripts/db-client.mjs";
 import { PLANS } from "./plans.mjs";
 
-const db = new PrismaClient();
+const db = crearDbDeScript();
 
 for (const plan of PLANS) {
   const existente = await db.plan.findUnique({

@@ -1,4 +1,4 @@
-import type { MatchStatus, TournamentStatus } from "@prisma/client";
+import type { MatchStatus, TournamentStatus } from "@/lib/generated/prisma/enums";
 
 import type { RuleResult } from "@/lib/match-rules";
 import { MATCH_STATUS_LABELS, TOURNAMENT_STATUS_LABELS } from "@/lib/constants";

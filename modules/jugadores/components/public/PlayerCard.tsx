@@ -8,7 +8,7 @@ import {
   FOOT_LABELS,
   FOOT_COLORS,
 } from "@/lib/constants";
-import { PlayerPosition, Foot } from "@prisma/client";
+import { PlayerPosition, Foot } from "@/lib/generated/prisma/enums";
 
 function getPositionLabel(position: string | null) {
   if (!position) return "Sin posición";

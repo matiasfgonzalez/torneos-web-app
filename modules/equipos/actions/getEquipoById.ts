@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import type { Prisma, Team } from "@prisma/client";
+import type { Prisma, Team } from "@/lib/generated/prisma/client";
 
 /**
  * `include` de la ficha de equipo. Se declara aparte para poder **derivar los

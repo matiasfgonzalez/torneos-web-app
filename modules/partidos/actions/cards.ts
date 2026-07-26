@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { CardType } from "@prisma/client";
+import { CardType } from "@/lib/generated/prisma/enums";
 import { getMatchOrgId, requireActionOrgAccess } from "@/lib/orgAuth";
 import {
   hasActiveSuspension,

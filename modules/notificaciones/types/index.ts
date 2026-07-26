@@ -1,4 +1,4 @@
-import type { NotificationCategory, NotificationType } from "@prisma/client";
+import type { NotificationCategory, NotificationType } from "@/lib/generated/prisma/enums";
 
 /** Una notificación tal como la consume la UI (fechas ya serializadas). */
 export interface NotificationItem {

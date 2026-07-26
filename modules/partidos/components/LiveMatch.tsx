@@ -21,7 +21,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { SectionTitle } from "@/components/shared/PageHeader";
 import { formatDate } from "@/lib/formatDate";
 import { cn } from "@/lib/utils";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { IPartidos } from "@modules/partidos/types";
 import { tournamentPublicPath } from "@modules/torneos/utils/publicPath";
 import { useLivePoll } from "@/hooks/use-live-poll";

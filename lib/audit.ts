@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 
 // Constantes/etiquetas client-safe (las usa también la tabla client). Se

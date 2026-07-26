@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { NotificationCategory } from "@prisma/client";
+import type { NotificationCategory } from "@/lib/generated/prisma/enums";
 
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";

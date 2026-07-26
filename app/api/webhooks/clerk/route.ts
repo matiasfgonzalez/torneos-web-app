@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import { apiError, apiOk } from "@/lib/apiResponse";
 

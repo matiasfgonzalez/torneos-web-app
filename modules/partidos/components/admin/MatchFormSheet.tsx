@@ -36,7 +36,7 @@ import {
 import { toDateTimeInput } from "@/lib/date-input";
 import { MATCH_STATUS_OPTIONS } from "@/lib/constants";
 import { allowedMatchTransitions } from "@/lib/status-transitions";
-import type { MatchStatus } from "@prisma/client";
+import type { MatchStatus } from "@/lib/generated/prisma/enums";
 import type { ITorneo } from "@modules/torneos/types";
 
 /**

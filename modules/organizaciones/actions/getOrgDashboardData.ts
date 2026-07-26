@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { getEffectivePlan, getOrCreateSubscription } from "@/lib/planLimits";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 
 export interface DashboardMatch {
   id: string;

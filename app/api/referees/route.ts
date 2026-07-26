@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { RefereeStatus } from "@prisma/client";
+import { RefereeStatus } from "@/lib/generated/prisma/enums";
 import {
   requireApiOrgContext,
   getPanelOrgIds,

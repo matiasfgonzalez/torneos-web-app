@@ -11,7 +11,7 @@ import {
   Trash2,
   Trophy,
 } from "lucide-react";
-import type { PhaseSeedSource } from "@prisma/client";
+import type { PhaseSeedSource } from "@/lib/generated/prisma/enums";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

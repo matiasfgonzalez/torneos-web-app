@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from "@prisma/client";
+import { UserRole, UserStatus } from "@/lib/generated/prisma/enums";
 
 export interface IUser {
   id: string;

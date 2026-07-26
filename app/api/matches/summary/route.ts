@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { MatchStatus, Prisma } from "@prisma/client";
+import { MatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import { getPanelOrgIds } from "@/lib/orgAuth";
 import { apiError, apiOk } from "@/lib/apiResponse";

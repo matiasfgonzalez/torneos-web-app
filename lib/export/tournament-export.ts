@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { makeStandingsComparator } from "@/lib/standings/config";
 
 /**

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
-import type { TournamentStatus } from "@prisma/client";
+import type { TournamentStatus } from "@/lib/generated/prisma/enums";
 
 export interface FavoriteTournamentItem {
   id: string;

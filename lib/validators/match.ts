@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { nullableInt, nullableString } from "./common";
 
 const matchBase = z.object({

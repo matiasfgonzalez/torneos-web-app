@@ -1,6 +1,6 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { IPlayer } from "@modules/jugadores/types";
 import { db } from "@/lib/db";
 import { getPanelOrgIds } from "@/lib/orgAuth";

@@ -7,7 +7,7 @@ import {
   FIXTURE_STRATEGY_BY_FORMAT,
   strategyFor,
 } from "@/lib/fixture/formats";
-import { TournamentFormat } from "@prisma/client";
+import { TournamentFormat } from "@/lib/generated/prisma/enums";
 
 const teams = (n: number) => Array.from({ length: n }, (_, i) => `t${i + 1}`);
 

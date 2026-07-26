@@ -15,7 +15,7 @@ import {
   findPlayerByNationalId,
   removePlayerFromRoster,
 } from "@modules/delegados/actions/players";
-import type { RegistrationStatus } from "@prisma/client";
+import type { RegistrationStatus } from "@/lib/generated/prisma/enums";
 
 export interface Roster {
   id: string;

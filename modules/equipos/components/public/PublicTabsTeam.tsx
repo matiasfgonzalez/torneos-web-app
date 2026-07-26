@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatDate";
 import { formatTournamentCategory } from "@/lib/constants";
 import { PLAYER_POSITION_LABELS } from "@/lib/constants";
-import { PlayerPosition } from "@prisma/client";
+import { PlayerPosition } from "@/lib/generated/prisma/enums";
 import MatchCard from "./MatchCard";
 import { ligasDelEquipo } from "@modules/equipos/utils/ligas";
 import type { TeamDetail } from "@modules/equipos/actions/getEquipoById";

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { OrgRole, Organization } from "@prisma/client";
+import { OrgRole, Organization } from "@/lib/generated/prisma/client";
 import { checkUser } from "@/lib/checkUser";
 import { db } from "@/lib/db";
 

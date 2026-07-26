@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MatchStatus } from "@prisma/client";
+import { MatchStatus } from "@/lib/generated/prisma/enums";
 import { db } from "@/lib/db";
 import type { LiveMatchCard } from "@modules/partidos/utils/liveState";
 

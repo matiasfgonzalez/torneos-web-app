@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateSiteSettings } from "@modules/configuracion/actions/siteSettings";
-import type { SiteSettings } from "@prisma/client";
+import type { SiteSettings } from "@/lib/generated/prisma/client";
 
 interface ConfiguracionClientProps {
   initialSettings: SiteSettings;

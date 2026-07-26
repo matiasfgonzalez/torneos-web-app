@@ -2,13 +2,23 @@
 // Decisiones D1-D9 en TODO.md: multi-tenancy por Organization, roles de
 // plataforma mínimos + roles por organización, categorías en 3 campos.
 
+// B5d — Prisma 7: el generador `prisma-client-js` (que escribía dentro de
+// `node_modules`) se reemplaza por `prisma-client`, que exige un `output`
+// explícito. El cliente pasa a vivir **en el repo**, en `lib/generated/prisma`,
+// y se ignora en git: es artefacto, no fuente.
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+  // El repo es ESM (`"type": "module"`) y lo consume Next: sin esto el cliente
+  // se genera en CommonJS y los imports quedan a mitad de camino.
+  moduleFormat = "esm"
+  runtime      = "nodejs"
 }
 
+// La `url` ya no va acá (Prisma 7): la CLI la toma de `prisma.config.ts` y el
+// runtime del driver adapter en `lib/db.ts`.
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ============================================================

@@ -20,7 +20,7 @@ import {
   formatTournamentCategory,
   TOURNAMENT_STATUS_LABELS,
 } from "@/lib/constants";
-import { TournamentStatus } from "@prisma/client";
+import { TournamentStatus } from "@/lib/generated/prisma/enums";
 
 type RouteParams = Promise<{ slug: string }>;
 

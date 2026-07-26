@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/generated/prisma/enums";
 import { checkUser } from "./checkUser";
 import { db } from "./db";
 import { acceptPendingInvites } from "./orgAuth";

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import type { ApprovalStatus } from "@prisma/client";
+import type { ApprovalStatus } from "@/lib/generated/prisma/enums";
 
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";

@@ -1,4 +1,4 @@
-import { Plan, Subscription } from "@prisma/client";
+import { Plan, Subscription } from "@/lib/generated/prisma/client";
 import { db } from "@/lib/db";
 import type { FeatureKey } from "@/lib/constants/plan-features";
 

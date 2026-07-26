@@ -20,7 +20,7 @@ import {
   formatTournamentCategory,
   TOURNAMENT_FORMAT_LABELS,
 } from "@/lib/constants";
-import { TournamentStatus, TournamentFormat } from "@prisma/client";
+import { TournamentStatus, TournamentFormat } from "@/lib/generated/prisma/enums";
 
 interface PropsHeader {
   readonly tournamentData: ITorneo;

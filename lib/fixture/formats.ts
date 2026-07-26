@@ -1,4 +1,4 @@
-import { TournamentFormat } from "@prisma/client";
+import { TournamentFormat } from "@/lib/generated/prisma/enums";
 
 /**
  * Qué genera el fixture para cada formato (S1).

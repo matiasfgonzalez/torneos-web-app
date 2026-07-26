@@ -1,4 +1,4 @@
-import type { MatchStatus } from "@prisma/client";
+import type { MatchStatus } from "@/lib/generated/prisma/enums";
 
 import { IPlayerTeam } from "@modules/jugadores/types";
 import { IGoal, IPhase, ICard, IMatchReferee } from "@modules/partidos/types";

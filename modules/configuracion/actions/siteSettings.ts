@@ -8,7 +8,7 @@ import {
   siteSettingsUpdateSchema,
   type SiteSettingsUpdateInput,
 } from "@/lib/validators/site-settings";
-import type { SiteSettings } from "@prisma/client";
+import type { SiteSettings } from "@/lib/generated/prisma/client";
 
 const SITE_SETTINGS_ID = "main";
 

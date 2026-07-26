@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User } from "@prisma/client";
+import { User } from "@/lib/generated/prisma/client";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 

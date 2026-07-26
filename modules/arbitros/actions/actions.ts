@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { RefereeStatus, type Prisma } from "@prisma/client";
+import { RefereeStatus, type Prisma } from "@/lib/generated/prisma/client";
 import { IRefereeCreate, IRefereeUpdate } from "../types";
 import type { ParsedTableParams } from "@/lib/tableParams";
 import {

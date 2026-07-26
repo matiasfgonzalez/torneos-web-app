@@ -1,4 +1,4 @@
-import type { CardType, MatchStatus, PhaseType } from "@prisma/client";
+import type { CardType, MatchStatus, PhaseType } from "@/lib/generated/prisma/enums";
 
 export interface ITeam {
   id: string;

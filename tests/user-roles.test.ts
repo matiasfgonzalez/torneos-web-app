@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/generated/prisma/enums";
 
 import {
   USER_ROLE_RANK,

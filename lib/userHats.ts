@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { ApprovalStatus, OrgRole } from "@prisma/client";
+import { ApprovalStatus, OrgRole } from "@/lib/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 

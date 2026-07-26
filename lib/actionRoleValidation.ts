@@ -1,5 +1,5 @@
 import { checkUser } from "@/lib/checkUser";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/generated/prisma/enums";
 
 type ActionAuthResult =
   | { user: NonNullable<Awaited<ReturnType<typeof checkUser>>>; error?: never }
