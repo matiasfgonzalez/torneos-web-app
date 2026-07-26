@@ -1,364 +1,75 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Users,
-  Search,
-  MoreVertical,
-  Eye,
-  Edit,
-  Trash2,
-  RefreshCw,
-  Download,
-  Phone,
-  MapPin,
-  Calendar,
-  Crown,
-  ShieldCheck,
-  PenTool,
-  User as UserIcon,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Grid3X3,
-  List,
-  SortAsc,
-  SortDesc,
-} from "lucide-react";
 import { toast } from "sonner";
+import {
+  Crown,
+  Edit,
+  Eye,
+  Filter,
+  Shield,
+  Trash2,
+  UserCheck,
+  Users,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/DataTable";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SkeletonTable } from "@/components/shared/Skeletons";
+import { StatCard, StatCardGrid } from "@/components/shared/StatCard";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/formatDate";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { SkeletonCards } from "@/components/shared/Skeletons";
+import { parseTableParams } from "@/lib/tableParams";
 import {
   IUser,
-  UserRole,
-  UserStatus,
+  ROLE_COLORS,
   ROLE_LABELS,
   STATUS_LABELS,
-  ROLE_COLORS,
-  STATUS_COLORS,
+  UserRole,
+  UserStatus,
 } from "./types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Función para obtener icono del rol
-const getRoleIcon = (role: UserRole) => {
-  switch (role) {
-    case UserRole.ADMINISTRADOR:
-      return <Crown className="h-4 w-4" />;
-    case UserRole.MODERADOR:
-      return <ShieldCheck className="h-4 w-4" />;
-    case UserRole.EDITOR:
-      return <PenTool className="h-4 w-4" />;
-    case UserRole.ORGANIZADOR:
-      return <Calendar className="h-4 w-4" />;
-    default:
-      return <UserIcon className="h-4 w-4" />;
-  }
-};
+/**
+ * Gestión de usuarios de la plataforma (patrón §4 variante A de UI_PATTERNS:
+ * header showcase + KPIs + `<DataTable>` server-side).
+ *
+ * Era la última tabla del panel sin migrar a M7: 823 líneas donde el mismo
+ * archivo hacía de página, tarjeta, fila, barra de filtros y paginador. Todo
+ * eso ya lo resuelve `<DataTable>` en modo `server` —incluido el colapso a
+ * cards en mobile y el orden por columna—, así que la pantalla se queda solo
+ * con lo suyo: qué columnas mostrar y qué hacer en cada fila.
+ *
+ * Los datos siguen viniendo de `GET /api/users`, que ya paginaba y filtraba
+ * server-side y conserva el envelope `{ success, data, meta }` (A7). No se
+ * escribió una server action nueva: la ruta es admin-only y su forma es la
+ * correcta, cambiarla habría sido mover el problema de lugar.
+ */
 
-// Componente de tarjeta de usuario
-const UserCard = ({
-  user,
-  onDelete,
-}: {
-  user: ApiUser;
-  onDelete: (userId: string) => void;
-}) => (
-  <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 hover:shadow-xl transition-all duration-300 group">
-    <CardHeader className="pb-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-            <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-semibold">
-              {user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-              {user.name}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-              {user.email}
-            </p>
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href={`/admin/usuarios/${user.id}`}>
-                <Eye className="h-4 w-4 mr-2" />
-                Ver detalles
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/admin/usuarios/${user.id}/edit`}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem
-                  onSelect={(e: Event) => e.preventDefault()}
-                  className="text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Eliminar
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-gray-900 dark:text-white">
-                    ¿Estás seguro?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
-                    Esta acción marcará al usuario como inactivo. Esta operación
-                    puede deshacerse.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
-                    Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => onDelete(user.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Eliminar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </CardHeader>
-    <CardContent className="space-y-3">
-      <div className="flex items-center space-x-2">
-        <Badge className={ROLE_COLORS[user.role]}>
-          <Crown className="h-4 w-4 mr-1" />
-          <span>{ROLE_LABELS[user.role]}</span>
-        </Badge>
-        <Badge className={STATUS_COLORS[user.status]}>
-          {STATUS_LABELS[user.status]}
-        </Badge>
-      </div>
-
-      <div className="space-y-2 text-sm">
-        {user.phone && (
-          <div className="flex items-center text-gray-600 dark:text-gray-400">
-            <Phone className="h-4 w-4 mr-2" />
-            <span className="truncate">{user.phone}</span>
-          </div>
-        )}
-        {user.location && (
-          <div className="flex items-center text-gray-600 dark:text-gray-400">
-            <MapPin className="h-4 w-4 mr-2" />
-            <span className="truncate">{user.location}</span>
-          </div>
-        )}
-        <div className="flex items-center text-gray-600 dark:text-gray-400">
-          <Calendar className="h-4 w-4 mr-2" />
-          <span>Registro: {formatDate(user.createdAt)}</span>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
-        <div className="flex space-x-3 text-xs text-gray-500 dark:text-gray-400">
-          <span>{user._count?.news || 0} noticias</span>
-          <span>{user._count?.tournaments || 0} torneos</span>
-        </div>
-        <Button
-          size="sm"
-          asChild
-          className="bg-gradient-to-r from-brand to-brand-2 hover:from-brand-hover hover:to-brand-2 text-white"
-        >
-          <Link href={`/admin/usuarios/${user.id}`}>Ver detalles</Link>
-        </Button>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Componente de fila de usuario para vista de lista
-const UserRow = ({
-  user,
-  onDelete,
-}: {
-  user: ApiUser;
-  onDelete: (userId: string) => void;
-}) => (
-  <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 hover:shadow-lg transition-all">
-    <CardContent className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 flex-1 min-w-0">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user.imageUrl || ""} alt={user.name} />
-            <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-white font-semibold text-sm">
-              {user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-gray-900 dark:text-white truncate">
-              {user.name}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-              {user.email}
-            </p>
-          </div>
-          <div className="hidden md:flex items-center space-x-2">
-            <Badge className={ROLE_COLORS[user.role]}>
-              <Crown className="h-4 w-4 mr-1" />
-              <span>{ROLE_LABELS[user.role]}</span>
-            </Badge>
-            <Badge className={STATUS_COLORS[user.status]}>
-              {STATUS_LABELS[user.status]}
-            </Badge>
-          </div>
-          <div className="hidden lg:block text-sm text-gray-500 dark:text-gray-400">
-            {formatDate(user.createdAt)}
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/admin/usuarios/${user.id}`}>
-              <Eye className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/admin/usuarios/${user.id}/edit`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción marcará al usuario como inactivo. Esta operación
-                  puede deshacerse.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => onDelete(user.id)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Eliminar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Interferes para la API
+/** Envelope histórico de las rutas de `users` (A7). */
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
-  meta?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
+  meta?: { total: number; page: number; limit: number; totalPages: number };
 }
 
-interface UserFilters {
-  search: string;
-  role: UserRole | "all";
-  status: UserStatus | "all";
-  sortBy: "name" | "email" | "createdAt" | "lastLoginAt";
-  sortOrder: "asc" | "desc";
-  page: number;
-  limit: number;
-}
-
-// Tipo extendido para la API que maneja fechas como strings
-interface ApiUser extends Omit<
-  IUser,
-  "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
-> {
+/** Fila tal como llega del API: las fechas viajan como string. */
+interface ApiUser
+  extends Omit<
+    IUser,
+    "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
+  > {
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string | null;
@@ -366,466 +77,387 @@ interface ApiUser extends Omit<
   emailVerified?: string | null;
 }
 
+/** Lo que la pantalla usa de `GET /api/users/stats` (agregados de TODA la base). */
+interface UserStats {
+  overview: { total: number; active: number; pending: number };
+  roleDistribution: { admin: number };
+}
+
+const EMPTY_STATS: UserStats = {
+  overview: { total: 0, active: 0, pending: 0 },
+  roleDistribution: { admin: 0 },
+};
+
+/** Iniciales para el avatar cuando no hay imagen. */
+const initials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+/**
+ * Columnas ordenables → el `sortBy` que entiende `GET /api/users`.
+ *
+ * Solo estas tres llevan `sortValue` en la definición de columnas: el API
+ * ordena por `name`, `email`, `createdAt` y `lastLoginAt`, así que hacer
+ * clickeable el encabezado de "Rol" o "Estado" prometería un orden que el
+ * server no sabe hacer (y en modo server la tabla no ordena en memoria).
+ */
+const API_SORT: Record<string, string> = {
+  user: "name",
+  createdAt: "createdAt",
+  lastLoginAt: "lastLoginAt",
+};
+
 export default function UsersPage() {
-  const [users, setUsers] = useState<ApiUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, startRefresh] = useTransition();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [meta, setMeta] = useState({
-    total: 0,
-    page: 1,
-    limit: 12,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
-
-  // El estado de la tabla (búsqueda/filtros/orden/página) vive en la URL (M7):
-  // compartible por link. El API de usuarios ya paginaba server-side; lo que
-  // faltaba era sacar el estado del `useState` local y ponerlo en los query
-  // params. La `q` de la URL mapea a `search` del API.
+  // Estado de la tabla en la URL (M7): compartible por link y leído por el
+  // mismo parser que el resto del panel.
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const filters: UserFilters = useMemo(
-    () => ({
-      search: searchParams.get("q") ?? "",
-      role: (searchParams.get("role") as UserFilters["role"]) ?? "all",
-      status: (searchParams.get("status") as UserFilters["status"]) ?? "all",
-      sortBy: (searchParams.get("sortBy") as UserFilters["sortBy"]) ?? "createdAt",
-      sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") ?? "desc",
-      page: Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1),
-      limit: 12,
-    }),
+  const params = useMemo(
+    () =>
+      parseTableParams(Object.fromEntries(searchParams.entries()), {
+        filterKeys: ["role", "status"],
+        pageSize: 12,
+        defaultSort: "createdAt",
+      }),
     [searchParams],
   );
 
-  // Función para cargar usuarios.
-  // El fetch va dentro de una transición: así el setState no queda en el cuerpo
-  // del effect que la llama (react-hooks/set-state-in-effect), y el pendiente de
-  // la transición hace de `isRefreshing` sin un estado aparte.
-  const fetchUsers = useCallback(() => {
-    startRefresh(async () => {
-      const params = new URLSearchParams();
-      if (filters.search) params.append("search", filters.search);
-      if (filters.role !== "all") params.append("role", filters.role);
-      if (filters.status !== "all") params.append("status", filters.status);
-      params.append("sortBy", filters.sortBy);
-      params.append("sortOrder", filters.sortOrder);
-      params.append("page", String(filters.page));
-      params.append("limit", String(filters.limit));
+  // `null` = todavía no llegó la primera respuesta: evita el frame con la tabla
+  // vacía y el setState en el cuerpo del effect (react-hooks).
+  const [data, setData] = useState<{ rows: ApiUser[]; total: number } | null>(
+    null,
+  );
+  const [stats, setStats] = useState<UserStats>(EMPTY_STATS);
+  const [, startFetch] = useTransition();
 
-      // Las rutas de users conservan el envelope { success, data, meta } (A7).
-      const res = await api.get<ApiResponse<ApiUser[]>>(
-        `/api/users?${params.toString()}`,
-      );
-      if (res.ok && res.data.success && res.data.data) {
-        setUsers(res.data.data);
-        if (res.data.meta) setMeta(res.data.meta);
+  const fetchUsers = useCallback(() => {
+    startFetch(async () => {
+      const qs = new URLSearchParams();
+      if (params.q) qs.set("search", params.q);
+      if (params.filters.role) qs.set("role", params.filters.role);
+      if (params.filters.status) qs.set("status", params.filters.status);
+      qs.set("sortBy", API_SORT[params.sort ?? "createdAt"] ?? "createdAt");
+      qs.set("sortOrder", params.dir);
+      qs.set("page", String(params.page));
+      qs.set("limit", String(params.pageSize));
+
+      const [listRes, statsRes] = await Promise.all([
+        api.get<ApiResponse<ApiUser[]>>(`/api/users?${qs.toString()}`),
+        api.get<ApiResponse<UserStats>>("/api/users/stats"),
+      ]);
+
+      if (listRes.ok && listRes.data.success && listRes.data.data) {
+        setData({
+          rows: listRes.data.data,
+          total: listRes.data.meta?.total ?? listRes.data.data.length,
+        });
       } else {
+        setData({ rows: [], total: 0 });
         toast.error(
-          (res.ok ? res.data.message : res.error) || "Error al cargar usuarios",
+          (listRes.ok ? listRes.data.message : listRes.error) ||
+            "No se pudieron cargar los usuarios",
         );
       }
-      setIsLoading(false);
-    });
-  }, [filters]);
 
-  // Refetch cuando cambian los filtros de la URL (o al montar).
+      // Los KPIs salen de los agregados de la base, no de la página visible:
+      // antes se calculaban con `users.filter(...)` sobre las 12 filas
+      // cargadas, así que "Activos" y "Administradores" mentían apenas había
+      // más de una página.
+      if (statsRes.ok && statsRes.data.success && statsRes.data.data) {
+        setStats(statsRes.data.data);
+      }
+    });
+  }, [params]);
+
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Empuja cambios de query params a la URL (reseteando la página salvo que se
-  // esté paginando). El refetch lo dispara el effect al cambiar `searchParams`.
-  const pushParams = useCallback(
-    (updates: Record<string, string | null>, resetPage = true) => {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === null || value === "") params.delete(key);
-        else params.set(key, value);
-      }
-      if (resetPage && !("page" in updates)) params.delete("page");
-      const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-    },
-    [searchParams, router, pathname],
-  );
+  const isLoading = data === null;
+  const rows = data?.rows ?? [];
 
-  const FILTER_DEFAULTS: Record<string, string> = {
-    role: "all",
-    status: "all",
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  };
-
-  // Función para manejar cambios de filtros
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleFilterChange = (key: keyof UserFilters, value: any) => {
-    const name = key === "search" ? "q" : (key as string);
-    const def = FILTER_DEFAULTS[key as string] ?? "";
-    pushParams({ [name]: value === def ? null : String(value) });
-  };
-
-  // Función para cambiar de página
-  const handlePageChange = (newPage: number) => {
-    pushParams({ page: String(newPage) }, false);
-  };
-
-  // Input de búsqueda con debounce: no navegar en cada tecla. Se resincroniza
-  // con la `q` de la URL (patrón prev-prop, sin effect) al navegar externamente.
-  const [searchInput, setSearchInput] = useState(filters.search);
-  const [lastQ, setLastQ] = useState(filters.search);
-  if (filters.search !== lastQ) {
-    setLastQ(filters.search);
-    setSearchInput(filters.search);
-  }
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onSearchChange = (value: string) => {
-    setSearchInput(value);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(
-      () => handleFilterChange("search", value),
-      350,
-    );
-  };
-
-  // Función para eliminar usuario
-  const handleDeleteUser = async (userId: string) => {
+  const handleDelete = async (userId: string) => {
     const res = await api.del<ApiResponse<unknown>>(`/api/users/${userId}`);
     if (res.ok && res.data?.success) {
-      toast.success("Usuario eliminado exitosamente");
-      fetchUsers(); // Recargar la lista
+      toast.success("Usuario eliminado");
+      fetchUsers();
     } else {
       toast.error(
-        (res.ok ? res.data?.message : res.error) || "Error al eliminar usuario",
+        (res.ok ? res.data?.message : res.error) ||
+          "No se pudo eliminar el usuario",
       );
     }
   };
 
-  const hasFilters =
-    !!filters.search || filters.role !== "all" || filters.status !== "all";
+  // Función de render, no componente: declararlo como componente acá adentro
+  // lo remontaría en cada render (react-hooks/static-components).
+  const renderRowActions = (user: ApiUser) => (
+    <>
+      <Button
+        variant="outline"
+        size="icon"
+        asChild
+        title="Ver usuario"
+        className="h-9 w-9 rounded-lg border-blue-300 text-blue-600 transition-all hover:border-blue-400 hover:bg-blue-50 dark:border-blue-500/50 dark:text-blue-400 dark:hover:border-blue-500 dark:hover:bg-blue-500/10"
+      >
+        <Link href={`/admin/usuarios/${user.id}`}>
+          <Eye className="h-4 w-4" />
+          <span className="sr-only">Ver {user.name}</span>
+        </Link>
+      </Button>
+
+      <Button
+        variant="outline"
+        size="icon"
+        asChild
+        title="Editar usuario"
+        className="h-9 w-9 rounded-lg border-green-300 text-green-600 transition-all hover:border-green-400 hover:bg-green-50 dark:border-green-500/50 dark:text-green-400 dark:hover:border-green-500 dark:hover:bg-green-500/10"
+      >
+        <Link href={`/admin/usuarios/${user.id}/edit`}>
+          <Edit className="h-4 w-4" />
+          <span className="sr-only">Editar {user.name}</span>
+        </Link>
+      </Button>
+
+      <ConfirmDialog
+        title="¿Eliminar este usuario?"
+        description={
+          <>
+            <strong>{user.name}</strong> queda marcado como inactivo y deja de
+            aparecer en el panel. La cuenta no se borra de Clerk: la operación
+            se puede deshacer.
+          </>
+        }
+        confirmLabel="Eliminar"
+        tone="danger"
+        icon={Trash2}
+        onConfirm={() => handleDelete(user.id)}
+        trigger={
+          <Button
+            variant="outline"
+            size="icon"
+            title="Eliminar usuario"
+            className="h-9 w-9 rounded-lg border-red-300 text-red-600 transition-all hover:border-red-400 hover:bg-red-50 dark:border-red-500/50 dark:text-red-400 dark:hover:border-red-500 dark:hover:bg-red-500/10"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Eliminar {user.name}</span>
+          </Button>
+        }
+      />
+    </>
+  );
+
+  const columns: DataTableColumn<ApiUser>[] = [
+    {
+      id: "user",
+      header: "Usuario",
+      // `sortValue` habilita el click en el encabezado; en modo server el orden
+      // lo resuelve la query, este valor no se usa para ordenar en memoria.
+      sortValue: (u) => u.name,
+      cell: (user) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage src={user.imageUrl || ""} alt="" />
+            <AvatarFallback className="bg-gradient-to-br from-brand to-brand-2 text-sm font-semibold text-white">
+              {initials(user.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <div className="truncate font-medium text-gray-900 dark:text-white">
+              {user.name}
+            </div>
+            <div className="truncate text-sm text-gray-600 dark:text-gray-400">
+              {user.email}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "role",
+      header: "Rol",
+      cell: (user) => (
+        <Badge className={ROLE_COLORS[user.role]}>
+          {user.role === UserRole.ADMINISTRADOR && (
+            <Crown className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+          )}
+          {ROLE_LABELS[user.role]}
+        </Badge>
+      ),
+    },
+    {
+      id: "status",
+      header: "Estado",
+      // El badge de estado sale del design system (F0): mismo color y etiqueta
+      // que en cualquier otra pantalla.
+      cell: (user) => <StatusBadge entity="user" status={user.status} />,
+    },
+    {
+      id: "createdAt",
+      header: "Registro",
+      hideBelow: "lg",
+      sortValue: (u) => new Date(u.createdAt).getTime(),
+      cell: (user) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {formatDate(user.createdAt)}
+        </span>
+      ),
+    },
+    {
+      id: "lastLoginAt",
+      header: "Último acceso",
+      hideBelow: "xl",
+      sortValue: (u) => (u.lastLoginAt ? new Date(u.lastLoginAt).getTime() : 0),
+      cell: (user) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {user.lastLoginAt ? formatDate(user.lastLoginAt) : "Nunca"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      align: "right",
+      hideOnCard: true,
+      cell: (user) => (
+        <div className="flex justify-end gap-2">{renderRowActions(user)}</div>
+      ),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-brand to-brand-2 rounded-2xl flex items-center justify-center shadow-lg">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-brand to-brand-2 bg-clip-text text-transparent">
-                Gestión de Usuarios
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Administra usuarios, roles y permisos del sistema
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => fetchUsers()}
-              disabled={isRefreshing}
-              className="border-2 border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 rounded-xl"
-            >
-              <RefreshCw
-                className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
-              />
-              Actualizar
-            </Button>
-            <Button
-              variant="outline"
-              className="border-2 border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 rounded-xl"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-            {/* No hay "Nuevo Usuario": las cuentas las crea Clerk (registro),
-                no un alta manual desde el panel. El botón anterior no hacía
-                nada y su endpoint creaba usuarios que no podían loguearse (A4).
-                Para sumar gente a una liga → invitaciones en /admin/miembros. */}
-          </div>
-        </div>
+    <div className="space-y-8 p-6 sm:p-8">
+      <PageHeader
+        icon={Users}
+        title="Gestión de Usuarios"
+        statusText={`Sistema activo · ${stats.overview.total} ${
+          stats.overview.total === 1 ? "usuario" : "usuarios"
+        }`}
+        description="Administra las cuentas de la plataforma. Las cuentas las crea el registro (Clerk), no un alta manual: para sumar gente a una liga usá las invitaciones de Miembros."
+        quickStats={[
+          {
+            icon: UserCheck,
+            text: `${stats.overview.active} activos`,
+            colorClass:
+              "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300",
+          },
+          {
+            icon: Crown,
+            text: `${stats.roleDistribution.admin} ${
+              stats.roleDistribution.admin === 1
+                ? "administrador"
+                : "administradores"
+            }`,
+            colorClass:
+              "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300",
+          },
+        ]}
+        actions={
+          <Button variant="outline" asChild className="rounded-xl">
+            <Link href="/admin/miembros">
+              <Shield className="mr-2 h-4 w-4" />
+              Miembros de la liga
+            </Link>
+          </Button>
+        }
+      />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {meta.total}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Total Usuarios
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-brand" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {users.filter((u) => u.status === UserStatus.ACTIVO).length}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Activos
-                  </p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                  <div className="h-4 w-4 rounded-full bg-green-500"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {
-                      users.filter((u) => u.role === UserRole.ADMINISTRADOR)
-                        .length
-                    }
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Administradores
-                  </p>
-                </div>
-                <Crown className="h-8 w-8 text-yellow-500" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {
-                      users.filter((u) => u.status === UserStatus.PENDIENTE)
-                        .length
-                    }
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Pendientes
-                  </p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
-                  <div className="h-4 w-4 rounded-full bg-yellow-500"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <StatCardGrid>
+        <StatCard
+          title="Total usuarios"
+          value={stats.overview.total}
+          description="Cuentas registradas"
+          icon={Users}
+        />
+        <StatCard
+          title="Activos"
+          value={stats.overview.active}
+          description="Pueden usar la plataforma"
+          icon={UserCheck}
+          gradient="from-green-500 to-emerald-500"
+          bgGradient="from-green-500/10 to-emerald-500/10"
+        />
+        <StatCard
+          title="Administradores"
+          value={stats.roleDistribution.admin}
+          description="Acceso completo al producto"
+          icon={Crown}
+          gradient="from-amber-400 to-amber-500"
+          bgGradient="from-amber-400/10 to-amber-500/10"
+        />
+        <StatCard
+          title="Pendientes"
+          value={stats.overview.pending}
+          description="Sin activar todavía"
+          icon={Filter}
+          gradient="from-orange-500 to-amber-500"
+          bgGradient="from-orange-500/10 to-amber-500/10"
+        />
+      </StatCardGrid>
 
-        {/* Filters */}
-        <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              Filtros y Búsqueda
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  aria-label="Buscar usuarios"
-                  placeholder="Buscar usuarios..."
-                  value={searchInput}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <Select
-                value={filters.role}
-                onValueChange={(value) => handleFilterChange("role", value)}
-              >
-                <SelectTrigger aria-label="Filtrar por rol">
-                  <SelectValue placeholder="Filtrar por rol" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los roles</SelectItem>
-                  {Object.values(UserRole).map((role) => (
-                    <SelectItem key={role} value={role}>
-                      <div className="flex items-center">
-                        {getRoleIcon(role)}
-                        <span className="ml-2">{ROLE_LABELS[role]}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filters.status}
-                onValueChange={(value) => handleFilterChange("status", value)}
-              >
-                <SelectTrigger aria-label="Filtrar por estado">
-                  <SelectValue placeholder="Filtrar por estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  {Object.values(UserStatus).map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {STATUS_LABELS[status]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filters.sortBy}
-                onValueChange={(value) => handleFilterChange("sortBy", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Ordenar por" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Nombre</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="createdAt">Fecha de registro</SelectItem>
-                  <SelectItem value="lastLoginAt">Último acceso</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    handleFilterChange(
-                      "sortOrder",
-                      filters.sortOrder === "asc" ? "desc" : "asc",
-                    )
-                  }
-                  className="flex-1"
-                >
-                  {filters.sortOrder === "asc" ? (
-                    <SortAsc className="h-4 w-4 mr-2" />
-                  ) : (
-                    <SortDesc className="h-4 w-4 mr-2" />
-                  )}
-                  {filters.sortOrder === "asc" ? "Asc" : "Desc"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setViewMode(viewMode === "grid" ? "list" : "grid")
-                  }
-                >
-                  {viewMode === "grid" ? (
-                    <List className="h-4 w-4" />
-                  ) : (
-                    <Grid3X3 className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Users Grid/List */}
-        {isLoading ? (
-          <SkeletonCards count={8} />
-        ) : users.length > 0 ? (
-          <div className="space-y-6">
-            {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {users.map((user) => (
-                  <UserCard
-                    key={user.id}
-                    user={user}
-                    onDelete={handleDeleteUser}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {users.map((user) => (
-                  <UserRow
-                    key={user.id}
-                    user={user}
-                    onDelete={handleDeleteUser}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {meta.totalPages > 1 && (
-              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Mostrando {(meta.page - 1) * meta.limit + 1} a{" "}
-                      {Math.min(meta.page * meta.limit, meta.total)} de{" "}
-                      {meta.total} usuarios
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePageChange(meta.page - 1)}
-                        disabled={!meta.hasPreviousPage}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                        Anterior
-                      </Button>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white px-3">
-                        Página {meta.page} de {meta.totalPages}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePageChange(meta.page + 1)}
-                        disabled={!meta.hasNextPage}
-                      >
-                        Siguiente
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        ) : (
-          // Las cuentas las crea Clerk (registro), no un alta manual: por eso
-          // el estado vacío no ofrece "crear usuario" (el botón viejo no hacía
-          // nada, A4). Con filtros activos, ofrece limpiarlos.
-          <EmptyState
-            icon={Users}
-            title="No se encontraron usuarios"
-            description={
-              hasFilters
-                ? "No hay usuarios que coincidan con los filtros aplicados."
-                : "Aún no hay usuarios registrados en el sistema."
-            }
-            action={
-              hasFilters ? (
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    pushParams({ q: null, role: null, status: null })
-                  }
-                >
-                  Limpiar filtros
-                </Button>
-              ) : undefined
-            }
-          />
-        )}
-      </div>
+      {isLoading ? (
+        <SkeletonTable rows={6} />
+      ) : (
+        <DataTable
+          rows={rows}
+          server={{
+            total: data?.total ?? 0,
+            page: params.page,
+            pageSize: params.pageSize,
+            q: params.q,
+            sort: params.sort,
+            dir: params.dir,
+            filterValues: {
+              role: params.filters.role ?? "all",
+              status: params.filters.status ?? "all",
+            },
+          }}
+          columns={columns}
+          getRowKey={(u) => u.id}
+          icon={Users}
+          title="Lista de usuarios"
+          description="Buscá por nombre, email, teléfono o localidad"
+          searchable={{ placeholder: "Buscar usuarios..." }}
+          filters={[
+            {
+              id: "role",
+              label: "Rol",
+              icon: Crown,
+              options: [
+                { value: "all", label: "Todos los roles" },
+                ...Object.values(UserRole).map((role) => ({
+                  value: role,
+                  label: ROLE_LABELS[role],
+                })),
+              ],
+            },
+            {
+              id: "status",
+              label: "Estado",
+              icon: Filter,
+              options: [
+                { value: "all", label: "Todos los estados" },
+                ...Object.values(UserStatus).map((status) => ({
+                  value: status,
+                  label: STATUS_LABELS[status],
+                })),
+              ],
+            },
+          ]}
+          empty={{
+            icon: Users,
+            title: "Todavía no hay usuarios",
+            description: "Las cuentas aparecen acá cuando alguien se registra.",
+            filteredTitle: "No se encontraron usuarios",
+            filteredDescription:
+              "Ningún usuario coincide con los filtros aplicados.",
+          }}
+          rowActions={renderRowActions}
+        />
+      )}
     </div>
   );
 }

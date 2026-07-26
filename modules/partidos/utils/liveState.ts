@@ -77,10 +77,11 @@ interface CardInput {
 }
 
 export interface MatchForLiveState {
-  // `string` a propósito: acepta tanto el enum de Prisma como el enum nominal
-  // de `@modules/partidos/types` (IPartidos), que TS trata como incompatibles
-  // pese a tener los mismos valores. Se normaliza a MatchStatus en la salida.
-  status: string;
+  // Era `string` para aceptar a la vez el enum de Prisma y el enum nominal que
+  // `@modules/partidos/types` redeclaraba —TS los trataba como incompatibles
+  // pese a tener los mismos valores—. Con una sola definición del enum el
+  // agujero se cierra: acá entra un `MatchStatus` y nada más.
+  status: MatchStatus;
   homeScore?: number | null;
   awayScore?: number | null;
   homeTeamId: string;
@@ -149,7 +150,7 @@ export function buildLiveState(match: MatchForLiveState): LiveMatchState {
       : match.updatedAt;
 
   return {
-    status: match.status as MatchStatus,
+    status: match.status,
     homeScore: match.homeScore ?? null,
     awayScore: match.awayScore ?? null,
     penaltyWinnerTeamId: match.penaltyWinnerTeamId ?? null,

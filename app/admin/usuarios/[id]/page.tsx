@@ -41,12 +41,9 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar,
   Clock,
   User,
   Crown,
-  ShieldCheck,
-  PenTool,
   Activity,
   FileText,
   Ban,
@@ -228,21 +225,14 @@ export default function UserDetailPage() {
     }
   };
 
-  // Función para obtener icono del rol
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case UserRole.ADMINISTRADOR:
-        return <Crown className="h-4 w-4" />;
-      case UserRole.MODERADOR:
-        return <ShieldCheck className="h-4 w-4" />;
-      case UserRole.EDITOR:
-        return <PenTool className="h-4 w-4" />;
-      case UserRole.ORGANIZADOR:
-        return <Calendar className="h-4 w-4" />;
-      default:
-        return <User className="h-4 w-4" />;
-    }
-  };
+  // Icono del rol de plataforma: son dos (D5). Ver el comentario gemelo en
+  // `app/admin/usuarios/page.tsx`.
+  const getRoleIcon = (role: UserRole) =>
+    role === UserRole.ADMINISTRADOR ? (
+      <Crown className="h-4 w-4" />
+    ) : (
+      <User className="h-4 w-4" />
+    );
 
   // Función para obtener icono del estado
   const getStatusIcon = (status: UserStatus) => {

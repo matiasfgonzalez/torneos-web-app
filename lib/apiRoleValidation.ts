@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { checkUser } from "@/lib/checkUser";
 import { UserRole } from "@prisma/client";
+import { canManageUser } from "@/lib/userRoles";
 
 /**
  * Valida que el usuario actual tenga alguno de los roles requeridos.
@@ -41,18 +42,11 @@ export async function validateApiRole(
 }
 
 /**
- * Role hierarchy for API permission checking
- * (roles de plataforma reducidos a 2 en N1; los roles de trabajo
- * viven en OrganizationMember — ver lib/orgAuth.ts)
- */
-const ROLE_HIERARCHY: Record<UserRole, number> = {
-  USUARIO: 1,
-  ADMINISTRADOR: 2,
-};
-
-/**
- * Indica si el usuario actual puede gestionar a otro, según la jerarquía de roles.
+ * Indica si el usuario actual puede gestionar a otro, según la jerarquía de
+ * roles. La jerarquía vive en `lib/userRoles.ts` —módulo puro— para que el
+ * panel use exactamente la misma: este archivo importa `next/server` y no puede
+ * cruzar al cliente, que fue por lo que la UI terminó inventándose otra.
  */
 export function canManageUserApi(currentUserRole: UserRole, targetUserRole: UserRole): boolean {
-  return ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole];
+  return canManageUser(currentUserRole, targetUserRole);
 }

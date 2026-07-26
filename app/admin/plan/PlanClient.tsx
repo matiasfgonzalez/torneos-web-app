@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,16 +95,23 @@ export default function PlanClient({
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const load = useCallback(async () => {
-    const [subRes, plansRes, paysRes] = await Promise.all([
-      api.get<SubscriptionInfo>("/api/org/subscription"),
-      api.get<PlanInfo[]>("/api/plans"),
-      api.get<PaymentRow[]>("/api/payments"),
-    ]);
-    if (subRes.ok) setInfo(subRes.data);
-    if (plansRes.ok) setPlans(plansRes.data);
-    if (paysRes.ok) setPayments(paysRes.data);
-    setLoading(false);
+  const [, startLoad] = useTransition();
+
+  // El fetch va dentro de una transición: así el setState no queda colgando del
+  // cuerpo del effect (react-hooks/set-state-in-effect) y React puede agrupar
+  // los renders en vez de encadenarlos. Mismo patrón que `CupsSection`.
+  const load = useCallback(() => {
+    startLoad(async () => {
+      const [subRes, plansRes, paysRes] = await Promise.all([
+        api.get<SubscriptionInfo>("/api/org/subscription"),
+        api.get<PlanInfo[]>("/api/plans"),
+        api.get<PaymentRow[]>("/api/payments"),
+      ]);
+      if (subRes.ok) setInfo(subRes.data);
+      if (plansRes.ok) setPlans(plansRes.data);
+      if (paysRes.ok) setPayments(paysRes.data);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -189,7 +196,9 @@ export default function PlanClient({
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-              <p className="text-gray-500 dark:text-gray-400">Torneos activos</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                Torneos activos
+              </p>
               <p className="text-2xl font-bold">
                 {info.usage.activeTournaments}
                 <span className="text-sm font-normal text-gray-400">
@@ -300,9 +309,9 @@ export default function PlanClient({
                   <p className="text-sm font-medium">Total a transferir</p>
                   <p className="text-2xl font-bold text-brand">
                     $
-                    {(Number(selected.priceMonthly) * Number(months)).toLocaleString(
-                      "es-AR",
-                    )}
+                    {(
+                      Number(selected.priceMonthly) * Number(months)
+                    ).toLocaleString("es-AR")}
                   </p>
                 </div>
               </div>
@@ -347,7 +356,8 @@ export default function PlanClient({
                   />
                   <p>
                     La plataforma todavía no publicó los datos para transferir.
-                    Escribinos por los canales de contacto para coordinar el pago.
+                    Escribinos por los canales de contacto para coordinar el
+                    pago.
                   </p>
                 </div>
               )}
@@ -408,7 +418,9 @@ export default function PlanClient({
         </CardHeader>
         <CardContent>
           {payments.length === 0 ? (
-            <p className="text-sm text-gray-500">Todavía no informaste pagos.</p>
+            <p className="text-sm text-gray-500">
+              Todavía no informaste pagos.
+            </p>
           ) : (
             <div className="space-y-3">
               {payments.map((p) => (

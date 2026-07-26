@@ -1,4 +1,4 @@
-import type { PhaseType } from "@prisma/client";
+import type { CardType, MatchStatus, PhaseType } from "@prisma/client";
 
 export interface ITeam {
   id: string;
@@ -115,32 +115,22 @@ export interface IGoal {
     };
   } | null;
 }
-export enum MatchStatus {
-  PROGRAMADO = "PROGRAMADO",
-  EN_JUEGO = "EN_JUEGO",
-  ENTRETIEMPO = "ENTRETIEMPO",
-  FINALIZADO = "FINALIZADO",
-  SUSPENDIDO = "SUSPENDIDO",
-  POSTERGADO = "POSTERGADO",
-  CANCELADO = "CANCELADO",
-  WALKOVER = "WALKOVER",
-}
+// `MatchStatus` ya no se redeclara acá: se importa de `@prisma/client`, que es
+// donde vive el enum de verdad. La copia local tenía los mismos valores pero TS
+// trata dos enums nominales como **incompatibles**, así que asignar un partido
+// de Prisma a un `IPartidos` no compilaba y la salida fue ensanchar tipos a
+// `string` (ver el comentario que había en `utils/liveState.ts`). Un agujero de
+// tipos para sostener un duplicado que nadie mantenía sincronizado.
+//
+// La lista para selects tampoco vive acá: es `MATCH_STATUS_OPTIONS` en
+// `lib/constants.ts`, derivada de `MATCH_STATUS_LABELS` — las mismas etiquetas
+// que muestran los badges. La copia local traía "En juego" donde el badge decía
+// "En Juego".
 
-export const MATCH_STATUS = [
-  { label: "Programado", value: MatchStatus.PROGRAMADO },
-  { label: "En juego", value: MatchStatus.EN_JUEGO },
-  { label: "Entretiempo", value: MatchStatus.ENTRETIEMPO },
-  { label: "Finalizado", value: MatchStatus.FINALIZADO },
-  { label: "Suspendido", value: MatchStatus.SUSPENDIDO },
-  { label: "Postergado", value: MatchStatus.POSTERGADO },
-  { label: "Cancelado", value: MatchStatus.CANCELADO },
-  { label: "Walkover", value: MatchStatus.WALKOVER },
-] as const;
-
-export enum CardType {
-  AMARILLA = "AMARILLA",
-  ROJA = "ROJA",
-}
+// `CardType` se importa de `@prisma/client`. Había una copia local con los
+// mismos dos valores y el repo usaba **las dos a la vez**: `lib/stats/types.ts`,
+// `ManageCards` y `actions/cards.ts` la de Prisma, `ICard.type` la local — dos
+// tipos que TS considera distintos describiendo la misma columna.
 
 /** Jugador dentro de un equipo-torneo, tal como llega en goles y tarjetas. */
 export interface IEventTeamPlayer {
@@ -216,19 +206,8 @@ export interface IPartidos {
   referees: IMatchReferee[];
 }
 
-export enum MatchType {
-  LIGA = "LIGA",
-  COPA = "COPA",
-  PLAYOFF = "PLAYOFF",
-  AMISTOSO = "AMISTOSO",
-}
-
-export interface MatchFilters {
-  status?: MatchStatus | string;
-  type?: MatchType | string;
-  tournamentId?: string;
-  teamId?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
-  search?: string;
-}
+// `MatchType` (LIGA/COPA/PLAYOFF/AMISTOSO) y `MatchFilters` se eliminaron: no
+// existía `Match.type` en el schema, así que el enum no describía ningún dato y
+// filtrar por él nunca hizo nada. El filtro real de la lista de partidos viaja
+// por query params y lo arma `GET /api/matches` (`q`, `status`, `tournamentId`).
+// Si algún día hace falta marcar un amistoso, primero va la columna.

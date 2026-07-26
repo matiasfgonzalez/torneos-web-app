@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import Image from "next/image";
@@ -36,10 +36,17 @@ export default function PagosAdminPage() {
   const [reviewing, setReviewing] = useState<string | null>(null);
   const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
 
-  const load = useCallback(async () => {
-    const res = await api.get<AdminPayment[]>("/api/payments");
-    if (res.ok) setPayments(res.data);
-    setLoading(false);
+  const [, startLoad] = useTransition();
+
+  // El fetch va dentro de una transición: así el setState no queda colgando del
+  // cuerpo del effect (react-hooks/set-state-in-effect) y React puede agrupar
+  // los renders en vez de encadenarlos. Mismo patrón que `CupsSection`.
+  const load = useCallback(() => {
+    startLoad(async () => {
+      const res = await api.get<AdminPayment[]>("/api/payments");
+      if (res.ok) setPayments(res.data);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -145,7 +152,10 @@ export default function PagosAdminPage() {
                 rows={2}
                 value={rejectNotes[p.id] ?? ""}
                 onChange={(e) =>
-                  setRejectNotes((prev) => ({ ...prev, [p.id]: e.target.value }))
+                  setRejectNotes((prev) => ({
+                    ...prev,
+                    [p.id]: e.target.value,
+                  }))
                 }
               />
 

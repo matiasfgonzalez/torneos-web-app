@@ -1,3 +1,5 @@
+import type { MatchStatus } from "@prisma/client";
+
 import { IPlayerTeam } from "@modules/jugadores/types";
 import { IGoal, IPhase, ICard, IMatchReferee } from "@modules/partidos/types";
 
@@ -88,16 +90,9 @@ export interface Tournament {
   updatedAt: string | Date;
 }
 
-export enum MatchStatus {
-  PROGRAMADO = "PROGRAMADO", // Programado
-  EN_JUEGO = "EN_JUEGO", // En curso
-  ENTRETIEMPO = "ENTRETIEMPO", // Pausa entre tiempos
-  FINALIZADO = "FINALIZADO", // Terminado
-  SUSPENDIDO = "SUSPENDIDO", // Suspendido temporalmente (clima, incidentes, etc.)
-  POSTERGADO = "POSTERGADO", // Reprogramado para otra fecha
-  CANCELADO = "CANCELADO", // Anulado, no se jugará
-  WALKOVER = "WALKOVER",
-}
+// `MatchStatus` se importa de `@prisma/client`: acá había una tercera copia del
+// mismo enum, con los mismos valores y comentarios propios. Nada la obligaba a
+// seguir al schema, y TS trataba las copias como tipos distintos.
 
 export interface IMatch {
   id: string;
@@ -105,7 +100,7 @@ export interface IMatch {
   stadium?: string;
   city?: string;
   description?: string;
-  status: MatchStatus; // Debe coincidir con tu enum
+  status: MatchStatus; // el de Prisma: ya no hay "el otro enum" con el que coincidir
 
   homeScore?: number;
   awayScore?: number;

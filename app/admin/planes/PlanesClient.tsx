@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -104,10 +104,17 @@ export default function PlanesClient() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<PlanFormValues>(emptyForm);
 
-  const load = useCallback(async () => {
-    const res = await api.get<PlanRow[]>("/api/admin/plans");
-    if (res.ok) setPlans(res.data);
-    setLoading(false);
+  const [, startLoad] = useTransition();
+
+  // El fetch va dentro de una transición: así el setState no queda colgando del
+  // cuerpo del effect (react-hooks/set-state-in-effect) y React puede agrupar
+  // los renders en vez de encadenarlos. Mismo patrón que `CupsSection`.
+  const load = useCallback(() => {
+    startLoad(async () => {
+      const res = await api.get<PlanRow[]>("/api/admin/plans");
+      if (res.ok) setPlans(res.data);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -196,167 +203,163 @@ export default function PlanesClient() {
   }
 
   const planDialogContent = (
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingId ? "Editar plan" : "Nuevo plan"}</DialogTitle>
-            <DialogDescription>
-              Los límites rigen al instante para todas las organizaciones con
-              este plan.
-            </DialogDescription>
-          </DialogHeader>
+    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>{editingId ? "Editar plan" : "Nuevo plan"}</DialogTitle>
+        <DialogDescription>
+          Los límites rigen al instante para todas las organizaciones con este
+          plan.
+        </DialogDescription>
+      </DialogHeader>
 
-          <div className="space-y-4">
-            {!editingId && (
-              <div className="space-y-2">
-                <Label htmlFor="code">Código</Label>
-                <Input
-                  id="code"
-                  placeholder="Ej: PRO"
-                  value={form.code}
-                  onChange={(e) => update("code", e.target.value.toUpperCase())}
-                />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input
-                id="name"
-                placeholder="Ej: Plan Pro"
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="priceMonthly">Precio mensual (ARS)</Label>
-              <Input
-                id="priceMonthly"
-                type="number"
-                min="0"
-                value={form.priceMonthly}
-                onChange={(e) => update("priceMonthly", e.target.value)}
-              />
-            </div>
+      <div className="space-y-4">
+        {!editingId && (
+          <div className="space-y-2">
+            <Label htmlFor="code">Código</Label>
+            <Input
+              id="code"
+              placeholder="Ej: PRO"
+              value={form.code}
+              onChange={(e) => update("code", e.target.value.toUpperCase())}
+            />
+          </div>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="name">Nombre</Label>
+          <Input
+            id="name"
+            placeholder="Ej: Plan Pro"
+            value={form.name}
+            onChange={(e) => update("name", e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="priceMonthly">Precio mensual (ARS)</Label>
+          <Input
+            id="priceMonthly"
+            type="number"
+            min="0"
+            value={form.priceMonthly}
+            onChange={(e) => update("priceMonthly", e.target.value)}
+          />
+        </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="maxActiveTournaments">Torneos activos</Label>
-                <Input
-                  id="maxActiveTournaments"
-                  type="number"
-                  min="0"
-                  value={form.maxActiveTournaments}
-                  onChange={(e) =>
-                    update("maxActiveTournaments", e.target.value)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxTeamsPerTournament">Equipos/torneo</Label>
-                <Input
-                  id="maxTeamsPerTournament"
-                  type="number"
-                  min="0"
-                  value={form.maxTeamsPerTournament}
-                  onChange={(e) =>
-                    update("maxTeamsPerTournament", e.target.value)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxMembers">Miembros</Label>
-                <Input
-                  id="maxMembers"
-                  type="number"
-                  min="0"
-                  value={form.maxMembers}
-                  onChange={(e) => update("maxMembers", e.target.value)}
-                />
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
-              Usá 999 para representar &quot;ilimitado&quot;.
-            </p>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="maxActiveTournaments">Torneos activos</Label>
+            <Input
+              id="maxActiveTournaments"
+              type="number"
+              min="0"
+              value={form.maxActiveTournaments}
+              onChange={(e) => update("maxActiveTournaments", e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxTeamsPerTournament">Equipos/torneo</Label>
+            <Input
+              id="maxTeamsPerTournament"
+              type="number"
+              min="0"
+              value={form.maxTeamsPerTournament}
+              onChange={(e) => update("maxTeamsPerTournament", e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxMembers">Miembros</Label>
+            <Input
+              id="maxMembers"
+              type="number"
+              min="0"
+              value={form.maxMembers}
+              onChange={(e) => update("maxMembers", e.target.value)}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
+          Usá 999 para representar &quot;ilimitado&quot;.
+        </p>
 
-            {/* Features CONSTRUIDAS Y GATEADAS (hasFeature): activarlas habilita
+        {/* Features CONSTRUIDAS Y GATEADAS (hasFeature): activarlas habilita
                 de verdad la función en las ligas del plan; las demás ven el
                 upsell. Se pueden tildar sin vender humo. */}
-            <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20">
-                <p className="text-xs text-green-800 dark:text-green-300">
-                  <b>Estas funciones ya están enforced.</b> Los planes que las
-                  activan las habilitan de verdad; los que no, ven el upsell o
-                  no las reciben.
-                </p>
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="exportPdf" className="cursor-pointer">
-                  Exportar PDF y CSV
-                </Label>
-                <Switch
-                  id="exportPdf"
-                  checked={form.exportPdf}
-                  onCheckedChange={(c) => update("exportPdf", c)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="liveMatch" className="cursor-pointer">
-                  Centro de partido en vivo
-                </Label>
-                <Switch
-                  id="liveMatch"
-                  checked={form.liveMatch}
-                  onCheckedChange={(c) => update("liveMatch", c)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="orgNews" className="cursor-pointer">
-                  Novedades de la liga
-                </Label>
-                <Switch
-                  id="orgNews"
-                  checked={form.orgNews}
-                  onCheckedChange={(c) => update("orgNews", c)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="customBranding" className="cursor-pointer">
-                  Marca propia de la liga
-                </Label>
-                <Switch
-                  id="customBranding"
-                  checked={form.customBranding}
-                  onCheckedChange={(c) => update("customBranding", c)}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
-              <Label htmlFor="isActive" className="cursor-pointer">
-                Plan activo (visible para contratar)
-              </Label>
-              <Switch
-                id="isActive"
-                checked={form.isActive}
-                disabled={editingId !== null && form.code === "FREE"}
-                onCheckedChange={(c) => update("isActive", c)}
-              />
-            </div>
+        <div className="space-y-3 border-t border-gray-100 dark:border-gray-800 pt-4">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20">
+            <p className="text-xs text-green-800 dark:text-green-300">
+              <b>Estas funciones ya están enforced.</b> Los planes que las
+              activan las habilitan de verdad; los que no, ven el upsell o no
+              las reciben.
+            </p>
           </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="exportPdf" className="cursor-pointer">
+              Exportar PDF y CSV
+            </Label>
+            <Switch
+              id="exportPdf"
+              checked={form.exportPdf}
+              onCheckedChange={(c) => update("exportPdf", c)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="liveMatch" className="cursor-pointer">
+              Centro de partido en vivo
+            </Label>
+            <Switch
+              id="liveMatch"
+              checked={form.liveMatch}
+              onCheckedChange={(c) => update("liveMatch", c)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="orgNews" className="cursor-pointer">
+              Novedades de la liga
+            </Label>
+            <Switch
+              id="orgNews"
+              checked={form.orgNews}
+              onCheckedChange={(c) => update("orgNews", c)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="customBranding" className="cursor-pointer">
+              Marca propia de la liga
+            </Label>
+            <Switch
+              id="customBranding"
+              checked={form.customBranding}
+              onCheckedChange={(c) => update("customBranding", c)}
+            />
+          </div>
+        </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-gradient-to-r from-brand to-brand-2 text-white"
-            >
-              {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              Guardar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+          <Label htmlFor="isActive" className="cursor-pointer">
+            Plan activo (visible para contratar)
+          </Label>
+          <Switch
+            id="isActive"
+            checked={form.isActive}
+            disabled={editingId !== null && form.code === "FREE"}
+            onCheckedChange={(c) => update("isActive", c)}
+          />
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setDialogOpen(false)}>
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-gradient-to-r from-brand to-brand-2 text-white"
+        >
+          {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+          Guardar
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   );
 
   return (

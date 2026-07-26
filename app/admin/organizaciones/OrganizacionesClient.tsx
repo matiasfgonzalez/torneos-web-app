@@ -1,12 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import {
@@ -154,24 +150,31 @@ export default function OrganizacionesClient() {
     }
   };
 
-  const load = useCallback(async () => {
-    const qs = new URLSearchParams();
-    if (q) qs.set("q", q);
-    qs.set("page", String(page));
-    qs.set("limit", String(PAGE_SIZE));
-    const [orgsRes, metricsRes] = await Promise.all([
-      api.get<{
-        data: OrganizationRow[];
-        meta: { total: number; page: number; totalPages: number };
-      }>(`/api/admin/organizations?${qs.toString()}`),
-      api.get<Metrics>("/api/admin/metrics"),
-    ]);
-    if (orgsRes.ok) {
-      setOrgs(orgsRes.data.data);
-      setMeta(orgsRes.data.meta);
-    }
-    if (metricsRes.ok) setMetrics(metricsRes.data);
-    setLoading(false);
+  const [, startLoad] = useTransition();
+
+  // El fetch va dentro de una transición: así el setState no queda colgando del
+  // cuerpo del effect (react-hooks/set-state-in-effect) y React puede agrupar
+  // los renders en vez de encadenarlos. Mismo patrón que `CupsSection`.
+  const load = useCallback(() => {
+    startLoad(async () => {
+      const qs = new URLSearchParams();
+      if (q) qs.set("q", q);
+      qs.set("page", String(page));
+      qs.set("limit", String(PAGE_SIZE));
+      const [orgsRes, metricsRes] = await Promise.all([
+        api.get<{
+          data: OrganizationRow[];
+          meta: { total: number; page: number; totalPages: number };
+        }>(`/api/admin/organizations?${qs.toString()}`),
+        api.get<Metrics>("/api/admin/metrics"),
+      ]);
+      if (orgsRes.ok) {
+        setOrgs(orgsRes.data.data);
+        setMeta(orgsRes.data.meta);
+      }
+      if (metricsRes.ok) setMetrics(metricsRes.data);
+      setLoading(false);
+    });
   }, [q, page]);
 
   useEffect(() => {
@@ -272,8 +275,7 @@ export default function OrganizacionesClient() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                $
-                {Number(metrics.revenue.thisMonth).toLocaleString("es-AR")}
+                ${Number(metrics.revenue.thisMonth).toLocaleString("es-AR")}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Pagos aprobados este mes
@@ -378,49 +380,51 @@ export default function OrganizacionesClient() {
                       Ver como
                     </Button>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant={org.status === "ACTIVA" ? "outline" : "default"}
-                        size="sm"
-                        disabled={updating === org.id}
-                        className={
-                          org.status === "ACTIVA"
-                            ? "gap-1.5 border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                            : "gap-1.5 bg-green-600 hover:bg-green-700 text-white"
-                        }
-                      >
-                        {updating === org.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : org.status === "ACTIVA" ? (
-                          <ShieldBan className="h-3.5 w-3.5" />
-                        ) : (
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                        )}
-                        {org.status === "ACTIVA" ? "Suspender" : "Reactivar"}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          {org.status === "ACTIVA"
-                            ? `¿Suspender ${org.name}?`
-                            : `¿Reactivar ${org.name}?`}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {org.status === "ACTIVA"
-                            ? "La organización no va a poder crear ni editar torneos, equipos ni jugadores hasta que se reactive. Los datos ya cargados quedan intactos y siguen visibles."
-                            : "La organización recupera la capacidad de gestionar sus torneos, equipos y jugadores."}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => toggleStatus(org)}>
-                          Confirmar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant={
+                            org.status === "ACTIVA" ? "outline" : "default"
+                          }
+                          size="sm"
+                          disabled={updating === org.id}
+                          className={
+                            org.status === "ACTIVA"
+                              ? "gap-1.5 border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                              : "gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+                          }
+                        >
+                          {updating === org.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : org.status === "ACTIVA" ? (
+                            <ShieldBan className="h-3.5 w-3.5" />
+                          ) : (
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                          )}
+                          {org.status === "ACTIVA" ? "Suspender" : "Reactivar"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {org.status === "ACTIVA"
+                              ? `¿Suspender ${org.name}?`
+                              : `¿Reactivar ${org.name}?`}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {org.status === "ACTIVA"
+                              ? "La organización no va a poder crear ni editar torneos, equipos ni jugadores hasta que se reactive. Los datos ya cargados quedan intactos y siguen visibles."
+                              : "La organización recupera la capacidad de gestionar sus torneos, equipos y jugadores."}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => toggleStatus(org)}>
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
 
@@ -449,10 +453,17 @@ export default function OrganizacionesClient() {
                     <p className="font-medium">
                       {org.lastPayment ? (
                         <>
-                          ${Number(org.lastPayment.amount).toLocaleString("es-AR")}{" "}
+                          $
+                          {Number(org.lastPayment.amount).toLocaleString(
+                            "es-AR",
+                          )}{" "}
                           <span className="text-xs text-gray-400">
                             ({org.lastPayment.status.toLowerCase()},{" "}
-                            {formatDate(org.lastPayment.createdAt, "dd/MM/yyyy")})
+                            {formatDate(
+                              org.lastPayment.createdAt,
+                              "dd/MM/yyyy",
+                            )}
+                            )
                           </span>
                         </>
                       ) : (

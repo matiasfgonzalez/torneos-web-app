@@ -51,65 +51,9 @@ export interface IPlayer {
   _count?: { teamPlayer: number };
 }
 
-// Este enum está deprecado, usar el de abajo o importar de Prisma
-// export enum PlayerStatusOld {
-//   ACTIVE = "ACTIVE",
-//   INJURED = "INJURED",
-//   SUSPENDED = "SUSPENDED",
-//   INACTIVE = "INACTIVE",
-// }
-
-export enum Foot {
-  IZQUIERDA = "IZQUIERDA",
-  DERECHA = "DERECHA",
-  AMBOS = "AMBOS",
-}
-
-export const PLAYER_FOOT = [
-  { label: "IZQUIERDA", value: "IZQUIERDA" },
-  { label: "DERECHA", value: "DERECHA" },
-  { label: "AMBOS", value: "AMBOS" },
-] as const;
-
-export const PLAYER_STATUS = [
-  { label: "ACTIVO", value: "ACTIVO" },
-  { label: "LESIONADO", value: "LESIONADO" },
-  { label: "SUSPENDIDO", value: "SUSPENDIDO" },
-  { label: "NO_DISPONIBLE", value: "NO_DISPONIBLE" },
-  { label: "RETIRADO", value: "RETIRADO" },
-  { label: "TRANSFERIDO", value: "TRANSFERIDO" },
-  { label: "PRUEBA", value: "PRUEBA" },
-  { label: "EXPULSADO", value: "EXPULSADO" },
-] as const;
-
-export enum PlayerStatus {
-  ACTIVO = "ACTIVO",
-  LESIONADO = "LESIONADO",
-  SUSPENDIDO = "SUSPENDIDO",
-  NO_DISPONIBLE = "NO_DISPONIBLE",
-  RETIRADO = "RETIRADO",
-  TRANSFERIDO = "TRANSFERIDO",
-  PRUEBA = "PRUEBA",
-  EXPULSADO = "EXPULSADO",
-}
-
-export const PLAYER_POSITION = [
-  { label: "ARQUERO", value: "ARQUERO" },
-  { label: "DEFENSOR_CENTRAL", value: "DEFENSOR_CENTRAL" },
-  { label: "LATERAL_DERECHO", value: "LATERAL_DERECHO" },
-  { label: "LATERAL_IZQUIERDO", value: "LATERAL_IZQUIERDO" },
-  { label: "CARRILERO_DERECHO", value: "CARRILERO_DERECHO" },
-  { label: "CARRILERO_IZQUIERDO", value: "CARRILERO_IZQUIERDO" },
-  { label: "VOLANTE_DEFENSIVO", value: "VOLANTE_DEFENSIVO" },
-  { label: "PIVOTE", value: "PIVOTE" },
-  { label: "VOLANTE_CENTRAL", value: "VOLANTE_CENTRAL" },
-  { label: "VOLANTE_OFENSIVO", value: "VOLANTE_OFENSIVO" },
-  { label: "INTERIOR_DERECHO", value: "INTERIOR_DERECHO" },
-  { label: "INTERIOR_IZQUIERDO", value: "INTERIOR_IZQUIERDO" },
-  { label: "ENGANCHE", value: "ENGANCHE" },
-  { label: "EXTREMO_DERECHO", value: "EXTREMO_DERECHO" },
-  { label: "EXTREMO_IZQUIERDO", value: "EXTREMO_IZQUIERDO" },
-  { label: "DELANTERO_CENTRO", value: "DELANTERO_CENTRO" },
-  { label: "SEGUNDO_DELANTERO", value: "SEGUNDO_DELANTERO" },
-  { label: "FALSO_9", value: "FALSO_9" },
-] as const;
+// Acá vivían `Foot`, `PlayerStatus` y las listas `PLAYER_FOOT`/`PLAYER_STATUS`/
+// `PLAYER_POSITION` escritas a mano (más un `PlayerStatusOld` comentado desde
+// hacía tiempo). Todo duplicaba enums de Prisma y sus listas ya derivadas en
+// `lib/constants.ts` (`FOOT_OPTIONS`, `PLAYER_STATUS_OPTIONS`,
+// `PLAYER_POSITION_OPTIONS`), y no lo usaba nadie: el repo entero importa de
+// `@prisma/client` y de `lib/constants`. Se borró.

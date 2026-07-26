@@ -34,7 +34,9 @@ import {
 } from "@/components/ui/select";
 import { formatDate } from "@/lib/formatDate";
 import { getMatchById } from "@modules/partidos/actions/getMatchById";
-import { IPartidos, MATCH_STATUS, MatchStatus } from "@modules/partidos/types";
+import { MatchStatus } from "@prisma/client";
+import { IPartidos } from "@modules/partidos/types";
+import { MATCH_STATUS_OPTIONS } from "@/lib/constants";
 import { allowedMatchTransitions } from "@/lib/status-transitions";
 import ManageGoals from "@/app/admin/torneos/[id]/components/tabs-match/ManageGoals";
 import ManageCards from "@/app/admin/torneos/[id]/components/tabs-match/ManageCards";
@@ -372,7 +374,7 @@ export default function QuickMatchLoader({
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MATCH_STATUS.map((s) => (
+                  {MATCH_STATUS_OPTIONS.map((s) => (
                     <SelectItem
                       key={s.value}
                       value={s.value}

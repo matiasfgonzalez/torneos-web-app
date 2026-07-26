@@ -21,7 +21,9 @@ import { useEffect, useState, useCallback, useTransition } from "react";
 import { MatchFormSheet } from "@modules/partidos/components/admin/MatchFormSheet";
 import GenerateFixtureSheet from "../GenerateFixtureSheet";
 import DialogMatchDetails from "../DialogMatchDetails";
-import { IPartidos, MatchStatus, MATCH_STATUS } from "@modules/partidos/types";
+import { MatchStatus } from "@prisma/client";
+import { IPartidos } from "@modules/partidos/types";
+import { MATCH_STATUS_OPTIONS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { formatDate } from "@/lib/formatDate";
@@ -272,7 +274,10 @@ const TabsMatches = (props: TabsTournamentProps) => {
             defaultValue: "ALL",
             options: [
               { value: "ALL", label: "Todos" },
-              ...MATCH_STATUS.map((s) => ({ value: s.value, label: s.label })),
+              ...MATCH_STATUS_OPTIONS.map((s) => ({
+                value: s.value,
+                label: s.label,
+              })),
             ],
             test: (match, value) => match.status === value,
           },

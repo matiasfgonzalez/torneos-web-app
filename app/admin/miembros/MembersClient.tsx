@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -75,8 +75,7 @@ interface MembersData {
 const ROLE_LABELS: Record<OrgRole, string> = ORG_ROLE_LABELS;
 
 const ROLE_BADGE_CLASSES: Record<OrgRole, string> = {
-  OWNER:
-    "bg-gradient-to-r from-brand to-brand-2 text-white border-0 shadow-sm",
+  OWNER: "bg-gradient-to-r from-brand to-brand-2 text-white border-0 shadow-sm",
   ORGANIZADOR:
     "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-0",
   COLABORADOR:
@@ -97,11 +96,18 @@ export default function MembersClient() {
   const [sending, setSending] = useState(false);
   const [planLimitMsg, setPlanLimitMsg] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    const res = await api.get<MembersData>("/api/org/members");
-    if (res.ok) setData(res.data);
-    else toast.error(res.error);
-    setLoading(false);
+  const [, startLoad] = useTransition();
+
+  // El fetch va dentro de una transición: así el setState no queda colgando del
+  // cuerpo del effect (react-hooks/set-state-in-effect) y React puede agrupar
+  // los renders en vez de encadenarlos. Mismo patrón que `CupsSection`.
+  const load = useCallback(() => {
+    startLoad(async () => {
+      const res = await api.get<MembersData>("/api/org/members");
+      if (res.ok) setData(res.data);
+      else toast.error(res.error);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -131,7 +137,7 @@ export default function MembersClient() {
           : "Invitación enviada: se sumará al registrarse",
       );
       setInviteEmail("");
-      await load();
+      load();
     } finally {
       setSending(false);
     }
@@ -144,7 +150,7 @@ export default function MembersClient() {
       return;
     }
     toast.success("Rol actualizado");
-    await load();
+    load();
   };
 
   const removeMember = async (memberId: string) => {
@@ -155,7 +161,7 @@ export default function MembersClient() {
     }
     toast.success("Miembro quitado de la liga");
     setPlanLimitMsg(null);
-    await load();
+    load();
   };
 
   const cancelInvite = async (inviteId: string) => {
@@ -166,7 +172,7 @@ export default function MembersClient() {
     }
     toast.success("Invitación cancelada");
     setPlanLimitMsg(null);
-    await load();
+    load();
   };
 
   // ------------------------------------------------------------
@@ -285,10 +291,7 @@ export default function MembersClient() {
       {/* Miembros */}
       <div className="bg-white dark:bg-gray-800/90 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm divide-y divide-gray-100 dark:divide-gray-700/50">
         {data.members.map((member) => (
-          <div
-            key={member.id}
-            className="flex items-center gap-3 sm:gap-4 p-4"
-          >
+          <div key={member.id} className="flex items-center gap-3 sm:gap-4 p-4">
             {member.user.imageUrl ? (
               <Image
                 src={member.user.imageUrl}
@@ -397,8 +400,8 @@ export default function MembersClient() {
                     {inv.email}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Se sumará como{" "}
-                    {ROLE_LABELS[inv.role].toLowerCase()} al registrarse
+                    Se sumará como {ROLE_LABELS[inv.role].toLowerCase()} al
+                    registrarse
                   </p>
                 </div>
                 {data.canManage && (

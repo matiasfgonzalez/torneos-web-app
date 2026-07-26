@@ -34,7 +34,7 @@ import {
   type FieldOption,
 } from "@/components/shared/form/fields";
 import { toDateTimeInput } from "@/lib/date-input";
-import { MATCH_STATUS } from "@modules/partidos/types";
+import { MATCH_STATUS_OPTIONS } from "@/lib/constants";
 import { allowedMatchTransitions } from "@/lib/status-transitions";
 import type { MatchStatus } from "@prisma/client";
 import type { ITorneo } from "@modules/torneos/types";
@@ -321,9 +321,9 @@ export function MatchFormSheet({
     const current = (isEdit ? match?.status : "PROGRAMADO") as
       | MatchStatus
       | undefined;
-    if (!current) return MATCH_STATUS;
+    if (!current) return MATCH_STATUS_OPTIONS;
     const allowed = allowedMatchTransitions(current);
-    return MATCH_STATUS.map((o) => ({
+    return MATCH_STATUS_OPTIONS.map((o) => ({
       ...o,
       disabled: o.value !== current && !allowed.includes(o.value),
     }));
