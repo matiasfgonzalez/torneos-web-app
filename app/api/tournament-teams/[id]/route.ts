@@ -1,9 +1,10 @@
 // /app/api/tournament-teams/[id]/route.ts
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { tournamentTeamUpdateSchema } from "@/lib/validators/tournament-team";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -12,10 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     const body = await req.json();
@@ -27,10 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     });
 
     if (!association) {
-      return NextResponse.json(
-        { error: "Asociación equipo-torneo no encontrada" },
-        { status: 404 },
-      );
+      return apiError(404, "Asociación equipo-torneo no encontrada");
     }
 
     const auth = await requireApiOrgAccess(
@@ -51,13 +46,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       data: parsed.data,
     });
 
-    return NextResponse.json(updatedAssociation, { status: 200 });
+    return apiOk(updatedAssociation);
   } catch (error) {
     console.error("Error al actualizar relación equipo-torneo:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar la relación equipo-torneo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al actualizar la relación equipo-torneo");
   }
 }
 
@@ -71,10 +63,7 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
     });
 
     if (!association) {
-      return NextResponse.json(
-        { error: "Asociación equipo-torneo no encontrada" },
-        { status: 404 },
-      );
+      return apiError(404, "Asociación equipo-torneo no encontrada");
     }
 
     const auth = await requireApiOrgAccess(
@@ -84,16 +73,11 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
       return auth.error;
     }
 
-    const deleted = await db.tournamentTeam.delete({
-      where: { id },
-    });
+    await db.tournamentTeam.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Asociación eliminada", deleted });
+    return apiNoContent(); // A7: éxito sin datos
   } catch (error) {
     console.error("Error eliminando asociación:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 },
-    );
+    return apiError(500, "Error interno del servidor");
   }
 }

@@ -1,11 +1,12 @@
 ﻿// app/api/noticias/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db"; // Asegurate que esta ruta sea correcta
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsCreateSchema } from "@/lib/validators/news";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { newsAuthorSelect } from "@modules/noticias/authorSelect";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 export async function GET(req: NextRequest) {
   try {
@@ -40,13 +41,10 @@ export async function GET(req: NextRequest) {
         createdAt: "desc",
       },
     });
-    return NextResponse.json(noticias);
+    return apiOk(noticias);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Error al obtener noticias" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al obtener noticias");
   }
 }
 
@@ -76,12 +74,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(newNews, { status: 201 });
+    return apiOk(newNews, 201);
   } catch (error) {
     console.error("Error al crear noticia:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 },
-    );
+    return apiError(500, "Error interno del servidor");
   }
 }

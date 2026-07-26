@@ -46,14 +46,6 @@ import {
   canAssignRole,
 } from "../../types";
 
-// Interfaces para la API
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
 interface ApiUser extends Omit<
   IUser,
   "createdAt" | "updatedAt" | "lastLoginAt" | "birthDate" | "emailVerified"
@@ -105,9 +97,9 @@ export default function EditUser() {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      const res = await api.get<ApiResponse<ApiUser>>(`/api/users/${userId}`);
-      if (res.ok && res.data.success && res.data.data) {
-        const userData = res.data.data;
+      const res = await api.get<ApiUser>(`/api/users/${userId}`);
+      if (res.ok) {
+        const userData = res.data;
         setUser(userData);
         setFormData({
           name: userData.name || "",
@@ -119,10 +111,7 @@ export default function EditUser() {
           imageUrl: userData.imageUrl || "",
         });
       } else {
-        toast.error(
-          (res.ok ? res.data.message : res.error) ||
-            "Error al cargar el usuario",
-        );
+        toast.error(res.error);
       }
       setLoading(false);
     };
@@ -174,19 +163,13 @@ export default function EditUser() {
 
     setSaving(true);
     try {
-      const res = await api.put<ApiResponse<ApiUser>>(
-        `/api/users/${userId}`,
-        formData,
-      );
-      if (res.ok && res.data.success) {
-        toast.success("Usuario actualizado exitosamente");
+      const res = await api.put<ApiUser>(`/api/users/${userId}`, formData);
+      if (res.ok) {
+        toast.success("Usuario actualizado");
         setHasChanges(false);
-        if (res.data.data) setUser(res.data.data);
+        setUser(res.data);
       } else {
-        toast.error(
-          (res.ok ? res.data.message : res.error) ||
-            "Error al actualizar el usuario",
-        );
+        toast.error(res.error);
       }
     } finally {
       setSaving(false);

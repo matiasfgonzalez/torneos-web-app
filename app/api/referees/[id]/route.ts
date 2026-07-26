@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { refereeUpdateSchema } from "@/lib/validators/referee";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -28,10 +28,7 @@ export async function GET(req: Request, { params }: { params: tParams }) {
       select: { organizationId: true },
     });
     if (!owner) {
-      return NextResponse.json(
-        { error: "Árbitro no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Árbitro no encontrado");
     }
     const auth = await requireApiOrgAccess(owner.organizationId, {
       allowCollaborator: true,
@@ -77,19 +74,13 @@ export async function GET(req: Request, { params }: { params: tParams }) {
     });
 
     if (!referee) {
-      return NextResponse.json(
-        { error: "Árbitro no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Árbitro no encontrado");
     }
 
-    return NextResponse.json(referee, { status: 200 });
+    return apiOk(referee);
   } catch (error) {
     console.error("Error al obtener árbitro:", error);
-    return NextResponse.json(
-      { error: "Error al obtener el árbitro" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al obtener el árbitro");
   }
 }
 
@@ -126,10 +117,7 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
     });
 
     if (!existingReferee) {
-      return NextResponse.json(
-        { error: "Árbitro no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Árbitro no encontrado");
     }
 
     const auth = await requireApiOrgAccess(existingReferee.organizationId);
@@ -138,10 +126,7 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
     }
 
     if (existingReferee.deletedAt) {
-      return NextResponse.json(
-        { error: "No se puede actualizar un árbitro eliminado" },
-        { status: 400 },
-      );
+      return apiError(400, "No se puede actualizar un árbitro eliminado");
     }
 
     const body = await req.json();
@@ -163,10 +148,7 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
         },
       });
       if (existingEmail) {
-        return NextResponse.json(
-          { error: "Ya existe un árbitro con ese email" },
-          { status: 400 },
-        );
+        return apiError(400, "Ya existe un árbitro con ese email");
       }
     }
 
@@ -180,10 +162,7 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
         },
       });
       if (existingNationalId) {
-        return NextResponse.json(
-          { error: "Ya existe un árbitro con ese DNI" },
-          { status: 400 },
-        );
+        return apiError(400, "Ya existe un árbitro con ese DNI");
       }
     }
 
@@ -197,13 +176,10 @@ export async function PATCH(req: Request, { params }: { params: tParams }) {
       },
     });
 
-    return NextResponse.json(referee, { status: 200 });
+    return apiOk(referee);
   } catch (error) {
     console.error("Error al actualizar árbitro:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar el árbitro" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al actualizar el árbitro");
   }
 }
 
@@ -243,10 +219,7 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
     }
 
     if (!referee) {
-      return NextResponse.json(
-        { error: "Árbitro no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Árbitro no encontrado");
     }
 
     const { searchParams } = new URL(req.url);
@@ -254,14 +227,11 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
 
     // Verificar si tiene partidos asignados para eliminación física
     if (permanent && referee._count.matches > 0) {
-      return NextResponse.json(
-        {
+      return apiOk({
           error:
             "No se puede eliminar permanentemente un árbitro con partidos asignados",
           suggestion: "Use eliminación lógica o desasocie los partidos primero",
-        },
-        { status: 400 },
-      );
+        }, 400);
     }
 
     if (permanent) {
@@ -270,10 +240,7 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
         where: { id },
       });
 
-      return NextResponse.json(
-        { message: "Árbitro eliminado permanentemente", name: referee.name },
-        { status: 200 },
-      );
+      return apiNoContent(); // A7: éxito sin datos (baja definitiva)
     } else {
       // Eliminación lógica (soft delete)
       await db.referee.update({
@@ -285,16 +252,10 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
         },
       });
 
-      return NextResponse.json(
-        { message: "Árbitro eliminado", name: referee.name },
-        { status: 200 },
-      );
+      return apiNoContent(); // A7: éxito sin datos (baja lógica)
     }
   } catch (error) {
     console.error("Error al eliminar árbitro:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar el árbitro" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al eliminar el árbitro");
   }
 }

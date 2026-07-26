@@ -1,10 +1,9 @@
 // app/api/tournaments/route.ts
 import { AgeGroup, Gender, Prisma } from "@prisma/client";
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isOrgOwner, requireApiOrgContext } from "@/lib/orgAuth";
 import { assertPlanLimit } from "@/lib/planLimits";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 import { uniqueTournamentSlug } from "@/lib/slug";
 import { tournamentCreateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
@@ -50,7 +49,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(newTournament, { status: 201 });
+    return apiOk(newTournament, 201);
   } catch (error) {
     console.error(error);
     return apiError(500, "Error al crear el torneo");
@@ -85,7 +84,7 @@ export async function GET(req: Request) {
     });
 
     // Lista vacía devuelve [] (convención A7): el cliente siempre recibe array
-    return NextResponse.json(tournaments, { status: 200 });
+    return apiOk(tournaments);
   } catch (error) {
     console.error(error);
     return apiError(500, "Error al obtener los torneos");

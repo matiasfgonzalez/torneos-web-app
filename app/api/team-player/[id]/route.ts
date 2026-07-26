@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -18,13 +18,10 @@ export async function GET(req: Request, { params }: { params: tParams }) {
       orderBy: { joinedAt: "asc" },
     });
 
-    return NextResponse.json(players, { status: 200 });
+    return apiOk(players);
   } catch (error) {
     console.error("Error al obtener los jugadores asociados: ", error);
-    return NextResponse.json(
-      { error: "Error al obtener los jugadores asociados:" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al obtener los jugadores asociados:");
   }
 }
 
@@ -56,10 +53,7 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
     });
 
     if (!teamPlayer) {
-      return NextResponse.json(
-        { error: "La asociación jugador-equipo no existe" },
-        { status: 404 },
-      );
+      return apiError(404, "La asociación jugador-equipo no existe");
     }
 
     const auth = await requireApiOrgAccess(
@@ -74,20 +68,14 @@ export async function DELETE(req: Request, { params }: { params: tParams }) {
       where: { id },
     });
 
-    return NextResponse.json(
-      {
+    return apiOk({
         message: "Jugador desasociado correctamente",
         deletedPlayer: teamPlayer.player.name,
         team: teamPlayer.tournamentTeam.team.name,
         tournament: teamPlayer.tournamentTeam.tournament.name,
-      },
-      { status: 200 },
-    );
+      });
   } catch (error) {
     console.error("Error al desasociar el jugador:", error);
-    return NextResponse.json(
-      { error: "Error al desasociar el jugador del equipo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al desasociar el jugador del equipo");
   }
 }

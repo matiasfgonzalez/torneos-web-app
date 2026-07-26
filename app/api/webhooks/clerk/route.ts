@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * Webhook de Clerk — sincroniza usuarios Clerk ↔ BD.
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Webhook de Clerk con firma inválida:", error);
-    return NextResponse.json({ error: "Firma inválida" }, { status: 400 });
+    return apiError(400, "Firma inválida");
   }
 
   try {
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
         break;
     }
 
-    return NextResponse.json({ received: true });
+    return apiOk({ received: true });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -155,11 +156,11 @@ export async function POST(req: NextRequest) {
       // Conflicto de unicidad (ej. email ya usado por un usuario temp_ creado
       // a mano): reintentar no lo resuelve — log y 200 para cortar los retries
       console.error(`Webhook ${evt.type}: conflicto de unicidad`, error.meta);
-      return NextResponse.json({ received: true, warning: "conflict" });
+      return apiOk({ received: true, warning: "conflict" });
     }
 
     console.error(`Error procesando webhook ${evt.type}:`, error);
     // 500 → Clerk reintenta con backoff
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    return apiError(500, "Error interno");
   }
 }

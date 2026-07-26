@@ -44,10 +44,8 @@ const DEFAULTS = { q: "", estado: "all", torneo: "all" };
 
 interface MatchesResponse {
   data: IPartidos[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  /** A7: toda lista paginada responde `{ data, meta }`. */
+  meta: { total: number; page: number; limit: number; totalPages: number };
 }
 
 interface MatchesSummary {
@@ -124,8 +122,8 @@ export default function PartidosPage() {
 
   const tournaments = summary?.tournaments ?? [];
   const matches = list?.data ?? [];
-  const totalPages = list?.totalPages ?? 1;
-  const total = list?.total ?? 0;
+  const totalPages = list?.meta.totalPages ?? 1;
+  const total = list?.meta.total ?? 0;
 
   const stats = useMemo(() => {
     const bs = summary?.byStatus ?? {};

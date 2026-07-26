@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg } from "@/lib/orgAuth";
 import { getOrCreateSubscription } from "@/lib/planLimits";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 import { paymentCreateSchema } from "@/lib/validators/payment";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { getPlatformAdminIds, notify } from "@/lib/notifications";
@@ -95,7 +94,7 @@ export async function POST(req: Request) {
       { exclude: user.id },
     );
 
-    return NextResponse.json(payment, { status: 201 });
+    return apiOk(payment, 201);
   } catch (error) {
     console.error("Error al informar pago:", error);
     return apiError(500, "Error al informar el pago");
@@ -139,7 +138,7 @@ export async function GET(req: Request) {
       take: 100,
     });
 
-    return NextResponse.json(payments);
+    return apiOk(payments);
   } catch (error) {
     console.error("Error al obtener pagos:", error);
     return apiError(500, "Error al obtener los pagos");

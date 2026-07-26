@@ -1,8 +1,8 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { isOrgOwner } from "@/lib/orgAuth";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 import { memberRoleSchema } from "@/lib/validators/organization";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -55,7 +55,7 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({
+    return apiOk({
       id: updated.id,
       role: updated.role,
       createdAt: updated.createdAt,
@@ -100,7 +100,7 @@ export async function DELETE(
 
     await db.organizationMember.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Miembro quitado de la liga" });
+    return apiNoContent(); // A7: éxito sin datos
   } catch (error) {
     console.error("Error al quitar miembro:", error);
     return apiError(500, "Error al quitar al miembro");

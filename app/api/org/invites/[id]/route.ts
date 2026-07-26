@@ -1,8 +1,8 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { isOrgOwner } from "@/lib/orgAuth";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiNoContent } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -42,7 +42,7 @@ export async function DELETE(
       data: { status: "CANCELADA" },
     });
 
-    return NextResponse.json({ message: "Invitación cancelada" });
+    return apiNoContent(); // A7: éxito sin datos
   } catch (error) {
     console.error("Error al cancelar invitación:", error);
     return apiError(500, "Error al cancelar la invitación");

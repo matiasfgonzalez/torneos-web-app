@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg, isOrgOwner, uniqueSlug } from "@/lib/orgAuth";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 import { organizationUpdateSchema } from "@/lib/validators/organization";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -26,7 +25,7 @@ export async function GET() {
       select: { role: true },
     });
 
-    return NextResponse.json({
+    return apiOk({
       id: org.id,
       name: org.name,
       slug: org.slug,
@@ -80,7 +79,7 @@ export async function PATCH(req: Request) {
       data,
     });
 
-    return NextResponse.json({
+    return apiOk({
       id: updated.id,
       name: updated.name,
       slug: updated.slug,

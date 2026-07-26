@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { teamPlayerCreateSchema } from "@/lib/validators/team-player";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 export async function POST(req: Request) {
   try {
@@ -23,10 +23,7 @@ export async function POST(req: Request) {
     });
 
     if (!tournamentTeam) {
-      return NextResponse.json(
-        { error: "El equipo del torneo no existe" },
-        { status: 404 },
-      );
+      return apiError(404, "El equipo del torneo no existe");
     }
 
     const auth = await requireApiOrgAccess(
@@ -48,12 +45,9 @@ export async function POST(req: Request) {
       select: { tournamentTeam: { select: { team: { select: { name: true } } } } },
     });
     if (dup) {
-      return NextResponse.json(
-        {
+      return apiOk({
           error: `Ese jugador ya está en ${dup.tournamentTeam.team.name} en este torneo. Un jugador juega para un solo equipo por torneo.`,
-        },
-        { status: 409 },
-      );
+        }, 409);
     }
 
     // Mismo equipo repetido (el `@@unique`): se traduce el P2002 de Prisma a un
@@ -68,22 +62,16 @@ export async function POST(req: Request) {
       select: { id: true },
     });
     if (already) {
-      return NextResponse.json(
-        { error: "El jugador ya está en la lista de este equipo." },
-        { status: 409 },
-      );
+      return apiError(409, "El jugador ya está en la lista de este equipo.");
     }
 
     const teamPlayer = await db.teamPlayer.create({
       data: parsed.data,
     });
 
-    return NextResponse.json(teamPlayer, { status: 201 });
+    return apiOk(teamPlayer, 201);
   } catch (error) {
     console.error("Error al crear la relación equipo-jugador:", error);
-    return NextResponse.json(
-      { error: "Error al crear la relación equipo-jugador" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al crear la relación equipo-jugador");
   }
 }

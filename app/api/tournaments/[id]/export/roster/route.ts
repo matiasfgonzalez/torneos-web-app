@@ -5,6 +5,7 @@ import {
   exportFileSlug,
 } from "@/lib/export/tournament-export";
 import { hasFeature } from "@/lib/planLimits";
+import { apiError } from "@/lib/apiResponse";
 
 /**
  * CSV de planteles del torneo (S8). GET público: expone lo mismo que ya se ve
@@ -22,14 +23,13 @@ export async function GET(
   const { id } = await params;
   const data = await getTournamentExportData(id);
   if (!data) {
-    return new NextResponse("Torneo no encontrado", { status: 404 });
+    // A7: error como JSON `{ error }`, no texto plano. Este `new NextResponse`
+    // se salvó del barrido de 2026-07-05 que eliminó los otros cinco.
+    return apiError(404, "Torneo no encontrado");
   }
 
   if (!(await hasFeature(data.organizationId, "exportPdf"))) {
-    return NextResponse.json(
-      { error: "Exportar no está disponible en el plan de esta liga." },
-      { status: 403 },
-    );
+    return apiError(403, "Exportar no está disponible en el plan de esta liga.");
   }
 
   const csv = buildRosterCsv(data);

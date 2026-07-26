@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg } from "@/lib/orgAuth";
@@ -6,7 +5,7 @@ import {
   getEffectivePlan,
   getOrCreateSubscription,
 } from "@/lib/planLimits";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * GET /api/org/subscription — estado del plan de la organización del usuario:
@@ -34,7 +33,7 @@ export async function GET() {
       db.organizationMember.count({ where: { organizationId: org.id } }),
     ]);
 
-    return NextResponse.json({
+    return apiOk({
       organization: { id: org.id, name: org.name, slug: org.slug },
       subscription: {
         status: subscription.status,

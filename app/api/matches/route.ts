@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db"; // Asegúrate de tener este cliente configurado
 import { MatchStatus, Prisma } from "@prisma/client";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/lib/match-rules";
 import { canCreateMatchWithStatus } from "@/lib/status-transitions";
 import { assertTeamsInTournament } from "@/lib/match-guards";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 // GET /api/matches — listado paginado y filtrado (A3).
 //
@@ -29,7 +30,8 @@ import { assertTeamsInTournament } from "@/lib/match-guards";
 //     que la tarjeta y la hoja de edición usan. Sin `goals`/`cards`/`referees`
 //     (el detalle se pide aparte, `getMatchEvents`).
 //   - filtros en el server: `q` (equipos/torneo/estadio), `status`, `tournamentId`.
-//   - paginación `page`/`limit` → `{ data, total, page, limit, totalPages }`.
+//   - paginación `page`/`limit` → `{ data, meta }` (A7: la misma forma que
+//     el resto de las listas paginadas — antes acá venía todo plano).
 // ?scope=panel (N3): solo partidos de las organizaciones del usuario.
 const MATCH_LIST_SELECT = {
   id: true,
@@ -134,16 +136,13 @@ export async function GET(req: NextRequest) {
       db.match.count({ where }),
     ]);
 
-    return NextResponse.json(
-      { data, total, page, limit, totalPages: Math.ceil(total / limit) },
-      { status: 200 },
-    );
+    return apiOk({
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error("Error fetching matches:", error);
-    return NextResponse.json(
-      { error: "Error fetching matches" },
-      { status: 500 },
-    );
+    return apiError(500, "Error fetching matches");
   }
 }
 
@@ -170,10 +169,7 @@ export async function POST(req: NextRequest) {
       },
     });
     if (!tournament) {
-      return NextResponse.json(
-        { error: "Torneo no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Torneo no encontrado");
     }
 
     const auth = await requireApiOrgAccess(tournament.organizationId);
@@ -184,7 +180,7 @@ export async function POST(req: NextRequest) {
     // M11: no se cargan partidos en un torneo finalizado/archivado/cancelado.
     const canCreate = canCreateMatchInTournament(tournament.status);
     if (!canCreate.ok) {
-      return NextResponse.json({ error: canCreate.error }, { status: 409 });
+      return apiError(409, canCreate.error);
     }
 
     const data = { ...parsed.data };
@@ -194,7 +190,7 @@ export async function POST(req: NextRequest) {
     if (data.status) {
       const initial = canCreateMatchWithStatus(data.status);
       if (!initial.ok) {
-        return NextResponse.json({ error: initial.error }, { status: 409 });
+        return apiError(409, initial.error);
       }
     }
 
@@ -209,7 +205,7 @@ export async function POST(req: NextRequest) {
         walkoverScore: tournament.walkoverScore,
       });
       if (!wo.ok) {
-        return NextResponse.json({ error: wo.error }, { status: 400 });
+        return apiError(400, wo.error);
       }
       data.homeScore = wo.homeScore;
       data.awayScore = wo.awayScore;
@@ -226,7 +222,7 @@ export async function POST(req: NextRequest) {
       isWalkover: data.status === MatchStatus.WALKOVER,
     });
     if (!rules.ok) {
-      return NextResponse.json({ error: rules.error }, { status: 400 });
+      return apiError(400, rules.error);
     }
 
     // M11: los dos equipos tienen que pertenecer a ESTE torneo. Sin esto se
@@ -237,7 +233,7 @@ export async function POST(req: NextRequest) {
       data.awayTeamId,
     );
     if (!teamsCheck.ok) {
-      return NextResponse.json({ error: teamsCheck.error }, { status: 400 });
+      return apiError(400, teamsCheck.error);
     }
 
     // 📌 Crear partido + tabla de posiciones en una única transacción
@@ -261,12 +257,9 @@ export async function POST(req: NextRequest) {
       await recomputeTournamentSuspensions(match.tournamentId);
     }
 
-    return NextResponse.json(match, { status: 201 });
+    return apiOk(match, 201);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Error al crear el partido" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al crear el partido");
   }
 }

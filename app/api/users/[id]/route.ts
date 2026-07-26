@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole, canManageUserApi } from "@/lib/apiRoleValidation";
 import { formatTournamentCategory } from "@/lib/constants";
 import { userUpdateSchema } from "@/lib/validators/user";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
+import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 
 export async function GET(
   request: NextRequest,
@@ -20,14 +21,7 @@ export async function GET(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "ID requerido",
-          message: "El ID del usuario es requerido",
-        },
-        { status: 400 },
-      );
+      return apiError(400, "El ID del usuario es requerido");
     }
 
     // Obtener usuario con relaciones y estadísticas
@@ -95,14 +89,7 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Usuario no encontrado",
-          message: "No se encontró el usuario especificado",
-        },
-        { status: 404 },
-      );
+      return apiError(404, "No se encontró el usuario especificado");
     }
 
     // Calcular estadísticas adicionales (torneos/equipos vía organizaciones)
@@ -179,20 +166,11 @@ export async function GET(
       },
     };
 
-    return NextResponse.json({
-      success: true,
-      data: userWithStats,
-    });
+    // A7: el dato directo. El `success: true` lo dice el status HTTP.
+    return apiOk(userWithStats);
   } catch (error) {
     console.error("Error fetching user:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error interno del servidor",
-        message: "No se pudo obtener el usuario",
-      },
-      { status: 500 },
-    );
+    return apiError(500, "No se pudo obtener el usuario");
   }
 }
 
@@ -211,14 +189,7 @@ export async function PUT(
     const body = await request.json();
 
     if (!id) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "ID requerido",
-          message: "El ID del usuario es requerido",
-        },
-        { status: 400 },
-      );
+      return apiError(400, "El ID del usuario es requerido");
     }
 
     const parsed = userUpdateSchema.safeParse(body);
@@ -232,26 +203,12 @@ export async function PUT(
     });
 
     if (!existingUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Usuario no encontrado",
-          message: "No se encontró el usuario especificado",
-        },
-        { status: 404 },
-      );
+      return apiError(404, "No se encontró el usuario especificado");
     }
 
     // Validate role hierarchy - cannot modify users of equal or higher rank
     if (!canManageUserApi(authResult.user!.role, existingUser.role)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Permisos insuficientes",
-          message: "No puedes modificar usuarios de igual o mayor jerarquía",
-        },
-        { status: 403 }
-      );
+      return apiError(403, "No puedes modificar usuarios de igual o mayor jerarquía");
     }
 
     const updateData = parsed.data;
@@ -289,21 +246,12 @@ export async function PUT(
       payload: updateData,
     });
 
-    return NextResponse.json({
-      success: true,
-      data: updatedUser,
-      message: "Usuario actualizado exitosamente",
-    });
+    // A7: el usuario actualizado, sin `message`: el copy del toast lo pone la
+    // pantalla, que es la que sabe en qué contexto se hizo el cambio.
+    return apiOk(updatedUser);
   } catch (error) {
     console.error("Error updating user:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error interno del servidor",
-        message: "No se pudo actualizar el usuario",
-      },
-      { status: 500 },
-    );
+    return apiError(500, "No se pudo actualizar el usuario");
   }
 }
 
@@ -321,14 +269,7 @@ export async function DELETE(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "ID requerido",
-          message: "El ID del usuario es requerido",
-        },
-        { status: 400 },
-      );
+      return apiError(400, "El ID del usuario es requerido");
     }
 
     // Verificar que el usuario existe
@@ -337,26 +278,12 @@ export async function DELETE(
     });
 
     if (!existingUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Usuario no encontrado",
-          message: "No se encontró el usuario especificado",
-        },
-        { status: 404 },
-      );
+      return apiError(404, "No se encontró el usuario especificado");
     }
 
     // Validate role hierarchy - cannot delete users of equal or higher rank
     if (!canManageUserApi(authResult.user!.role, existingUser.role)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Permisos insuficientes",
-          message: "No puedes eliminar usuarios de igual o mayor jerarquía",
-        },
-        { status: 403 }
-      );
+      return apiError(403, "No puedes eliminar usuarios de igual o mayor jerarquía");
     }
 
     // Realizar eliminación lógica marcando como inactivo
@@ -377,19 +304,11 @@ export async function DELETE(
       payload: { reason: "Baja lógica desde el panel" },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Usuario eliminado exitosamente",
-    });
+    // A7: un DELETE sin datos que devolver responde 204 (sin cuerpo). El
+    // cliente ya lo contempla: `api-client` no intenta parsear un body vacío.
+    return apiNoContent();
   } catch (error) {
     console.error("Error deleting user:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error interno del servidor",
-        message: "No se pudo eliminar el usuario",
-      },
-      { status: 500 },
-    );
+    return apiError(500, "No se pudo eliminar el usuario");
   }
 }

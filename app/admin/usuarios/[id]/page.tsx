@@ -66,14 +66,6 @@ import {
   STATUS_COLORS,
 } from "../types";
 
-// Interfaces para la API
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
 interface UserWithStats extends IUser {
   stats?: {
     recent: {
@@ -134,17 +126,9 @@ export default function UserDetailPage() {
   // setState no queda en el cuerpo del effect (react-hooks/set-state-in-effect).
   const fetchUser = useCallback(() => {
     startFetch(async () => {
-      const res = await api.get<ApiResponse<UserWithStats>>(
-        `/api/users/${userId}`,
-      );
-      if (res.ok && res.data.success && res.data.data) {
-        setUser(res.data.data);
-      } else {
-        toast.error(
-          (res.ok ? res.data.message : res.error) ||
-            "Error al cargar el usuario",
-        );
-      }
+      const res = await api.get<UserWithStats>(`/api/users/${userId}`);
+      if (res.ok) setUser(res.data);
+      else toast.error(res.error);
       setIsLoading(false);
     });
   }, [userId]);
@@ -162,18 +146,15 @@ export default function UserDetailPage() {
 
     try {
       setIsUpdatingRole(true);
-      const res = await api.put<ApiResponse<IUser>>(`/api/users/${userId}`, {
+      const res = await api.put<IUser>(`/api/users/${userId}`, {
         role: newRole,
       });
-      if (res.ok && res.data.success && res.data.data) {
-        const updated = res.data.data;
+      if (res.ok) {
+        const updated = res.data;
         setUser((prev) => (prev ? { ...prev, ...updated } : null));
-        toast.success("Rol actualizado exitosamente");
+        toast.success("Rol actualizado");
       } else {
-        toast.error(
-          (res.ok ? res.data.message : res.error) ||
-            "Error al actualizar el rol",
-        );
+        toast.error(res.error);
       }
     } finally {
       setIsUpdatingRole(false);
@@ -186,18 +167,15 @@ export default function UserDetailPage() {
 
     try {
       setIsUpdatingStatus(true);
-      const res = await api.put<ApiResponse<IUser>>(`/api/users/${userId}`, {
+      const res = await api.put<IUser>(`/api/users/${userId}`, {
         status: newStatus,
       });
-      if (res.ok && res.data.success && res.data.data) {
-        const updated = res.data.data;
+      if (res.ok) {
+        const updated = res.data;
         setUser((prev) => (prev ? { ...prev, ...updated } : null));
-        toast.success("Estado actualizado exitosamente");
+        toast.success("Estado actualizado");
       } else {
-        toast.error(
-          (res.ok ? res.data.message : res.error) ||
-            "Error al actualizar el estado",
-        );
+        toast.error(res.error);
       }
     } finally {
       setIsUpdatingStatus(false);
@@ -210,15 +188,12 @@ export default function UserDetailPage() {
 
     try {
       setIsDeleting(true);
-      const res = await api.del<ApiResponse<unknown>>(`/api/users/${userId}`);
-      if (res.ok && res.data?.success) {
-        toast.success("Usuario eliminado exitosamente");
+      const res = await api.del(`/api/users/${userId}`);
+      if (res.ok) {
+        toast.success("Usuario eliminado");
         router.push("/admin/usuarios");
       } else {
-        toast.error(
-          (res.ok ? res.data?.message : res.error) ||
-            "Error al eliminar el usuario",
-        );
+        toast.error(res.error);
       }
     } finally {
       setIsDeleting(false);

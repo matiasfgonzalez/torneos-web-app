@@ -22,6 +22,7 @@ const LOADER_ROLES: OrgRole[] = ["OWNER", "ORGANIZADOR", "COLABORADOR"];
 // Slug de organización: vive en lib/slug.ts (N9). Se reexporta con el nombre
 // `uniqueSlug` por compatibilidad con los consumidores existentes.
 import { uniqueOrganizationSlug } from "@/lib/slug";
+import { apiError } from "@/lib/apiResponse";
 export { uniqueOrganizationSlug as uniqueSlug };
 
 /**
@@ -170,17 +171,11 @@ export async function canManageOrg(
 type ApiAuthError = { user?: never; org?: never; error: NextResponse };
 
 const apiUnauthorized = (): ApiAuthError => ({
-  error: NextResponse.json(
-    { error: "Debes iniciar sesión para acceder a este recurso" },
-    { status: 401 },
-  ),
+  error: apiError(401, "Debes iniciar sesión para acceder a este recurso"),
 });
 
 const apiForbidden = (): ApiAuthError => ({
-  error: NextResponse.json(
-    { error: "No tienes permisos para realizar esta acción" },
-    { status: 403 },
-  ),
+  error: apiError(403, "No tienes permisos para realizar esta acción"),
 });
 
 /**
@@ -215,7 +210,7 @@ export async function requireApiOrgOwner(
 
   if (!(await isOrgOwner(user, organizationId))) {
     return {
-      error: NextResponse.json({ error: message }, { status: 403 }),
+      error: apiError(403, message),
     };
   }
   return { user };

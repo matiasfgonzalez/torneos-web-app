@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * No hay `POST` para crear usuarios a mano, a propósito.
@@ -118,8 +119,11 @@ export async function GET(request: NextRequest) {
     const hasNextPage = (filters.page || 1) < totalPages;
     const hasPreviousPage = (filters.page || 1) > 1;
 
-    return NextResponse.json({
-      success: true,
+    // A7: `{ data, meta }`, la misma forma que el resto de las listas
+    // paginadas (ver `/api/admin/organizations`). Se fue el `success: true`
+    // —lo dice el status HTTP— y el eco de `filters`, que nadie leía: el
+    // cliente ya sabe qué filtros mandó.
+    return apiOk({
       data: users,
       meta: {
         total: totalCount,
@@ -129,24 +133,10 @@ export async function GET(request: NextRequest) {
         hasNextPage,
         hasPreviousPage,
       },
-      filters: {
-        search: filters.search,
-        role: filters.role,
-        status: filters.status,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-      },
     });
   } catch (error) {
     console.error("Error fetching users:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error interno del servidor",
-        message: "No se pudieron obtener los usuarios",
-      },
-      { status: 500 },
-    );
+    return apiError(500, "No se pudieron obtener los usuarios");
   }
 }
 

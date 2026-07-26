@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgOwner } from "@/lib/orgAuth";
 import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
 import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -27,10 +27,7 @@ export async function POST(req: Request, { params }: { params: tParams }) {
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "Torneo no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Torneo no encontrado");
     }
 
     // Solo el OWNER (o admin) restaura: el mismo control que exige el DELETE
@@ -44,10 +41,7 @@ export async function POST(req: Request, { params }: { params: tParams }) {
     }
 
     if (!existing.deletedAt) {
-      return NextResponse.json(
-        { error: "El torneo no está eliminado" },
-        { status: 400 },
-      );
+      return apiError(400, "El torneo no está eliminado");
     }
 
     // **Restaurar consume el límite igual que crear.** Un torneo eliminado no
@@ -62,12 +56,9 @@ export async function POST(req: Request, { params }: { params: tParams }) {
         "createTournament",
       );
       if (!check.ok) {
-        return NextResponse.json(
-          {
+        return apiOk({
             error: `${check.error} (el torneo sigue eliminado: podés archivar otro y volver a restaurarlo)`,
-          },
-          { status: 402 },
-        );
+          }, 402);
       }
     }
 
@@ -85,12 +76,9 @@ export async function POST(req: Request, { params }: { params: tParams }) {
       payload: { name: tournament.name },
     });
 
-    return NextResponse.json(tournament, { status: 200 });
+    return apiOk(tournament);
   } catch (error) {
     console.error("Error al restaurar el torneo:", error);
-    return NextResponse.json(
-      { error: "Error al restaurar el torneo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al restaurar el torneo");
   }
 }

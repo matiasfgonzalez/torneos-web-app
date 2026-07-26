@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getPanelOrgIds, orgScopeWhere } from "@/lib/orgAuth";
 import { playerOrgScopeWhere } from "@/lib/playerAuth";
 import type { AdminSearchResult } from "@/types/admin-search";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * GET /api/admin/search?q=… — buscador del command palette (F3).
@@ -27,12 +28,12 @@ export async function GET(req: NextRequest) {
   try {
     const q = req.nextUrl.searchParams.get("q")?.trim();
     if (!q || q.length < 2) {
-      return NextResponse.json([], { status: 200 });
+      return apiOk([]);
     }
 
     const orgIds = await getPanelOrgIds();
     if (orgIds?.length === 0) {
-      return NextResponse.json([], { status: 200 });
+      return apiOk([]);
     }
 
     const scope = orgScopeWhere(orgIds);
@@ -86,12 +87,9 @@ export async function GET(req: NextRequest) {
       })),
     ];
 
-    return NextResponse.json(results, { status: 200 });
+    return apiOk(results);
   } catch (error) {
     console.error("Error en la búsqueda del panel:", error);
-    return NextResponse.json(
-      { error: "Error al buscar" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al buscar");
   }
 }

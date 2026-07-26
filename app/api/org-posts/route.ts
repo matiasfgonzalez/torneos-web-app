@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgContext } from "@/lib/orgAuth";
 import { hasFeature } from "@/lib/planLimits";
 import { orgPostCreateSchema } from "@/lib/validators/org-post";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * Crear una novedad de la liga (S12). Gateado por la feature de plan `orgNews`:
@@ -16,13 +16,7 @@ export async function POST(req: Request) {
   const { org } = auth;
 
   if (!(await hasFeature(org.id, "orgNews"))) {
-    return NextResponse.json(
-      {
-        error:
-          "Tu plan no incluye Novedades de la liga. Mejorá tu plan para publicar novedades.",
-      },
-      { status: 402 },
-    );
+    return apiError(402, "Tu plan no incluye Novedades de la liga. Mejorá tu plan para publicar novedades.");
   }
 
   const body = await req.json().catch(() => null);
@@ -45,5 +39,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(post, { status: 201 });
+  return apiOk(post, 201);
 }

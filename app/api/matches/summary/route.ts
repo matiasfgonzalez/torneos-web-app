@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { MatchStatus, Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getPanelOrgIds } from "@/lib/orgAuth";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * Resumen de partidos para las cabeceras (A3): totales por estado, cuántos hay
@@ -56,15 +57,9 @@ export async function GET(req: NextRequest) {
       name: r.tournament.name,
     }));
 
-    return NextResponse.json(
-      { total, today, byStatus, tournaments },
-      { status: 200 },
-    );
+    return apiOk({ total, today, byStatus, tournaments });
   } catch (error) {
     console.error("Error fetching matches summary:", error);
-    return NextResponse.json(
-      { error: "Error fetching matches summary" },
-      { status: 500 },
-    );
+    return apiError(500, "Error fetching matches summary");
   }
 }

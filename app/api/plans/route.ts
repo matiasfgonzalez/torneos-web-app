@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 // GET /api/plans — planes activos (público: pricing y página de plan)
 export async function GET() {
@@ -21,7 +20,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(plans);
+    return apiOk(plans);
   } catch (error) {
     console.error("Error al obtener planes:", error);
     return apiError(500, "Error al obtener los planes");

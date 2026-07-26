@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess, requireApiOrgOwner } from "@/lib/orgAuth";
 import { assertPlanLimit, isActiveTournamentStatus } from "@/lib/planLimits";
@@ -7,6 +7,7 @@ import { tournamentUpdateSchema } from "@/lib/validators/tournament";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 import { canTransitionTournament } from "@/lib/status-transitions";
+import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -37,19 +38,13 @@ export async function GET(req: NextRequest, { params }: { params: tParams }) {
     });
 
     if (!tournament) {
-      return NextResponse.json(
-        { error: "Torneo no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Torneo no encontrado");
     }
 
-    return NextResponse.json(tournament, { status: 200 });
+    return apiOk(tournament);
   } catch (error) {
     console.error("Error al obtener el torneo:", error);
-    return NextResponse.json(
-      { error: "Error al obtener el torneo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al obtener el torneo");
   }
 }
 
@@ -61,10 +56,7 @@ export async function DELETE(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     const existing = await db.tournament.findUnique({
@@ -73,10 +65,7 @@ export async function DELETE(
     });
 
     if (!existing || existing.deletedAt) {
-      return NextResponse.json(
-        { error: "Torneo no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Torneo no encontrado");
     }
 
     // Solo el OWNER (o admin) elimina torneos (D12/N14c): la baja libera cupo
@@ -107,16 +96,10 @@ export async function DELETE(
       payload: { name: deletedTournament.name },
     });
 
-    return NextResponse.json(
-      { message: "Torneo eliminado correctamente", deletedTournament },
-      { status: 200 },
-    );
+    return apiNoContent(); // A7: éxito sin datos
   } catch (error) {
     console.error("Error al eliminar el torneo:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar el torneo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al eliminar el torneo");
   }
 }
 
@@ -125,10 +108,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     const body = await req.json();
@@ -152,10 +132,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     });
 
     if (!existing || existing.deletedAt) {
-      return NextResponse.json(
-        { error: "Torneo no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Torneo no encontrado");
     }
 
     // Solo gestores de la organización dueña (o admin) pueden editar
@@ -173,7 +150,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         parsed.data.status,
       );
       if (!transition.ok) {
-        return NextResponse.json({ error: transition.error }, { status: 409 });
+        return apiError(409, transition.error);
       }
     }
 
@@ -201,7 +178,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         "createTournament",
       );
       if (!check.ok) {
-        return NextResponse.json({ error: check.error }, { status: 402 });
+        return apiError(402, check.error);
       }
     }
 
@@ -212,10 +189,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const effectiveEnd =
       parsed.data.endDate !== undefined ? parsed.data.endDate : existing.endDate;
     if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
-      return NextResponse.json(
-        { error: "La fecha de fin no puede ser anterior a la de inicio." },
-        { status: 400 },
-      );
+      return apiError(400, "La fecha de fin no puede ser anterior a la de inicio.");
     }
 
     // El slug se genera una sola vez y NO cambia al renombrar, para mantener
@@ -234,15 +208,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       data,
     });
 
-    return NextResponse.json(
-      { message: "Torneo actualizado correctamente", updatedTournament },
-      { status: 200 },
-    );
+    // A7: el torneo actualizado, directo. El copy del toast lo pone la pantalla.
+    return apiOk(updatedTournament);
   } catch (error) {
     console.error("Error al actualizar el torneo:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar el torneo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al actualizar el torneo");
   }
 }

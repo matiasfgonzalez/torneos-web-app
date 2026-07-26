@@ -1,10 +1,11 @@
 // app/api/players/[id]/route.ts
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { canEditPlayer, logPlayerChange } from "@/lib/playerAuth";
 import { playerUpdateSchema } from "@/lib/validators/player";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -25,31 +26,22 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     const user = await checkUser();
     if (!user) {
-      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+      return apiError(401, "No autenticado");
     }
 
     const existing = await db.player.findUnique({ where: { id } });
 
     if (!existing || existing.deletedAt) {
-      return NextResponse.json(
-        { error: "Jugador no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Jugador no encontrado");
     }
 
     if (!(await canEditPlayer(user, id))) {
-      return NextResponse.json(
-        { error: "No podés editar este jugador" },
-        { status: 403 },
-      );
+      return apiError(403, "No podés editar este jugador");
     }
 
     const parsed = playerUpdateSchema.safeParse(await req.json());
@@ -66,13 +58,10 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         select: { id: true, name: true },
       });
       if (other && other.id !== id) {
-        return NextResponse.json(
-          {
+        return apiOk({
             error: `Ya existe otro jugador con ese DNI (${other.name}).`,
             existingPlayer: other,
-          },
-          { status: 409 },
-        );
+          }, 409);
       }
     }
 
@@ -83,12 +72,9 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
 
     await logPlayerChange(user.id, id, existing, updatedPlayer);
 
-    return NextResponse.json(updatedPlayer, { status: 200 });
+    return apiOk(updatedPlayer);
   } catch (error) {
     console.error("Error en PATCH /api/players:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar el jugador" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al actualizar el jugador");
   }
 }

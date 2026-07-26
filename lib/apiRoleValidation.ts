@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
+import type { NextResponse } from "next/server";
+
 import { checkUser } from "@/lib/checkUser";
+import { apiError } from "@/lib/apiResponse";
 import { UserRole } from "@prisma/client";
 import { canManageUser } from "@/lib/userRoles";
 
@@ -14,26 +16,18 @@ export async function validateApiRole(
 
   if (!user) {
     return {
-      error: NextResponse.json(
-        {
-          success: false,
-          error: "No autorizado",
-          message: "Debes iniciar sesión para acceder a este recurso",
-        },
-        { status: 401 }
-      ),
+      // A7: `{ error }`, no `{ success:false, error, message }`. Era el último
+      // envelope del repo, y el más caro: lo devuelve la guarda que usan todas
+      // las rutas de admin, así que su forma marcaba a media API.
+      error: apiError(401, "Debes iniciar sesión para acceder a este recurso"),
     };
   }
 
   if (!requiredRoles.includes(user.role)) {
     return {
-      error: NextResponse.json(
-        {
-          success: false,
-          error: "Permisos insuficientes",
-          message: `No tienes permisos para realizar esta acción. Se requiere: ${requiredRoles.join(", ")}`,
-        },
-        { status: 403 }
+      error: apiError(
+        403,
+        `No tienes permisos para realizar esta acción. Se requiere: ${requiredRoles.join(", ")}`,
       ),
     };
   }

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 import { paymentReviewSchema } from "@/lib/validators/payment";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { getOrgOwnerId, notify } from "@/lib/notifications";
@@ -75,7 +75,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         { exclude: authResult.user!.id },
       );
 
-      return NextResponse.json(rejected);
+      return apiOk(rejected);
     }
 
     // APROBAR: pago + suscripción en una única transacción
@@ -122,7 +122,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       { exclude: authResult.user!.id },
     );
 
-    return NextResponse.json(approved.updated);
+    return apiOk(approved.updated);
   } catch (error) {
     console.error("Error al revisar pago:", error);
     return apiError(500, "Error al revisar el pago");

@@ -10,10 +10,10 @@
  * Response: { signature, timestamp, cloudName, apiKey, folder }
  */
 
-import { NextResponse } from "next/server";
 import { generateSignature } from "@/lib/cloudinary";
 import { signatureRequestSchema } from "@/types/cloudinary";
 import { requireApiOrgContext } from "@/lib/orgAuth";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 export async function POST(request: Request) {
   try {
@@ -28,10 +28,7 @@ export async function POST(request: Request) {
     const validationResult = signatureRequestSchema.safeParse(body);
     
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Datos inválidos", details: validationResult.error.issues },
-        { status: 400 }
-      );
+      return apiError(400, "Datos inválidos", validationResult.error.issues);
     }
 
     const { folder, tags } = validationResult.data;
@@ -42,12 +39,9 @@ export async function POST(request: Request) {
       tags,
     });
 
-    return NextResponse.json(signatureData);
+    return apiOk(signatureData);
   } catch (error) {
     console.error("Error al generar firma de Cloudinary:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return apiError(500, "Error interno del servidor");
   }
 }

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ tournamentId: string }>;
 
@@ -52,12 +52,9 @@ export async function GET(_req: Request, { params }: { params: tParams }) {
       orderBy: { dateTime: "asc" },
     });
 
-    return NextResponse.json(matches, { status: 200 });
+    return apiOk(matches);
   } catch (error) {
     console.error("Error fetching matches by tournament:", error);
-    return NextResponse.json(
-      { error: "Error fetching matches by tournament" },
-      { status: 500 }
-    );
+    return apiError(500, "Error fetching matches by tournament");
   }
 }

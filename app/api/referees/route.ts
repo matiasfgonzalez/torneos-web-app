@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { RefereeStatus } from "@prisma/client";
 import {
@@ -8,6 +7,7 @@ import {
 } from "@/lib/orgAuth";
 import { refereeCreateSchema } from "@/lib/validators/referee";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * GET /api/referees
@@ -56,13 +56,10 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json(referees, { status: 200 });
+    return apiOk(referees);
   } catch (error) {
     console.error("Error al obtener árbitros:", error);
-    return NextResponse.json(
-      { error: "Error al obtener los árbitros" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al obtener los árbitros");
   }
 }
 
@@ -109,10 +106,7 @@ export async function POST(req: Request) {
         where: { email, deletedAt: null },
       });
       if (existingEmail) {
-        return NextResponse.json(
-          { error: "Ya existe un árbitro con ese email" },
-          { status: 400 },
-        );
+        return apiError(400, "Ya existe un árbitro con ese email");
       }
     }
 
@@ -122,10 +116,7 @@ export async function POST(req: Request) {
         where: { nationalId, deletedAt: null },
       });
       if (existingNationalId) {
-        return NextResponse.json(
-          { error: "Ya existe un árbitro con ese DNI" },
-          { status: 400 },
-        );
+        return apiError(400, "Ya existe un árbitro con ese DNI");
       }
     }
 
@@ -143,12 +134,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(referee, { status: 201 });
+    return apiOk(referee, 201);
   } catch (error) {
     console.error("Error al crear árbitro:", error);
-    return NextResponse.json(
-      { error: "Error al crear el árbitro" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al crear el árbitro");
   }
 }

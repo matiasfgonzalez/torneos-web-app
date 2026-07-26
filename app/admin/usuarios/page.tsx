@@ -55,13 +55,10 @@ import {
  * correcta, cambiarla habría sido mover el problema de lugar.
  */
 
-/** Envelope histórico de las rutas de `users` (A7). */
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  meta?: { total: number; page: number; limit: number; totalPages: number };
+/** Página de una lista paginada (A7): `{ data, meta }`, como el resto del panel. */
+interface Paged<T> {
+  data: T[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
 }
 
 /** Fila tal como llega del API: las fechas viajan como string. */
@@ -145,30 +142,22 @@ export default function UsersPage() {
       qs.set("limit", String(params.pageSize));
 
       const [listRes, statsRes] = await Promise.all([
-        api.get<ApiResponse<ApiUser[]>>(`/api/users?${qs.toString()}`),
-        api.get<ApiResponse<UserStats>>("/api/users/stats"),
+        api.get<Paged<ApiUser>>(`/api/users?${qs.toString()}`),
+        api.get<UserStats>("/api/users/stats"),
       ]);
 
-      if (listRes.ok && listRes.data.success && listRes.data.data) {
-        setData({
-          rows: listRes.data.data,
-          total: listRes.data.meta?.total ?? listRes.data.data.length,
-        });
+      if (listRes.ok) {
+        setData({ rows: listRes.data.data, total: listRes.data.meta.total });
       } else {
         setData({ rows: [], total: 0 });
-        toast.error(
-          (listRes.ok ? listRes.data.message : listRes.error) ||
-            "No se pudieron cargar los usuarios",
-        );
+        toast.error(listRes.error);
       }
 
       // Los KPIs salen de los agregados de la base, no de la página visible:
       // antes se calculaban con `users.filter(...)` sobre las 12 filas
       // cargadas, así que "Activos" y "Administradores" mentían apenas había
       // más de una página.
-      if (statsRes.ok && statsRes.data.success && statsRes.data.data) {
-        setStats(statsRes.data.data);
-      }
+      if (statsRes.ok) setStats(statsRes.data);
     });
   }, [params]);
 
@@ -180,15 +169,12 @@ export default function UsersPage() {
   const rows = data?.rows ?? [];
 
   const handleDelete = async (userId: string) => {
-    const res = await api.del<ApiResponse<unknown>>(`/api/users/${userId}`);
-    if (res.ok && res.data?.success) {
+    const res = await api.del(`/api/users/${userId}`);
+    if (res.ok) {
       toast.success("Usuario eliminado");
       fetchUsers();
     } else {
-      toast.error(
-        (res.ok ? res.data?.message : res.error) ||
-          "No se pudo eliminar el usuario",
-      );
+      toast.error(res.error);
     }
   };
 

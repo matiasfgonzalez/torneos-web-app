@@ -9,10 +9,10 @@
  * Response: { result: "ok" | "not found" }
  */
 
-import { NextResponse } from "next/server";
 import { deleteImage } from "@/lib/cloudinary";
 import { deleteRequestSchema } from "@/types/cloudinary";
 import { requireApiOrgContext } from "@/lib/orgAuth";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 export async function DELETE(request: Request) {
   try {
@@ -27,10 +27,7 @@ export async function DELETE(request: Request) {
     const validationResult = deleteRequestSchema.safeParse(body);
     
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Datos inválidos", details: validationResult.error.issues },
-        { status: 400 }
-      );
+      return apiError(400, "Datos inválidos", validationResult.error.issues);
     }
 
     const { publicId } = validationResult.data;
@@ -40,26 +37,23 @@ export async function DELETE(request: Request) {
 
     // Verificar el resultado
     if (result.result === "ok") {
-      return NextResponse.json({
+      return apiOk({
         result: "ok",
         message: "Imagen eliminada correctamente",
       });
     } else if (result.result === "not found") {
-      return NextResponse.json({
+      return apiOk({
         result: "not found",
         message: "La imagen no existe o ya fue eliminada",
       });
     } else {
-      return NextResponse.json({
+      return apiOk({
         result: result.result,
         message: "Resultado inesperado al eliminar la imagen",
       });
     }
   } catch (error) {
     console.error("Error al eliminar imagen de Cloudinary:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return apiError(500, "Error interno del servidor");
   }
 }

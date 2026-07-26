@@ -58,10 +58,8 @@ interface Match extends MatchToEdit {
 
 interface MatchesResponse {
   data: Match[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  /** A7: toda lista paginada responde `{ data, meta }`. */
+  meta: { total: number; page: number; limit: number; totalPages: number };
 }
 
 interface Summary {
@@ -158,7 +156,7 @@ export default function PartidosPage() {
   };
 
   const matches = list?.data ?? [];
-  const totalPages = list?.totalPages ?? 1;
+  const totalPages = list?.meta.totalPages ?? 1;
   const pendingCount = summary?.byStatus?.PROGRAMADO ?? 0;
   const liveCount = summary?.byStatus?.EN_JUEGO ?? 0;
   const finishedCount = summary?.byStatus?.FINALIZADO ?? 0;
@@ -387,14 +385,14 @@ export default function PartidosPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Página {list.page} de {totalPages} · {list.total} partidos
+            Página {list.meta.page} de {totalPages} · {list.meta.total} partidos
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={list.page <= 1}
+              disabled={list.meta.page <= 1}
               className="rounded-xl"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -404,7 +402,7 @@ export default function PartidosPage() {
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={list.page >= totalPages}
+              disabled={list.meta.page >= totalPages}
               className="rounded-xl"
             >
               Siguiente

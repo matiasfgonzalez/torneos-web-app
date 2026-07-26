@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiOrgAccess } from "@/lib/orgAuth";
 import { orgPostUpdateSchema } from "@/lib/validators/org-post";
 import { validationErrorResponse } from "@/lib/validators/common";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * Editar una novedad (incluye publicar/despublicar). Editar contenido ya
@@ -20,7 +20,7 @@ export async function PATCH(
     select: { id: true, organizationId: true, published: true, publishedAt: true, deletedAt: true },
   });
   if (!existing || existing.deletedAt) {
-    return NextResponse.json({ error: "Novedad no encontrada" }, { status: 404 });
+    return apiError(404, "Novedad no encontrada");
   }
 
   const auth = await requireApiOrgAccess(existing.organizationId);
@@ -55,7 +55,7 @@ export async function PATCH(
     },
   });
 
-  return NextResponse.json(post, { status: 200 });
+  return apiOk(post);
 }
 
 /**
@@ -72,7 +72,7 @@ export async function DELETE(
     select: { organizationId: true, deletedAt: true },
   });
   if (!existing || existing.deletedAt) {
-    return NextResponse.json({ error: "Novedad no encontrada" }, { status: 404 });
+    return apiError(404, "Novedad no encontrada");
   }
 
   const auth = await requireApiOrgAccess(existing.organizationId);
@@ -83,5 +83,5 @@ export async function DELETE(
     data: { deletedAt: new Date(), published: false },
   });
 
-  return NextResponse.json({ ok: true }, { status: 200 });
+  return apiOk({ ok: true });
 }

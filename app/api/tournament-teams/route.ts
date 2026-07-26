@@ -1,11 +1,11 @@
 // /app/api/tournament-teams/route.ts
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getTournamentOrgId, requireApiOrgAccess } from "@/lib/orgAuth";
 import { assertPlanLimit } from "@/lib/planLimits";
 import { tournamentTeamCreateSchema } from "@/lib/validators/tournament-team";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { notify } from "@/lib/notifications";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 /**
  * Avisa al delegado cuando **otra liga** inscribe su equipo (M14 fase 2).
@@ -78,10 +78,7 @@ export async function POST(req: Request) {
 
     const orgId = await getTournamentOrgId(parsed.data.tournamentId);
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Torneo no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Torneo no encontrado");
     }
 
     const auth = await requireApiOrgAccess(orgId);
@@ -94,7 +91,7 @@ export async function POST(req: Request) {
       tournamentId: parsed.data.tournamentId,
     });
     if (!check.ok) {
-      return NextResponse.json({ error: check.error }, { status: 402 });
+      return apiError(402, check.error);
     }
 
     // Crear la relación equipo-torneo
@@ -104,12 +101,9 @@ export async function POST(req: Request) {
 
     await avisarSiEsDeOtraLiga(parsed.data.teamId, parsed.data.tournamentId, orgId);
 
-    return NextResponse.json(tournamentTeam, { status: 201 });
+    return apiOk(tournamentTeam, 201);
   } catch (error) {
     console.error("Error al crear la relación equipo-torneo:", error);
-    return NextResponse.json(
-      { error: "Error al crear la relación equipo-torneo" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al crear la relación equipo-torneo");
   }
 }

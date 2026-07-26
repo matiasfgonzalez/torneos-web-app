@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import {
   applyMatchResult,
@@ -14,6 +14,7 @@ import { canTransitionMatch } from "@/lib/status-transitions";
 import { assertTeamsInTournament } from "@/lib/match-guards";
 import { logAudit, AuditAction, AuditEntity } from "@/lib/audit";
 import { getTeamManagerIdsForTeams, notify } from "@/lib/notifications";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -61,10 +62,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     // 📌 Obtener estado anterior del partido ANTES de actualizar
@@ -95,10 +93,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     });
 
     if (!previousMatch) {
-      return NextResponse.json(
-        { error: "Partido no encontrado" },
-        { status: 404 },
-      );
+      return apiError(404, "Partido no encontrado");
     }
 
     // Carga de resultados: COLABORADOR también puede
@@ -114,7 +109,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     // sí (correcciones y protestas son reales).
     const canEdit = canEditMatchInTournament(previousMatch.tournament.status);
     if (!canEdit.ok) {
-      return NextResponse.json({ error: canEdit.error }, { status: 409 });
+      return apiError(409, canEdit.error);
     }
 
     const body = await req.json();
@@ -132,7 +127,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
     if (data.status) {
       const transition = canTransitionMatch(previousMatch.status, data.status);
       if (!transition.ok) {
-        return NextResponse.json({ error: transition.error }, { status: 409 });
+        return apiError(409, transition.error);
       }
     }
 
@@ -150,7 +145,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         walkoverScore: previousMatch.tournament.walkoverScore,
       });
       if (!wo.ok) {
-        return NextResponse.json({ error: wo.error }, { status: 400 });
+        return apiError(400, wo.error);
       }
       data.homeScore = wo.homeScore;
       data.awayScore = wo.awayScore;
@@ -169,7 +164,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       isWalkover: effectiveStatus === "WALKOVER",
     });
     if (!rules.ok) {
-      return NextResponse.json({ error: rules.error }, { status: 400 });
+      return apiError(400, rules.error);
     }
 
     // Solo si se están cambiando los equipos hace falta re-verificar que
@@ -181,7 +176,7 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
         effAwayTeamId,
       );
       if (!teamsCheck.ok) {
-        return NextResponse.json({ error: teamsCheck.error }, { status: 400 });
+        return apiError(400, teamsCheck.error);
       }
     }
 
@@ -251,12 +246,9 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       });
     }
 
-    return NextResponse.json(updatedMatch, { status: 200 });
+    return apiOk(updatedMatch);
   } catch (error) {
     console.error("Error en PATCH /api/matches/[id]:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar el partido" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al actualizar el partido");
   }
 }

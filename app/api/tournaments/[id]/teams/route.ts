@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -12,12 +12,9 @@ export async function GET(req: Request, { params }: { params: tParams }) {
       include: { team: true },
     });
 
-    return NextResponse.json(teams);
+    return apiOk(teams);
   } catch (error) {
     console.error("Error listando equipos:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return apiError(500, "Error interno del servidor");
   }
 }

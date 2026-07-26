@@ -1,12 +1,11 @@
 // app/api/players/route.ts
-import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getPanelOrgIds } from "@/lib/orgAuth";
 import { getManagedTeamIds } from "@/lib/teamAuth";
 import { logPlayerCreate, playerOrgScopeWhere } from "@/lib/playerAuth";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 import { playerCreateSchema } from "@/lib/validators/player";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -50,13 +49,9 @@ export async function POST(req: Request) {
       select: { id: true, name: true },
     });
     if (existing) {
-      return NextResponse.json(
-        {
-          error: "Ya existe un jugador con ese DNI",
-          existingPlayer: existing,
-        },
-        { status: 409 },
-      );
+      return apiError(409, "Ya existe un jugador con ese DNI", undefined, {
+        existingPlayer: existing,
+      });
     }
 
     const newPlayer = await db.player.create({
@@ -65,7 +60,7 @@ export async function POST(req: Request) {
 
     await logPlayerCreate(user.id, newPlayer.id, parsed.data);
 
-    return NextResponse.json(newPlayer, { status: 201 });
+    return apiOk(newPlayer, 201);
   } catch (error) {
     console.error(error);
     return apiError(500, "Error al crear el jugador");
@@ -94,7 +89,7 @@ export async function GET(req: Request) {
 
     if (scope === "panel") {
       const orgIds = await getPanelOrgIds();
-      if (orgIds?.length === 0) return NextResponse.json([]);
+      if (orgIds?.length === 0) return apiOk([]);
       Object.assign(where, playerOrgScopeWhere(orgIds));
     }
 
@@ -121,7 +116,7 @@ export async function GET(req: Request) {
       },
       orderBy: { name: "asc" },
     });
-    return NextResponse.json(players);
+    return apiOk(players);
   } catch (error) {
     console.error(error);
     return apiError(500, "Error obteniendo jugadores");

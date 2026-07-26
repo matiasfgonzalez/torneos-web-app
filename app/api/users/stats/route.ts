@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { UserRole, UserStatus } from "@prisma/client";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { apiError, apiOk } from "@/lib/apiResponse";
 
 export async function GET() {
   // Validate that only ADMINISTRADOR can access user stats
@@ -210,20 +210,10 @@ export async function GET() {
       },
     };
 
-    return NextResponse.json({
-      success: true,
-      data: stats,
-      timestamp: new Date().toISOString(),
-    });
+    // A7: los datos directos. Se fue el `timestamp`, que nadie leía.
+    return apiOk(stats);
   } catch (error) {
     console.error("Error fetching user stats:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error interno del servidor",
-        message: "No se pudieron obtener las estadísticas de usuarios",
-      },
-      { status: 500 },
-    );
+    return apiError(500, "No se pudieron obtener las estadísticas de usuarios");
   }
 }

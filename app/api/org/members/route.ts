@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { checkUser } from "@/lib/checkUser";
 import { getOrCreateOwnOrg, isOrgOwner } from "@/lib/orgAuth";
 import { assertPlanLimit } from "@/lib/planLimits";
-import { apiError } from "@/lib/apiResponse";
+import { apiError, apiOk } from "@/lib/apiResponse";
 import { inviteMemberSchema } from "@/lib/validators/organization";
 import { validationErrorResponse } from "@/lib/validators/common";
 
@@ -37,7 +36,7 @@ export async function GET() {
       }),
     ]);
 
-    return NextResponse.json({
+    return apiOk({
       organization: { id: org.id, name: org.name },
       canManage: await isOrgOwner(user, org.id),
       members: members.map((m) => ({
@@ -123,8 +122,7 @@ export async function POST(req: Request) {
         },
       });
 
-      return NextResponse.json(
-        {
+      return apiOk({
           type: "member",
           member: {
             id: member.id,
@@ -132,9 +130,7 @@ export async function POST(req: Request) {
             createdAt: member.createdAt,
             user: invitedUser,
           },
-        },
-        { status: 201 },
-      );
+        }, 201);
     }
 
     // Sin cuenta todavía → invitación pendiente (se reactiva si estaba cancelada)
@@ -161,8 +157,7 @@ export async function POST(req: Request) {
           },
         });
 
-    return NextResponse.json(
-      {
+    return apiOk({
         type: "invite",
         invite: {
           id: invite.id,
@@ -170,9 +165,7 @@ export async function POST(req: Request) {
           role: invite.role,
           createdAt: invite.createdAt,
         },
-      },
-      { status: 201 },
-    );
+      }, 201);
   } catch (error) {
     console.error("Error al invitar miembro:", error);
     return apiError(500, "Error al invitar al miembro");

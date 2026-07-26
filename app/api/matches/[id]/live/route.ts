@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/planLimits";
 import { buildLiveState } from "@modules/partidos/utils/liveState";
+import { apiError } from "@/lib/apiResponse";
 
 /**
  * Estado en vivo de un partido (S6) — payload compacto para el polling de la
@@ -64,17 +65,11 @@ export async function GET(
   });
 
   if (!match) {
-    return NextResponse.json(
-      { error: "Partido no encontrado" },
-      { status: 404 },
-    );
+    return apiError(404, "Partido no encontrado");
   }
 
   if (!(await hasFeature(match.tournament.organizationId, "liveMatch"))) {
-    return NextResponse.json(
-      { error: "El centro en vivo no está disponible en el plan de esta liga." },
-      { status: 403 },
-    );
+    return apiError(403, "El centro en vivo no está disponible en el plan de esta liga.");
   }
 
   return NextResponse.json(buildLiveState(match), {

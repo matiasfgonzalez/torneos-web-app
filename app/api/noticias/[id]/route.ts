@@ -1,5 +1,5 @@
 // app/api/noticias/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
 import { newsUpdateSchema } from "@/lib/validators/news";
@@ -7,6 +7,7 @@ import { validationErrorResponse } from "@/lib/validators/common";
 import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 import { safeDeleteAssets } from "@/lib/cloudinary";
 import { extractPublicId } from "@/lib/cloudinary-orphans";
+import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
@@ -15,10 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: tParams }) {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     const noticia = await db.news.findUnique({
@@ -29,19 +27,13 @@ export async function GET(req: NextRequest, { params }: { params: tParams }) {
     });
 
     if (!noticia) {
-      return NextResponse.json(
-        { error: "Noticia no encontrada" },
-        { status: 404 },
-      );
+      return apiError(404, "Noticia no encontrada");
     }
 
-    return NextResponse.json(noticia, { status: 200 });
+    return apiOk(noticia);
   } catch (error) {
     console.error("Error al obtener noticia por ID:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 },
-    );
+    return apiError(500, "Error interno del servidor");
   }
 }
 
@@ -52,10 +44,7 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
     const body = await req.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     // Noticias globales de la plataforma: solo ADMINISTRADOR (decisión D5)
@@ -78,10 +67,7 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
       select: { published: true, publishedAt: true },
     });
     if (!existing) {
-      return NextResponse.json(
-        { error: "Noticia no encontrada" },
-        { status: 404 },
-      );
+      return apiError(404, "Noticia no encontrada");
     }
     const willPublish = parsed.data.published ?? existing.published;
     const publishedAt = willPublish
@@ -94,13 +80,10 @@ export async function PUT(req: NextRequest, { params }: { params: tParams }) {
       include: { user: newsAuthorSelect },
     });
 
-    return NextResponse.json(updatedNoticia, { status: 200 });
+    return apiOk(updatedNoticia);
   } catch (error) {
     console.error("Error al actualizar la noticia:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar la noticia" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al actualizar la noticia");
   }
 }
 
@@ -114,10 +97,7 @@ export async function DELETE(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID no proporcionado" },
-        { status: 400 },
-      );
+      return apiError(400, "ID no proporcionado");
     }
 
     // Noticias globales de la plataforma: solo ADMINISTRADOR (decisión D5)
@@ -138,15 +118,10 @@ export async function DELETE(
       extractPublicId(deletedNoticia.coverImageUrl),
     ]);
 
-    return NextResponse.json(
-      { message: "Noticia eliminada correctamente", deletedNoticia },
-      { status: 200 },
-    );
+    // A7: 204. El `{ message, deletedNoticia }` que devolvía no lo leía nadie.
+    return apiNoContent();
   } catch (error) {
     console.error("Error al eliminar la noticia:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar la noticia" },
-      { status: 500 },
-    );
+    return apiError(500, "Error al eliminar la noticia");
   }
 }
