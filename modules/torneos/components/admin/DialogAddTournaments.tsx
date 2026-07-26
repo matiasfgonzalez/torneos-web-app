@@ -47,7 +47,6 @@ import {
   GENDER_OPTIONS,
   TOURNAMENT_FORMAT_OPTIONS,
   TOURNAMENT_STATUS_OPTIONS,
-  tournamentFormatOptions,
 } from "@/lib/constants";
 import { allowedTournamentTransitions } from "@/lib/status-transitions";
 import type { TournamentStatus } from "@prisma/client";
@@ -502,9 +501,9 @@ const DialogAddTournaments = ({ tournament }: PropsDialogAddTournaments) => {
             name="format"
             label="Formato"
             required
-            // Solo los formatos que el generador de fixture sabe armar (S1).
-            // Conserva el del torneo si es uno viejo sin generador.
-            options={tournamentFormatOptions(tournament?.format)}
+            // Los 3 formatos del enum (M13): los tres se generan, así que ya no
+            // hay nada que filtrar. La ida y vuelta va aparte, en `homeAndAway`.
+            options={TOURNAMENT_FORMAT_OPTIONS}
             description="Define cómo se genera el fixture."
           />
           <SelectField

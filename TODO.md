@@ -37,9 +37,6 @@
 
 **🟠 Alto** — _ninguno_ (A3 y S3 cerrados).
 
-**🟡 Medio**
-- **M13** — Reducir enums sobredimensionados (`TournamentFormat`) · `E:Medio`
-
 **🟢 Bajo**
 - **B3** — Documentar contratos de API (OpenAPI desde Zod) · `E:Medio`
 - **B5b** — Migrar `package.json#prisma` → `prisma.config.ts` (bloquea el upgrade a Prisma 7) · `E:Bajo`
@@ -55,7 +52,7 @@
 - **B4** — código muerto: borrados 13 archivos; quedan candidatos knip de menor confianza por revisar + decisión de deps sin uso
 
 ### ✅ Realizadas (con detalle en su sección)
-**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A6, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M12, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
+**Seguridad e integridad:** C1–C10. · **Deuda estructural:** A1, A1b, A2, A4, A5, A6, A9, A10, A11. · **Calidad/UX:** M1, M3, M6, M6b, M9, M12, M13, M14 (completa). · **DX:** B1, B2, B5, B4 (parcial). · **Rediseño frontend completo:** F0, F1, F2, F3, F4. · **Producto:** S1, S2 (vía N1/N2), S4, S5, S6, S7, S8, S9, S11, S12. · **Negocio/multi-tenancy:** N1–N11, **N12** (identidad global + carnet digital con QR), **N13** (completa), N14 a–d.
 
 ---
 
@@ -498,10 +495,18 @@
   - Un test recorre los dos enums de Prisma y falla si se agrega un estado sin definir sus salidas — el modo en que esta clase de tabla se pudre en silencio.
   - **Verificado:** 302 tests verdes (20 nuevos), `tsc`/`eslint` limpios, `next build` completo. **No se ejercitó con sesión real:** el 409 de la API y el gris de los selects están cubiertos por tests y tipos, no por una pantalla logueada.
 
-### M13. Revisión de enums sobredimensionados (decisión tomada ✅)
+### M13. Revisión de enums sobredimensionados (completa ✅)
 
 - [x] Reemplazar `TournamentCategory` por 3 campos: `ageGroup` + `gender` + `division`. **Implementado (2026-07-05):** enums nuevos, validators, form de torneo con los 3 campos, filtros públicos por `ageGroup`, y helper `formatTournamentCategory()` en [lib/constants.ts](lib/constants.ts) usado por todos los badges/labels ("Sub-17 Femenino A").
-- [ ] `TournamentFormat` tiene 14 valores pero la lógica solo distingue table/bracket/mixed: reducirlo a los formatos realmente soportados (LIGA, ELIMINACION_DIRECTA, GRUPOS_MAS_PLAYOFFS, etc.) y mapear el resto. **E:Medio** (ahora es gratis, sin datos en producción)
+- [x] `TournamentFormat` tiene 14 valores pero la lógica solo distingue table/bracket/mixed: reducirlo a los formatos realmente soportados (LIGA, ELIMINACION_DIRECTA, GRUPOS_MAS_PLAYOFFS, etc.) y mapear el resto. **E:Medio**
+- **Implementado (2026-07-25, migración `m13_reducir_tournament_format`):** el enum quedó en **3 valores** — `LIGA`, `ELIMINACION_DIRECTA`, `GRUPOS` — que son exactamente las 3 estrategias de fixture (ROUND_ROBIN / GROUPS / KNOCKOUT) y las 3 vistas (table / bracket / mixed).
+  - **Por qué 3 y no los 5-6 que sugería el enunciado:** los otros once no eran formatos distintos, eran sinónimos (`ROUND_ROBIN` = `TODOS_CONTRA_TODOS` = `LIGUILLA` = `PUNTOS_ACUMULADOS` = `LIGA`; `COPA` = `PLAYOFFS` = `ELIMINACION_DIRECTA`) o promesas sin código (`SUIZO`, `DOBLE_ELIMINACION`, `AMISTOSO`). Un `GRUPOS_MAS_PLAYOFFS` aparte de `GRUPOS` habría repetido el error: dos valores con el mismo comportamiento. La fase final de un torneo de grupos —o de una liga— se arma desde la pestaña **Copas** (S13), que es fase, no formato.
+  - **`IDA_Y_VUELTA` no se mapeó y se olvidó:** era un formato **y** un flag (`homeAndAway`), y el generador solo respetaba el flag. La migración traslada la intención antes de perder el valor: `UPDATE "Tournament" SET "homeAndAway" = true WHERE "format" = 'IDA_Y_VUELTA'`.
+  - **La migración, en detalle:** Postgres no deja quitar valores de un enum, así que crea `TournamentFormat_new`, convierte la columna con un `CASE` (con el `DROP DEFAULT` / `SET DEFAULT` alrededor, porque una columna con default del tipo viejo no castea) y hace el swap de tipos.
+  - **Código muerto que se fue con los valores:** `FORMATS_WITHOUT_GENERATOR` y `reasonWithoutGenerator` ([lib/fixture/formats.ts](lib/fixture/formats.ts)) — el mapa de estrategias dejó de ser `Partial<Record<>>`; `supportsFixture` y `tournamentFormatOptions(currentFormat)` ([lib/constants.ts](lib/constants.ts)), que filtraban los formatos sin generador y conservaban el actual para no cambiárselo por lo bajo a un torneo viejo; la rama "este formato no tiene generador" del [GenerateFixtureSheet](app/admin/torneos/[id]/components/GenerateFixtureSheet.tsx) y el chequeo equivalente en [generateFixture](modules/torneos/actions/generateFixture.ts). Toda esa maquinaria existía **solo** para contener un enum sobredimensionado.
+  - `getTournamentDisplayType` ([lib/standings/phase-utils.ts](lib/standings/phase-utils.ts)) pasó de tres listas de strings —donde lo que no figuraba en ninguna caía a `table` sin que nadie lo decidiera— a un `switch` con una rama por formato. Sigue tomando `string` a propósito: `ITorneo.format` cruza el límite RSC tipado como string. Las etiquetas ahora explican el formato ("Liga (todos contra todos)", "Grupos + fase final") en vez de repetir el enum.
+  - Un test recorre `Object.values(TournamentFormat)` y falla si se agrega un formato sin estrategia.
+  - **Verificado:** consulté la base antes de migrar (2 torneos: `GRUPOS` y `LIGA`, los dos sobreviven sin cambiar), apliqué con `migrate deploy` y `migrate status` quedó limpio. **En runtime, con la app levantada:** `/torneos` muestra la etiqueta nueva ("Grupos + fase final") y ninguna de las viejas; el Mundial renderiza la vista `mixed` completa (12 tablas de grupo + fase final con el toggle Cuadro/Listado) y sin overflow. 301 tests verdes, `tsc`/`eslint`/`next build` limpios.
 
 ---
 
@@ -1488,3 +1493,7 @@ Extiende la tabla de N1 con los sombreros que no son membresía:
 ### Hallazgo agregado el 2026-07-24 (al rematar A6 — `publishedAt` / `nextMatch`)
 
 16. [ ] 🟠 **`GET /api/noticias` expone borradores a cualquiera (`E:Bajo`).** La ruta es pública y sin sesión, y el filtro `published` depende de un query param opcional: `GET /api/noticias` (sin `?published=true`) devuelve **también los borradores** — título, resumen y portada de noticias no publicadas. Se detectó porque la lista pública [app/(public)/noticias/page.tsx](app/(public)/noticias/page.tsx) llamaba sin el param; se corrigió el consumidor (ahora pide `?published=true`), pero **la ruta sigue sirviendo borradores a quien los pida a mano**. **Solución:** en [app/api/noticias/route.ts](app/api/noticias/route.ts), forzar `published: true` salvo que haya sesión con rol de panel (mismo criterio que `getNoticiaById`, que ya filtra). El panel no depende de esta ruta para listar: usa `getNoticiasAdminPaged` (M7).
+
+### Hallazgo agregado el 2026-07-25 (al reducir el enum de M13)
+
+17. [ ] 🟢 **Enum `MatchType` duplicado y muerto (`E:Bajo`).** `export enum MatchType { LIGA, COPA, PLAYOFF, AMISTOSO }` está declarado **dos veces** —[modules/partidos/types/index.ts](modules/partidos/types/index.ts) y [modules/partidos/types/match.ts](modules/partidos/types/match.ts)— y no corresponde a ninguna columna: `Match` no tiene `type` en el schema de Prisma. Solo se referencia a sí mismo (`MatchFilters.type`, `IMatch.type`), así que filtrar por él nunca hizo nada. Apareció al barrer los valores viejos de `TournamentFormat`: es el mismo patrón (un enum de fantasía que sobrevive porque nada lo ejercita). **Solución:** borrar las dos declaraciones y los campos que las usan, o —si el negocio quiere marcar amistosos— agregar la columna de verdad. Va con **B4** (código muerto).

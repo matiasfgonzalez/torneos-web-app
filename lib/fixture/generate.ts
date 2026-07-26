@@ -3,7 +3,7 @@ import { distributeIntoGroups, groupByExisting, groupName } from "./groups";
 import { knockoutFirstRound } from "./knockout";
 import { roundRobinRounds } from "./round-robin";
 import { shuffle } from "./shuffle";
-import { strategyFor, reasonWithoutGenerator } from "./formats";
+import { strategyFor } from "./formats";
 import type { FixtureOptions, FixturePlan, PlannedMatch, PlannedPhase } from "./types";
 
 /** Aplana jornadas en partidos (el `roundNumber` ya viaja en cada uno). */
@@ -15,8 +15,9 @@ const flatten = (rounds: PlannedMatch[][]): PlannedMatch[] => rounds.flat();
  * Puro: mismos ids + misma semilla = mismo plan. No escribe nada; el server
  * action decide si el torneo está en condiciones y persiste el resultado.
  *
- * Lanza si el formato no tiene generador o si faltan equipos: son errores del
- * llamador, y es preferible fallar acá que escribir medio fixture.
+ * Lanza si faltan equipos: es un error del llamador, y es preferible fallar acá
+ * que escribir medio fixture. (Desde M13 ya no puede fallar por el formato: los
+ * 3 que quedaron tienen generador.)
  */
 export function generateFixture(
   format: TournamentFormat,
@@ -24,12 +25,6 @@ export function generateFixture(
   options: FixtureOptions,
 ): FixturePlan {
   const strategy = strategyFor(format);
-  if (!strategy) {
-    throw new Error(
-      reasonWithoutGenerator(format) ??
-        "Este formato no tiene generador de fixture.",
-    );
-  }
 
   if (teamIds.length < 2) {
     throw new Error("Se necesitan al menos 2 equipos inscriptos.");

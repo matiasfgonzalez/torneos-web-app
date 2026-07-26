@@ -325,21 +325,25 @@ enum Gender {
   MIXTO
 }
 
+/// Formato de un torneo (M13). Tenía **14 valores** heredados para tres
+/// comportamientos: el generador de fixture distingue ROUND_ROBIN / GROUPS /
+/// KNOCKOUT y la vista pública table / bracket / mixed. Diez de esos valores
+/// eran sinónimos (ROUND_ROBIN = TODOS_CONTRA_TODOS = LIGUILLA = LIGA) o
+/// promesas sin implementación (SUIZO, DOBLE_ELIMINACION), así que elegirlos
+/// creaba un torneo que el sistema no sabía manejar.
+///
+/// Quedan los tres que el código realmente distingue:
+/// - `LIGA`: todos contra todos, una sola tabla. La **ida y vuelta** es el flag
+///   `homeAndAway`, no un formato aparte (era la duplicación más cara: dos
+///   formas de decir lo mismo, una sola respetada por el generador).
+/// - `ELIMINACION_DIRECTA`: cuadro de llaves (absorbe COPA y PLAYOFFS).
+/// - `GRUPOS`: zonas con todos contra todos, más la fase final que se arma
+///   desde la pestaña Copas (S13) — es el viejo MIXTO, sin un valor aparte que
+///   se comportaba igual.
 enum TournamentFormat {
   LIGA
-  COPA
   ELIMINACION_DIRECTA
-  DOBLE_ELIMINACION
   GRUPOS
-  IDA_Y_VUELTA
-  ROUND_ROBIN
-  SUIZO
-  MIXTO
-  PLAYOFFS
-  LIGUILLA
-  TODOS_CONTRA_TODOS
-  PUNTOS_ACUMULADOS
-  AMISTOSO
 }
 
 model Tournament {

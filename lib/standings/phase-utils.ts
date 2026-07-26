@@ -61,32 +61,31 @@ export function getPhaseTypeName(type: string): string {
 }
 
 /**
- * Determina el tipo de visualización recomendado para un torneo
- * basado en su formato
+ * Qué vista corresponde a un torneo según su formato.
+ *
+ * Desde M13 hay una fila por formato: el enum tiene 3 valores y son exactamente
+ * las 3 vistas. Antes había 14 valores mapeados a mano contra listas de strings
+ * —y los que no figuraban en ninguna caían al `table` por defecto sin que nadie
+ * lo decidiera—.
+ *
+ * Sigue tomando `string` (no `TournamentFormat`) a propósito: las vistas
+ * reciben el formato desde `ITorneo`, que lo tipa como string al cruzar el
+ * límite RSC. Un valor desconocido cae a `table`.
  */
 export function getTournamentDisplayType(
   format: string,
 ): "table" | "bracket" | "mixed" {
-  const upperFormat = format.toUpperCase();
-
-  // Formatos que solo muestran tabla
-  if (["LIGA", "ROUND_ROBIN", "TODOS_CONTRA_TODOS"].includes(upperFormat)) {
-    return "table";
+  switch (format?.toUpperCase()) {
+    case "LIGA":
+      return "table";
+    case "ELIMINACION_DIRECTA":
+      return "bracket";
+    // Grupos + fase final: tabla por zona y, cuando existan, las llaves.
+    case "GRUPOS":
+      return "mixed";
+    default:
+      return "table";
   }
-
-  // Formatos que solo muestran bracket
-  if (["ELIMINACION_DIRECTA", "COPA", "PLAYOFFS"].includes(upperFormat)) {
-    return "bracket";
-  }
-
-  // Formatos mixtos
-  if (
-    ["GRUPOS", "MIXTO", "LIGUILLA", "DOBLE_ELIMINACION"].includes(upperFormat)
-  ) {
-    return "mixed";
-  }
-
-  return "table"; // Por defecto
 }
 
 /**

@@ -12,7 +12,6 @@ import {
   OrgRole,
   UserRole,
 } from "@prisma/client";
-import { supportsFixture } from "@/lib/fixture/formats";
 
 // ============================================
 // CATEGORÍA DE TORNEO (M13: ageGroup + gender + division)
@@ -100,21 +99,12 @@ export const TOURNAMENT_STATUS_OPTIONS = Object.entries(
 // ============================================
 
 // Mapeo de formatos a etiquetas en español
+// Los 3 formatos que quedaron (M13). La etiqueta explica el formato en los
+// términos del organizador, no en los del enum.
 export const TOURNAMENT_FORMAT_LABELS: Record<TournamentFormat, string> = {
-  LIGA: "Liga",
-  COPA: "Copa",
-  ELIMINACION_DIRECTA: "Eliminación Directa",
-  DOBLE_ELIMINACION: "Doble Eliminación",
-  GRUPOS: "Fase de Grupos",
-  IDA_Y_VUELTA: "Ida y Vuelta",
-  ROUND_ROBIN: "Round Robin",
-  SUIZO: "Sistema Suizo",
-  MIXTO: "Mixto",
-  PLAYOFFS: "Playoffs",
-  LIGUILLA: "Liguilla",
-  TODOS_CONTRA_TODOS: "Todos Contra Todos",
-  PUNTOS_ACUMULADOS: "Puntos Acumulados",
-  AMISTOSO: "Amistoso",
+  LIGA: "Liga (todos contra todos)",
+  ELIMINACION_DIRECTA: "Eliminación directa",
+  GRUPOS: "Grupos + fase final",
 };
 
 // Lista de todos los formatos (del enum de Prisma)
@@ -128,23 +118,10 @@ export const TOURNAMENT_FORMAT_OPTIONS = Object.entries(
   label,
 }));
 
-/**
- * Formatos ofrecidos al crear/editar un torneo (S1) — cierra el pendiente del
- * TODO: "marcar qué formatos soporta el generador y ocultar el resto".
- *
- * El enum tiene 14 valores heredados y solo 10 tienen generador de fixture;
- * elegir "SUIZO" creaba un torneo que nada en el sistema sabía manejar.
- *
- * `currentFormat` se conserva aunque no tenga generador: un torneo viejo en
- * SUIZO tiene que poder editarse (nombre, fechas…) sin que el select le cambie
- * el formato por lo bajo.
- */
-export function tournamentFormatOptions(currentFormat?: string) {
-  return TOURNAMENT_FORMAT_OPTIONS.filter(
-    (option) =>
-      supportsFixture(option.value) || option.value === currentFormat,
-  );
-}
+// `tournamentFormatOptions(currentFormat)` se eliminó en M13: filtraba los
+// formatos sin generador de fixture y conservaba el actual para no cambiárselo
+// por lo bajo a un torneo viejo. Con 3 valores, todos generables, filtraba
+// nada. Los selects usan `TOURNAMENT_FORMAT_OPTIONS` directo.
 
 // ============================================
 // ESTADOS DE PARTIDO

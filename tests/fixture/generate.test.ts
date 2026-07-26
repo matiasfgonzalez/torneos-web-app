@@ -4,9 +4,10 @@ import { distributeIntoGroups, groupName } from "@/lib/fixture/groups";
 import { scheduleMatches } from "@/lib/fixture/schedule";
 import { shuffle } from "@/lib/fixture/shuffle";
 import {
-  reasonWithoutGenerator,
-  supportsFixture,
+  FIXTURE_STRATEGY_BY_FORMAT,
+  strategyFor,
 } from "@/lib/fixture/formats";
+import { TournamentFormat } from "@prisma/client";
 
 const teams = (n: number) => Array.from({ length: n }, (_, i) => `t${i + 1}`);
 
@@ -79,23 +80,18 @@ describe("shuffle", () => {
 });
 
 describe("formats", () => {
-  it("los formatos de liga usan round-robin", () => {
-    expect(supportsFixture("LIGA")).toBe(true);
-    expect(supportsFixture("IDA_Y_VUELTA")).toBe(true);
-    expect(supportsFixture("TODOS_CONTRA_TODOS")).toBe(true);
+  it("cada formato del enum tiene su estrategia (M13: son 3 y los 3 generan)", () => {
+    // Si mañana se agrega un formato sin estrategia, esto cae antes que la app.
+    for (const format of Object.values(TournamentFormat)) {
+      expect(FIXTURE_STRATEGY_BY_FORMAT[format]).toBeDefined();
+    }
+    expect(Object.keys(FIXTURE_STRATEGY_BY_FORMAT)).toHaveLength(3);
   });
 
-  it("grupos y llaves están soportados", () => {
-    expect(supportsFixture("GRUPOS")).toBe(true);
-    expect(supportsFixture("ELIMINACION_DIRECTA")).toBe(true);
-    expect(supportsFixture("COPA")).toBe(true);
-  });
-
-  it("los formatos sin generador se declaran con su motivo", () => {
-    expect(supportsFixture("SUIZO")).toBe(false);
-    expect(reasonWithoutGenerator("SUIZO")).toMatch(/ronda/i);
-    expect(supportsFixture("DOBLE_ELIMINACION")).toBe(false);
-    expect(reasonWithoutGenerator("DOBLE_ELIMINACION")).toBeTruthy();
+  it("mapea cada formato a la estrategia que le corresponde", () => {
+    expect(strategyFor("LIGA")).toBe("ROUND_ROBIN");
+    expect(strategyFor("GRUPOS")).toBe("GROUPS");
+    expect(strategyFor("ELIMINACION_DIRECTA")).toBe("KNOCKOUT");
   });
 });
 
@@ -161,19 +157,17 @@ describe("generateFixture — eliminación directa", () => {
   });
 
   it("reporta los byes para que el organizador se entere", () => {
-    const plan = generateFixture("COPA", teams(6), { homeAndAway: false });
+    const plan = generateFixture("ELIMINACION_DIRECTA", teams(6), {
+      homeAndAway: false,
+    });
     expect(plan.byes).toHaveLength(2);
     expect(plan.totalMatches).toBe(2);
   });
 });
 
 describe("generateFixture — errores", () => {
-  it("rechaza un formato sin generador, con el motivo", () => {
-    expect(() => generateFixture("SUIZO", teams(8), { homeAndAway: false })).toThrow(
-      /ronda/i,
-    );
-  });
-
+  // El caso "formato sin generador" desapareció con M13: no hay formato que no
+  // genere, así que el único error que queda es la falta de equipos.
   it("rechaza menos de 2 equipos", () => {
     expect(() => generateFixture("LIGA", ["t1"], { homeAndAway: false })).toThrow(
       /al menos 2 equipos/i,

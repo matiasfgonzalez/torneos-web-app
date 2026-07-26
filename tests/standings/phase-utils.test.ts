@@ -59,10 +59,16 @@ describe("isFinalPhase", () => {
 });
 
 describe("getTournamentDisplayType", () => {
-  it("mapea formatos a su visualización", () => {
+  it("mapea los 3 formatos del enum a su visualización (M13)", () => {
     expect(getTournamentDisplayType("LIGA")).toBe("table");
-    expect(getTournamentDisplayType("COPA")).toBe("bracket");
-    expect(getTournamentDisplayType("MIXTO")).toBe("mixed");
+    expect(getTournamentDisplayType("ELIMINACION_DIRECTA")).toBe("bracket");
+    expect(getTournamentDisplayType("GRUPOS")).toBe("mixed");
+  });
+
+  it("un valor desconocido cae a tabla en vez de romper la vista", () => {
+    // Llega como `string` desde `ITorneo` (cruza el límite RSC), así que el
+    // tipo no garantiza que sea uno del enum.
     expect(getTournamentDisplayType("DESCONOCIDO")).toBe("table");
+    expect(getTournamentDisplayType("")).toBe("table");
   });
 });

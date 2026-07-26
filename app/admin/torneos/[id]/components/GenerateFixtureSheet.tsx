@@ -24,11 +24,7 @@ import {
 } from "@/components/shared/form/fields";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { toDateTimeInput } from "@/lib/date-input";
-import {
-  reasonWithoutGenerator,
-  strategyFor,
-  supportsFixture,
-} from "@/lib/fixture/formats";
+import { strategyFor } from "@/lib/fixture/formats";
 import { generateTournamentFixture } from "@modules/torneos/actions/generateFixture";
 import type { ITorneo } from "@modules/torneos/types";
 import type { TournamentFormat } from "@prisma/client";
@@ -115,14 +111,8 @@ export default function GenerateFixtureSheet({
     name: "useExistingGroups",
   });
 
-  // Formato sin generador: se explica en vez de ofrecer un botón muerto
-  if (!supportsFixture(format)) {
-    return (
-      <p className="max-w-sm text-xs text-gray-500 dark:text-gray-400">
-        {reasonWithoutGenerator(format)}
-      </p>
-    );
-  }
+  // La rama "este formato no tiene generador" se eliminó en M13: los 3 formatos
+  // que quedaron se generan. Era el precio de un enum con promesas sin código.
 
   const run = async (data: FixtureFormValues, replaceExisting: boolean) => {
     const result = await generateTournamentFixture({

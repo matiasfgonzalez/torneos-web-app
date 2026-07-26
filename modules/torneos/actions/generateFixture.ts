@@ -7,7 +7,6 @@ import { db } from "@/lib/db";
 import { requireActionOrgAccess } from "@/lib/orgAuth";
 import { generateFixture as buildPlan } from "@/lib/fixture/generate";
 import { scheduleMatches } from "@/lib/fixture/schedule";
-import { reasonWithoutGenerator, supportsFixture } from "@/lib/fixture/formats";
 
 /**
  * Generador de fixture (S1) — capa de servidor.
@@ -89,14 +88,8 @@ export async function generateTournamentFixture(
   const auth = await requireActionOrgAccess(tournament.organizationId);
   if (auth.error) return { success: false, error: auth.error };
 
-  if (!supportsFixture(tournament.format)) {
-    return {
-      success: false,
-      error:
-        reasonWithoutGenerator(tournament.format) ??
-        "Este formato no tiene generador de fixture.",
-    };
-  }
+  // El chequeo de "formato sin generador" se eliminó en M13: los 3 formatos que
+  // quedaron se generan (ver lib/fixture/formats.ts).
 
   const teamIds = tournament.tournamentTeams.map((t) => t.id);
   if (teamIds.length < 2) {
