@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 import type { INoticia } from "@modules/noticias/types";
 import type { ParsedTableParams } from "@/lib/tableParams";
+import { requireActionRole } from "@/lib/actionRoleValidation";
 
 /**
  * Listado paginado server-side de noticias para el panel (M7).
@@ -36,9 +37,22 @@ const listSelect = {
   user: newsAuthorSelect, // autor sin PII (M1)
 } satisfies Prisma.NewsSelect;
 
+/**
+ * ⚠️ **Con guarda de rol (hallazgo #16).** Una server action es un endpoint de
+ * red: no alcanza con que solo la llame una pantalla del panel. Esta devuelve
+ * **todas** las noticias, borradores incluidos, así que sin control de acceso
+ * era otra puerta al mismo dato que la del hallazgo — y encima con paginación,
+ * búsqueda y filtro por estado.
+ *
+ * Devuelve vacío en vez de tirar: la pantalla ya está detrás del middleware del
+ * panel, así que un anónimo acá es alguien invocando la action a mano.
+ */
 export async function getNoticiasAdminPaged(
   params: ParsedTableParams,
 ): Promise<{ rows: INoticia[]; total: number }> {
+  const auth = await requireActionRole(["ADMINISTRADOR"]);
+  if (auth.error) return { rows: [], total: 0 };
+
   const conditions: Prisma.NewsWhereInput[] = [{ deletedAt: null }];
 
   if (params.q) {
@@ -85,6 +99,11 @@ export async function getNoticiasStats(): Promise<{
   published: number;
   drafts: number;
 }> {
+  // Misma guarda que el listado: el conteo de borradores también es dato del
+  // panel (dice cuántas noticias sin publicar hay).
+  const auth = await requireActionRole(["ADMINISTRADOR"]);
+  if (auth.error) return { total: 0, published: 0, drafts: 0 };
+
   const [total, published] = await Promise.all([
     db.news.count({ where: { deletedAt: null } }),
     db.news.count({ where: { deletedAt: null, published: true } }),

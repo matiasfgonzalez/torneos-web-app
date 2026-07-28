@@ -8,17 +8,23 @@ import { validationErrorResponse } from "@/lib/validators/common";
 import { newsAuthorSelect } from "@modules/noticias/authorSelect";
 import { apiError, apiOk } from "@/lib/apiResponse";
 
-export async function GET(req: NextRequest) {
+/**
+ * Listado **público** de noticias. Solo devuelve lo publicado.
+ *
+ * Antes el filtro dependía de un query param opcional: `?published=true` traía
+ * publicadas, `?published=false` traía borradores, y **sin el param traía todo**
+ * — título, resumen y portada de noticias no publicadas, a cualquiera sin
+ * sesión (hallazgo #16). El consumidor público mandaba el param, así que el
+ * síntoma no se veía; la ruta igual servía los borradores a quien los pidiera.
+ *
+ * Ahora `published: true` es fijo y no hay forma de pedir borradores por acá.
+ * **No hay rama por sesión a propósito:** el panel no usa esta ruta para listar
+ * —tiene `getNoticiasAdminPaged` (M7)—, así que una condición de más solo sería
+ * una condición más para equivocarse. La regla es la misma de `getNoticiaById`.
+ */
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const publishedParam = searchParams.get("published");
-
-    // Solo incluir el filtro si viene el parámetro
-    const where: Prisma.NewsWhereInput = { deletedAt: null };
-    if (publishedParam !== null) {
-      // Convertir string a booleano
-      where.published = publishedParam === "true";
-    }
+    const where: Prisma.NewsWhereInput = { deletedAt: null, published: true };
 
     // A3: `select` sin `content`. El listado solo muestra título, resumen,
     // portada, autor y fechas; mandar el cuerpo completo de CADA noticia era

@@ -2,6 +2,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { validateApiRole } from "@/lib/apiRoleValidation";
+import { checkUser } from "@/lib/checkUser";
 import { newsUpdateSchema } from "@/lib/validators/news";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { newsAuthorSelect } from "@modules/noticias/authorSelect";
@@ -11,6 +12,18 @@ import { apiError, apiNoContent, apiOk } from "@/lib/apiResponse";
 
 type tParams = Promise<{ id: string }>;
 
+/**
+ * Una noticia por id.
+ *
+ * ⚠️ Esta era la peor de las tres puertas del hallazgo #16: sin ningún control
+ * de acceso, `findUnique` por id **sin filtrar `published` ni `deletedAt`**.
+ * Devolvía el **cuerpo completo** de un borrador —no solo el título, como la
+ * lista— e incluso noticias ya eliminadas, a cualquiera con el id.
+ *
+ * Acá sí hace falta la rama por sesión: la pantalla de edición del panel
+ * necesita abrir borradores. El público ve lo mismo que `getNoticiaById`:
+ * publicada y no eliminada, o 404.
+ */
 export async function GET(req: NextRequest, { params }: { params: tParams }) {
   try {
     const { id } = await params;
@@ -19,14 +32,24 @@ export async function GET(req: NextRequest, { params }: { params: tParams }) {
       return apiError(400, "ID no proporcionado");
     }
 
-    const noticia = await db.news.findUnique({
-      where: { id },
+    // Solo el ADMINISTRADOR gestiona noticias de plataforma (D5), que es quien
+    // puede ver un borrador. `checkUser` y no `validateApiRole` porque acá no
+    // se rechaza al anónimo: se le muestra menos.
+    const user = await checkUser();
+    const puedeVerBorradores = user?.role === "ADMINISTRADOR";
+
+    const noticia = await db.news.findFirst({
+      where: puedeVerBorradores
+        ? { id }
+        : { id, published: true, deletedAt: null },
       include: {
         user: newsAuthorSelect, // autor sin PII (M1) — GET público
       },
     });
 
     if (!noticia) {
+      // Mismo 404 exista o no: un borrador no debe poder confirmarse por el
+      // status de la respuesta.
       return apiError(404, "Noticia no encontrada");
     }
 
