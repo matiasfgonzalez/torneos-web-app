@@ -64,6 +64,13 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # Desde Prisma 7 (B5d) el cliente **no** se genera solo al instalar: sale
+      # a `lib/generated/` (ignorado en git) y ningún paquete de Prisma trae ya
+      # un `postinstall`. Sin este paso el seed de abajo no encuentra qué
+      # importar. `migrate deploy` no lo necesita, pero el seed sí.
+      - name: Generar Prisma Client
+        run: npx prisma generate
+
       # 1) ¿Las migraciones aplican desde cero? Importa especialmente porque
       #    varias de este repo están escritas a mano (la de identidad global del
       #    jugador, entre otras): un SQL inválido o fuera de orden no se nota
@@ -76,11 +83,16 @@ jobs:
       #    de migración nunca se crea. En local anda —la BD de desarrollo ya
       #    tiene el cambio— y explota al desplegar. `--exit-code` devuelve 2 si
       #    hay diferencia, y eso hace fallar el job.
+      #
+      #    Los flags cambiaron en Prisma 7 (B5d): `--from-schema-datasource` y
+      #    `--to-schema-datamodel` se eliminaron. Ahora el datasource sale de
+      #    `prisma.config.ts` (la `url` ya no vive en el schema) y el modelo se
+      #    pasa con `--to-schema`.
       - name: Verificar que no falten migraciones (drift)
         run: |
           npx prisma migrate diff \
-            --from-schema-datasource prisma/schema.prisma \
-            --to-schema-datamodel prisma/schema.prisma \
+            --from-config-datasource \
+            --to-schema prisma/schema.prisma \
             --exit-code
 
       # 3) El seed tiene que seguir corriendo: es idempotente y lo usan tanto una
@@ -105,5 +117,10 @@ jobs:
       # Bloqueante desde 2026-07-22: los ~26 errores preexistentes que
       # justificaban el `continue-on-error` ya se limpiaron. Quedan solo
       # warnings (casi todos `<img>` vs `next/image`, deuda de M2).
+      #
+      # `npm run lint` y no una lista de carpetas a mano: el script es `eslint .`
+      # y la lista de acá se había quedado corta —`tests/`, `scripts/` y los
+      # archivos de config de la raíz no se linteaban en CI—, así que un error
+      # ahí pasaba igual. Una sola forma de correr el lint, local y en CI.
       - name: ESLint
-        run: npx eslint app components lib modules
+        run: npm run lint

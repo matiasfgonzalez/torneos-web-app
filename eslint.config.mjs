@@ -57,6 +57,13 @@ const restricted = (patterns) => ({
 });
 
 const eslintConfig = [
+  {
+    // El cliente de Prisma es **artefacto**, no fuente (B5d): se regenera en
+    // cada `prisma generate` y está ignorado en git. Sin esto, `eslint .`
+    // recorre ~30 archivos generados que ya vienen con `/* eslint-disable */`
+    // adentro — y el resultado depende de si alguien corrió `generate` o no.
+    ignores: ["lib/generated/**"],
+  },
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
