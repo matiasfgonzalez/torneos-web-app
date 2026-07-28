@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Swords, Calendar, MapPin } from "lucide-react";
 import { IMatch } from "@modules/torneos/types/tournament-teams.types";
 import { isFinalPhase, isKnockoutPhaseType } from "@/lib/standings/phase-utils";
+import { formatDate } from "@/lib/formatDate";
 
 interface KnockoutBracketProps {
   matches: IMatch[];
@@ -28,13 +29,10 @@ interface GroupedMatch {
   matches: IMatch[];
 }
 
-const formatMatchDate = (date: Date | string) => {
-  const d = new Date(date);
-  return d.toLocaleDateString("es-AR", {
-    day: "numeric",
-    month: "short",
-  });
-};
+// Hora de Argentina con `formatDate`: `toLocaleDateString` sin `timeZone`
+// formatea en la zona de quien ejecuta, y este cuadro se renderiza tanto en el
+// server como en el cliente.
+const formatMatchDate = (date: Date | string) => formatDate(date, "dd MMM");
 
 /**
  * Componente para visualizar partidos de eliminación directa

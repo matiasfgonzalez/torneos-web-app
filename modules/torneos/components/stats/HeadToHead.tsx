@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { getHeadToHead } from "@modules/torneos/actions/getHeadToHead";
 import type { HeadToHeadResult } from "@modules/torneos/actions/getHeadToHead";
+import { formatDate } from "@/lib/formatDate";
 
 type TeamOption = { tournamentTeamId: string; teamName: string };
 
@@ -195,11 +196,9 @@ function H2HResult({ result }: { result: HeadToHeadResult }) {
             className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-800/60"
           >
             <span className="text-gray-500 dark:text-gray-400">
-              {new Date(m.dateTime).toLocaleDateString("es-AR", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
+              {/* `formatDate` y no `toLocaleDateString`: fija la hora de
+                  Argentina en vez de la zona de quien renderiza. */}
+              {formatDate(m.dateTime, "dd MMM yyyy")}
             </span>
             <span className="font-semibold text-gray-900 dark:text-white">
               {m.aScore} - {m.bScore}

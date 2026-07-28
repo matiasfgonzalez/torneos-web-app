@@ -46,30 +46,29 @@ import TeamsCarousel from "@modules/equipos/components/TeamsCarousel";
 import PublicStandingsSection from "@modules/torneos/components/PublicStandingsSection";
 import MatchDetailModal from "@modules/torneos/components/MatchDetailModal";
 import { MatchStatus } from "@/lib/generated/prisma/enums";
+import { formatDate } from "@/lib/formatDate";
 import {
   ITournamentTeam,
   IMatch,
 } from "@modules/torneos/types/tournament-teams.types";
 
-// Función helper para formatear fecha
-const formatMatchDate = (date: Date | string) => {
-  const d = new Date(date);
-  return d.toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
+/**
+ * Fecha y hora del partido, en la **hora de Argentina**.
+ *
+ * Antes usaba `toLocaleDateString`/`toLocaleTimeString` sin `timeZone`, que
+ * formatea en la zona de **quien ejecuta**. Este es un Server Component: en el
+ * server (UTC) un partido de las 20:30 se mostraba a las 23:30, mientras el
+ * panel —que sí usa `formatDate`— mostraba 20:30. Peor todavía, el mismo
+ * partido abierto en `MatchDetailModal` (client component) mostraba una tercera
+ * hora, la del navegador.
+ *
+ * `formatDate` fija UTC-3 corra donde corra, así que server y cliente coinciden
+ * (y no hay desajuste de hidratación). El formato es el mismo del panel:
+ * "29 jul 2026" / "20:30".
+ */
+const formatMatchDate = (date: Date | string) => formatDate(date, "dd MMM yyyy");
 
-// Función helper para formatear hora
-const formatMatchTime = (date: Date | string) => {
-  const d = new Date(date);
-  return d.toLocaleTimeString("es-AR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatMatchTime = (date: Date | string) => formatDate(date, "HH:mm");
 
 // Estados que indican que el partido aún no se jugó
 const UPCOMING_STATUSES: Set<MatchStatus> = new Set([
@@ -377,9 +376,7 @@ export default async function TournamentDetailView({
                             <div className="flex flex-col items-center lg:items-start gap-1 min-w-[140px]">
                               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                                 <Calendar className="w-4 h-4" />
-                                <span className="capitalize">
-                                  {formatMatchDate(match.dateTime)}
-                                </span>
+                                <span>{formatMatchDate(match.dateTime)}</span>
                               </div>
                               <div className="flex items-center gap-2 font-bold text-lg text-brand">
                                 <Clock className="w-4 h-4" />
@@ -556,9 +553,7 @@ export default async function TournamentDetailView({
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                                 <Calendar className="w-4 h-4" />
-                                <span className="capitalize">
-                                  {formatMatchDate(match.dateTime)}
-                                </span>
+                                <span>{formatMatchDate(match.dateTime)}</span>
                               </div>
                               <Badge
                                 className={`rounded-full text-xs px-2.5 py-0.5 uppercase tracking-wider ${getStatusColor(match.status as MatchStatus)}`}

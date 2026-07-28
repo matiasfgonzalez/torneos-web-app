@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { IMatch } from "@modules/torneos/types/tournament-teams.types";
 import { MatchStatus } from "@/lib/generated/prisma/enums";
+import { formatDate } from "@/lib/formatDate";
 
 interface MatchDetailModalProps {
   match: IMatch;
@@ -44,25 +45,15 @@ interface TimelineEvent {
   detail?: string;
 }
 
-// Función helper para formatear fecha
-const formatMatchDate = (date: Date | string) => {
-  const d = new Date(date);
-  return d.toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
+/**
+ * Fecha y hora del partido en hora de Argentina, con `formatDate` — el mismo
+ * helper que usa el panel. Con `toLocale*` sin `timeZone` esto formateaba en la
+ * zona del navegador, y la tarjeta que abre este modal (Server Component) en la
+ * del server: el mismo partido mostraba dos horas distintas.
+ */
+const formatMatchDate = (date: Date | string) => formatDate(date, "dd MMM yyyy");
 
-// Función helper para formatear hora
-const formatMatchTime = (date: Date | string) => {
-  const d = new Date(date);
-  return d.toLocaleTimeString("es-AR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatMatchTime = (date: Date | string) => formatDate(date, "HH:mm");
 
 const EMPTY_EVENTS: MatchEvents = { goals: [], cards: [], referees: [] };
 
@@ -154,9 +145,7 @@ export default function MatchDetailModal({ match }: MatchDetailModalProps) {
           <div className="flex items-center justify-between mb-4 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              <span className="capitalize">
-                {formatMatchDate(match.dateTime)}
-              </span>
+              <span>{formatMatchDate(match.dateTime)}</span>
               <Clock className="w-4 h-4 ml-2" />
               <span>{formatMatchTime(match.dateTime)}</span>
             </div>
