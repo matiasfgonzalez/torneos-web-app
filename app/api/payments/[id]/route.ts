@@ -5,6 +5,7 @@ import { apiError, apiOk } from "@/lib/apiResponse";
 import { paymentReviewSchema } from "@/lib/validators/payment";
 import { validationErrorResponse } from "@/lib/validators/common";
 import { getOrgOwnerId, notify } from "@/lib/notifications";
+import { formatDate } from "@/lib/formatDate";
 
 type tParams = Promise<{ id: string }>;
 
@@ -113,11 +114,8 @@ export async function PATCH(req: NextRequest, { params }: { params: tParams }) {
       {
         type: "PAGO_APROBADO",
         planName,
-        periodEnd: approved.newEnd.toLocaleDateString("es-AR", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }),
+        // `formatDate`: este texto se arma en el server, que corre en UTC.
+        periodEnd: formatDate(approved.newEnd, "d 'de' MMMM 'de' yyyy"),
       },
       { exclude: authResult.user!.id },
     );

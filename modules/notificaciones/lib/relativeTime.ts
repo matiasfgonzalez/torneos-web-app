@@ -1,3 +1,5 @@
+import { formatDate } from "@/lib/formatDate";
+
 /**
  * "hace 5 min" / "ayer" / "12 mar" — el formato de una campana (S5).
  *
@@ -38,9 +40,7 @@ export function relativeTime(
 
   // Más de una semana: la fecha concreta dice más que "hace 23 días".
   const sameYear = date.getFullYear() === now.getFullYear();
-  return date.toLocaleDateString("es-AR", {
-    day: "numeric",
-    month: "short",
-    ...(sameYear ? {} : { year: "numeric" }),
-  });
+  // `formatDate` fija UTC-3: la campana se arma en el server y se muestra en el
+  // cliente, y con `toLocaleDateString` cada uno ponía su propia zona.
+  return formatDate(date, sameYear ? "d MMM" : "d MMM yyyy");
 }

@@ -29,6 +29,7 @@ import {
   requestInscription,
 } from "@modules/delegados/actions/inscriptions";
 import { formatFee } from "@/lib/inscriptions";
+import { formatDateOk } from "@/lib/formatDate";
 import type {
   InscriptionPayStatus,
   RegistrationStatus,
@@ -116,10 +117,7 @@ export default function InscriptionsSection({
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {tournament.organizationName} · Arranca el{" "}
-              {new Date(tournament.startDate).toLocaleDateString("es-AR", {
-                day: "numeric",
-                month: "long",
-              })}
+              {formatDateOk(tournament.startDate, "d 'de' MMMM")}
             </p>
 
             {/* Cupos, cierre y arancel: los datos que deciden si anotarse. */}

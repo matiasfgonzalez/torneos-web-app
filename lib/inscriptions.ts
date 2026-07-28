@@ -1,3 +1,5 @@
+import { formatDate } from "@/lib/formatDate";
+
 /**
  * Reglas de inscripción a un torneo (S3) — puras y testeables.
  *
@@ -91,14 +93,9 @@ export function formatFee(amount: number | null | undefined): string {
 
 /** Fecha límite en texto para el usuario ("viernes 20 de agosto, 23:59"). */
 export function formatDeadline(deadline: Date | string): string {
-  const date = deadline instanceof Date ? deadline : new Date(deadline);
-  return date.toLocaleString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // `formatDate` y no `toLocaleString`: el cierre de inscripción es un instante
+  // y tiene que leerse igual en el server y en el cliente (hora de Argentina).
+  return formatDate(deadline, "EEEE d 'de' MMMM, HH:mm");
 }
 
 /**

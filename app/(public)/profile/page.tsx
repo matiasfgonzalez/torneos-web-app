@@ -27,6 +27,7 @@ import { FavoritesTab } from "@modules/usuarios/components/FavoritesTab";
 import { HatsHub } from "@modules/usuarios/components/HatsHub";
 import { getUserHats } from "@/lib/userHats";
 import { USER_ROLE_LABELS } from "@/lib/constants";
+import { formatDate } from "@/lib/formatDate";
 
 export default async function ProfilePage() {
   const user = await checkUser();
@@ -41,10 +42,8 @@ export default async function ProfilePage() {
   ]);
 
   // Calculate quick stats
-  const joinedDate = new Date(user.createdAt).toLocaleDateString("es-AR", {
-    month: "long",
-    year: "numeric",
-  });
+  // `formatDate`: fija la hora de Argentina en vez de la zona del server.
+  const joinedDate = formatDate(user.createdAt, "MMMM yyyy");
 
   return (
     <main className="flex-grow p-4 md:p-8">

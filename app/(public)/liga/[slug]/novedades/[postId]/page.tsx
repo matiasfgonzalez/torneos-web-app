@@ -4,6 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ChevronRight, ArrowLeft, CalendarDays, Megaphone } from "lucide-react";
 import { getPublishedOrgPost } from "@modules/novedades/actions/orgPosts";
+import { formatDate } from "@/lib/formatDate";
 
 type RouteParams = Promise<{ slug: string; postId: string }>;
 
@@ -41,12 +42,10 @@ export default async function OrgPostPage({
   // La novedad tiene que pertenecer a la liga del slug: evita URLs cruzadas.
   if (!post || post.organization.slug !== slug) return notFound();
 
+  // `formatDate` (hora de Argentina) y no `toLocaleDateString`, que formatea en
+  // la zona de quien renderiza — acá el server.
   const publishedLabel = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString("es-AR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+    ? formatDate(post.publishedAt, "d 'de' MMMM 'de' yyyy")
     : null;
 
   return (

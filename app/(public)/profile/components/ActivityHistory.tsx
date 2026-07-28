@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Shield, Calendar } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { formatDateOk } from "@/lib/formatDate";
 
 interface ActivityHistoryProps {
   user: User;
@@ -58,7 +59,9 @@ export default async function ActivityHistory({ user }: ActivityHistoryProps) {
                         </h4>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(tournament.startDate).toLocaleDateString()}
+                          {/* Era `toLocaleDateString()` **sin locale**: en un server en
+                              inglés salía "7/29/2026". `startDate` es fecha de día. */}
+                          {formatDateOk(tournament.startDate, "dd/MM/yyyy")}
                           <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
                           <Badge
                             variant="secondary"

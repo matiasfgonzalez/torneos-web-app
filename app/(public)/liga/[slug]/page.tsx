@@ -21,6 +21,7 @@ import {
   TOURNAMENT_STATUS_LABELS,
 } from "@/lib/constants";
 import { TournamentStatus } from "@/lib/generated/prisma/enums";
+import { formatDate, formatDateOk } from "@/lib/formatDate";
 
 type RouteParams = Promise<{ slug: string }>;
 
@@ -217,10 +218,9 @@ export default async function LeaguePage({
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <CalendarDays className="w-3.5 h-3.5" />
-                        {new Date(t.startDate).toLocaleDateString("es-AR", {
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {/* `formatDateOk`: `startDate` es fecha de día (00:00Z).
+                            Con la zona del server podía caer un día antes. */}
+                        {formatDateOk(t.startDate, "MMM yyyy")}
                       </span>
                     </div>
                   </div>
@@ -268,11 +268,9 @@ export default async function LeaguePage({
                   {post.publishedAt && (
                     <span className="mb-2 inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                       <CalendarDays className="h-3.5 w-3.5" />
-                      {new Date(post.publishedAt).toLocaleDateString("es-AR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {/* `publishedAt` sí es un instante (el momento de
+                          publicar): va con `formatDate`, que fija UTC-3. */}
+                      {formatDate(post.publishedAt, "d 'de' MMMM 'de' yyyy")}
                     </span>
                   )}
                   <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-brand transition-colors">
