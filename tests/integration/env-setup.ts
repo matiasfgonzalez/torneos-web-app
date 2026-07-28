@@ -14,23 +14,26 @@ import { TEST_DATABASE_URL } from "./setup";
  * borrar nada.
  */
 
-const original = process.env.DATABASE_URL;
+/**
+ * La base de tests tiene que ser **descartable**. La regla es explícita y no
+ * "inteligente": local (`localhost`/`127.0.0.1`) se acepta sin más; cualquier
+ * host remoto —un branch de Neon, por ejemplo— exige activarlo a mano con
+ * `TEST_DATABASE_ALLOW_REMOTE=1`.
+ *
+ * Una versión anterior de esta guarda comparaba `TEST_DATABASE_URL` contra la
+ * `DATABASE_URL` de la app dentro de una rama que ya había descartado ese caso:
+ * era código muerto y **nunca protegía de nada**. Esta regla sí corta el
+ * escenario real —alguien exporta la URL de producción como `TEST_DATABASE_URL`
+ * y los tests truncan la base de la liga—, y lo hace antes de abrir conexión.
+ */
+const esLocal = /@(localhost|127\.0\.0\.1)[:/]/.test(TEST_DATABASE_URL);
 
-if (original && original === TEST_DATABASE_URL) {
-  // Ya apunta a la base de tests: nada que hacer.
-} else if (original && !/localhost|127\.0\.0\.1/.test(TEST_DATABASE_URL)) {
-  // `TEST_DATABASE_URL` remota (un branch de Neon, por ejemplo): se acepta,
-  // pero tiene que ser distinta de la de la app.
-  if (original === TEST_DATABASE_URL) {
-    throw new Error(
-      "TEST_DATABASE_URL es la misma base que DATABASE_URL: los tests de " +
-        "integración truncan tablas, apuntá a una base descartable.",
-    );
-  }
+if (!esLocal && process.env.TEST_DATABASE_ALLOW_REMOTE !== "1") {
+  throw new Error(
+    `La base de tests apunta a un host remoto (${TEST_DATABASE_URL.replace(/:[^:@]*@/, ":***@")}).\n` +
+      "Los tests de integración TRUNCAN todas las tablas. Si es a propósito y la " +
+      "base es descartable, volvé a correr con TEST_DATABASE_ALLOW_REMOTE=1.",
+  );
 }
 
 process.env.DATABASE_URL = TEST_DATABASE_URL;
-
-if (process.env.DATABASE_URL !== TEST_DATABASE_URL) {
-  throw new Error("No se pudo apuntar DATABASE_URL a la base de tests.");
-}

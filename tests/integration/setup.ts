@@ -19,26 +19,75 @@ import { PrismaClient } from "@/lib/generated/prisma/client";
  * cambiar un problema por otro.
  */
 
-/** URL de la Postgres descartable. Coincide con `docker-compose.test.yml`. */
+/**
+ * URL de la Postgres **descartable**. Coincide con `docker-compose.test.yml`.
+ * Las credenciales son de juguete y viven en un contenedor local que se borra
+ * con `npm run test:db:down`: no hay secreto que proteger acá.
+ */
 export const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ??
   "postgresql://golazo:golazo@localhost:55432/golazo_test";
 
+/**
+ * ¿La base es **obligatoria** en esta corrida?
+ *
+ * Saltear en silencio está bien en una máquina sin Docker; en CI es lo peor que
+ * puede pasar — un pipeline en verde que no ejecutó una sola query. La señal es
+ * explícita: si alguien seteó `TEST_DATABASE_URL`, o estamos en CI, se espera
+ * que haya base y no poder conectarse es un **error**, no un motivo para saltear.
+ */
+const BASE_OBLIGATORIA = !!process.env.TEST_DATABASE_URL || !!process.env.CI;
+
 let disponible: boolean | null = null;
 
-/** ¿Hay una base de tests a la que conectarse? Se chequea una sola vez. */
-export async function hayBaseDeTests(): Promise<boolean> {
-  if (disponible !== null) return disponible;
-
+/** Un intento de conexión. Devuelve el error como texto, o `null` si conectó. */
+async function sondear(): Promise<string | null> {
   const sonda = clienteDeTests();
   try {
     await sonda.$queryRawUnsafe("SELECT 1");
-    disponible = true;
-  } catch {
-    disponible = false;
+    return null;
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
   } finally {
     await sonda.$disconnect();
   }
+}
+
+/**
+ * ¿Hay una base de tests a la que conectarse? Se chequea una sola vez.
+ *
+ * **Cuando la base es obligatoria, reintenta.** Hay una carrera real entre
+ * "el contenedor está healthy" y "Postgres acepta conexiones": se vio en local
+ * corriendo los tests inmediatamente después de `docker compose up --wait` —la
+ * primera corrida falló, la segunda pasó—. Con el fallo convertido en error
+ * duro, esa carrera sería un CI flaky, que es peor que el problema que vinimos
+ * a resolver. Sin base obligatoria no se reintenta: si no hay Docker, saltear
+ * rápido es justamente lo que se quiere.
+ */
+const REINTENTOS = 20;
+const ESPERA_MS = 750;
+
+export async function hayBaseDeTests(): Promise<boolean> {
+  if (disponible !== null) return disponible;
+
+  let motivo = (await sondear()) ?? "";
+  if (motivo && BASE_OBLIGATORIA) {
+    for (let i = 0; i < REINTENTOS && motivo; i++) {
+      await new Promise((r) => setTimeout(r, ESPERA_MS));
+      motivo = (await sondear()) ?? "";
+    }
+  }
+  disponible = motivo === "";
+
+  if (!disponible && BASE_OBLIGATORIA) {
+    throw new Error(
+      `No se pudo conectar a la base de tests (${TEST_DATABASE_URL}).\n` +
+        `Como ${process.env.CI ? "esto es CI" : "`TEST_DATABASE_URL` está seteada"}, ` +
+        "los tests de integración NO se saltean: sin base no hay nada verificado.\n" +
+        `Detalle: ${motivo}`,
+    );
+  }
+
   return disponible;
 }
 
@@ -84,7 +133,7 @@ export function clienteDeTests(): PrismaClient {
 /**
  * Vacía las tablas de dominio entre tests.
  *
- * `TRUNCATE ... CASCADE` sobre todo lo público salvo `_prisma_migrations`: la
+ * `TRUNCATE ... CASCADE` sobre el esquema público salvo `_prisma_migrations`: la
  * lista sale de `pg_tables`, no escrita a mano — una lista a mano se
  * desactualiza en cuanto se agrega un modelo y deja datos colgados que hacen
  * fallar el test siguiente por el motivo equivocado.

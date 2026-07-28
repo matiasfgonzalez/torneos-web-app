@@ -32,8 +32,10 @@ jobs:
       - name: Tests
         run: npm test
 
-  migrations:
-    name: Migraciones
+  # Todo lo que necesita una base **de verdad**: migraciones, seed y los tests
+  # de integración. Comparten job para no levantar dos veces el mismo Postgres.
+  database:
+    name: Base de datos (migraciones + integración)
     runs-on: ubuntu-latest
     # Postgres de verdad y descartable: las comprobaciones de abajo no se pueden
     # hacer sin una base, y nunca deben correr contra la de producción.
@@ -99,6 +101,23 @@ jobs:
       #    instalación nueva como `npm run db:reset`.
       - name: Correr el seed
         run: npm run db:seed
+
+      # 4) Los tests de integración (#26): lo único del repo que ejecuta queries
+      #    reales. Los 314 tests unitarios son de lógica pura, así que un `where`
+      #    que deja de filtrar, un `select` mal armado o un cambio de motor de
+      #    Prisma pasan verdes sin esto.
+      #
+      #    Va al final a propósito: truncan todas las tablas entre casos, así que
+      #    después de este paso la base queda vacía —y el seed de arriba ya se
+      #    verificó—.
+      #
+      #    `TEST_DATABASE_URL` explícita hace que, si la base no responde, los
+      #    tests **fallen en vez de saltearse**: sin eso el job daría verde sin
+      #    haber corrido nada, que es justo lo que este paso viene a evitar.
+      - name: Tests de integración
+        env:
+          TEST_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/golazo_ci"
+        run: npm run test:integration
 
   lint:
     name: Lint
