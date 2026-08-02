@@ -143,3 +143,87 @@ jobs:
       # ahí pasaba igual. Una sola forma de correr el lint, local y en CI.
       - name: ESLint
         run: npm run lint
+
+  # End-to-end con Playwright (A8): el navegador contra la app compilada.
+  #
+  # **Apagado por defecto.** No es una decisión de comodidad: la app no arranca
+  # sin claves de Clerk —el `ClerkProvider` es parte del layout raíz— así que
+  # este job no puede correr en un fork ni en un repo recién clonado. Se
+  # enciende poniendo la variable `E2E_ENABLED=true` en Settings → Variables y
+  # cargando los secretos de abajo. Mientras esté apagado el job se saltea
+  # entero: no da un verde falso, directamente no aparece como ejecutado.
+  #
+  # Para encenderlo hacen falta:
+  #   vars.E2E_ENABLED                          = "true"
+  #   secrets.CLERK_PUBLISHABLE_KEY / CLERK_SECRET_KEY
+  #   secrets.E2E_CLERK_USER_EMAIL / E2E_CLERK_USER_PASSWORD  (cuenta de pruebas,
+  #     OWNER de una organización — sin ella el flujo del panel se saltea)
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    if: vars.E2E_ENABLED == 'true'
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: golazo_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Base descartable: el flujo del organizador **escribe** (crea torneo,
+      # inscribe equipos, carga un resultado). Nunca contra la real.
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/golazo_e2e"
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+      E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+      E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
+      # Misma regla que los tests de integración (#29): si el job está
+      # encendido, que los flujos con sesión se salteen en silencio sería un
+      # verde que no probó nada. Con esto, faltar la cuenta es un error.
+      E2E_REQUIRE_AUTH: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Generar Prisma Client
+        run: npx prisma generate
+
+      - name: Preparar la base
+        run: |
+          npx prisma migrate deploy
+          npm run db:seed
+
+      # Solo Chromium: alcanza para lo que estos tests verifican (render,
+      # redirecciones, formularios) y bajar tres navegadores en cada corrida
+      # cuesta minutos que no compran nada.
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      # `CI=true` hace que Playwright levante el **build de producción** en vez
+      # de `next dev` (ver playwright.config.ts): es lo que se despliega, y
+      # además evita el compilado por ruta que hace lentos a estos tests.
+      - name: Tests E2E
+        run: npm run test:e2e
+
+      - name: Guardar el reporte
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

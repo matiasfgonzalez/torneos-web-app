@@ -196,10 +196,65 @@ npm run dev
 - npm run start: iniciar app buildada
 - npm run lint: validacion de codigo
 - npm run test: tests con Vitest (`npm run test:watch` para el modo interactivo)
+- npm run test:integration: tests contra una Postgres descartable (necesita
+  `npm run test:db:up` antes)
+- npm run test:e2e: tests end-to-end con Playwright (`:ui` para el modo
+  interactivo, `:report` para ver el ultimo reporte)
 - npm run db:seed: siembra el catalogo de planes (idempotente)
 - npm run db:reset: **vacia toda la base** y vuelve a sembrar los planes, para
   arrancar de cero. Pide confirmar escribiendo el nombre de la base y se niega a
   correr con `NODE_ENV=production` (ver `scripts/reset-db.mjs`)
+
+## Testing
+
+Tres capas, cada una con su costo de arranque:
+
+| Comando | Que verifica | Necesita |
+|---|---|---|
+| `npm test` | Logica pura: fixture, tabla de posiciones, transiciones, validadores Zod, helpers | nada |
+| `npm run test:integration` | Queries reales: scope por organizacion, recalculo de standings, migraciones | Postgres descartable (`npm run test:db:up`) |
+| `npm run test:e2e` | El navegador contra la app: render, redirecciones del middleware, formularios de punta a punta | la app corriendo + Clerk |
+
+### End-to-end (Playwright)
+
+Los tests viven en `e2e/` y se dividen en dos grupos:
+
+- **`publico.spec.ts`** — no necesita cuenta. Corre en cualquier maquina: verifica
+  que las paginas publicas rendericen sin errores de cliente, que no se desborden
+  a lo ancho en un telefono de 375px, y que `/admin` mande a sign-in sin sesion.
+- **`admin-torneo.spec.ts`** — el flujo del organizador (crear torneo, inscribir
+  equipos, cargar el resultado, ver la tabla). Necesita una cuenta de pruebas y
+  **se saltea solo** si no esta configurada.
+
+Para habilitar el flujo con sesion, en `.env`:
+
+```bash
+E2E_CLERK_USER_EMAIL=pruebas@ejemplo.com
+E2E_CLERK_USER_PASSWORD=...
+```
+
+La cuenta tiene que existir en la instancia de Clerk del proyecto y ser **OWNER
+de una organizacion** (o ADMINISTRADOR de la plataforma): crear torneos consume
+cupo del plan y el server exige ese rol.
+
+Ese flujo **escribe en la base de la app bajo prueba**. Borra su torneo al
+terminar, pero conviene apuntarlo a la base descartable en vez de a la de
+desarrollo:
+
+```bash
+npm run test:db:up
+DATABASE_URL=postgresql://golazo:golazo@localhost:55432/golazo_test npm run dev
+# en otra terminal
+npm run test:e2e
+```
+
+Variables opcionales: `E2E_PORT` (puerto del servidor, por defecto 3000) y
+`E2E_BASE_URL` (probar contra un servidor ya levantado o un preview; con esta
+variable Playwright no arranca nada).
+
+En CI el job esta **apagado por defecto** — sin claves de Clerk la app no
+arranca. Se enciende con la variable de repositorio `E2E_ENABLED=true` y los
+secretos documentados en `.github/workflows/ci.yml`.
 
 ## API (Resumen)
 
