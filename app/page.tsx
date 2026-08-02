@@ -1,4 +1,5 @@
 import { HeroSection } from "@/components/sections/hero-section";
+import { TodayFootballSection } from "@/components/sections/today-football-section";
 import { ValuePropositionSection } from "@/components/sections/value-proposition-section";
 import { FeaturesSection } from "@/components/sections/features-section";
 import { InstallAppSection } from "@/components/sections/install-app-section";
@@ -59,6 +60,9 @@ export default async function HomePage() {
 
       {/* Hero - Primera impresión impactante */}
       <HeroSection />
+
+      {/* Fútbol de hoy - los partidos del mundo, puerta de entrada al hincha */}
+      <TodayFootballSection />
 
       {/* Propuesta de valor - Qué es, para quién, por qué */}
       <ValuePropositionSection />

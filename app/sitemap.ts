@@ -30,6 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url("/jugadores"), changeFrequency: "weekly", priority: 0.6 },
     { url: url("/noticias"), changeFrequency: "daily", priority: 0.7 },
     { url: url("/partidos"), changeFrequency: "daily", priority: 0.7 },
+    // Su contenido cambia varias veces por día (marcadores en vivo); el resto
+    // de los listados, no. Por eso es la única `hourly` del sitemap.
+    { url: url("/futbol-hoy"), changeFrequency: "hourly", priority: 0.7 },
     { url: url("/terminos"), changeFrequency: "yearly", priority: 0.2 },
     { url: url("/privacidad"), changeFrequency: "yearly", priority: 0.2 },
   ];

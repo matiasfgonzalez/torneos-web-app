@@ -7,6 +7,10 @@ export const siteLinks = [
   { href: "/ligas", label: "Ligas" },
   { href: "/torneos", label: "Torneos" },
   { href: "/partidos", label: "Partidos" },
+  // Fútbol del mundo (API-Football). Va pegado a "Partidos" porque son la misma
+  // pregunta con distinto alcance: los partidos de la plataforma y los de
+  // afuera. El label dice "Fútbol Hoy" para que no se lean como duplicados.
+  { href: "/futbol-hoy", label: "Fútbol Hoy" },
   { href: "/equipos", label: "Equipos" },
   { href: "/jugadores", label: "Jugadores" },
   { href: "/noticias", label: "Noticias" },

@@ -33,6 +33,7 @@ Este proyecto fue creado para cubrir el ciclo completo de una competencia:
 - Listado y detalle de jugadores.
 - Listado y detalle de noticias.
 - Listado de partidos por torneo.
+- Futbol de hoy: partidos del mundo agrupados por liga, con resultados en vivo.
 - Perfil de usuario autenticado.
 
 ### Funcionalidad Administrativa
@@ -162,6 +163,8 @@ el navegador recibe el cloud name en la respuesta de `/api/cloudinary/sign`.
 | `RESEND_API_KEY` | Envio de notificaciones por email (S5). | No se manda ningun mail. La campana dentro de la app sigue funcionando igual. |
 | `RESEND_FROM` | Remitente de esos emails. Requiere dominio verificado en Resend. | Usa `onboarding@resend.dev`, que solo entrega a tu propia casilla. |
 | `NEXT_PUBLIC_APP_URL` | Base absoluta para links de email, imagenes OG, QR y sitemap (un mail o un QR no pueden usar rutas relativas). | En Vercel se deduce de `VERCEL_URL`; en local asume `http://localhost:3000`. Configurala en produccion con el dominio real. |
+| `FOOTBALL_API_KEY` | Clave de API-Sports que alimenta la seccion publica `/futbol-hoy` (partidos del mundo). | La seccion se ve vacia con un aviso de que falta configurarla. El resto del sitio no se entera. Ver "Futbol de hoy" mas abajo. |
+| `FOOTBALL_CRON_TOKEN` | Token del cron de [cron-job.org](https://console.cron-job.org/jobs) que refresca los resultados (`GET /api/world-fixtures/refresh`). | Ese endpoint responde 503. **No hace falta**: la seccion se actualiza sola al visitarse. |
 
 #### Rutas de Clerk (no son secretos)
 
@@ -256,6 +259,103 @@ En CI el job esta **apagado por defecto** — sin claves de Clerk la app no
 arranca. Se enciende con la variable de repositorio `E2E_ENABLED=true` y los
 secretos documentados en `.github/workflows/ci.yml`.
 
+## Futbol de Hoy (partidos del mundo)
+
+La ruta publica `/futbol-hoy` muestra **todos los partidos que se juegan hoy en
+el mundo, agrupados por liga**, con resultados en vivo, horarios y estadios. Los
+datos vienen de [API-Football](https://www.api-football.com/) (`v3.football.api-sports.io`).
+La home enlaza a la seccion desde un apartado propio (landing y home del hincha).
+
+### Como se raciona el plan gratuito
+
+El plan gratuito da **100 llamadas por dia para toda la aplicacion**, no por
+usuario. Consumir la API desde el navegador en cada visita seria imposible: dos
+personas mirando la pagina agotarian la cuota. La arquitectura es:
+
+```
+Navegador  →  /api/world-fixtures  →  Base de datos (cache)  →  API-Football
+   ↑ polling cada 60 s                        ↑ como maximo 1 llamada cada 20 min
+```
+
+- **La clave nunca sale del server** (`lib/futbol-hoy/api-football.ts` es
+  `server-only`).
+- **La actualizacion es perezosa, disparada por la visita**: al abrir la pagina,
+  si la copia guardada tiene mas de 20 minutos, se sale a buscar datos nuevos.
+  Sin visitas no se gasta cuota. El cron de cron-job.org (ver mas abajo) se suma
+  a esto, no lo reemplaza: la pagina sigue funcionando aunque el cron se caiga.
+- **El polling del navegador le pega a nuestra API, no al proveedor**: el
+  marcador se actualiza solo sin que eso implique una llamada a API-Football.
+- **Hay un techo diario propio de 80 llamadas** (`PRESUPUESTO_DIARIO`), por
+  debajo de las 100 del plan, y se cuenta por dia calendario sumando todas las
+  fechas consultadas.
+- **Un dia pasado y ya resuelto no se vuelve a consultar nunca**: los resultados
+  de ayer no cambian.
+- Si los datos quedan viejos (proveedor caido, cuota agotada), **la pagina lo
+  dice**: un resultado desactualizado sin aviso es peor que no tenerlo.
+
+Las reglas viven en [lib/futbol-hoy/politica.ts](lib/futbol-hoy/politica.ts),
+son puras y estan cubiertas por tests (`tests/futbol-hoy/`).
+
+### Que ligas se destacan
+
+Un dia cualquiera trae 150+ partidos de 80 competiciones. `LIGAS_DESTACADAS` en
+[lib/futbol-hoy/agrupar.ts](lib/futbol-hoy/agrupar.ts) fija cuales van primero
+(Liga Profesional, Libertadores, Sudamericana, Champions, Premier, LaLiga...).
+Editar esa lista es la forma soportada de cambiar el orden. Las ligas con
+partidos en vivo siempre suben al tope, por encima de la lista.
+
+### Actualizacion programada con cron-job.org
+
+La seccion **funciona sin cron**: se actualiza sola cuando alguien la visita. El
+cron agrega que se mantenga fresca aunque no entre nadie (util cuando hay poco
+trafico y el primero en entrar no quiere ver datos de hace horas).
+
+**1) Generar el token** y ponerlo en las variables de entorno del deploy:
+
+```bash
+openssl rand -hex 32      # o cualquier cadena larga y aleatoria
+# FOOTBALL_CRON_TOKEN=<lo que salio>
+```
+
+**2) Crear el job** en [console.cron-job.org/jobs](https://console.cron-job.org/jobs):
+
+| Campo | Valor |
+|---|---|
+| URL | `https://tudominio.com/api/world-fixtures/refresh` |
+| Metodo | `GET` |
+| Schedule | cada **20 minutos** (`*/20`), o cada 30 para mas margen de cuota |
+| Zona horaria | `America/Argentina/Buenos_Aires` |
+
+**3) Autenticar el job.** Cualquiera de las dos formas sirve:
+
+- **Header** (recomendado): pestaña *Headers* → `Authorization` = `Bearer <token>`.
+- **Query string** (mas rapido): usar la URL
+  `https://tudominio.com/api/world-fixtures/refresh?token=<token>`. Ojo: el
+  token queda escrito en la URL, asi que va a aparecer en el historial de
+  ejecuciones del panel y en los logs del server.
+
+Sin `FOOTBALL_CRON_TOKEN` configurado el endpoint queda **cerrado** (503), no
+abierto: cada llamada gasta de las 100 diarias, y una URL publica que consume
+cuota ajena se agota el mismo dia que alguien la descubre.
+
+**Cuentas de cuota.** Un job cada 20 minutos consume **72 llamadas por dia** de
+las 100 del plan, dentro del techo propio de 80 (`PRESUPUESTO_DIARIO`). Si se
+quiere mas margen —para probar a mano, o por si el proveedor falla y hay
+reintentos— conviene cada 30 minutos: 48 por dia.
+
+El endpoint devuelve **200 siempre que haya podido evaluar el pedido**, con el
+detalle adentro (`{ llamado, guardados, detalle }`). "No llame porque se agoto
+la cuota" es una ejecucion correcta, no un fallo: un 500 ahi haria que
+cron-job.org marcara el job como caido sin motivo. Responde 401 solo si el token
+no coincide y 503 si no esta configurado — esos si son problemas de verdad.
+
+Tambien sirve para forzar un refresco a mano:
+
+```bash
+curl -H "Authorization: Bearer $FOOTBALL_CRON_TOKEN" \
+  https://tudominio.com/api/world-fixtures/refresh
+```
+
 ## API (Resumen)
 
 Superficies principales:
@@ -268,6 +368,7 @@ Superficies principales:
 - /api/noticias
 - /api/users
 - /api/cloudinary/\*
+- /api/world-fixtures (+ `/refresh`)
 
 ## Estado de Calidad y Proximo Paso
 

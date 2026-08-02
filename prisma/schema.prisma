@@ -1206,6 +1206,130 @@ model SiteSettings {
 }
 
 // ============================================================
+// FÚTBOL DEL MUNDO (API-Football) — caché local
+// ============================================================
+
+/**
+ * Partido del fútbol mundial traído de API-Football (`v3.football.api-sports.io`).
+ *
+ * **Es una caché, no una entidad del dominio.** GOLAZO no organiza estos
+ * partidos: son datos de terceros que se copian acá para no pegarle a la API en
+ * cada visita (el plan gratuito da 100 requests por día, así que servir la
+ * página desde la API sería imposible con dos usuarios). Por eso no tiene
+ * `organizationId`, ni relaciones con `Team`/`Tournament`, ni soft delete: los
+ * nombres y escudos se guardan **desnormalizados**, tal como los devolvió la
+ * API, y una fila se sobrescribe entera en cada sincronización.
+ *
+ * La clave natural es `fixtureId` (el id de API-Football), no el uuid: es lo que
+ * permite hacer upsert sin duplicar cuando el mismo partido vuelve a llegar.
+ */
+model WorldFixture {
+  /// Id del partido en API-Football. Es la **PK**, no un uuid propio: el resto
+  /// del schema usa uuid porque esas filas nacen acá, pero estas nacen afuera y
+  /// ya vienen con identidad. Un uuid extra solo agregaría una clave que nadie
+  /// usa y un `@unique` más que mantener.
+  fixtureId Int @id
+
+  /// Momento del inicio, en UTC (la API lo manda con offset; se guarda normalizado).
+  kickoff DateTime
+
+  /// Día al que pertenece el partido **en hora de Argentina** (`AAAA-MM-DD`).
+  /// Se guarda calculado y no se deriva de `kickoff` en la query porque es la
+  /// clave por la que se agrupa: un partido de las 22:00 de Argentina es
+  /// `2026-08-02` aunque en UTC ya sea el 3.
+  matchDay String
+
+  /// Estado corto de API-Football (`NS`, `1H`, `HT`, `FT`, `PST`, ...). Se
+  /// guarda **crudo**: la traducción a estado de dominio vive en
+  /// `lib/futbol-hoy/estado.ts`, así un código nuevo del proveedor no pierde el
+  /// dato ni necesita migración.
+  statusShort String
+  statusLong  String?
+  /// Minuto de juego. Null si no empezó o ya terminó.
+  elapsed     Int?
+
+  leagueId      Int
+  leagueName    String
+  leagueCountry String?
+  leagueLogo    String?
+  leagueFlag    String?
+  /// Fase/fecha dentro del torneo ("Regular Season - 5"), tal cual la API.
+  leagueRound   String?
+
+  homeTeamId   Int
+  homeTeamName String
+  homeTeamLogo String?
+  awayTeamId   Int
+  awayTeamName String
+  awayTeamLogo String?
+
+  /// Goles. Null mientras no haya empezado — **no es cero**: un 0-0 en el
+  /// entretiempo y un partido que no arrancó son cosas distintas.
+  homeGoals Int?
+  awayGoals Int?
+
+  venueName String?
+  venueCity String?
+
+  /// Cuándo se copió este dato de la API. Alimenta el "actualizado hace X".
+  syncedAt DateTime @default(now())
+
+  // La página siempre pregunta lo mismo: los partidos de un día, ordenados por
+  // hora. El índice por estado sirve al contador de "en vivo" de la home.
+  @@index([matchDay, kickoff])
+  @@index([matchDay, statusShort])
+}
+
+/**
+ * Estado de la sincronización con API-Football, **una fila por día de partidos**.
+ *
+ * Cumple dos funciones que no se pueden derivar de `WorldFixture`:
+ *
+ * 1. **Candado.** `lastAttemptAt` se pisa con un update condicional antes de
+ *    salir a la API: dos visitas simultáneas no disparan dos llamadas.
+ * 2. **Memoria del fracaso.** Si la API falla, `lastError` queda registrado y el
+ *    candado igual se tomó: no se reintenta en loop contra un proveedor caído.
+ *
+ * El consumo de cuota **no** se cuenta acá: ver `ApiFootballQuota`.
+ */
+model WorldFixtureSync {
+  /// Día sincronizado en hora de Argentina (`AAAA-MM-DD`). Es la PK: hay una
+  /// fila por día y no hace falta un uuid que nadie usa.
+  matchDay String @id
+
+  /// Último intento (exitoso o no). Es el campo del candado.
+  lastAttemptAt DateTime
+  /// Última vez que la API respondió bien. Null = nunca se pudo traer nada.
+  lastSuccessAt DateTime?
+
+  /// Partidos guardados en el último éxito.
+  fixtureCount Int @default(0)
+
+  /// Mensaje del último fallo. Se limpia al siguiente éxito.
+  lastError String?
+}
+
+/**
+ * Llamadas gastadas a API-Football, **por día calendario**.
+ *
+ * Va separado de `WorldFixtureSync` porque son dos ejes distintos y confundirlos
+ * es un agujero real: la cuota del proveedor se cuenta por *día en que se hace
+ * la llamada*, mientras que `WorldFixtureSync` se indexa por *día de los
+ * partidos*. Con el contador dentro de esa tabla, un visitante que mirara ayer,
+ * hoy y mañana tendría **tres presupuestos independientes** y podría gastar el
+ * triple del límite sin que ninguna guarda se enterara.
+ */
+model ApiFootballQuota {
+  /// Día calendario argentino en que se hicieron las llamadas (`AAAA-MM-DD`).
+  day String @id
+
+  /// Llamadas hechas ese día. Se compara contra `PRESUPUESTO_DIARIO`.
+  requestCount Int @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
 // AUDITORÍA
 // ============================================================
 

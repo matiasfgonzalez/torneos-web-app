@@ -11,6 +11,7 @@ import {
   Heart,
 } from "lucide-react";
 import { GradientText } from "@/components/ui-dev/gradient-text";
+import { TodayFootballSection } from "@/components/sections/today-football-section";
 import type {
   FavoriteTournamentItem,
   FavoriteTeamItem,
@@ -84,6 +85,10 @@ export function FanHome({ name, hasOrganization, favorites }: Readonly<FanHomePr
               </Link>
             </div>
           </div>
+
+          {/* Fútbol de hoy: los partidos del mundo, arriba de los favoritos
+              porque es lo que cambia todos los días (los seguidos, no). */}
+          <TodayFootballSection embebido />
 
           {/* Torneos seguidos */}
           <div className="space-y-4">
