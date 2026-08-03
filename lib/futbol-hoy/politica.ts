@@ -167,3 +167,31 @@ export function avisoDeFrescura(
 
   return null;
 }
+
+/**
+ * Traduce el error crudo del proveedor a algo que le sirva a quien mira la
+ * página.
+ *
+ * El mensaje de API-Football viene en inglés y hablando de su producto
+ * (*"Free plans do not have access to this date"*), que no es asunto del
+ * hincha. Pero **tampoco alcanza con un genérico**: "no pudimos actualizar" ante
+ * una fecha que el plan no cubre haría pensar que es una falla pasajera y que
+ * conviene recargar, cuando en realidad no va a funcionar nunca.
+ */
+export function avisoDeError(error: string): string {
+  const e = error.toLowerCase();
+
+  if (e.includes("plan") && e.includes("date")) {
+    return "Esa fecha no está disponible: el plan contratado con el proveedor de datos solo cubre los próximos días.";
+  }
+
+  if (e.includes("request limit") || e.includes("cuota")) {
+    return "Llegamos al límite diario de consultas al proveedor de datos. Los resultados pueden estar desactualizados hasta mañana.";
+  }
+
+  if (e.includes("invalid api key") || e.includes("token")) {
+    return "La sección no está bien configurada: el proveedor de datos rechazó la clave.";
+  }
+
+  return "No pudimos actualizar los resultados en este momento.";
+}

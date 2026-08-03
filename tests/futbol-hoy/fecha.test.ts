@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DIAS_NAVEGABLES,
   correrDia,
   diaArgentino,
+  diasNavegables,
   esDiaValido,
   hoyArgentino,
 } from "@/lib/futbol-hoy/fecha";
@@ -72,5 +74,37 @@ describe("correrDia", () => {
     expect(correrDia("2026-01-01", -1)).toBe("2025-12-31");
     expect(correrDia("2024-02-28", 1)).toBe("2024-02-29");
     expect(correrDia("2025-02-28", 1)).toBe("2025-03-01");
+  });
+});
+
+describe("diasNavegables", () => {
+  it("ofrece hoy y los dos siguientes", () => {
+    expect(diasNavegables("2026-08-02")).toEqual([
+      { etiqueta: "Hoy", dia: "2026-08-02" },
+      { etiqueta: "Mañana", dia: "2026-08-03" },
+      { etiqueta: "Pasado mañana", dia: "2026-08-04" },
+    ]);
+  });
+
+  it("NUNCA ofrece una fecha pasada", () => {
+    // El plan gratuito de API-Football responde 200 con
+    // `{"errors":{"plan":"Free plans do not have access to this date..."}}`
+    // para cualquier fecha anterior a hoy. Un boton "Ayer" seria un boton que
+    // lleva siempre a una pagina vacia. Verificado contra la API real.
+    const dias = diasNavegables("2026-08-02").map((d) => d.dia);
+    expect(dias.every((d) => d >= "2026-08-02")).toBe(true);
+  });
+
+  it("la ventana coincide con la que declara el plan (hoy … hoy+2)", () => {
+    expect(DIAS_NAVEGABLES).toBe(3);
+    expect(diasNavegables("2026-08-02")).toHaveLength(DIAS_NAVEGABLES);
+  });
+
+  it("cruza el fin de mes", () => {
+    expect(diasNavegables("2026-08-31").map((d) => d.dia)).toEqual([
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+    ]);
   });
 });

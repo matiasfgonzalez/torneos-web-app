@@ -296,6 +296,25 @@ Navegador  →  /api/world-fixtures  →  Base de datos (cache)  →  API-Footba
 Las reglas viven en [lib/futbol-hoy/politica.ts](lib/futbol-hoy/politica.ts),
 son puras y estan cubiertas por tests (`tests/futbol-hoy/`).
 
+### Que fechas se pueden ver (limite del plan)
+
+**El plan gratuito solo da acceso a la ventana `hoy … hoy+2`.** Para cualquier
+otra fecha responde `200 OK` con:
+
+```json
+{"errors":{"plan":"Free plans do not have access to this date, try from 2026-08-02 to 2026-08-04"}}
+```
+
+Por eso la barra de fechas ofrece **Hoy / Manana / Pasado manana** y **no hay
+boton "Ayer"**: seria un boton que lleva siempre a una pagina vacia. Con un plan
+pago, subir `DIAS_NAVEGABLES` en [lib/futbol-hoy/fecha.ts](lib/futbol-hoy/fecha.ts)
+(y agregar dias hacia atras) es la unica edicion necesaria.
+
+Si el proveedor rechaza una fecha igual, la pagina **lo explica**: `avisoDeError`
+traduce el motivo real ("esa fecha no esta disponible: el plan solo cubre los
+proximos dias") en vez de un generico que invitaria a recargar algo que no va a
+funcionar nunca.
+
 ### Que ligas se destacan
 
 Un dia cualquiera trae 150+ partidos de 80 competiciones. `LIGAS_DESTACADAS` en
@@ -325,6 +344,7 @@ openssl rand -hex 32      # o cualquier cadena larga y aleatoria
 | Metodo | `GET` |
 | Schedule | cada **20 minutos** (`*/20`), o cada 30 para mas margen de cuota |
 | Zona horaria | `America/Argentina/Buenos_Aires` |
+| Tiempo de espera | 30 s alcanza: el endpoint responde en **~9 s** con 478 partidos |
 
 **3) Autenticar el job.** Cualquiera de las dos formas sirve:
 

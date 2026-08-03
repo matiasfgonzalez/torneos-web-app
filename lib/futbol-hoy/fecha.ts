@@ -1,7 +1,7 @@
 /**
  * El "día" de la sección Fútbol de hoy.
  *
- * Todo el módulo se agrupa por **día calendario argentino**, no por día UTC:
+ * La seccion entera se agrupa por **día calendario argentino**, no por día UTC:
  * un partido que arranca a las 22:00 del sábado en Buenos Aires es
  * `2026-08-02T01:00:00Z`, o sea domingo en UTC. Agrupar por UTC lo mandaría al
  * día siguiente y el hincha no lo encontraría donde lo busca.
@@ -57,7 +57,7 @@ export function esDiaValido(valor: string): boolean {
 }
 
 /**
- * Corre un día N jornadas (sirve para los botones ayer/mañana de la página).
+ * Corre un día N jornadas (sirve para los botones de fecha de la página).
  * Trabaja en UTC sobre el mediodía para no rozar ningún borde de día.
  */
 export function correrDia(matchDay: string, dias: number): string {
@@ -65,4 +65,32 @@ export function correrDia(matchDay: string, dias: number): string {
   const base = new Date(Date.UTC(anio, mes - 1, dia, 12, 0, 0));
   base.setUTCDate(base.getUTCDate() + dias);
   return `${base.getUTCFullYear()}-${String(base.getUTCMonth() + 1).padStart(2, "0")}-${String(base.getUTCDate()).padStart(2, "0")}`;
+}
+
+/**
+ * Cuántos días hacia adelante ofrece la navegación de fechas, **hoy incluido**.
+ *
+ * ⚠️ **No es una decisión de diseño: es el límite del plan del proveedor.** El
+ * plan gratuito de API-Football solo da acceso a la ventana `hoy … hoy+2`; para
+ * cualquier otra fecha responde `200 OK` con
+ * `{"errors":{"plan":"Free plans do not have access to this date, try from
+ * 2026-08-02 to 2026-08-04"}}`. Verificado contra la API real el 2026-08-02.
+ *
+ * Por eso **no hay botón "Ayer"**: sería un botón que lleva siempre a una
+ * página vacía, que es justo lo que la regla de "no anuncies lo que no existe"
+ * viene a evitar. Con un plan pago, subir este número (y agregar días hacia
+ * atrás) es la única edición necesaria.
+ */
+export const DIAS_NAVEGABLES = 3;
+
+/** Fechas que ofrece la barra de navegación, de hoy hacia adelante. */
+export function diasNavegables(
+  hoy: string,
+): { etiqueta: string; dia: string }[] {
+  const etiquetas = ["Hoy", "Mañana", "Pasado mañana"];
+
+  return Array.from({ length: DIAS_NAVEGABLES }, (_, i) => ({
+    etiqueta: etiquetas[i] ?? `+${i} días`,
+    dia: correrDia(hoy, i),
+  }));
 }

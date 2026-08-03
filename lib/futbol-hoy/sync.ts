@@ -6,6 +6,7 @@ import { hayClaveConfigurada, traerFixturesDelDia } from "./api-football";
 import { estadoDeFixture, estaTerminado } from "./estado";
 import { hoyArgentino } from "./fecha";
 import {
+  avisoDeError,
   avisoDeFrescura,
   decidirRefresco,
   type ContextoRefresco,
@@ -124,19 +125,28 @@ async function gastarCuota(dia: string, requests: number): Promise<void> {
 }
 
 /**
- * Escribe los partidos traídos.
+ * Escribe los partidos traídos: **reemplazo completo del día en 2 sentencias**.
  *
- * Dos operaciones en **una transacción**, porque juntas son un reemplazo del
- * día y a medias dejarían la página inconsistente:
+ * Como la API devuelve la jornada entera en cada consulta, no hace falta
+ * comparar fila por fila para saber qué cambió: se borra lo que había y se
+ * inserta lo que llegó. Las dos van en una transacción porque a medias dejarían
+ * la página vacía.
  *
- * 1. Borra los partidos de ese día que la API ya no informa (se reprogramaron a
- *    otra fecha, o se cayeron del calendario). Sin este paso la caché solo
- *    crece y muestra partidos fantasma.
- * 2. Inserta o actualiza los que llegaron.
+ * El `deleteMany` borra por **dos** condiciones, y las dos hacen falta:
+ * - `matchDay`: saca los partidos que la API ya no informa para ese día (se
+ *   reprogramaron o se cayeron del calendario). Sin esto la caché solo crece y
+ *   muestra partidos fantasma.
+ * - `fixtureId in (...)`: saca la copia vieja de un partido que **cambió de
+ *   día**. Sin esto, el `createMany` chocaría contra la PK al reinsertarlo bajo
+ *   su fecha nueva — un fallo que solo aparece cuando una liga reprograma.
  *
- * El upsert va de a uno: son ~150 filas por día como mucho, y `createMany` con
- * `skipDuplicates` no sirve acá —lo que hay que hacer es **pisar** el marcador
- * viejo, que es justamente lo que ese modo evita—.
+ * ⚠️ **Esto era 479 viajes a la base y hacía fallar el cron por timeout.** La
+ * versión anterior hacía un `upsert` por partido dentro de la transacción: con
+ * 478 partidos en un día normal, cron-job.org cortaba a los 30 segundos sin
+ * recibir respuesta. `createMany` no se había usado porque `skipDuplicates` no
+ * pisa el marcador viejo — pero el problema no era el modo, era intentar
+ * actualizar en vez de reemplazar. Borrar primero elimina el conflicto y deja
+ * dos sentencias en total.
  */
 async function guardarFilas(
   matchDay: string,
@@ -147,15 +157,11 @@ async function guardarFilas(
 
   await db.$transaction([
     db.worldFixture.deleteMany({
-      where: { matchDay, fixtureId: { notIn: ids } },
+      where: { OR: [{ matchDay }, { fixtureId: { in: ids } }] },
     }),
-    ...filas.map((fila) =>
-      db.worldFixture.upsert({
-        where: { fixtureId: fila.fixtureId },
-        create: { ...fila, syncedAt: ahora },
-        update: { ...fila, syncedAt: ahora },
-      }),
-    ),
+    db.worldFixture.createMany({
+      data: filas.map((fila) => ({ ...fila, syncedAt: ahora })),
+    }),
   ]);
 }
 
@@ -241,9 +247,10 @@ export async function sincronizarDia(
       guardados: 0,
       detalle: error,
       decision,
-      aviso:
-        avisoDeFrescura(ctx, decision) ??
-        "No pudimos actualizar los resultados en este momento.",
+      // El motivo del proveedor gana sobre el aviso genérico de frescura: si la
+      // fecha está fuera del plan, decir "los datos son de hace 40 minutos" es
+      // cierto pero inútil — nunca va a haber datos de ese día.
+      aviso: avisoDeError(error),
     };
   }
 

@@ -4,6 +4,7 @@ import {
   INTERVALO_LARGO_MS,
   INTERVALO_MS,
   PRESUPUESTO_DIARIO,
+  avisoDeError,
   avisoDeFrescura,
   decidirRefresco,
   type ContextoRefresco,
@@ -231,5 +232,46 @@ describe("avisoDeFrescura", () => {
     expect(avisoDeFrescura(c, decidirRefresco(c))).toBe(
       "Los resultados se actualizaron por última vez hace 90 minutos.",
     );
+  });
+});
+
+describe("avisoDeError", () => {
+  it("la fecha fuera del plan se explica como tal, no como falla pasajera", () => {
+    // Mensaje textual devuelto por API-Football el 2026-08-02. Un genérico
+    // "no pudimos actualizar" invitaría a recargar una página que no va a
+    // funcionar nunca para esa fecha.
+    const real =
+      "API-Football: plan: Free plans do not have access to this date, try from 2026-08-02 to 2026-08-04.";
+
+    expect(avisoDeError(real)).toBe(
+      "Esa fecha no está disponible: el plan contratado con el proveedor de datos solo cubre los próximos días.",
+    );
+  });
+
+  it("la cuota agotada del proveedor se distingue del resto", () => {
+    expect(
+      avisoDeError(
+        "API-Football: requests: You have reached the request limit for the day",
+      ),
+    ).toContain("límite diario");
+  });
+
+  it("una clave rechazada se reporta como problema de configuración", () => {
+    expect(avisoDeError("API-Football: token: Invalid API key")).toContain(
+      "no está bien configurada",
+    );
+  });
+
+  it("cualquier otro error cae en el genérico", () => {
+    expect(avisoDeError("API-Football respondió 502.")).toBe(
+      "No pudimos actualizar los resultados en este momento.",
+    );
+    expect(avisoDeError("No se pudo contactar a API-Football: timeout")).toBe(
+      "No pudimos actualizar los resultados en este momento.",
+    );
+  });
+
+  it("no depende de mayúsculas ni del prefijo del proveedor", () => {
+    expect(avisoDeError("PLAN: ... DATE ...")).toContain("Esa fecha no está");
   });
 });

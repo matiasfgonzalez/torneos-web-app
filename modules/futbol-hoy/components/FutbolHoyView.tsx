@@ -11,7 +11,7 @@ import { useLivePoll } from "@/hooks/use-live-poll";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/formatDate";
 import { estaEnVivo } from "@/lib/futbol-hoy/estado";
-import { correrDia } from "@/lib/futbol-hoy/fecha";
+import { diasNavegables } from "@/lib/futbol-hoy/fecha";
 import type { GrupoLiga, RespuestaFutbolHoy } from "@/lib/futbol-hoy/types";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 
@@ -81,29 +81,21 @@ export function FutbolHoyView({
 
   return (
     <div className="space-y-6">
-      {/* Navegación por fecha */}
+      {/* Navegación por fecha. Solo de hoy hacia adelante: el plan del
+          proveedor no da acceso a fechas pasadas (ver `diasNavegables`). */}
       <nav
         className="flex flex-wrap items-center justify-center gap-2"
         aria-label="Elegir fecha"
       >
-        <BotonFecha
-          etiqueta="Ayer"
-          dia={correrDia(datos.hoy, -1)}
-          actual={datos.matchDay}
-          onSelect={(d) => setFilter("date", d)}
-        />
-        <BotonFecha
-          etiqueta="Hoy"
-          dia={datos.hoy}
-          actual={datos.matchDay}
-          onSelect={(d) => setFilter("date", d)}
-        />
-        <BotonFecha
-          etiqueta="Mañana"
-          dia={correrDia(datos.hoy, 1)}
-          actual={datos.matchDay}
-          onSelect={(d) => setFilter("date", d)}
-        />
+        {diasNavegables(datos.hoy).map(({ etiqueta, dia }) => (
+          <BotonFecha
+            key={dia}
+            etiqueta={etiqueta}
+            dia={dia}
+            actual={datos.matchDay}
+            onSelect={(d) => setFilter("date", d)}
+          />
+        ))}
       </nav>
 
       <p className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
