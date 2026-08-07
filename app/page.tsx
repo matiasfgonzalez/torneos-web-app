@@ -3,7 +3,7 @@ import { TodayFootballSection } from "@/components/sections/today-football-secti
 import { ValuePropositionSection } from "@/components/sections/value-proposition-section";
 import { FeaturesSection } from "@/components/sections/features-section";
 import { InstallAppSection } from "@/components/sections/install-app-section";
-import { SocialProofSection } from "@/components/sections/social-proof-section";
+import { HowItWorksSection } from "@/components/sections/how-it-works-section";
 import { SponsorsSection } from "@/components/sections/sponsors-section";
 import { PricingSection } from "@/components/sections/pricing-section";
 import { ContactSection } from "@/components/sections/contact-section";
@@ -55,40 +55,50 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <Header isLogued={isLogued} />
+    <div className="min-h-screen bg-[#120F17]">
+      {/* `overlay`: el header flota sobre el hero oscuro en vez de apoyarse
+          encima con su fondo claro (ver components/layout/header.tsx). */}
+      <Header isLogued={isLogued} overlay />
 
-      {/* Hero - Primera impresión impactante */}
+      {/* Hero - Primera impresión impactante (fondo oscuro inmersivo) */}
       <HeroSection />
 
-      {/* Fútbol de hoy - los partidos del mundo, puerta de entrada al hincha */}
-      <TodayFootballSection />
+      {/* Transición del hero oscuro al contenido claro */}
+      <div className="bg-gradient-to-b from-[#120F17] via-slate-50 to-slate-50 dark:from-[#120F17] dark:via-gray-900 dark:to-gray-900">
+        <div className="h-16" />
+      </div>
 
-      {/* Propuesta de valor - Qué es, para quién, por qué */}
-      <ValuePropositionSection />
+      {/* Contenido de la landing con fondo claro/oscuro normal */}
+      <div className="bg-slate-50 dark:bg-gray-900">
+        {/* Fútbol de hoy - los partidos del mundo, puerta de entrada al hincha */}
+        <TodayFootballSection />
 
-      {/* Features - Capacidades principales */}
-      <FeaturesSection />
+        {/* Propuesta de valor - Qué es, para quién, por qué */}
+        <ValuePropositionSection />
 
-      {/* Instalar app (PWA) - el pitch al hincha: llevá la liga en el bolsillo */}
-      <InstallAppSection />
+        {/* Features - Capacidades principales */}
+        <FeaturesSection />
 
-      {/* Social Proof - Testimonios y confianza */}
-      <SocialProofSection />
+        {/* Instalar app (PWA) - el pitch al hincha: llevá la liga en el bolsillo */}
+        <InstallAppSection />
 
-      {/* Pricing - Propuesta clara de valor */}
-      <PricingSection />
+        {/* Cómo funciona - los tres pasos reales para arrancar */}
+        <HowItWorksSection />
 
-      {/* Sponsors - Partners y patrocinadores */}
-      <SponsorsSection />
+        {/* Pricing - Propuesta clara de valor */}
+        <PricingSection />
 
-      {/* Contact - Formulario y datos de contacto */}
-      <ContactSection />
+        {/* Sponsors - Partners y patrocinadores */}
+        <SponsorsSection />
 
-      {/* CTA Final - Llamada a la acción definitiva */}
-      <CTASection />
+        {/* Contact - Formulario y datos de contacto */}
+        <ContactSection />
 
-      <Footer />
+        {/* CTA Final - Llamada a la acción definitiva */}
+        <CTASection />
+
+        <Footer />
+      </div>
     </div>
   );
 }

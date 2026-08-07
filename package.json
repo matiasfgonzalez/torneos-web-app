@@ -43,6 +43,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
+    "@types/three": "^0.185.4",
     "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.9.0",
@@ -63,6 +64,7 @@
     "react-hook-form": "^7.61.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
+    "three": "^0.185.1",
     "zod": "^4.0.10"
   },
   "devDependencies": {

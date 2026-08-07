@@ -1,11 +1,27 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Trophy, Sparkles } from "lucide-react";
+import LightPillar from "@/components/reactbits/LightPillar";
+import { FadeInSection } from "@/components/ui-dev/scroll-animations";
 
 export function CTASection() {
   return (
     <section className="relative py-32 overflow-hidden">
       {/* Background con gradiente premium */}
       <div className="absolute inset-0 bg-gradient-to-br from-brand via-[#9a4dff] to-brand-2" />
+      
+      {/* WebGL Light Pillar */}
+      <div className="absolute inset-0">
+        <LightPillar
+          topColor="#ffffff"
+          bottomColor="#e0c3fc"
+          intensity={0.8}
+          quality="medium"
+          mixBlendMode="soft-light"
+          pillarRotation={0.2}
+        />
+      </div>
 
       {/* Patrón decorativo overlay */}
       <div className="absolute inset-0 opacity-10">
@@ -22,12 +38,12 @@ export function CTASection() {
       <div className="absolute bottom-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
       <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/5 rounded-full blur-xl" />
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <FadeInSection className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Badge premium */}
         <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-8">
           <Sparkles className="w-4 h-4 text-white" />
           <span className="text-white text-sm font-medium">
-            Únete a +10,000 organizadores
+            Plan gratis, sin tarjeta
           </span>
         </div>
 
@@ -53,8 +69,8 @@ export function CTASection() {
         </h2>
 
         <p className="text-xl lg:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
-          Comienza hoy mismo y descubre por qué miles de organizadores eligen
-          GOLAZO para gestionar sus competencias deportivas
+          Creá tu liga, armá el fixture y compartí la tabla el mismo día. Si después
+          necesitás más torneos o más gente en el equipo, ahí recién pagás.
         </p>
 
         {/* CTAs con diseño premium */}
@@ -101,7 +117,7 @@ export function CTASection() {
             </div>
           ))}
         </div>
-      </div>
+      </FadeInSection>
     </section>
   );
 }

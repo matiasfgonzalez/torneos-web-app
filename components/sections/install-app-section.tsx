@@ -16,6 +16,7 @@ import { SectionBadge } from "@/components/ui-dev/section-badge";
 import { GradientText } from "@/components/ui-dev/gradient-text";
 import { Button } from "@/components/ui/button";
 import { useInstallPrompt } from "@/components/pwa/use-install-prompt";
+import { FadeInSection, StaggerContainer, StaggerItem } from "@/components/ui-dev/scroll-animations";
 
 const benefits = [
   {
@@ -53,108 +54,114 @@ export function InstallAppSection() {
       id="app"
       className="relative overflow-hidden py-24 lg:py-28 bg-gradient-to-b from-white via-brand/[0.04] to-white dark:from-gray-950 dark:via-brand/[0.07] dark:to-gray-950"
     >
-      {/* Glows de marca de fondo */}
-      <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-brand-2/10 blur-3xl" />
+      <FadeInSection>
+        {/* Glows de marca de fondo */}
+        <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-brand-2/10 blur-3xl" />
 
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-8">
-        {/* Columna de texto + CTA */}
-        <div className="order-2 text-center lg:order-1 lg:text-left">
-          <SectionBadge className="mb-6">Llevala en el celular</SectionBadge>
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-8">
+          {/* Columna de texto + CTA */}
+          <FadeInSection direction="left" className="order-2 text-center lg:order-1 lg:text-left">
+            <SectionBadge className="mb-6">Llevala en el celular</SectionBadge>
 
-          <h2 className="mb-6 text-4xl font-bold leading-tight text-gray-900 dark:text-white lg:text-5xl">
-            Toda la liga, <GradientText>en tu bolsillo</GradientText>
-          </h2>
+            <h2 className="mb-6 text-4xl font-bold leading-tight text-gray-900 dark:text-white lg:text-5xl">
+              Toda la liga, <GradientText>en tu bolsillo</GradientText>
+            </h2>
 
-          <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gray-300 lg:mx-0">
-            Instalá GOLAZO como app y seguí la tabla, el fixture y los resultados
-            desde la cancha. Sin tienda de apps, sin descargas pesadas: se
-            agrega a tu pantalla de inicio en segundos.
-          </p>
-
-          <ul className="mb-10 space-y-5 text-left">
-            {benefits.map((b) => {
-              const Icon = b.icon;
-              return (
-                <li key={b.title} className="flex items-start gap-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-mid shadow-lg shadow-brand/25">
-                    <Icon className="h-5 w-5 text-white" aria-hidden="true" />
-                  </span>
-                  <span>
-                    <span className="block font-semibold text-gray-900 dark:text-white">
-                      {b.title}
-                    </span>
-                    <span className="block text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                      {b.desc}
-                    </span>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Bloque de acción adaptativo según la plataforma */}
-          <div className="space-y-4">
-            {isInstalled ? (
-              <div className="inline-flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3.5 text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
-                <Check className="h-5 w-5 shrink-0" aria-hidden="true" />
-                <span className="font-semibold">
-                  Ya tenés GOLAZO instalada. ¡A la cancha!
-                </span>
-              </div>
-            ) : isIOS ? (
-              <IOSSteps />
-            ) : (
-              <>
-                <Button
-                  variant="brand"
-                  size="lg"
-                  onClick={handleInstall}
-                  className="h-12 w-full px-7 text-base sm:w-auto"
-                >
-                  <Download className="h-5 w-5" aria-hidden="true" />
-                  Instalar app
-                </Button>
-
-                {!canInstall && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {showSteps
-                      ? null
-                      : "En Chrome o Edge se instala con un toque. ¿No aparece el botón?"}{" "}
-                    {!showSteps && (
-                      <button
-                        type="button"
-                        onClick={() => setShowSteps(true)}
-                        className="font-medium text-brand underline underline-offset-2 hover:text-brand-hover"
-                      >
-                        Ver cómo
-                      </button>
-                    )}
-                  </p>
-                )}
-
-                {showSteps && !canInstall && <GenericSteps />}
-              </>
-            )}
-
-            {/* Línea de confianza */}
-            <p className="pt-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-              Gratis
-              <Dot />
-              Sin Play Store
-              <Dot />
-              Funciona sin conexión
-              <Dot />
-              Menos de 1 MB
+            <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gray-300 lg:mx-0">
+              Instalá GOLAZO como app y seguí la tabla, el fixture y los resultados
+              desde la cancha. Sin tienda de apps, sin descargas pesadas: se
+              agrega a tu pantalla de inicio en segundos.
             </p>
-          </div>
-        </div>
 
-        {/* Columna del mockup — señal de la sección */}
-        <div className="order-1 flex justify-center lg:order-2">
-          <PhonePreview />
+            <StaggerContainer>
+              <ul className="mb-10 space-y-5 text-left">
+                {benefits.map((b) => {
+                  const Icon = b.icon;
+                  return (
+                    <StaggerItem key={b.title}>
+                      <li className="flex items-start gap-4">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-mid shadow-lg shadow-brand/25">
+                          <Icon className="h-5 w-5 text-white" aria-hidden="true" />
+                        </span>
+                        <span>
+                          <span className="block font-semibold text-gray-900 dark:text-white">
+                            {b.title}
+                          </span>
+                          <span className="block text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                            {b.desc}
+                          </span>
+                        </span>
+                      </li>
+                    </StaggerItem>
+                  );
+                })}
+              </ul>
+            </StaggerContainer>
+
+            {/* Bloque de acción adaptativo según la plataforma */}
+            <div className="space-y-4">
+              {isInstalled ? (
+                <div className="inline-flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3.5 text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                  <Check className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <span className="font-semibold">
+                    Ya tenés GOLAZO instalada. ¡A la cancha!
+                  </span>
+                </div>
+              ) : isIOS ? (
+                <IOSSteps />
+              ) : (
+                <>
+                  <Button
+                    variant="brand"
+                    size="lg"
+                    onClick={handleInstall}
+                    className="h-12 w-full px-7 text-base sm:w-auto"
+                  >
+                    <Download className="h-5 w-5" aria-hidden="true" />
+                    Instalar app
+                  </Button>
+
+                  {!canInstall && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {showSteps
+                        ? null
+                        : "En Chrome o Edge se instala con un toque. ¿No aparece el botón?"}{" "}
+                      {!showSteps && (
+                        <button
+                          type="button"
+                          onClick={() => setShowSteps(true)}
+                          className="inline-flex min-h-6 items-center font-medium text-brand underline underline-offset-2 hover:text-brand-hover"
+                        >
+                          Ver cómo
+                        </button>
+                      )}
+                    </p>
+                  )}
+
+                  {showSteps && !canInstall && <GenericSteps />}
+                </>
+              )}
+
+              {/* Línea de confianza */}
+              <p className="pt-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                Gratis
+                <Dot />
+                Sin Play Store
+                <Dot />
+                Funciona sin conexión
+                <Dot />
+                Menos de 1 MB
+              </p>
+            </div>
+          </FadeInSection>
+
+          {/* Columna del mockup — señal de la sección */}
+          <FadeInSection direction="right" delay={0.2} className="order-1 flex justify-center lg:order-2">
+            <PhonePreview />
+          </FadeInSection>
         </div>
-      </div>
+      </FadeInSection>
     </section>
   );
 }

@@ -231,6 +231,17 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={esES} appearance={clerkAppearance}>
       <html lang="es" suppressHydrationWarning>
+        <head>
+          {/* Red de seguridad sin JavaScript. Las secciones de la landing
+              aparecen con framer-motion, que escribe `opacity: 0` inline **ya
+              en el HTML del server**: sin JS esa página quedaba en blanco, y un
+              rastreador que no ejecuta scripts veía una home vacía. Esta regla
+              solo se aplica cuando no hay JS, así que no interfiere con la
+              animación real. */}
+          <noscript>
+            <style>{`.reveal{opacity:1!important;transform:none!important}`}</style>
+          </noscript>
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >

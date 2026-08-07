@@ -190,6 +190,22 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+
+    /* Las animaciones de aparición de la landing las calcula framer-motion en
+       JS y las escribe como estilo inline: la regla de arriba, que es de CSS,
+       no las alcanza. `!important` desde la hoja sí le gana a un inline sin
+       `!important`, así que esto garantiza que el contenido se vea aunque algo
+       se escape del chequeo en JS (ver components/ui-dev/scroll-animations.tsx). */
+    .reveal {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
+  /* Anclas de la landing (#features, #precios, #app, #contacto): el header es
+     sticky, así que sin esto el salto deja el título tapado abajo de la barra. */
+  :where(section[id]) {
+    scroll-margin-top: 6rem;
   }
 
   /* Custom scrollbar */
@@ -682,6 +698,132 @@
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* ============================================
+   Landing Page Premium Animations
+   ============================================ */
+
+/* Marquee — desplazamiento horizontal infinito (logos de sponsors).
+   La lista se duplica en el markup, por eso el recorrido es -50%: al llegar
+   ahí, la segunda copia está exactamente donde arrancó la primera y el salto
+   no se ve. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Un marquee infinito con `animation-duration: 0.01ms !important` (la regla
+   global de reduced-motion) no se detiene: salta al -50% final y deja la
+   lista corrida. Con la preferencia activa se apaga del todo y los logos
+   quedan quietos donde arrancaron. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Shimmer — brillo que recorre el fondo de un badge SIN moverlo de lugar
+   (anima `background-position`, no `transform`). */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  background-image: linear-gradient(
+    90deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Sheen — destello que CRUZA el elemento: una capa superpuesta que se
+   traslada de izquierda a derecha dentro de un contenedor `overflow-hidden`.
+   Es otra técnica que `shimmer`, y por eso tiene otro nombre.
+
+   ⚠️ Vive acá y no en un `<style>` dentro de un componente. La sección de
+   precios declaraba su propio `@keyframes shimmer { transform: translateX(100%) }`
+   inline: como un `<style>` en el árbol es **global**, pisaba el keyframe de
+   arriba para toda la página y empujaba 208px hacia la derecha al badge del
+   hero, que quedaba fuera de pantalla en mobile. Dos animaciones distintas no
+   pueden compartir nombre. */
+@keyframes sheen {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+.animate-sheen {
+  animation: sheen 2.5s ease-in-out infinite;
+}
+
+/* Gradient shift — animated gradient on text */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% center; }
+  50%      { background-position: 100% center; }
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+/* Glow pulse — subtle pulsing glow behind cards */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50%      { opacity: 0.75; transform: scale(1.0); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Rotating conic gradient — for pricing card border */
+@keyframes rotate-gradient {
+  from { --gradient-angle: 0deg; }
+  to   { --gradient-angle: 360deg; }
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animate-gradient-border {
+  background: conic-gradient(
+    from var(--gradient-angle),
+    var(--brand),
+    var(--brand-2),
+    var(--brand-mid),
+    var(--brand)
+  );
+  animation: rotate-gradient 4s linear infinite;
+}
+
+/* LightPillar CSS fallback for browsers without WebGL */
+.light-pillar-fallback {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(173, 69, 255, 0.2) 0%,
+    rgba(163, 179, 255, 0.1) 30%,
+    transparent 70%
+  );
 }
 
 /* Badge secured by clerk */

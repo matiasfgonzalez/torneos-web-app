@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { GradientButton } from "@/components/ui-dev/gradient-button";
 import { GradientText } from "@/components/ui-dev/gradient-text";
 import { useMobileMenu } from "@/hooks/use-mobile-menu";
+import { useScrolled } from "@/hooks/use-scrolled";
 import { siteLinks, anonLinks } from "@/lib/constants/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,6 +22,14 @@ interface HeaderProps {
    * histórico "Mi Panel"/"Mi Perfil" (mentía para hinchas y delegados).
    */
   userLinks?: { href: string; label: string }[];
+  /**
+   * La landing abre con un hero oscuro a pantalla completa. Con el header
+   * claro apoyado encima quedaba una costura horizontal muy visible: barra
+   * blanca, corte, hero negro. Con `overlay` el header flota **sobre** el hero,
+   * transparente, y recién se vuelve sólido al scrollear — el patrón habitual
+   * para heroes inmersivos. Fuera de la landing no se usa.
+   */
+  overlay?: boolean;
 }
 
 /**
@@ -29,9 +38,15 @@ interface HeaderProps {
  * de sección activa por ruta, mobile-first y dark/light.
  */
 export function Header(props: Readonly<HeaderProps>) {
-  const { isLogued, userLinks } = props;
+  const { isLogued, userLinks, overlay = false } = props;
   const { isOpen, toggle, close } = useMobileMenu();
   const pathname = usePathname();
+  const scrolleado = useScrolled(24);
+
+  // Transparente solo mientras sigue arriba del todo y con el menú cerrado:
+  // apenas el usuario baja (o abre el menú), la barra necesita fondo propio o
+  // el texto se pierde contra el contenido que pasa por debajo.
+  const transparente = overlay && !scrolleado && !isOpen;
 
   // Links de secciones + extras según sesión (una sola fuente para
   // desktop y mobile — nunca más menús distintos por página)
@@ -50,13 +65,32 @@ export function Header(props: Readonly<HeaderProps>) {
     (pathname === href || pathname.startsWith(`${href}/`));
 
   return (
-    <header className="sticky top-0 z-50">
+    <header
+      className={cn(
+        "z-50 transition-colors duration-300",
+        overlay ? "fixed inset-x-0 top-0" : "sticky top-0",
+      )}
+    >
       {/* Barra superior decorativa con gradiente */}
-      <div className="h-1 bg-gradient-to-r from-brand via-brand-2 to-brand" />
+      <div
+        className={cn(
+          "h-1 bg-gradient-to-r from-brand via-brand-2 to-brand transition-opacity duration-300",
+          transparente ? "opacity-0" : "opacity-100",
+        )}
+      />
 
-      <nav className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+      <nav
+        className={cn(
+          "relative border-b transition-colors duration-300",
+          transparente
+            ? "border-transparent bg-transparent"
+            : "border-gray-100 bg-white/80 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/80",
+        )}
+      >
         {/* Efecto de brillo sutil */}
-        <div className="absolute inset-0 bg-gradient-to-r from-brand/5 via-transparent to-brand-2/5 pointer-events-none" />
+        {!transparente && (
+          <div className="absolute inset-0 bg-gradient-to-r from-brand/5 via-transparent to-brand-2/5 pointer-events-none" />
+        )}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
@@ -84,9 +118,17 @@ export function Header(props: Readonly<HeaderProps>) {
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg group",
-                      active
-                        ? "text-brand"
-                        : "text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand hover:bg-brand/5",
+                      active && !transparente && "text-brand",
+                      active && transparente &&
+                        "text-white [text-shadow:0_1px_6px_rgba(18,15,23,0.7)]",
+                      // Sobre el hero el fondo va de violeta oscuro a magenta
+                      // brillante: `text-white/80` se perdía en las zonas
+                      // claras. Blanco pleno + una sombra corta lo mantiene
+                      // legible sobre cualquier parte del degradado.
+                      !active && transparente &&
+                        "text-white [text-shadow:0_1px_6px_rgba(18,15,23,0.7)] hover:bg-white/15",
+                      !active && !transparente &&
+                        "text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand hover:bg-brand/5",
                     )}
                   >
                     {link.label}
@@ -101,15 +143,24 @@ export function Header(props: Readonly<HeaderProps>) {
               })}
             </div>
 
-            {/* Desktop Actions */}
-            <div className="hidden lg:flex items-center gap-4">
+            {/* Desktop Actions. El color va acá y no en cada control: sobre el
+                hero oscuro los íconos tienen que ser blancos aunque el sitio
+                esté en tema claro. */}
+            <div
+              className={cn(
+                "hidden lg:flex items-center gap-4",
+                transparente
+                  ? "text-white"
+                  : "text-gray-600 dark:text-gray-300",
+              )}
+            >
               <SignedIn>
                 <NotificationBell />
               </SignedIn>
               <ThemeToggle />
               <SignedOut>
                 <SignInButton>
-                  <GradientButton className="cursor-pointer shadow-lg shadow-brand/25 hover:shadow-brand/40 transition-all">
+                  <GradientButton className="min-h-11 cursor-pointer shadow-lg shadow-brand/25 hover:shadow-brand/40 transition-all">
                     <User className="w-4 h-4" />
                     Iniciar sesión
                   </GradientButton>
@@ -129,7 +180,14 @@ export function Header(props: Readonly<HeaderProps>) {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center gap-1">
+            <div
+              className={cn(
+                "lg:hidden flex items-center gap-1",
+                transparente
+                  ? "text-white"
+                  : "text-gray-600 dark:text-gray-300",
+              )}
+            >
               {/* La campana va fuera del menú hamburguesa: es el aviso de que
                   algo pasó, y esconderlo detrás de dos taps lo vuelve inútil. */}
               <SignedIn>
@@ -142,7 +200,7 @@ export function Header(props: Readonly<HeaderProps>) {
                 onClick={toggle}
                 aria-expanded={isOpen}
                 aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
-                className="relative w-11 h-11 p-0 text-gray-600 dark:text-gray-300 hover:bg-brand/10 rounded-xl transition-colors"
+                className="relative w-11 h-11 p-0 text-current hover:bg-brand/10 rounded-xl transition-colors"
               >
                 {isOpen ? (
                   <X className="w-5 h-5" aria-hidden="true" />

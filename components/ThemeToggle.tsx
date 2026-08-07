@@ -29,7 +29,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className="h-9 w-9 p-0" disabled>
+      <Button variant="ghost" size="sm" className="h-11 w-11 p-0" disabled>
         <div className="h-4 w-4 animate-pulse bg-gray-300 rounded"></div>
       </Button>
     );
@@ -61,11 +61,11 @@ export default function ThemeToggle() {
         variant="ghost"
         size="sm"
         onClick={() => setShowMenu(!showMenu)}
-        className="h-9 w-9 p-0 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-brand/10 hover:to-brand-2/10 hover:border-brand/20 hover:shadow-lg group"
+        className="h-11 w-11 p-0 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-brand/10 hover:to-brand-2/10 hover:border-brand/20 hover:shadow-lg group"
         aria-label={themeConfig[theme]?.description || "Cambiar tema"}
       >
         <div className="relative">
-          <CurrentIcon className="h-4 w-4 text-gray-600 dark:text-gray-300 transition-all duration-300 group-hover:text-brand group-hover:scale-110" />
+          <CurrentIcon className="h-4 w-4 text-current transition-all duration-300 group-hover:text-brand group-hover:scale-110" />
 
           {/* Indicador de estado activo */}
           <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-gradient-to-r from-brand to-brand-2 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
